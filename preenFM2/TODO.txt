@@ -1,0 +1,57 @@
+TODO (temporary list, grow over time) : 
+. Bug when voice = 0... freeze
+. MIDI CC
+. MIDI nrpn
+. USB midi... to finish
+. Play note in combo (spec)
+
+
+Eventually
+. Variable instance + m... + get rid of this->
+
+TO check hardware :
+. volume Pot make noise
+
+
+OK A TESTER  
+. env attack as target...
+. env all release as target.
+. Don't load the right patch (???)
+
+
+DONE:
+. Combo name KO... saved "com 0" and after reboot see : "com 0##G"...
+. Can reset default combo
+. Default saved as patched instead of combo
+. Custom bootloader : flash new firmware from USBKey
+. Different options when booting
+. remove single mode from code (midi config)
+. Check new param value in SynthState.encoderTurned() (Voices and Algo)...
+. Combo name
+. turns usbKey_usr.c into a class
+. several banks
+. save midi config on USB Key
+. lfo env 2 : silence as target
+. 9V wall adapter does not work : fixed in R4d
+. Cannot upload firmware with USB : dfu-util >= 0.6 : 
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_BOOTLOADER) -R -s 0x8000000
+. Rename patch (modify menu)
+
+   
+
+
+What's new PreenFM2 : 
+. multi timbral : 4 timbres 
+. more voices, flexible allocation : 48 operators to distribute in the voices of the 4 timbres...
+. stereo : pan of carrier operators modifiable + targetable in the matrix
+. Midi through USB (DIN5 still available)
+. patches and banks storage on USB Key
+. New LFO env (silence, attack, decay, loop) Silence time targetable in the matrix to make it change (saw that in the Mopho).
+. Enveloppe attack, decay, release in seconds.. comprehensive tweaking.
+. 4 * 12 bits DAC : 12 + 6 = 18 bits per channel (left and right)
+. sampling rate 40khz (eventually 45Khz with overvlocking)
+. Full floating point engine (32 bits)
+. Pins available for any future evolution (analog input, surface control expansion, mutable instrument SMR4 mkII...)
+. DC 2.1mm for 7V or 9V wall adapter
+. Custom bootloader : flash new firmware from USBKey
+
