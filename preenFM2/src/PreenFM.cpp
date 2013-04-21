@@ -185,7 +185,7 @@ void setup() {
 
 
     lcd.setCursor(0,1);
-    lcd.print("PreenFM mk2 ");
+    lcd.print("PreenFM mk2 v0.1");
 	lcd.setCursor(5,2);
     lcd.print("By Xavier Hosxe");
 
