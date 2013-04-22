@@ -83,7 +83,7 @@ BootLoader::~BootLoader() {
 void BootLoader::initKey() {
     usbKey.init(0,0,0,0);
     this->lcd->setCursor(0, 0);
-    this->lcd->print("   Flash Firmware");
+    this->lcd->print("   Flash Firmware   ");
     if (usbKey.firmwareInit() != COMMAND_SUCCESS) {
         this->lcd->setCursor(0, 1);
         this->lcd->print("No '/pfm2' directory");
@@ -162,8 +162,8 @@ bool BootLoader::formatFlash(int firmwareSize) {
     sector[1] = FLASH_Sector_7;
     sector[2] = FLASH_Sector_8;
     sector[3] = FLASH_Sector_9;
-    sector[4] = FLASH_Sector_9;
-    sector[5] = FLASH_Sector_9;
+    sector[4] = FLASH_Sector_10;
+    sector[5] = FLASH_Sector_11;
 
     bool cont = true;
 
@@ -276,7 +276,7 @@ int main(void) {
     lcd.print("B:");
     lcd.print(bootLoader.getButton());
 */
-    if (bootLoader.getButton() == 1) {
+    if (bootLoader.getButton() == 2) {
         // Button... flash new firmware
         lcd.begin(20,4);
         lcd.clear();
@@ -284,12 +284,6 @@ int main(void) {
         lcd.print("PreenFM bootloader");
         lcd.setCursor(1,1);
         lcd.print("      v1.00");
-    } else if (bootLoader.getButton() == 2) {
-        // Button... flash new firmware
-        lcd.begin(20,4);
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print("...");
         uDelay(1000000);
         bootLoader.initKey();
 
