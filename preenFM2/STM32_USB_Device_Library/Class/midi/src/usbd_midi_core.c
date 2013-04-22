@@ -16,7 +16,6 @@ static uint8_t usbd_midi_DataOut(void *pdev, uint8_t epnum);
 static uint8_t usbd_midi_SOF(void *pdev);
 static uint8_t usbd_midi_OUT_Incplt(void *pdev);
 static uint8_t *usbd_midi_GetCfgDesc(uint8_t speed, uint16_t *length);
-static uint8_t  *usbd_midi_getString( uint8_t speed ,uint8_t index,  uint16_t *length);
 
 USBD_Class_cb_TypeDef midiCallback = {
 		usbd_midi_Init,

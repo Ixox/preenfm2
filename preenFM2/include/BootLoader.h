@@ -54,7 +54,6 @@ private:
 	BL_State state;
 	char firmwareName[13];
 	int firmwareSize;
-	int oldButton;
 	bool oneFirmwareAtLeast;
 };
 

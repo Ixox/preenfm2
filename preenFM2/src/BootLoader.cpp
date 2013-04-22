@@ -73,6 +73,7 @@ BootLoader::BootLoader(LiquidCrystal* lcd) {
     this->button = 0;
     this->state = BL_BOOTING;
     this->oneFirmwareAtLeast = false;
+    this->firmwareSize = 0;
 }
 
 BootLoader::~BootLoader() {
@@ -240,6 +241,8 @@ bool BootLoader::burnFlash() {
     }
     this->lcd->setCursor(0, 2);
     this->lcd->print(" New Firmware Ready ");
+
+    return true;
 }
 
 void BootLoader::encoderTurned(int num, int ticks) {

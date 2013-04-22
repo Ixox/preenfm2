@@ -48,7 +48,6 @@ uint32_t cpt1 = 0;
 uint32_t cpt2 = 0;
 
 USB_OTG_CORE_HANDLE          usbOTGDevice;
-extern USBD_Usr_cb_TypeDef midiStreamingUsrCallback;
 
 // Init left/right
 struct sampleForSPI samples __attribute__ ((section(".ccmnoload"))) ;
