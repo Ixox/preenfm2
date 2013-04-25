@@ -20,9 +20,6 @@
 #include "Menu.h"
 #include "stm32f4xx_rng.h"
 
-//#include "LiquidCrystal.h"
-//extern LiquidCrystal lcd;
-
 extern float noise[32];
 
 Synth::Synth(void) {
@@ -246,17 +243,12 @@ void Synth::afterNewParamsLoad(int timbre) {
     refreshNumberOfOsc();
     int freeOsc = 48 - this->numberOfOsc;
     float voicesMax = (float)freeOsc / (float)algoInformation[(int)timbres[timbre].params.engine1.algo].osc ;
-    lcd.setCursor(16,2);
-    lcd.print((int)(voicesMax+.0001f));
 
     if (numberOfVoice > voicesMax) {
     	timbres[timbre].params.engine1.numberOfVoice = voicesMax;
     }
 
     rebuidVoiceTimbre();
-
-    lcd.setCursor(16,0);
-    lcd.print((int)(timbres[timbre].params.engine1.numberOfVoice+.0001f));
 }
 
 void Synth::afterNewComboLoad() {

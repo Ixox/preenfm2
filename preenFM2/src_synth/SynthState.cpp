@@ -523,17 +523,9 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                 fullState.internalPresetNumber = fullState.menuSelect;
             } else if (fullState.currentMenuItem->menuState == MENU_LOAD_USER_SELECT_PRESET) {
                 if (fullState.bankNumber < 4) {
-                	lcd.setCursor(19,1);
-                	lcd.print('0');
                     propagateBeforeNewParamsLoad();
-                	lcd.setCursor(19,1);
-                	lcd.print('1');
                     storage->loadPatch(fullState.bankNumber, fullState.menuSelect, params);
-                	lcd.setCursor(19,1);
-                	lcd.print('2');
                     propagateAfterNewParamsLoad();
-                	lcd.setCursor(19,1);
-                	lcd.print('3');
                 }
                 fullState.presetNumber = fullState.menuSelect;
             }

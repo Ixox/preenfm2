@@ -329,7 +329,7 @@ void loop(void) {
 	}
 
 	// Comment following line for debug....
-	lcd.setRealTimeAction(true);
+	lcd.setRealTimeAction(false);
     if ((newMicros - encoderMicros) > 80) {
         fillSoundBuffer();
         encoders.checkStatus();
