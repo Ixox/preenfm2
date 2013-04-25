@@ -241,9 +241,9 @@ void setup() {
 
     usbKey.init(synth.getTimbre(0)->getParamRaw(), synth.getTimbre(1)->getParamRaw(), synth.getTimbre(2)->getParamRaw(), synth.getTimbre(3)->getParamRaw());
     usbKey.loadConfig(synthState.fullState.midiConfigValue);
-    usbKey.loadDefaultCombo();
-    synthState.propagateAfterNewParamsLoad();
-
+    if (usbKey.loadDefaultCombo()) {
+    	synthState.propagateAfterNewComboLoad();
+    }
 
     // launch the engine !!
     // Init DAC number
@@ -329,7 +329,7 @@ void loop(void) {
 	}
 
 	// Comment following line for debug....
-	lcd.setRealTimeAction(false);
+	lcd.setRealTimeAction(true);
     if ((newMicros - encoderMicros) > 80) {
         fillSoundBuffer();
         encoders.checkStatus();

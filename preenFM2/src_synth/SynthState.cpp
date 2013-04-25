@@ -20,6 +20,7 @@
 #include "LiquidCrystal.h"
 extern LiquidCrystal      lcd;
 
+
 #define NULL 0
 // FLASH :  __attribute__ ((section (".USER_FLASH")))
 // Ex : const char* nullNames [] __attribute__ ((section (".USER_FLASH")))= {};
@@ -522,9 +523,17 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                 fullState.internalPresetNumber = fullState.menuSelect;
             } else if (fullState.currentMenuItem->menuState == MENU_LOAD_USER_SELECT_PRESET) {
                 if (fullState.bankNumber < 4) {
+                	lcd.setCursor(19,1);
+                	lcd.print('0');
                     propagateBeforeNewParamsLoad();
+                	lcd.setCursor(19,1);
+                	lcd.print('1');
                     storage->loadPatch(fullState.bankNumber, fullState.menuSelect, params);
+                	lcd.setCursor(19,1);
+                	lcd.print('2');
                     propagateAfterNewParamsLoad();
+                	lcd.setCursor(19,1);
+                	lcd.print('3');
                 }
                 fullState.presetNumber = fullState.menuSelect;
             }
@@ -813,17 +822,20 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.bankNumber = fullState.menuSelect;
         break;
     case MENU_LOAD_USER_SELECT_PRESET:
+    	// Disable the audio interupt because
         propagateBeforeNewParamsLoad();
         if (fullState.bankNumber == 4) {
             storage->loadCombo(fullState.menuSelect);
-            currentTimbre = 0;
+            // Update and clean all timbres
+            this->currentTimbre = 0;
             propagateNewTimbre(currentTimbre);
             PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
+            propagateAfterNewComboLoad();
         } else {
             storage->loadPatch(fullState.bankNumber, fullState.menuSelect, params);
             PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
+            propagateAfterNewParamsLoad();
         }
-        propagateAfterNewParamsLoad();
         fullState.presetModified = false;
         break;
     case MENU_SAVE_SELECT_PRESET:
@@ -1041,6 +1053,12 @@ void SynthState::newBankReady() {
 void SynthState::propagateAfterNewParamsLoad() {
    for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
 	   listener->afterNewParamsLoad(currentTimbre);
+   }
+}
+
+void SynthState::propagateAfterNewComboLoad() {
+   for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+	   listener->afterNewComboLoad();
    }
 }
 

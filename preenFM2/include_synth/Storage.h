@@ -43,7 +43,7 @@ class Storage {
 public:
     virtual ~Storage() {}
     void saveDefaultCombo();
-    void loadDefaultCombo();
+    bool loadDefaultCombo();
     void removeDefaultCombo();
     void createPatchBank();
     void createComboBank();

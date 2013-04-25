@@ -26,6 +26,7 @@
 extern float noise[32];
 
 Synth::Synth(void) {
+	this->voiceIndex = 0;
 }
 
 Synth::~Synth(void) {
@@ -43,14 +44,11 @@ void Synth::init() {
     newTimbre(0);
     this->writeCursor = 0;
     this->readCursor = 0;
-    this->numberOfVoices = timbres[0].params.engine1.numberOfVoice;
-    this->numberOfVoiceInverse =  131071.0f / this->numberOfVoices;
     for (int k = 0; k < MAX_NUMBER_OF_VOICES; k++) {
         voices[k].init(&timbres[0], &timbres[1], &timbres[2], &timbres[3]);
     }
     rebuidVoiceTimbre();
     refreshNumberOfOsc();
-    fixMaxNumberOfVoices(0);
 }
 
 
@@ -74,12 +72,12 @@ void Synth::noteOn(int timbre, char note, char velocity) {
 
         // same note.... ?
         if (voices[n].getNote() == note) {
-            voices[n].noteOnWithoutPop(note, newVelocity, voiceIndex++);
+            voices[n].noteOnWithoutPop(note, newVelocity, this->voiceIndex++);
             return;
         }
 
         if (!voices[n].isPlaying()) {
-            voices[n].noteOn(timbre, note, newVelocity, voiceIndex++);
+            voices[n].noteOn(timbre, note, newVelocity, this->voiceIndex++);
             return;
         }
 
@@ -103,7 +101,7 @@ void Synth::noteOn(int timbre, char note, char velocity) {
             }
         }
     }
-    voices[voiceToUse].noteOnWithoutPop(note, newVelocity, voiceIndex++);
+    voices[voiceToUse].noteOnWithoutPop(note, newVelocity, this->voiceIndex++);
 }
 
 void Synth::noteOff(int timbre, char note) {
@@ -118,7 +116,8 @@ void Synth::noteOff(int timbre, char note) {
                 voices[n].noteOff();
                 return;
             }
-        } else {
+        } else if (n==0) {
+        	// Gliding only on note 0 of the timbre...
             // if gliding and releasing first note
             if (voices[n].getNote() == note) {
                 voices[n].glideNoteOff();
@@ -156,124 +155,67 @@ bool Synth::isPlaying() {
 }
 
 
-int gCpt = 0;
-
 void Synth::buildNewSampleBlock() {
     float *currentBlock = &samples[writeCursor];
-
-    // Noise... part
-    int noiseIndex = 0;
-    for (int k=0; k<16; k++) {
-        if (RNG_GetFlagStatus(RNG_FLAG_DRDY) != RESET) {
-            /* Get a 32bit Random number */
-            random32bit = RNG_GetRandomNumber();
-        } else {
-            random32bit = 214013 * random32bit + 2531011;
-        }
-
-        float value1 = random32bit & 0xffff;
-        float value2 = random32bit >> 16;
-        noise[noiseIndex++] = value1 * .000030518f - 1.0f; // value between -1 and 1.
-        noise[noiseIndex++] = value2 * .000030518f - 1.0f; // value between -1 and 1.
-    }
-
-    for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
-        timbres[t].prepareForNextBlock();
-        if (timbres[t].params.engine1.numberOfVoice > 0) {
-            // glide only happens on first voice of any
-            this->voices[voiceTimbre[t][0]].glide();
-        }
-    }
-
-    // render all voices in their timbre sample block...
-    for (int k = 0; k < MAX_NUMBER_OF_VOICES; ) {
-        this->voices[k++].nextBlock();
-        this->voices[k++].nextBlock();
-        this->voices[k++].nextBlock();
-        this->voices[k++].nextBlock();
-    }
-
-
     float nvi = this->numberOfVoiceInverse;
     float toAdd = 131071.0f;
 
-    // Add timbre per timbre because gate and eventual other effect are per timbre
-    /*
-    if (numberOfTimbres == 1) {
-        timbres[0].fxAfterBlock();
-        float *sampleFromTimbre = timbres[0].getSampleBlock();
-        float *cb = &samples[writeCursor];
-        float *cbMax = &cb[64];
-        while (cb < cbMax) {
-            *cb++ = *sampleFromTimbre++  * nvi  + toAdd;
-            *cb++ = *sampleFromTimbre++  * nvi  + toAdd;
-            *cb++ = *sampleFromTimbre++  * nvi  + toAdd;
-            *cb++ = *sampleFromTimbre++  * nvi  + toAdd;
-            *cb++ = *sampleFromTimbre++  * nvi  + toAdd;
-            *cb++ = *sampleFromTimbre++  * nvi  + toAdd;
-            *cb++ = *sampleFromTimbre++  * nvi  + toAdd;
-            *cb++ = *sampleFromTimbre++  * nvi  + toAdd;
-        }
-    }
-    else {
-    */
-    timbres[0].fxAfterBlock();
-    timbres[1].fxAfterBlock();
-    timbres[2].fxAfterBlock();
-    timbres[3].fxAfterBlock();
-    float *sampleFromTimbre1 = timbres[0].getSampleBlock();
-    float *sampleFromTimbre2 = timbres[1].getSampleBlock();
-    float *sampleFromTimbre3 = timbres[2].getSampleBlock();
-    float *sampleFromTimbre4 = timbres[3].getSampleBlock();
-    float *cb = &samples[writeCursor];
-    float *cbMax = &cb[64];
-    while (cb < cbMax) {
-        *cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-        *cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-        *cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-        *cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-        *cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-        *cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-        *cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-        *cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-    }
-//    }
+    // If we are loading we must not play, the voices assignation can be broken
+	// Noise... part
+	int noiseIndex = 0;
+	for (int k=0; k<16; k++) {
+		if (RNG_GetFlagStatus(RNG_FLAG_DRDY) != RESET) {
+			/* Get a 32bit Random number */
+			random32bit = RNG_GetRandomNumber();
+		} else {
+			random32bit = 214013 * random32bit + 2531011;
+		}
+
+		float value1 = random32bit & 0xffff;
+		float value2 = random32bit >> 16;
+		float ratioValue = .000030518f;
+		noise[noiseIndex++] = value1 * ratioValue - 1.0f; // value between -1 and 1.
+		noise[noiseIndex++] = value2 * ratioValue - 1.0f; // value between -1 and 1.
+	}
+
+	for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
+		timbres[t].prepareForNextBlock();
+		if (voiceTimbre[t][0] != -1) {
+			// glide only happens on first voice of any
+			this->voices[voiceTimbre[t][0]].glide();
+		}
+	}
+
+	// render all voices in their timbre sample block...
+	for (int k = 0; k < MAX_NUMBER_OF_VOICES; ) {
+		this->voices[k++].nextBlock();
+		this->voices[k++].nextBlock();
+		this->voices[k++].nextBlock();
+		this->voices[k++].nextBlock();
+	}
 
 
-/*
-    // gate on timbre 0 only
-    // Gate algo !!
-    float gate = timbres[0].matrix.getDestination(MAIN_GATE);
-
-//    if (gate > 0) {
-
-        float targetGate = (1 - gate);
-        targetGate = targetGate < 0.0f ? 0.0f : (targetGate > 1.0f ? 1.0f : targetGate);
-
-        float currentGate = timbres[0].currentGate;
-
-        float gateInc = (targetGate - currentGate) * .03125f; // in 32 steps should be able to go from currentGate  to gate...
-
-
-        for (int k=0; k<32; k++) {
-            currentGate += gateInc;
-//            float multiplyGate = (1 - currentGate);
-//            currentBlock[k*2] =  currentBlock[k*2] * multiplyGate;
-//            currentBlock[k*2+1] =  currentBlock[k*2+1] * multiplyGate;
-
-            currentBlock[k*2] =  currentBlock[k*2] * currentGate;
-            currentBlock[k*2+1] =  currentBlock[k*2+1] * currentGate;
-        }
-        timbres[0].currentGate = targetGate;
-//    }
-
-
-    for (int k = 0; k < MAX_NUMBER_OF_VOICES; k++) {
-        if (voices[k].getCurrentTimbre() != 0) {
-            this->voices[k].nextBlock();
-        }
-    }
-*/
+	// Add timbre per timbre because gate and eventual other effect are per timbre
+	timbres[0].fxAfterBlock();
+	timbres[1].fxAfterBlock();
+	timbres[2].fxAfterBlock();
+	timbres[3].fxAfterBlock();
+	float *sampleFromTimbre1 = timbres[0].getSampleBlock();
+	float *sampleFromTimbre2 = timbres[1].getSampleBlock();
+	float *sampleFromTimbre3 = timbres[2].getSampleBlock();
+	float *sampleFromTimbre4 = timbres[3].getSampleBlock();
+	float *cb = &samples[writeCursor];
+	float *cbMax = &cb[64];
+	while (cb < cbMax) {
+		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	}
 
     if (writeCursor == 192) {
         writeCursor = 0;
@@ -284,45 +226,77 @@ void Synth::buildNewSampleBlock() {
 
 }
 
-void Synth::checkMaxVoice(bool setEngineVoice) {
-}
+void Synth::beforeNewParamsLoad(int timbreNumber) {
+    for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
+        for (int v=0; v<MAX_NUMBER_OF_VOICES; v++) {
+            voiceTimbre[t][v] = -1;
+        }
+    }
+    // Stop all voices
+    allSoundOff();
+};
 
 void Synth::afterNewParamsLoad(int timbre) {
     timbres[timbre].afterNewParamsLoad();
-    checkMaxVoice(false);
-    rebuidVoiceTimbre();
+    // Reset to 0 the number of voice then try to set the right value
+    int numberOfVoice = timbres[timbre].params.engine1.numberOfVoice;
+    timbres[timbre].params.engine1.numberOfVoice = 0;
+
+
     refreshNumberOfOsc();
-    fixMaxNumberOfVoices(timbre);
+    int freeOsc = 48 - this->numberOfOsc;
+    float voicesMax = (float)freeOsc / (float)algoInformation[(int)timbres[timbre].params.engine1.algo].osc ;
+    lcd.setCursor(16,2);
+    lcd.print((int)(voicesMax+.0001f));
+
+    if (numberOfVoice > voicesMax) {
+    	timbres[timbre].params.engine1.numberOfVoice = voicesMax;
+    }
+
+    rebuidVoiceTimbre();
+
+    lcd.setCursor(16,0);
+    lcd.print((int)(timbres[timbre].params.engine1.numberOfVoice+.0001f));
 }
 
+void Synth::afterNewComboLoad() {
+    for (int t=0; t<NUMBER_OF_TIMBRES ; t++) {
+    	timbres[t].afterNewParamsLoad();
+    }
+    rebuidVoiceTimbre();
+    refreshNumberOfOsc();
+}
 
 int Synth::getFreeVoice() {
-    for (int voice=1; voice< MAX_NUMBER_OF_VOICES; voice++) {
-        bool found = false;
+	// Loop on all voice
+    for (int voice=0; voice< MAX_NUMBER_OF_VOICES; voice++) {
+        bool used = false;
 
-        for (int t=0; t<NUMBER_OF_TIMBRES && !found; t++) {
+        for (int t=0; t<NUMBER_OF_TIMBRES && !used; t++) {
             int interVoice = 0;
-            for (int v=0; v<MAX_NUMBER_OF_VOICES && interVoice!=-1 && !found; v++) {
+            for (int v=0; v<MAX_NUMBER_OF_VOICES && interVoice!=-1 && !used; v++) {
                 interVoice = voiceTimbre[t][v];
                 if (interVoice == voice) {
-                    found = true;
+                    used = true;
                 }
             }
         }
-        if (!found) {
+        if (!used) {
             return voice;
         }
     }
     return -1;
 }
 
+// can prevent some value change...
 void Synth::checkNewParamValue(int timbre, int currentRow, int encoder, float oldValue, float *newValue) {
     if (currentRow == ROW_ENGINE) {
 
         int freeOsc = 48 - numberOfOsc;
         if (encoder == ENCODER_ENGINE_ALGO) {
-            // if one voice and not enough free osc to change algo
-            if (timbres[timbre].params.engine1.numberOfVoice < 1.5f
+            // If one voice exactly and not enough free osc to change algo
+        	// If more than 1 voice, it's OK, the number of voice will be reduced later.
+            if (timbres[timbre].params.engine1.numberOfVoice < 1.5f && timbres[timbre].params.engine1.numberOfVoice > 0.5f
                     &&  freeOsc < (algoInformation[(int)(*newValue)].osc - algoInformation[(int)oldValue].osc)) {
                 // not enough free osc
                 *newValue = oldValue;
@@ -344,7 +318,6 @@ void Synth::newParamValue(int timbre, SynthParamType type, int currentRow, int e
     if (type == SYNTH_PARAM_TYPE_ENGINE ) {
         if (currentRow == ROW_ENGINE) {
             if (encoder == ENCODER_ENGINE_ALGO) {
-                checkMaxVoice(true);
                 refreshNumberOfOsc();
                 fixMaxNumberOfVoices(timbre);
             } else if (encoder == ENCODER_ENGINE_VOICE) {
@@ -462,7 +435,6 @@ bool Synth::fixMaxNumberOfVoices(int timbre) {
 
 
 void Synth::rebuidVoiceTimbre() {
-    // timbre 0 if SINGLE MODE or 0,1,2,4 if COMBO MODDE
     int voices = 0;
 
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
@@ -487,10 +459,8 @@ void Synth::refreshNumberOfOsc() {
     this->numberOfOsc = 0;
 
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
-        int nv = timbres[t].params.engine1.numberOfVoice + .0001;
-        for (int v=0; v < nv; v++) {
-            this->numberOfOsc += algoInformation[(int)timbres[t].params.engine1.algo].osc;
-        }
+        int nv = timbres[t].params.engine1.numberOfVoice + .0001f;
+		this->numberOfOsc += algoInformation[(int)timbres[t].params.engine1.algo].osc * nv;
     }
 /*
     int freeOsc = 48 - this->numberOfOsc;

@@ -148,13 +148,21 @@ void MCP4922_Config() {
 
 }
 
+void Systick_disable() {
+	SysTick->CTRL  = 0;
+}
+
 void SysTick_Config(void) {
 	//  32768 Hz : 168000000/40000 = 4200...
     // 4200 / 5 = 840
 	int numberOfTick = 168000000 / PREENFM_FREQUENCY / 4;
 
+
 	if (SysTick_Config(numberOfTick)) {
 		/* Capture error */
+		lcd.clear();
+		lcd.setCursor(0,0);
+		lcd.print("Systick Error...");
 		while (1);
 	}
 

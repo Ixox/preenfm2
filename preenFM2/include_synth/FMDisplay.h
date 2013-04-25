@@ -109,6 +109,9 @@ public:
     void afterNewParamsLoad(int timbre) {
         presetModifed = false;
     }
+    void afterNewComboLoad() {
+        presetModifed = false;
+    }
 
     // Overide SynthParamListener
     void playNote(int timbre, char note, char velocity) {

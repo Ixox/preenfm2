@@ -63,11 +63,11 @@ void Storage::saveDefaultCombo() {
     }
 }
 
-void Storage::loadDefaultCombo() {
+bool Storage::loadDefaultCombo() {
     // default : non ame
 
     if (checkSize(DEFAULT_COMBO) != (ALIGNED_PATCH_SIZE*3+PFM_PATCH_SIZE)) {
-        return;
+        return false;
     }
 
     for (int timbre = 0; timbre < 4; timbre++)  {
@@ -79,6 +79,7 @@ void Storage::loadDefaultCombo() {
             }
         }
     }
+    return true;
 }
 
 const char* Storage::readPresetName(int patchNumber) {

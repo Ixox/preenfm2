@@ -427,6 +427,7 @@ public:
     }
 
     void propagateAfterNewParamsLoad();
+    void propagateAfterNewComboLoad();
     void propagateNewTimbre(int timbre);
 
     SynthEditMode getSynthMode() {

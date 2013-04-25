@@ -143,17 +143,16 @@ void Timbre::fxAfterBlock() {
 
 
 void Timbre::afterNewParamsLoad() {
-    matrix.resetSources();
-    matrix.resetAllDestination();
+    this->matrix.resetSources();
+    this->matrix.resetAllDestination();
     for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
         for (int j=0; j<NUMBER_OF_ENCODERS; j++) {
-            env[k]->reloadADSR(j);
+        	this->env[k]->reloadADSR(j);
         }
     }
     for (int k=0; k<NUMBER_OF_LFO; k++) {
-        lfo[k]->valueChanged(-1);
+    	this->lfo[k]->valueChanged(-1);
     }
-
 }
 
 void Timbre::setNewValue(int index, struct ParameterDisplay* param, float newValue) {

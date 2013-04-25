@@ -69,7 +69,6 @@ public:
     void checkNewParamValue(int timbre, int currentRow, int encoder, float oldValue, float *newValue);
 
     int getFreeVoice();
-    void checkMaxVoice(bool setEngineVoice);
     void rebuidVoiceTimbre();
     void refreshNumberOfOsc();
     bool fixMaxNumberOfVoices(int timbre);
@@ -79,15 +78,9 @@ public:
     }
     void newTimbre(int timbre);
 
-    void beforeNewParamsLoad(int timbreNumber) {
-        // Stop all voices
-        allSoundOff();
-
-        timbres[timbreNumber].getMatrix()->resetSources();
-        timbres[timbreNumber].getMatrix()->resetAllDestination();
-    };
-
+    void beforeNewParamsLoad(int timbreNumber);
     void afterNewParamsLoad(int timbre);
+    void afterNewComboLoad();
 
     void newMidiConfig(int menuSelect, char newValue);
 

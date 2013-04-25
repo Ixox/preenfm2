@@ -122,6 +122,7 @@ public:
     void newcurrentRow(int timbre, int newcurrentRow) {}
     void beforeNewParamsLoad(int timbre) {}
     void afterNewParamsLoad(int timbre) {}
+    void afterNewComboLoad() {}
     virtual void newMidiConfig(int menuSelect, char newValue) {}
 
     void sendMidiOut();
