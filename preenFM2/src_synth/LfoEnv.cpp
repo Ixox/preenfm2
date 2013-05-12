@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Xavier Hosxe
+ * Copyright 2013 Xavier Hosxe
  *
  * Author: Xavier Hosxe (xavier <dot> hosxe (at) gmail <dot> com)
  *
