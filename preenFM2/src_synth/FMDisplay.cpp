@@ -615,7 +615,7 @@ void FMDisplay::midiClock(bool show) {
 	if (this->synthState->fullState.synthMode  == SYNTH_MODE_EDIT) {
 		lcd->setCursor(19,1);
 		if (show) {
-			lcd->print((char)2);
+			lcd->print((char)7);
 		} else {
 			lcd->print(' ');
 		}
