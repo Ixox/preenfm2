@@ -317,7 +317,7 @@ void FMDisplay::displayPreset() {
 void FMDisplay::newTimbre(int timbre) {
     if (this->synthState->fullState.synthMode == SYNTH_MODE_EDIT) {
         lcd->clearActions();
-        lcd->setRealTimeAction(true);
+//        lcd->setRealTimeAction(true);
         lcd->clear();
         displayPreset();
         refreshStatus = 12;
@@ -406,10 +406,8 @@ void FMDisplay::newcurrentRow(int timbre, int newcurrentRow) {
 
 void FMDisplay::newSynthMode(FullState* fullState)  {
     lcd->clearActions();
-    lcd->setRealTimeAction(true);
 	lcd->clear();
 	if (fullState->synthMode == SYNTH_MODE_EDIT) {
-	    lcd->setRealTimeAction(false);
         displayPreset();
 		refreshStatus = 12;
 	} else {
@@ -420,7 +418,7 @@ void FMDisplay::newSynthMode(FullState* fullState)  {
 }
 
 void FMDisplay::newMenuState(FullState* fullState) {
-    lcd->setRealTimeAction(true);
+//    lcd->setRealTimeAction(true);
 	menuRow++;
 	if (fullState->currentMenuItem->hasSubMenu) {
 	    int pos = 0;
@@ -506,7 +504,7 @@ void FMDisplay::newMenuState(FullState* fullState) {
 
 void FMDisplay::newMenuSelect(FullState* fullState) {
 
-    lcd->setRealTimeAction(true);
+//    lcd->setRealTimeAction(true);
 	lcd->noCursor();
 
 	switch(fullState->currentMenuItem->menuState) {

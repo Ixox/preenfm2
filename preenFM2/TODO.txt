@@ -1,5 +1,4 @@
 TODO (temporary list, grow over time) : 
-. Bug when voice = 0... freeze
 . MIDI CC
 . MIDI nrpn
 . USB midi... to finish
@@ -14,12 +13,14 @@ TO check hardware :
 
 
 OK A TESTER  
+. Bug when voice = 0... freeze
 . env attack as target...
 . env all release as target.
-. Don't load the right patch (???)
 
 
 DONE:
+. No more click during lcd.clear()
+. LFO Osc midi clock OK
 . Combo name KO... saved "com 0" and after reboot see : "com 0##G"...
 . Can reset default combo
 . Default saved as patched instead of combo

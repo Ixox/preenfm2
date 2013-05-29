@@ -340,8 +340,34 @@ void loop(void) {
     }
     lcd.setRealTimeAction(true);
     while (lcd.hasActions()) {
-        fillSoundBuffer();
-        lcd.nextAction();
+        // clear is special... we want to control the timing...
+        LCDAction action = lcd.nextAction();
+        if (action.clear > 0) {
+            fillSoundBuffer();
+            lcd.setCursor(0, 0);
+            for (int k=0; k<5; k++) {
+                fillSoundBuffer();
+                lcd.print("    ");
+            }
+            lcd.setCursor(0, 1);
+            for (int k=0; k<5; k++) {
+                fillSoundBuffer();
+                lcd.print("    ");
+            }
+            lcd.setCursor(0, 2);
+            for (int k=0; k<5; k++) {
+                fillSoundBuffer();
+                lcd.print("    ");
+            }
+            lcd.setCursor(0, 3);
+            for (int k=0; k<5; k++) {
+                fillSoundBuffer();
+                lcd.print("    ");
+            }
+        } else {
+            fillSoundBuffer();
+            lcd.realTimeSend(action);
+        }
     }
 
     if ((newMicros - tempoMicros) > 10000) {

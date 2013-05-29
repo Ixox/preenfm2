@@ -46,6 +46,7 @@
 struct LCDAction  {
     unsigned char value;
     unsigned char mode;
+    unsigned char clear;
 };
 
 struct pin {
@@ -83,7 +84,7 @@ public:
   void setRealTimeAction(bool realTime) { this->realTimeDisplay = realTime; }
   bool hasActions() { return (lcdActions.getCount()>0); }
   void clearActions() { lcdActions.clear(); }
-  void nextAction();
+  LCDAction nextAction();
 
   // copied from Print
   void write(unsigned char);
@@ -91,11 +92,13 @@ public:
   void print(const char str[]);
   void print(int n);
   void print(float f);
+  void realTimeSend(LCDAction action) { send(action.value, action.mode); };
 
 
 
 private:
   void send(unsigned char, bool);
+  void delay(unsigned char delay);
   void write4bits(unsigned char);
   void pulseEnable(int delay = 29);
 

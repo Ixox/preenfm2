@@ -15,8 +15,8 @@ void delay_us(unsigned int us) {
     USB_OTG_BSP_uDelay (us);
 }
 
-inline void delay(unsigned int us) {
-	delay_us(us * 1000);
+inline void delay_ms(unsigned int ms) {
+	delay_us(ms * 1000);
 }
 
 // When the display powers up, it is configured as follows:
@@ -94,7 +94,7 @@ void LiquidCrystal::begin(unsigned char cols, unsigned char lines) {
 	// datasheet, we need at least 40ms after power rises above 2.7V
 	// before sending commands. Arduino can turn on way befer 4.5V so
 	// we'll wait 50
-	delay(50); // Maple mod
+	delay_ms(50); // Maple mod
 	//delayMicroseconds(50000);
 	// Now we pull both RS and R/W low to begin commands
 	RESET(_rs_pin);
@@ -106,12 +106,12 @@ void LiquidCrystal::begin(unsigned char cols, unsigned char lines) {
 
 	// Send function set command sequence
 	command(LCD_FUNCTIONSET | _displayfunction);
-	delay(5); // Maple mod
+	delay_ms(5); // Maple mod
 	//delayMicroseconds(4500);  // wait more than 4.1ms
 
 	// second try
 	command(LCD_FUNCTIONSET | _displayfunction);
-	delay(1); // Maple mod
+	delay_ms(1); // Maple mod
 	//delayMicroseconds(150);
 
 	// third go
@@ -136,14 +136,24 @@ void LiquidCrystal::begin(unsigned char cols, unsigned char lines) {
 
 /********** high level commands, for the user! */
 void LiquidCrystal::clear() {
-	command(LCD_CLEARDISPLAY); // clear display, set cursor position to zero
-	delay(2); // Maple mod
-	//delayMicroseconds(2000);  // this command takes a long time!
+    if (this->realTimeDisplay) {
+        command(LCD_CLEARDISPLAY); // clear display, set cursor position to zero
+        delay_ms(2);
+        //delayMicroseconds(2000);  // this command takes a long time!
+    } else {
+        if (!lcdActions.isFull()) {
+            struct LCDAction action;
+            action.value = 0;
+            action.mode = 0;
+            action.clear = 1;
+            lcdActions.insert(action);
+        }
+    }
 }
 
 void LiquidCrystal::home() {
 	command(LCD_RETURNHOME); // set cursor position to zero
-	delay(2); // Maple mod
+	delay_ms(2); // Maple mod
 	//delayMicroseconds(2000);  // this command takes a long time!
 }
 
@@ -307,6 +317,7 @@ void LiquidCrystal::print(float f) {
 
 /************ low level data pushing commands **********/
 
+
 // write either command or data, with automatic 4/8-bit selection
 void LiquidCrystal::send(unsigned char value, bool mode) {
 	if (this->realTimeDisplay) {
@@ -321,20 +332,30 @@ void LiquidCrystal::send(unsigned char value, bool mode) {
 		write4bits(value);
 		pulseEnable(37);
 
+
 	} else {
 		if (!lcdActions.isFull()) {
 			struct LCDAction action;
 			action.value = value;
 			action.mode = mode;
+			action.clear = 0;
 			lcdActions.insert(action);
 		}
 	}
 }
 
-void LiquidCrystal::nextAction() {
-	struct LCDAction action = lcdActions.remove();
-	send(action.value, action.mode);
+LCDAction LiquidCrystal::nextAction() {
+    return lcdActions.remove();
 }
+ /*
+	struct  action = lcdActions.remove();
+	if (action.delay > 0) {
+	    delay_ms(action.delay);
+	} else {
+	    send(action.value, action.mode);
+	}
+}
+*/
 
 void LiquidCrystal::pulseEnable(int delay) {
 	// _enable_pin should already be LOW (unless someone else messed
