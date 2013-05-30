@@ -151,6 +151,24 @@ void LiquidCrystal::clear() {
     }
 }
 
+
+void LiquidCrystal::realTimeAction(LCDAction *action, void (*callback)()) {
+    if (action->clear > 0) {
+        for (int i=0; i<4; i++) {
+            callback();
+            setCursor(0, i);
+            for (int k=0; k<5; k++) {
+                callback();
+                print("    ");
+            }
+        }
+    } else {
+        callback();
+        send(action->value, action->mode);
+    }
+}
+
+
 void LiquidCrystal::home() {
 	command(LCD_RETURNHOME); // set cursor position to zero
 	delay_ms(2); // Maple mod
@@ -331,7 +349,6 @@ void LiquidCrystal::send(unsigned char value, bool mode) {
 		pulseEnable(1);
 		write4bits(value);
 		pulseEnable(37);
-
 
 	} else {
 		if (!lcdActions.isFull()) {

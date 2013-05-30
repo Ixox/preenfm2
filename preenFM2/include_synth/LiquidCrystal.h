@@ -92,9 +92,7 @@ public:
   void print(const char str[]);
   void print(int n);
   void print(float f);
-  void realTimeSend(LCDAction action) { send(action.value, action.mode); };
-
-
+  void realTimeAction(LCDAction *action, void (*callback)());
 
 private:
   void send(unsigned char, bool);
