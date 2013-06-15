@@ -311,20 +311,22 @@ void loop(void) {
         ledMicros = newMicros;
 	}
 	*/
-
+/*
 	if (midiNote > 0) {
 		midiNote = 0;
 		midiDecoder.newByte(midiBuff[1]);
         midiDecoder.newByte(midiBuff[2]);
         midiDecoder.newByte(midiBuff[3]);
 	}
+*/
 
-	if (usartBuffer.getCount() > 0) {
-	    midiDecoder.newByte(usartBuffer.remove());
-	}
+    while (midiDecoder.hasMidiToSend()) {
+            fillSoundBuffer();
+            midiDecoder.sendMidiOut();
+    }
 
-
-	while (usartBuffer.getCount() > 0) {
+    while (usartBuffer.getCount() > 0) {
+        fillSoundBuffer();
 		midiDecoder.newByte(usartBuffer.remove());
 	}
 
@@ -332,7 +334,7 @@ void loop(void) {
 	lcd.setRealTimeAction(false);
     if ((newMicros - encoderMicros) > 80) {
         fillSoundBuffer();
-        encoders.checkStatus();
+        encoders.checkStatus(synthState.fullState.midiConfigValue[MIDICONFIG_ENCODER]);
         encoderMicros = newMicros;
     } else if (fmDisplay.needRefresh() && ((mainCpt & 0x3) == 0)) {
         fillSoundBuffer();

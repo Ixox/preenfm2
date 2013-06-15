@@ -48,27 +48,32 @@ Encoders::Encoders() {
 	GPIO_ResetBits(GPIOA, HC165_LOAD);
 
 	/*
-			0: 0000 = 00 ; No change
-			1: 0001 = 01 ; A 0>1, count up
-			2: 0010 = 00; B 0>1, count down
-			3: 0011 = 00 ; Both changed, invalid
-			4: 0100 = 02 ; A 1>0, Down
-			5: 0101 = 00 ; no change
-			6: 0110 = 01 ; Invalid
-			7: 0111 = 00 ;
+			0: 0000 = 00
+			1: 0001 = 00
+			2: 0010 = 00
+			3: 0011 = 00
+			4: 0100 = 02
+			5: 0101 = 00
+			6: 0110 = 00
+			7: 0111 = 01 // 1
 			8: 1000 = 00
 			9: 1001 = 00
 			A: 1010 = 00
-			B: 1011 = 00
-			C: 1100 = 02
+			B: 1011 = 02 // 2
+			C: 1100 = 00
 			D: 1101 = 00
-			E: 1110 = 01
+			E: 1110 = 00
 			F: 1111 = 00
 	*/
+	// PIC11 ... N24
+    int actionToCopy[2][16] = {     /* N12 */{ 0, 0, 0, 0, 2, 0, 0, 1, 1, 0, 0, 2, 0, 0, 0, 0},
+                                    /* N24 */ { 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0}
+    };
 
-    int actionToCopy[] = { 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0};
-    for (int i=0; i<16; i++) {
-    	action[i] = actionToCopy[i];
+    for (int i=0; i<2; i++) {
+        for (int j=0; j<16; j++) {
+            action[i][j] = actionToCopy[i][j];
+        }
     }
 
     firstListener= 0;
@@ -121,8 +126,11 @@ void Encoders::checkSimpleStatus() {
 	}
 }
 
-void Encoders::checkStatus() {
+void Encoders::checkStatus(int encoderType) {
 	int registerBits = getRegisterBits();
+
+	// target the right action row.
+	int *actionEnc = action[encoderType];
 
 	for (int k=0; k<NUMBER_OF_ENCODERS; k++) {
 		bool b1 = ((registerBits & encoderBit1[k]) == 0);
@@ -137,12 +145,12 @@ void Encoders::checkStatus() {
 			encoderState[k] |= 2;
 		}
 
-		if (action[encoderState[k]] == 1 && lastMove[k]!=LAST_MOVE_DEC) {
+		if (actionEnc[encoderState[k]] == 1 && lastMove[k]!=LAST_MOVE_DEC) {
 			encoderTurned(k, tickSpeed[k]);
 			tickSpeed[k] +=3;
 			lastMove[k] = LAST_MOVE_INC;
 			timerAction[k] = 60;
-		} else if (action[encoderState[k]] == 2 && lastMove[k]!=LAST_MOVE_INC) {
+		} else if (actionEnc[encoderState[k]] == 2 && lastMove[k]!=LAST_MOVE_INC) {
 			encoderTurned(k, -tickSpeed[k]);
 			tickSpeed[k] +=3;
 			lastMove[k] = LAST_MOVE_DEC;

@@ -27,6 +27,7 @@ const char* midiReceives[] = { "None", "CC", "NRPN", "CC & NRPN" };
 const char* midiSends [] = { "None", "CC", "NRPN" };
 const char* bootOptions [] = { "Default", "Bank1", "Bank2", "Bank3", "Bank4", "Combo","Internal" };
 const char* synthMode [] = { "Single", "Combo" };
+const char* encoderType [] = { "12", "24" };
 
 const struct MidiConfig midiConfig[]  = {
         {
@@ -108,7 +109,13 @@ const struct MidiConfig midiConfig[]  = {
                 "ECC 4: ",
                 127,
                 0
+        },
+        {
+                "Rot. Enc.: ",
+                2,
+                encoderType
         }
+
 };
 
 const struct MenuItem allMenus[] __attribute__ ((section (".USER_FLASH"))) = {
