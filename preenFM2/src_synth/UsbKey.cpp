@@ -117,8 +117,9 @@ bool UsbKey::isFirmwareFile(char *name)  {
         }
     }
     if (pointPos == -1) return false;
-    if (name[pointPos+1] != 'f' && name[pointPos+1] != 'F') return false;
-    if (name[pointPos+2] != 'w' && name[pointPos+2] != 'W') return false;
+    if (name[pointPos+1] != 'b' && name[pointPos+1] != 'B') return false;
+    if (name[pointPos+2] != 'i' && name[pointPos+2] != 'I') return false;
+    if (name[pointPos+3] != 'n' && name[pointPos+3] != 'N') return false;
 
     return true;
 }

@@ -150,7 +150,7 @@ void BootLoader::process() {
         break;
     case BL_FINISHED:
         this->lcd->setCursor(3,3);
-        this->lcd->print("Please Reboot");
+        this->lcd->print("Please Reboot ");
         while (1);
         break;
     }
