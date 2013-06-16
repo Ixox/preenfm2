@@ -44,7 +44,7 @@ class Encoders {
 public:
 	Encoders();
 	~Encoders();
-	void checkStatus();
+	void checkStatus(int encoderType);
 	void checkSimpleStatus();
 	int getRegisterBits();
 
@@ -75,7 +75,7 @@ public:
 	}
 
 private:
-	int action[16];
+	int action[2][16];
 	int encoderBit1[NUMBER_OF_ENCODERS];
 	int encoderBit2[NUMBER_OF_ENCODERS];
 	int encoderState[NUMBER_OF_ENCODERS];

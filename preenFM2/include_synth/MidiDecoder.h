@@ -133,8 +133,10 @@ public:
     void newTimbre(int timbre) {}
 
     bool hasMidiToSend() {
-        return (midiToSend.getCount()>0 || midiSendState>0);
+        return midiToSend.getCount()>0;
     }
+
+    RingBuffer<MidiEvent, 64> getMidiToSend() { return midiToSend; }
 
 private:
     struct MidiEventState currentEventState;
@@ -143,8 +145,7 @@ private:
     VisualInfo *visualInfo;
     Matrix* matrix;
     Storage* storage;
-    RingBuffer<MidiEvent, 16> midiToSend;
-    int midiSendState;
+    RingBuffer<MidiEvent, 64> midiToSend;
     MidiEvent toSend ;
     struct Nrpn currentNrpn[NUMBER_OF_TIMBRES];
     unsigned char runningStatus;
@@ -156,7 +157,7 @@ private:
 
     // Old ECC values
     unsigned char previousECC[NUMBER_OF_ECC];
-
+    uint8_t usbBuf[3];
 };
 
 #endif /* MIDIDECODER_H_ */

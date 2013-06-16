@@ -39,6 +39,7 @@ enum {
     MIDICONFIG_ECC2,
     MIDICONFIG_ECC3,
     MIDICONFIG_ECC4,
+    MIDICONFIG_ENCODER,
     MIDICONFIG_SIZE,
     // To remove later
 };

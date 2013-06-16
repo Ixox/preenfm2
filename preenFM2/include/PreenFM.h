@@ -20,6 +20,7 @@
 #include "LiquidCrystal.h"
 #include "usb_core.h"
 #include "Synth.h"
+#include "MidiDecoder.h"
 
 #ifndef _PreenFM_H_
 #define _PreenFM_H_
@@ -40,9 +41,12 @@ extern int spiState ;
 
 extern LiquidCrystal lcd;
 extern Synth synth;
+extern MidiDecoder        midiDecoder;
 extern RingBuffer<u8, 200> usartBuffer;
 extern USB_OTG_CORE_HANDLE  usbOTGHost;
 extern USB_OTG_CORE_HANDLE          usbOTGDevice;
+extern USBD_Usr_cb_TypeDef midiStreamingUsrCallback;
+
 
 extern uint32_t cpt1 ;
 extern uint32_t cpt2 ;

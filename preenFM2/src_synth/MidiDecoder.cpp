@@ -15,9 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "stm32f4xx_usart.h"
 #include "MidiDecoder.h"
 #include "usbKey_usr.h"
+#include "usb_dcd.h"
 
+
+extern USB_OTG_CORE_HANDLE          usbOTGDevice;
 
 #include "LiquidCrystal.h"
 extern LiquidCrystal lcd;
@@ -669,6 +673,13 @@ void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
             }
         } else {
             // performance do not send NRPN
+            int valueToSend = 0;
+
+            if (currentrow != ROW_MODULATION) {
+                valueToSend = (newValue - param->minValue) / (param->maxValue - param->minValue) * param->numberOfValues + .1f ;
+            } else {
+                valueToSend = newValue * 100.0f + .1f ;
+            }
             if (currentrow > ROW_PERFORMANCE) {
                 currentrow --;
             } else if (currentrow == ROW_PERFORMANCE) {
@@ -677,7 +688,7 @@ void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
             // MSB / LSB
             int paramNumber =  currentrow * NUMBER_OF_ENCODERS + encoder;
             // Value to send must be positive
-            int valueToSend = newValue - param->minValue;
+
             // NRPN is 4 control change
             cc.value[0] = 99;
             cc.value[1] = (unsigned char)(paramNumber >> 7);
@@ -709,71 +720,106 @@ void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
             }
             break;
         case ROW_MODULATION:
-            // TO DO LATER
-            // We only send even value so that we're not stick we receving the host midi loopback
-            /*
-            if ((newValue & 0x1) >0)
-                break;
-            cc.value[0] = CC_IM1 + encoder;
-            cc.value[1] = newValue >> 1;
+            // CC allows from 0-127 and the value from 0-200
+            // Let's keep the resolution for the 50 first values  than keep half the resolution
+            if (newValue < 1.0f) {
+                cc.value[1] = (newValue * 50.0f + .1f);
+                cc.value[0] = CC_IM1 + encoder;
+            } else  {
+                // We only send even value...
+                if ((((int)(newValue * 10.0f + .1f)) & 0x1) == 0) {
+                    cc.value[1] = 50.0 + (newValue - 1.0f) * 5.0f + .1f;
+                    cc.value[0] = CC_IM1 + encoder;
+                }
+            }
+
             break;
-            */
         case ROW_OSC_MIX1:
             cc.value[0] = CC_MIX1 + encoder;
-            cc.value[1] = newValue;
+            if ((encoder & 0x1) == 0) {
+                // mix
+                cc.value[1] = newValue * 100.0f + .1f;
+            } else {
+                // mix
+                cc.value[1] = (newValue + 1.0f ) * 50.0f + .1f;
+            }
             break;
         case ROW_OSC_MIX2:
             cc.value[0] = CC_MIX3 + encoder;
-            cc.value[1] = newValue;
+            if ((encoder & 0x1) == 0) {
+                // mix
+                cc.value[1] = newValue * 100.0f + .1f;
+            } else {
+                // mix
+                cc.value[1] = (newValue + 1.0f ) * 50.0f + .1f;
+            }
             break;
         case ROW_OSC_FIRST ... ROW_OSC_LAST:
-        if ((((int)newValue) & 0x1) >0)
-            break;
         if (encoder == ENCODER_OSC_FREQ) {
+            if ((((int)(newValue * 24.0f + .1f)) & 0x1) > 0) {
+                break;
+            }
             cc.value[0] = CC_OSC1_FREQ + (currentrow - ROW_OSC_FIRST);
-            cc.value[1] = newValue * .5f + .1f;
+            cc.value[1] = newValue * 12.0f + .1f;
         } else if (encoder == ENCODER_OSC_FTUNE) {
+            if ((((int)(newValue * 100.0f + .1f)) & 0x1) > 0) {
+                break;
+            }
             cc.value[0] = CC_OSC1_DETUNE + (currentrow - ROW_OSC_FIRST);
-            cc.value[1] = newValue * .5f + .1f;
+            cc.value[1] = newValue * 50.0f + .1f;
         }
         break;
         case ROW_ENV_FIRST ... ROW_ENV_LAST:
-        if ((((int)newValue) & 0x1) >0)
-            break;
-        if (encoder == ENCODER_ENV_A) {
+        switch (encoder) {
+        case ENCODER_ENV_A:
+            if ((((int)(newValue * 100.0f + .1f)) & 0x1) > 0) {
+                break;
+            }
             cc.value[0] = CC_ENV1_ATTACK + (currentrow - ROW_ENV_FIRST);
-            cc.value[1] = newValue * .5f + .1f;
-        } else if (encoder == ENCODER_ENV_R) {
+            cc.value[1] = newValue * 50.0f + .1f;
+            break;
+        case ENCODER_ENV_R:
+            if ((((int)(newValue * 50.0f + .1f)) & 0x1) > 0) {
+                break;
+            }
             cc.value[0] = CC_ENV1_RELEASE + (currentrow - ROW_ENV_FIRST);
-            cc.value[1] = newValue * .5f + .1f;
+            cc.value[1] = newValue * 25.0f + .1f;
+            break;
+        default:
+            break;
         }
         break;
         case ROW_MATRIX_FIRST ... ROW_MATRIX6:
-        if ((((int)newValue) & 0x1) >0)
+        if ((((int)((newValue) * 10.0f + 100.1f)) & 0x1) > 0) {
             break;
+        }
         if (encoder == ENCODER_MATRIX_MUL) {
             cc.value[0] = CC_MATRIXROW1_MUL + currentrow - ROW_MATRIX_FIRST;
-            cc.value[1] = newValue * .5f + .1f;
+            cc.value[1] = newValue * 5.0f + 50.1f;
         }
         break;
         case ROW_LFO_FIRST ... ROW_LFOOSC3:
-        if ((((int)newValue) & 0x1) >0)
+        if ((((int)(newValue * 10.0f + .1f)) & 0x1) > 0) {
             break;
+        }
         if (encoder == ENCODER_LFO_FREQ) {
             cc.value[0] = CC_LFO1_FREQ + (currentrow - ROW_LFO_FIRST);
-            cc.value[1] = newValue * .5f + .1f;
+            cc.value[1] = newValue * 5.0f + .1f;
         }
         break;
         case ROW_LFOSEQ1 ... ROW_LFOSEQ2:
         if (encoder == ENCODER_STEPSEQ_BPM) {
-            if ((((int)newValue) & 0x1) >0)
+            if ((((int)(newValue + .1f)) & 0x1) >0)
                 break;
             cc.value[0] = CC_STEPSEQ5_BPM + (currentrow - ROW_LFOSEQ1);
-            cc.value[1] = newValue * .5f + .1f;
+            cc.value[1] = newValue *.5f + .1f;
         }
         else if (encoder == ENCODER_STEPSEQ_GATE) {
+            if ((((int)(newValue * 50.0f + .1f)) & 0x1) > 0) {
+                break;
+            }
             cc.value[0] = CC_STEPSEQ5_GATE + (currentrow - ROW_LFOSEQ1);
-            cc.value[1] = newValue;
+            cc.value[1] = newValue + 25.0f + .1f;
         }
         break;
         }
@@ -784,48 +830,45 @@ void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
     }
 }
 
+
 void MidiDecoder::sendMidiOut() {
-    // TODO
-    /*
-    // new event only if midiSendState = 0;
-    if (midiSendState == 0) {
-        toSend = midiToSend.remove();
-    }
+
+    MidiEvent toSend = midiToSend.remove();
 
     switch (toSend.eventType) {
     case MIDI_NOTE_OFF:
     case MIDI_NOTE_ON:
     case MIDI_CONTROL_CHANGE:
     case MIDI_PITCH_BEND:
-        switch (midiSendState) {
-        case 0:
-            Serial3.write((unsigned char) (toSend.eventType + toSend.channel));
-            midiSendState = 1;
-            break;
-        case 1:
-            Serial3.write((unsigned char) toSend.value[0]);
-            midiSendState = 2;
-            break;
-        case 2:
-            Serial3.write((unsigned char) toSend.value[1]);
-            midiSendState = 0;
-            break;
-        }
-    break;
+
+        USART3->DR = (uint16_t)toSend.eventType + toSend.channel;
+        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+
+        USART3->DR = (uint16_t)toSend.value[0];
+        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+
+        USART3->DR = (uint16_t)toSend.value[1];
+        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+
+        /*
+        usbBuf[0] = toSend.eventType + toSend.channel;
+        usbBuf[1] = toSend.value[0];
+        usbBuf[2] = toSend.value[1];
+
+        ep->type = 2;
+        DCD_EP_Tx(&usbOTGDevice, 0x81, usbBuf, 3);
+        */
+        break;
     case MIDI_AFTER_TOUCH:
     case MIDI_PROGRAM_CHANGE:
-        switch (midiSendState) {
-        case 0:
-            Serial3.write((unsigned char) (toSend.eventType + toSend.channel));
-            midiSendState = 1;
-            break;
-        case 1:
-            Serial3.write((unsigned char) toSend.value[0]);
-            midiSendState = 0;
+//        Serial3.print((unsigned char) (toSend.eventType + toSend.channel));
+  //      Serial3.print((unsigned char) toSend.value[0]);
+        USART3->DR = (uint16_t)toSend.eventType + toSend.channel;
+        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+        USART3->DR = (uint16_t)toSend.value[0];
+        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
         break;
-        }
     }
-    */
 }
 
 

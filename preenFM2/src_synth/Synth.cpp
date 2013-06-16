@@ -471,12 +471,27 @@ void Synth::setNewValueFromMidi(int timbre, int row, int encoder, int newMidiVal
     int index = row * NUMBER_OF_ENCODERS + encoder;
     int oldValue = ((float*)this->timbres[timbre].getParamRaw())[index];
     float newValue = 0;
-    float step = ((param->maxValue - param->minValue) / (param->numberOfValues - 1.0f));
-    if (param->numberOfValues <= 128) {
-        newValue = param->minValue + newMidiValue * step;
-    } else {
-        step *= 2;
-        newValue = param->minValue + newMidiValue * step;
+    switch (row) {
+
+        case ROW_MODULATION:
+            if (newMidiValue <= 50) {
+                newValue = newMidiValue * .02f;
+            } else {
+                newValue = 1.0f + (newMidiValue - 50) * .2f;
+            }
+            break;
+        default:
+        {
+            float step = ((param->maxValue - param->minValue) / (param->numberOfValues - 1.0f));
+            if (param->numberOfValues <= 128) {
+                newValue = param->minValue + newMidiValue * step;
+            } else {
+                step *= 2;
+                newValue = param->minValue + newMidiValue * step;
+            }
+
+        }
+        break;
     }
     this->timbres[timbre].setNewValue(index, param, newValue);
     this->synthState->propagateNewParamValueFromExternal(timbre, row, encoder, param, oldValue, newValue);

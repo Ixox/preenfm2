@@ -56,9 +56,9 @@ struct ParameterRowDisplay engine3ParameterRow = {
         "Mixer" ,
         { "Mix1", "Pan1", "Mix2", "Pan2" },
         {
-                {0, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 {-1, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 {-1, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
         }
 };
@@ -67,9 +67,9 @@ struct ParameterRowDisplay engine4ParameterRow = {
         "Mixer" ,
         { "Mix3", "Pan3", "Mix4", "Pan4" },
         {
-                {0, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 {-1, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 {-1, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
@@ -294,6 +294,7 @@ SynthState::SynthState() {
     fullState.midiConfigValue[MIDICONFIG_ECC2] = 116;
     fullState.midiConfigValue[MIDICONFIG_ECC3] = 117;
     fullState.midiConfigValue[MIDICONFIG_ECC4] = 118;
+    fullState.midiConfigValue[MIDICONFIG_ENCODER] = 0;
     fullState.firstMenu = 0;
 
     for (int k=0; k<12; k++) {
