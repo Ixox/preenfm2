@@ -139,11 +139,15 @@ boot: $(TARGET_BOOTLOADER)
 
 install:all
 	st-flash write $(BIN_FIRMWARE) 0x08040000
-#	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_FIRMWARE) -R -s 0x8040000
+
+installdfu:all
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_FIRMWARE) -R -s 0x8040000
 
 installboot:boot
 	st-flash write $(BIN_BOOTLOADER) 0x08000000
-#	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_BOOTLOADER) -R -s 0x8000000
+
+installbootdfu:boot
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_BOOTLOADER) -R -s 0x8000000
 
 
 $(TARGET_FIRMWARE): $(EXECUTABLE_FIRMWARE)
