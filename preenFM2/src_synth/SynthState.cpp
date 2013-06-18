@@ -74,17 +74,6 @@ struct ParameterRowDisplay engine4ParameterRow = {
         }
 };
 
-struct ParameterRowDisplay performanceRow = {
-        "Performance" ,
-        { "CC1 ", "CC2 ", "CC3 ", "CC4 " },
-        {
-                {0, 127, 128, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 127, 128, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 127, 128, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 127, 128, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder }
-        }
-};
-
 
 const char* oscShapeNames []=  {"sin ", "s^2 ", "1/2s", "spos", "rand", "squa", "saw ", "off "} ;
 /*
@@ -226,7 +215,6 @@ struct AllParameterRowsDisplay allParameterRows = {
                 &engine2ParameterRow,
                 &engine3ParameterRow,
                 &engine4ParameterRow,
-                &performanceRow,
                 &oscParameterRow,
                 &oscParameterRow,
                 &oscParameterRow,

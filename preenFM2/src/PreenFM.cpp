@@ -311,14 +311,6 @@ void loop(void) {
         ledMicros = newMicros;
 	}
 	*/
-/*
-	if (midiNote > 0) {
-		midiNote = 0;
-		midiDecoder.newByte(midiBuff[1]);
-        midiDecoder.newByte(midiBuff[2]);
-        midiDecoder.newByte(midiBuff[3]);
-	}
-*/
 
     while (midiDecoder.hasMidiToSend()) {
             fillSoundBuffer();
@@ -352,15 +344,6 @@ void loop(void) {
          fmDisplay.tempoClick();
          tempoMicros = newMicros;
      }
-    /*
-    if (currentCommand != COMMAND_NONE) {
-        while (currentCommand != COMMAND_NONE) {
-            fillSoundBuffer();
-            USBH_Process(&usbOTGHost, &usbHost);
-        }
-    }
-    */
-
 }
 
 int main(void) {

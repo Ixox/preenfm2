@@ -533,22 +533,6 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
             this->synth->setNewValueFromMidi(timbre, ROW_LFOSEQ2, ENCODER_STEPSEQ_GATE,
                     midiEvent.value[1]);
             break;
-        case CC_MATRIX_SOURCE_CC1:
-            this->synth->getTimbre(timbre)->getMatrix()->setSource(MATRIX_SOURCE_CC1, midiEvent.value[1]);
-            this->synth->setNewValueFromMidi(timbre, ROW_PERFORMANCE, ENCODER_PERFORMANCE_CC1, midiEvent.value[1]);
-            break;
-        case CC_MATRIX_SOURCE_CC2:
-            this->synth->getTimbre(timbre)->getMatrix()->setSource(MATRIX_SOURCE_CC2, midiEvent.value[1]);
-            this->synth->setNewValueFromMidi(timbre, ROW_PERFORMANCE, ENCODER_PERFORMANCE_CC2, midiEvent.value[1]);
-            break;
-        case CC_MATRIX_SOURCE_CC3:
-            this->synth->getTimbre(timbre)->getMatrix()->setSource(MATRIX_SOURCE_CC3, midiEvent.value[1]);
-            this->synth->setNewValueFromMidi(timbre, ROW_PERFORMANCE, ENCODER_PERFORMANCE_CC3, midiEvent.value[1]);
-            break;
-        case CC_MATRIX_SOURCE_CC4:
-            this->synth->getTimbre(timbre)->getMatrix()->setSource(MATRIX_SOURCE_CC4, midiEvent.value[1]);
-            this->synth->setNewValueFromMidi(timbre, ROW_PERFORMANCE, ENCODER_PERFORMANCE_CC4, midiEvent.value[1]);
-            break;
         }
     }
 
@@ -608,9 +592,6 @@ void MidiDecoder::decodeNrpn(int timbre) {
 
 
         if (row < NUMBER_OF_ROWS) {
-            // Performance row do note receive/send nrpn.
-            if (row >= ROW_PERFORMANCE)
-                row ++;
             this->synth->setNewValueFromMidi(timbre, row, encoder, value);
         } else if (index >= 228 && index < 240) {
             this->synthState->params->presetName[index - 228] = (char) value;
@@ -679,11 +660,6 @@ void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
                 valueToSend = (newValue - param->minValue) / (param->maxValue - param->minValue) * param->numberOfValues + .1f ;
             } else {
                 valueToSend = newValue * 100.0f + .1f ;
-            }
-            if (currentrow > ROW_PERFORMANCE) {
-                currentrow --;
-            } else if (currentrow == ROW_PERFORMANCE) {
-                return;
             }
             // MSB / LSB
             int paramNumber =  currentrow * NUMBER_OF_ENCODERS + encoder;

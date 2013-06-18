@@ -389,21 +389,13 @@ void PresetUtil::sendCurrentPatchAsNrpns(int timbre) {
 
     // MSB / LSB
     for (int currentrow = 0; currentrow < NUMBER_OF_ROWS; currentrow++) {
-        if (currentrow == ROW_PERFORMANCE) {
-            continue;
-        }
 
         for (int encoder = 0; encoder < NUMBER_OF_ENCODERS; encoder++) {
 
             struct ParameterDisplay param = allParameterRows.row[currentrow]->params[encoder];
             int newValue = ((float*)&PresetUtil::synthState->params)[currentrow*NUMBER_OF_ENCODERS+encoder];
             int valueToSend = newValue - param.minValue;
-            int paramNumber;
-            if (currentrow > ROW_PERFORMANCE) {
-                paramNumber = (currentrow-1) * NUMBER_OF_ENCODERS+ encoder;
-            } else {
-                paramNumber = currentrow * NUMBER_OF_ENCODERS+ encoder;
-            }
+            int paramNumber = currentrow * NUMBER_OF_ENCODERS+ encoder;
             // NRPN is 4 control change
             cc.value[0] = 99;
             cc.value[1] = (unsigned char)(paramNumber >> 7);

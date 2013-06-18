@@ -337,8 +337,6 @@ void Synth::newParamValue(int timbre, SynthParamType type, int currentRow, int e
                 }
 
             }
-        } else if (currentRow == ROW_PERFORMANCE) {
-            timbres[timbre].matrix.setSource((enum SourceEnum)(MATRIX_SOURCE_CC1 + encoder), newValue);
         }
     } else if (type == SYNTH_PARAM_TYPE_ENV) {
         switch (currentRow) {
