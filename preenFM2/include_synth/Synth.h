@@ -138,7 +138,7 @@ public:
         return &timbres[timbre];
     }
 
-    void setNewValueFromMidi(int timbre, int row, int encoder, int newMidiValue);
+    void setNewValueFromMidi(int timbre, int row, int encoder, float newValue);
 
 
 

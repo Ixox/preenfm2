@@ -346,192 +346,104 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
                     midiEvent.value[1]);
             break;
         case CC_IM1:
-            this->synth->setNewValueFromMidi(timbre, ROW_MODULATION, ENCODER_ENGINE_IM1,
-                    midiEvent.value[1]);
-            break;
         case CC_IM2:
-            this->synth->setNewValueFromMidi(timbre, ROW_MODULATION, ENCODER_ENGINE_IM2,
-                    midiEvent.value[1]);
-            break;
         case CC_IM3:
-            this->synth->setNewValueFromMidi(timbre, ROW_MODULATION, ENCODER_ENGINE_IM3,
-                    midiEvent.value[1]);
-            break;
         case CC_IM4:
-            this->synth->setNewValueFromMidi(timbre, ROW_MODULATION, ENCODER_ENGINE_IM4,
-                    midiEvent.value[1]);
+            if (midiEvent.value[1] <= 50) {
+                // cc.value[1] = (newValue * 50.0f + .1f);
+                this->synth->setNewValueFromMidi(timbre, ROW_MODULATION, ENCODER_ENGINE_IM1  + midiEvent.value[0] - CC_IM1,
+                        (float)midiEvent.value[1] * .02f );
+            } else {
+                // cc.value[1] = 50.0 + (newValue - 1.0f) * 5.0f + .1f;
+                this->synth->setNewValueFromMidi(timbre, ROW_MODULATION, ENCODER_ENGINE_IM1  + midiEvent.value[0] - CC_IM1,
+                        (float)1.0f + (midiEvent.value[1] - 50.0f) * .2f );
+            }
             break;
         case CC_MIX1:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX1, ENCODER_ENGINE_MIX1,
-                    midiEvent.value[1]);
-            break;
         case CC_MIX2:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX1, ENCODER_ENGINE_MIX2,
-                    midiEvent.value[1]);
+            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX1, ENCODER_ENGINE_MIX1 + midiEvent.value[0] - CC_MIX1,
+                    (float)midiEvent.value[1] * .01f);
             break;
         case CC_MIX3:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX2, ENCODER_ENGINE_MIX3,
-                    midiEvent.value[1]);
+            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX2, ENCODER_ENGINE_MIX1,
+                    (float)midiEvent.value[1] * .01f);
             break;
         case CC_PAN1:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX1, ENCODER_ENGINE_PAN1,
-                    midiEvent.value[1]);
-            break;
         case CC_PAN2:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX1, ENCODER_ENGINE_PAN2,
-                    midiEvent.value[1]);
+            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX1, ENCODER_ENGINE_PAN1 + midiEvent.value[0] - CC_PAN1,
+                    (float)midiEvent.value[1] * .02f - 1.0f);
             break;
         case CC_PAN3:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX2, ENCODER_ENGINE_PAN3,
-                    midiEvent.value[1]);
+            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX2, ENCODER_ENGINE_PAN1,
+                    (float)midiEvent.value[1] * .02f - 1.0f);
             break;
         case CC_OSC1_FREQ:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC1, ENCODER_OSC_FREQ,
-                    midiEvent.value[1]);
-            break;
         case CC_OSC2_FREQ:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC2, ENCODER_OSC_FREQ,
-                    midiEvent.value[1]);
-            break;
         case CC_OSC3_FREQ:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC3, ENCODER_OSC_FREQ,
-                    midiEvent.value[1]);
-            break;
         case CC_OSC4_FREQ:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC4, ENCODER_OSC_FREQ,
-                    midiEvent.value[1]);
-            break;
         case CC_OSC5_FREQ:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC5, ENCODER_OSC_FREQ,
-                    midiEvent.value[1]);
-            break;
         case CC_OSC6_FREQ:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC6, ENCODER_OSC_FREQ,
-                    midiEvent.value[1]);
+            this->synth->setNewValueFromMidi(timbre, ROW_OSC1 + midiEvent.value[0] - CC_OSC1_FREQ , ENCODER_OSC_FREQ,
+                    (float) midiEvent.value[1] / 12.0f);
             break;
         case CC_OSC1_DETUNE:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC1, ENCODER_OSC_FTUNE,
-                    midiEvent.value[1]);
-            break;
         case CC_OSC2_DETUNE:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC2, ENCODER_OSC_FTUNE,
-                    midiEvent.value[1]);
-            break;
         case CC_OSC3_DETUNE:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC3, ENCODER_OSC_FTUNE,
-                    midiEvent.value[1]);
-            break;
         case CC_OSC4_DETUNE:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC4, ENCODER_OSC_FTUNE,
-                    midiEvent.value[1]);
-            break;
         case CC_OSC5_DETUNE:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC5, ENCODER_OSC_FTUNE,
-                    midiEvent.value[1]);
-            break;
         case CC_OSC6_DETUNE:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC6, ENCODER_OSC_FTUNE,
-                    midiEvent.value[1]);
+            //             cc.value[1] = newValue * 50.0f + .1f;
+            this->synth->setNewValueFromMidi(timbre, ROW_OSC1  + midiEvent.value[0] - CC_OSC1_FREQ, ENCODER_OSC_FTUNE,
+                    (float) midiEvent.value[1] * .02f - 1.0f);
             break;
         case CC_ENV1_ATTACK:
-            this->synth->setNewValueFromMidi(timbre, ROW_ENV1, ENCODER_ENV_A,
-                    midiEvent.value[1]);
+        case CC_ENV2_ATTACK:
+        case CC_ENV3_ATTACK:
+        case CC_ENV4_ATTACK:
+        case CC_ENV5_ATTACK:
+        case CC_ENV6_ATTACK:
+            //            cc.value[1] = newValue * 50.0f + .1f;
+            this->synth->setNewValueFromMidi(timbre, ROW_ENV1  + midiEvent.value[0] - CC_ENV1_ATTACK  , ENCODER_ENV_A,
+                    (float)midiEvent.value[1] * .02f);
             break;
         case CC_ENV1_RELEASE:
-            this->synth->setNewValueFromMidi(timbre, ROW_ENV1, ENCODER_ENV_R,
-                    midiEvent.value[1]);
-            break;
-        case CC_ENV2_ATTACK:
-            this->synth->setNewValueFromMidi(timbre, ROW_ENV2, ENCODER_ENV_A,
-                    midiEvent.value[1]);
-            break;
         case CC_ENV2_RELEASE:
-            this->synth->setNewValueFromMidi(timbre, ROW_ENV2, ENCODER_ENV_R,
-                    midiEvent.value[1]);
-            break;
-        case CC_ENV3_ATTACK:
-            this->synth->setNewValueFromMidi(timbre, ROW_ENV3, ENCODER_ENV_A,
-                    midiEvent.value[1]);
-            break;
         case CC_ENV3_RELEASE:
-            this->synth->setNewValueFromMidi(timbre, ROW_ENV3, ENCODER_ENV_R,
-                    midiEvent.value[1]);
-            break;
-        case CC_ENV4_ATTACK:
-            this->synth->setNewValueFromMidi(timbre, ROW_ENV4, ENCODER_ENV_A,
-                    midiEvent.value[1]);
-            break;
         case CC_ENV4_RELEASE:
-            this->synth->setNewValueFromMidi(timbre, ROW_ENV4, ENCODER_ENV_R,
-                    midiEvent.value[1]);
-            break;
-        case CC_ENV5_ATTACK:
-            this->synth->setNewValueFromMidi(timbre, ROW_ENV5, ENCODER_ENV_A,
-                    midiEvent.value[1]);
-            break;
         case CC_ENV5_RELEASE:
-            this->synth->setNewValueFromMidi(timbre, ROW_ENV5, ENCODER_ENV_R,
-                    midiEvent.value[1]);
-            break;
-        case CC_ENV6_ATTACK:
-            this->synth->setNewValueFromMidi(timbre, ROW_ENV6, ENCODER_ENV_A,
-                    midiEvent.value[1]);
-            break;
         case CC_ENV6_RELEASE:
-            this->synth->setNewValueFromMidi(timbre, ROW_ENV6, ENCODER_ENV_R,
-                    midiEvent.value[1]);
+            //            cc.value[1] = newValue * 25.0f + .1f;
+            this->synth->setNewValueFromMidi(timbre, ROW_ENV1  + midiEvent.value[0] - CC_ENV1_RELEASE, ENCODER_ENV_R,
+                    (float)midiEvent.value[1] * .04f);
             break;
         case CC_MATRIXROW1_MUL:
-            this->synth->setNewValueFromMidi(timbre, ROW_MATRIX1, ENCODER_MATRIX_MUL,
-                    midiEvent.value[1]);
-            break;
         case CC_MATRIXROW2_MUL:
-            this->synth->setNewValueFromMidi(timbre, ROW_MATRIX2, ENCODER_MATRIX_MUL,
-                    midiEvent.value[1]);
-            break;
         case CC_MATRIXROW3_MUL:
-            this->synth->setNewValueFromMidi(timbre, ROW_MATRIX3, ENCODER_MATRIX_MUL,
-                    midiEvent.value[1]);
-            break;
         case CC_MATRIXROW4_MUL:
-            this->synth->setNewValueFromMidi(timbre, ROW_MATRIX4, ENCODER_MATRIX_MUL,
-                    midiEvent.value[1]);
-            break;
         case CC_MATRIXROW5_MUL:
-            this->synth->setNewValueFromMidi(timbre, ROW_MATRIX5, ENCODER_MATRIX_MUL,
-                    midiEvent.value[1]);
-            break;
         case CC_MATRIXROW6_MUL:
-            this->synth->setNewValueFromMidi(timbre, ROW_MATRIX6, ENCODER_MATRIX_MUL,
-                    midiEvent.value[1]);
+            // cc.value[1] = newValue * 5.0f + 50.1f;
+            this->synth->setNewValueFromMidi(timbre, ROW_MATRIX1 + midiEvent.value[0] - CC_MATRIXROW1_MUL, ENCODER_MATRIX_MUL,
+                    (float) midiEvent.value[1] * .2f - 10.0f);
             break;
         case CC_LFO1_FREQ:
-            this->synth->setNewValueFromMidi(timbre, ROW_LFOOSC1, ENCODER_LFO_FREQ,
-                    midiEvent.value[1]);
-            break;
         case CC_LFO2_FREQ:
-            this->synth->setNewValueFromMidi(timbre, ROW_LFOOSC2, ENCODER_LFO_FREQ,
-                    midiEvent.value[1]);
-            break;
         case CC_LFO3_FREQ:
-            this->synth->setNewValueFromMidi(timbre, ROW_LFOOSC3, ENCODER_LFO_FREQ,
-                    midiEvent.value[1]);
+            // cc.value[1] = newValue * 5.0f + .1f;
+            this->synth->setNewValueFromMidi(timbre, ROW_LFOOSC1 + midiEvent.value[0] - CC_LFO1_FREQ, ENCODER_LFO_FREQ,
+                    (float) midiEvent.value[1] *.2f);
             break;
         case CC_STEPSEQ5_BPM:
-            this->synth->setNewValueFromMidi(timbre, ROW_LFOENV1, ENCODER_STEPSEQ_BPM,
-                    midiEvent.value[1]);
-            break;
         case CC_STEOSEQ6_BPM:
-            this->synth->setNewValueFromMidi(timbre, ROW_LFOENV2, ENCODER_STEPSEQ_BPM,
-                    midiEvent.value[1]);
+            // cc.value[1] = newValue *.5f + .1f;
+            this->synth->setNewValueFromMidi(timbre, ROW_LFOSEQ1  + midiEvent.value[0] - CC_STEPSEQ5_BPM, ENCODER_STEPSEQ_BPM,
+                    (float)midiEvent.value[1] * 2.0f);
             break;
         case CC_STEPSEQ5_GATE:
-            this->synth->setNewValueFromMidi(timbre, ROW_LFOSEQ1, ENCODER_STEPSEQ_GATE,
-                    midiEvent.value[1]);
-            break;
         case CC_STEPSEQ6_GATE:
-            this->synth->setNewValueFromMidi(timbre, ROW_LFOSEQ2, ENCODER_STEPSEQ_GATE,
-                    midiEvent.value[1]);
+            // cc.value[1] = newValue + 25.0f + .1f;
+            this->synth->setNewValueFromMidi(timbre, ROW_LFOSEQ1 + midiEvent.value[0] - CC_STEPSEQ5_GATE, ENCODER_STEPSEQ_GATE,
+                    (float)midiEvent.value[1] * .04f);
             break;
         }
     }
@@ -766,19 +678,19 @@ void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
         }
         break;
         case ROW_MATRIX_FIRST ... ROW_MATRIX6:
-        if ((((int)((newValue) * 10.0f + 100.1f)) & 0x1) > 0) {
-            break;
-        }
         if (encoder == ENCODER_MATRIX_MUL) {
+            if ((((int)((newValue) * 10.0f + 100.1f)) & 0x1) > 0) {
+                break;
+            }
             cc.value[0] = CC_MATRIXROW1_MUL + currentrow - ROW_MATRIX_FIRST;
             cc.value[1] = newValue * 5.0f + 50.1f;
         }
         break;
         case ROW_LFO_FIRST ... ROW_LFOOSC3:
-        if ((((int)(newValue * 10.0f + .1f)) & 0x1) > 0) {
-            break;
-        }
         if (encoder == ENCODER_LFO_FREQ) {
+            if ((((int)(newValue * 10.0f + .1f)) & 0x1) > 0) {
+                break;
+            }
             cc.value[0] = CC_LFO1_FREQ + (currentrow - ROW_LFO_FIRST);
             cc.value[1] = newValue * 5.0f + .1f;
         }
