@@ -498,12 +498,22 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
 void MidiDecoder::decodeNrpn(int timbre) {
     if (this->currentNrpn[timbre].paramMSB < 2) {
         unsigned int index = (this->currentNrpn[timbre].paramMSB << 7) + this->currentNrpn[timbre].paramLSB;
-        unsigned int value = (this->currentNrpn[timbre].valueMSB << 7) + this->currentNrpn[timbre].valueLSB;
+        float value = (this->currentNrpn[timbre].valueMSB << 7) + this->currentNrpn[timbre].valueLSB;
         unsigned int row = index / NUMBER_OF_ENCODERS;
         unsigned int encoder = index % NUMBER_OF_ENCODERS;
 
 
         if (row < NUMBER_OF_ROWS) {
+            if (row != ROW_MODULATION) {
+                // value = (newValue - param->minValue) / (param->maxValue - param->minValue) * param->numberOfValues + .1f ;
+                struct ParameterDisplay* param = &(allParameterRows.row[row]->params[encoder]);
+                value =  param->minValue + value / (param->numberOfValues - 1.0f) * (param->maxValue - param->minValue);
+            } else {
+                value = value * .01f;
+            }
+
+
+
             this->synth->setNewValueFromMidi(timbre, row, encoder, value);
         } else if (index >= 228 && index < 240) {
             this->synthState->params->presetName[index - 228] = (char) value;
@@ -569,7 +579,7 @@ void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
             int valueToSend = 0;
 
             if (currentrow != ROW_MODULATION) {
-                valueToSend = (newValue - param->minValue) / (param->maxValue - param->minValue) * param->numberOfValues + .1f ;
+                valueToSend = (param->numberOfValues - 1.0f) * (newValue - param->minValue) / (param->maxValue - param->minValue) + .1f ;
             } else {
                 valueToSend = newValue * 100.0f + .1f ;
             }
