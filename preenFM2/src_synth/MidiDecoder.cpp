@@ -732,6 +732,7 @@ void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
 void MidiDecoder::sendMidiOut() {
 
     MidiEvent toSend = midiToSend.remove();
+    USB_OTG_EP *ep2 = &usbOTGDevice.dev.in_ep[1];
 
     switch (toSend.eventType) {
     case MIDI_NOTE_OFF:
@@ -748,14 +749,16 @@ void MidiDecoder::sendMidiOut() {
         USART3->DR = (uint16_t)toSend.value[1];
         while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
 
-        /*
-        usbBuf[0] = toSend.eventType + toSend.channel;
-        usbBuf[1] = toSend.value[0];
-        usbBuf[2] = toSend.value[1];
+        if (usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
+            // usbBuf[0] = [number of cable on 4 bits] [event type on 4 bites]
+            usbBuf[0] = 0x00  | (toSend.eventType >> 4);
+            usbBuf[1] = toSend.eventType + toSend.channel;
+            usbBuf[2] = toSend.value[0];
+            usbBuf[3] = toSend.value[1];
 
-        ep->type = 2;
-        DCD_EP_Tx(&usbOTGDevice, 0x81, usbBuf, 3);
-        */
+            DCD_EP_Tx(&usbOTGDevice, 0x81, usbBuf, 4);
+        }
+
         break;
     case MIDI_AFTER_TOUCH:
     case MIDI_PROGRAM_CHANGE:

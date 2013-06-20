@@ -1,24 +1,21 @@
 TODO (temporary list, grow over time) : 
-. MIDI CC
-. MIDI nrpn
-. USB midi... to finish
 . Play note in combo (spec)
 
-
-Eventually
-. Variable instance + m... + get rid of this->
 
 TO check hardware :
 . volume Pot make noise
 
 
 OK A TESTER  
-. Bug when voice = 0... freeze
+. USB midi... to finish
 . env attack as target...
 . env all release as target.
 
 
 DONE:
+. Bug when voice = 0... freeze
+. MIDI CC
+. MIDI nrpn
 . No more click during lcd.clear()
 . LFO Osc midi clock OK
 . Combo name KO... saved "com 0" and after reboot see : "com 0##G"...

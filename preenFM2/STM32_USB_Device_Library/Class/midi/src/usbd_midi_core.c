@@ -227,39 +227,15 @@ static uint8_t usbd_midi_EP0_RxReady(void *pdev) {
 uint8_t usbBuf[3];
 static int dataInCpt = 0;
 static uint8_t usbd_midi_DataIn(void *pdev, uint8_t epnum) {
-    lcd.setCursor(16,1);
-    lcd.print(dataInCpt++);
-/*
-    MidiEvent toSend = midiDecoder.getMidiToSend().remove();
-
-    switch (toSend.eventType) {
-    case MIDI_NOTE_OFF:
-    case MIDI_NOTE_ON:
-    case MIDI_CONTROL_CHANGE:
-    case MIDI_PITCH_BEND:
-        usbBuf[0] = toSend.eventType + toSend.channel;
-        usbBuf[1] = toSend.value[0];
-        usbBuf[2] = toSend.value[1];
-        lcd.setCursor(16,2);
-        lcd.print(usbBuf[2]);
-        DCD_EP_Tx((USB_OTG_CORE_HANDLE *)pdev, 0x2, usbBuf, 3);
-        break;
-    case MIDI_AFTER_TOUCH:
-    case MIDI_PROGRAM_CHANGE:
-//        Serial3.print((unsigned char) (toSend.eventType + toSend.channel));
-  //      Serial3.print((unsigned char) toSend.value[0]);
-        break;
-    }
-*/
+    DCD_EP_Flush((USB_OTG_CORE_HANDLE *)pdev, 0x81);
+    return USBD_OK;
 	return USBD_OK;
 }
 static uint8_t usbd_midi_DataOut(void *pdev, uint8_t epnum) {
-
-	if ((midiBuff[0] & 0xf) == 0x9 || (midiBuff[0] & 0xf) == 0x8) {
+	if ((midiBuff[0] & 0xf) == 0x9 || (midiBuff[0] & 0xf) == 0x8  || (midiBuff[0] & 0xf) == 0xb || (midiBuff[0] & 0xf) == 0xe) {
 	    usartBuffer.insert(midiBuff[1]);
 	    usartBuffer.insert(midiBuff[2]);
 	    usartBuffer.insert(midiBuff[3]);
-
 	}
 
 	// Prepare for next midi information

@@ -153,7 +153,7 @@ private:
 
     // Old ECC values
     unsigned char previousECC[NUMBER_OF_ECC];
-    uint8_t usbBuf[3];
+    uint8_t usbBuf[4];
 };
 
 #endif /* MIDIDECODER_H_ */
