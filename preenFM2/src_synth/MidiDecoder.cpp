@@ -274,6 +274,7 @@ void MidiDecoder::midiEventReceived(MidiEvent midiEvent) {
         }
         break;
     case MIDI_CONTROL_CHANGE:
+
         for (int tk = 0; tk< NUMBER_OF_TIMBRES; tk++ ) {
             if (((timbreBitField >> tk) & 0x1) == 0) continue;
             controlChange(tk, midiEvent);

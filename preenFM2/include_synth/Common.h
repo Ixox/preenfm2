@@ -87,13 +87,6 @@ struct OscillatorParams {
     float  detune;
 };
 
-struct PerformanceParams {
-    float cc1;
-    float cc2;
-    float cc3;
-    float cc4;
-};
-
 struct MatrixRowParams {
     float source;
     float mul;
@@ -126,7 +119,6 @@ struct OneSynthParams {
     struct Engine2Params engine2;
     struct Engine3Params engine3;
     struct Engine4Params engine4;
-    struct PerformanceParams engine5;
     struct OscillatorParams osc1;
     struct OscillatorParams osc2;
     struct OscillatorParams osc3;

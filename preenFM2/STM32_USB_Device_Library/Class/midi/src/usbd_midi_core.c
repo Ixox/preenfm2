@@ -232,6 +232,8 @@ static uint8_t usbd_midi_DataIn(void *pdev, uint8_t epnum) {
 	return USBD_OK;
 }
 static uint8_t usbd_midi_DataOut(void *pdev, uint8_t epnum) {
+
+
 	if ((midiBuff[0] & 0xf) == 0x9 || (midiBuff[0] & 0xf) == 0x8  || (midiBuff[0] & 0xf) == 0xb || (midiBuff[0] & 0xf) == 0xe) {
 	    usartBuffer.insert(midiBuff[1]);
 	    usartBuffer.insert(midiBuff[2]);

@@ -27,7 +27,6 @@ const struct OneSynthParams presets[]  = {
                 { 1.5,1.9,1.8,0.7} ,
                 { 1, 0, 1, 0} ,
                 { 1, 0, 1, 0} ,
-                { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SAW,  OSC_FT_KEYBOARD , 1.0, 0} ,
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , .5, 0} ,
@@ -74,7 +73,6 @@ const struct OneSynthParams presets[]  = {
                 { 1.0,1.0,1.0,0.7} ,
                 { 1, 0, 1, 0} ,
                 { 1, 0, 1, 0} ,
-                { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SAW,  OSC_FT_KEYBOARD , 1.0, 0} ,
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , .5, 0} ,
@@ -120,7 +118,6 @@ const struct OneSynthParams presets[]  = {
                 { .2, .3, .4, .1} ,
                 { 1,-1, 1, 0} ,
                 { 1, 0, 1, 0} ,
-                { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SQUARE,  OSC_FT_KEYBOARD , 2, 0} ,
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , .5, 0} ,
@@ -167,7 +164,6 @@ const struct OneSynthParams presets[]  = {
                 { 1,0,0,0} ,
                 { 1, 0, 1, 0} ,
                 { 1, 0, 1, 0} ,
-                { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN,  OSC_FT_KEYBOARD , 2, 0} ,
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 1, 0} ,
@@ -215,7 +211,6 @@ const struct OneSynthParams presets[]  = {
                 { 16, 21, 0, 0} ,
                 { 128, 128, 128, 0} ,
                 { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 16, 0} ,
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 8, 0} ,
@@ -261,7 +256,6 @@ const struct OneSynthParams presets[]  = {
                 { ALGO1, 0, 4, 0} ,
                 { 20, 28, 0, 0} ,
                 { 128, 128, 128, 0} ,
-                { 0, 0, 0, 0} ,
                 { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 16, 0} ,
@@ -310,7 +304,6 @@ const struct OneSynthParams presets[]  = {
                 { 15, 3, 0, 0} ,
                 { 128, 128, 128, 0} ,
                 { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 16, 0} ,
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 32, 0} ,
@@ -356,7 +349,6 @@ const struct OneSynthParams presets[]  = {
                 { ALGO8, 14, 2, 0} ,
                 { 32, 44, 156, 56} ,
                 { 128, 128, 128, 0} ,
-                { 0, 0, 0, 0} ,
                 { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 32, 0} ,
@@ -404,7 +396,6 @@ const struct OneSynthParams presets[]  = {
                 { 16, 16, 0, 0} ,
                 { 128, 128, 128, 0} ,
                 { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 16, 0} ,
                 { OSC_SHAPE_SAW, OSC_FT_KEYBOARD , 8, 0} ,
@@ -450,7 +441,6 @@ const struct OneSynthParams presets[]  = {
                 { ALGO1, 0, 4, 7} ,
                 { 0, 3, 0, 0} ,
                 { 114, 128, 128, 0} ,
-                { 0, 0, 0, 0} ,
                 { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SAW, OSC_FT_KEYBOARD , 16, 0} ,
@@ -498,7 +488,6 @@ const struct OneSynthParams presets[]  = {
                 { 8, 13, 19, 0} ,
                 { 128, 128, 128, 0} ,
                 { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 8, 0} ,
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 16, 0} ,
@@ -544,7 +533,6 @@ const struct OneSynthParams presets[]  = {
                 { ALGO4, 8, 3, 0} ,
                 { 44, 89, 31, 7} ,
                 { 128, 128, 128, 0} ,
-                { 0, 0, 0, 0} ,
                 { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 16, 0} ,
@@ -592,7 +580,6 @@ const struct OneSynthParams presets[]  = {
                 { 16, 36, 0, 81} ,
                 { 128, 128, 128, 0} ,
                 { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 16, 0} ,
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 8, 0} ,
@@ -638,7 +625,6 @@ const struct OneSynthParams presets[]  = {
                 { ALGO1, 14, 4, 0} ,
                 { 27, 28, 0, 0} ,
                 { 128, 128, 128, 0} ,
-                { 0, 0, 0, 0} ,
                 { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 16, 0} ,
@@ -686,7 +672,6 @@ const struct OneSynthParams presets[]  = {
                 { 19, 42, 84, 0} ,
                 { 96, 128, 87, 30} ,
                 { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN2, OSC_FT_KEYBOARD , 64, 0} ,
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 8, 0} ,
@@ -732,7 +717,6 @@ const struct OneSynthParams presets[]  = {
                 { ALGO7, 14, 2, 0} ,
                 { 53, 64, 41, 0} ,
                 { 88, 128, 113, 0} ,
-                { 0, 0, 0, 0} ,
                 { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 24, 0} ,
@@ -780,7 +764,6 @@ const struct OneSynthParams presets[]  = {
                 { 0, 36, 0, 0} ,
                 { 128, 128, 128, 0} ,
                 { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN3, OSC_FT_KEYBOARD , 16, 0} ,
                 { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 8, 0} ,
@@ -826,7 +809,6 @@ const struct OneSynthParams presets[]  = {
                 { ALGO1, 8, 4, 6} ,
                 { 7, 21, 19, 0} ,
                 { 128, 128, 128, 0} ,
-                { 0, 0, 0, 0} ,
                 { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN4, OSC_FT_KEYBOARD , 16, 0} ,
@@ -874,7 +856,6 @@ const struct OneSynthParams presets[]  = {
                 { 22, 52, 57, 0} ,
                 { 128, 88, 128, 0} ,
                 { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN4, OSC_FT_KEYBOARD , 8, 0} ,
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 23, 0} ,
@@ -920,7 +901,6 @@ const struct OneSynthParams presets[]  = {
                 { ALGO1, 14, 4, 6} ,
                 { 16, 0, 47, 0} ,
                 { 128, 128, 128, 0} ,
-                { 0, 0, 0, 0} ,
                 { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 16, 0} ,
@@ -969,7 +949,6 @@ const struct OneSynthParams presets[]  = {
                 { 82, 0, 116, 197} ,
                 { 128, 128, 128, 0} ,
                 { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SIN, OSC_FT_FIXE, 1, -28} ,
                 { OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , 16, 0} ,
@@ -1010,7 +989,6 @@ const struct OneSynthParams presets[]  = {
                 "Drum 0"
         },
         {
-                { 0,0,0,0} ,
                 { 0,0,0,0} ,
                 { 0,0,0,0} ,
                 { 0,0,0,0} ,

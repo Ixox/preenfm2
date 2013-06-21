@@ -41,7 +41,6 @@ OneSynthParams synthParamsEmpty  =  {
                 { 1.5,1.9,1.8,0.7} ,
                 { 1, 0, 1, 0} ,
                 { 1, 0, 1, 0} ,
-                { 0, 0, 0, 0} ,
                 // Oscillator
                 { OSC_SHAPE_SAW,  OSC_FT_KEYBOARD , 1.0, 0} ,
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , .5, 0} ,
