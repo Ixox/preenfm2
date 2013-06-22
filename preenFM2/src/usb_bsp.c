@@ -203,7 +203,7 @@ void USB_OTG_BSP_TimeInit ( void )
   * @param  usec : Value of delay required in micro sec
   * @retval None
   */
-#define STM32_TICKS_PER_US          168
+#define STM32_TICKS_PER_US          500
 #define STM32_DELAY_US_MULT         (STM32_TICKS_PER_US/3)
 
 void USB_OTG_BSP_uDelay (const uint32_t usec) {
