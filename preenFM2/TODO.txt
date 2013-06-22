@@ -1,6 +1,7 @@
 TODO (temporary list, grow over time) : 
 . Play note in combo (spec)
-
+. Preset modified per timbre
+. note off when voice=1
 
 TO check hardware :
 . volume Pot make noise

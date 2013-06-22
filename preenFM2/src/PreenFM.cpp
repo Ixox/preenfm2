@@ -54,9 +54,11 @@ struct sampleForSPI samples __attribute__ ((section(".ccmnoload"))) ;
 int spiState __attribute__ ((section(".ccm"))) = 0;
 
 
-inline void fillSoundBuffer() {
+void fillSoundBuffer() {
+    int cpt = 0;
     if (synth.getSampleCount() < 192) {
-        synth.buildNewSampleBlock();
+        while (synth.getSampleCount() < 128 && cpt++<20)
+            synth.buildNewSampleBlock();
     }
 }
 
@@ -334,6 +336,12 @@ void loop(void) {
     }
     lcd.setRealTimeAction(true);
     while (lcd.hasActions()) {
+        if (usartBuffer.getCount() > 100) {
+            while (usartBuffer.getCount() > 0) {
+                fillSoundBuffer();
+                midiDecoder.newByte(usartBuffer.remove());
+            }
+        }
         LCDAction action = lcd.nextAction();
         lcd.realTimeAction(&action, fillSoundBuffer);
     }

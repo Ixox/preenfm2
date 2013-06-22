@@ -5,14 +5,23 @@
 // Delay micro seconds for STM32F4 at 168Mhz
 // Comes from libmaple...
 
-//#define STM32_TICKS_PER_US          168
-#define STM32_TICKS_PER_US          200
+#define STM32_TICKS_PER_US          168
+// #define STM32_TICKS_PER_US          200
 #define STM32_DELAY_US_MULT         (STM32_TICKS_PER_US/3)
 
 extern void USB_OTG_BSP_uDelay (const uint32_t usec) ;
 
-void delay_us(unsigned int us) {
-    USB_OTG_BSP_uDelay (us);
+void delay_us(unsigned int usec) {
+    uint32_t us = usec * STM32_DELAY_US_MULT;
+
+    /* fudge for function call overhead  */
+    //us--;
+    asm volatile("   mov r0, %[us]          \n\t"
+                 "1: subs r0, #1            \n\t"
+                 "   bhi 1b                 \n\t"
+                 :
+                 : [us] "r" (us)
+                 : "r0");
 }
 
 inline void delay_ms(unsigned int ms) {
@@ -137,17 +146,15 @@ void LiquidCrystal::begin(unsigned char cols, unsigned char lines) {
 /********** high level commands, for the user! */
 void LiquidCrystal::clear() {
     if (this->realTimeDisplay) {
-        command(LCD_CLEARDISPLAY); // clear display, set cursor position to zero
-        delay_ms(2);
+       command(LCD_CLEARDISPLAY); // clear display, set cursor position to zero
+       delay_ms(2);
         //delayMicroseconds(2000);  // this command takes a long time!
     } else {
-        if (!lcdActions.isFull()) {
-            struct LCDAction action;
-            action.value = 0;
-            action.mode = 0;
-            action.clear = 1;
-            lcdActions.insert(action);
-        }
+        struct LCDAction action;
+        action.value = 0;
+        action.mode = 0;
+        action.clear = 1;
+        lcdActions.insert(action);
     }
 }
 
@@ -157,9 +164,9 @@ void LiquidCrystal::realTimeAction(LCDAction *action, void (*callback)()) {
         for (int i=0; i<4; i++) {
             callback();
             setCursor(0, i);
-            for (int k=0; k<5; k++) {
+            for (int k=0; k<20; k++) {
                 callback();
-                print("    ");
+                print(' ');
             }
         }
     } else {
@@ -348,7 +355,7 @@ void LiquidCrystal::send(unsigned char value, bool mode) {
 		write4bits(value >> 4);
 		pulseEnable(1);
 		write4bits(value);
-		pulseEnable(37);
+		pulseEnable(32);
 
 	} else {
 		if (!lcdActions.isFull()) {
@@ -374,6 +381,7 @@ LCDAction LiquidCrystal::nextAction() {
 }
 */
 
+
 void LiquidCrystal::pulseEnable(int delay) {
 	// _enable_pin should already be LOW (unless someone else messed
 	// with it), so don't sit around waiting for long.
@@ -387,7 +395,6 @@ void LiquidCrystal::pulseEnable(int delay) {
 	SET(_enable_pin);
 	delay_us(1);
 	RESET(_enable_pin);
-
 	// Commands needs > 37us to settle.
 	delay_us(delay);
 }
