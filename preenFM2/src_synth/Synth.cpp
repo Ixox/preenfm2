@@ -51,7 +51,9 @@ void Synth::init() {
 
 
 void Synth::noteOn(int timbre, char note, char velocity) {
-    if (note<24 || note >107) {
+    int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
+
+    if (numberOfVoices == 0) {
         return;
     }
 
@@ -61,7 +63,6 @@ void Synth::noteOn(int timbre, char note, char velocity) {
     unsigned int indexMin = (unsigned int)2147483647;
     int voiceToUse = -1;
 
-    int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
 
     for (int k = 0; k < numberOfVoices; k++) {
         // voice number k of timbre
@@ -113,7 +114,7 @@ void Synth::noteOff(int timbre, char note) {
                 voices[n].noteOff();
                 return;
             }
-        } else if (n==0) {
+        } else {
         	// Gliding only on note 0 of the timbre...
             // if gliding and releasing first note
             if (voices[n].getNote() == note) {
