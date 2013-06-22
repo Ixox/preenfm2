@@ -192,7 +192,7 @@ void setup() {
 
     // XH : 1/2 of seconde to stabilise
     // Important Prevent USB from failing
-    int us = 50000000 / 2;
+    int us = 80000000 / 2;
 
     /* fudge for function call overhead  */
     //us--;

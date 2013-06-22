@@ -289,7 +289,7 @@ int main(void) {
 
         while (1) {
             bootLoader.resetButtonPressed();
-            encoders.checkStatus();
+            encoders.checkStatus(0);
             bootLoader.process();
             USB_OTG_BSP_uDelay(10000);
         }

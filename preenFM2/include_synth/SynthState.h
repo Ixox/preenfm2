@@ -373,7 +373,7 @@ public:
     }
 
     void propagateNewParamValue(int timbre, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
-        fullState.presetModified = true;
+        fullState.presetModified[true] = true;
 		for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
 			listener->newParamValue(timbre, getListenerType(currentRow), currentRow, encoder, param, oldValue, newValue);
 		}
@@ -392,7 +392,7 @@ public:
 	}
 
 	void propagateNewParamValueFromExternal(int timbre, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
-        fullState.presetModified = true;
+        fullState.presetModified[true] = true;
 		for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
 			listener->newParamValueFromExternal(timbre, getListenerType(currentRow), currentRow, encoder, param, oldValue, newValue);
 		}

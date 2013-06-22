@@ -1,7 +1,6 @@
 TODO (temporary list, grow over time) : 
 . Play note in combo (spec)
-. Preset modified per timbre
-. note off when voice=1
+. algo 7 & 8 missing
 
 TO check hardware :
 . volume Pot make noise
@@ -14,6 +13,9 @@ OK A TESTER
 
 
 DONE:
+. Preset modified per timbre
+. Gliding fixed
+. Bug note off when voice=1
 . Bug when voice = 0... freeze
 . MIDI CC
 . MIDI nrpn

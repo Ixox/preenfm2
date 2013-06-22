@@ -149,6 +149,7 @@ void Storage::saveCombo(int comboNumber, const char*comboName) {
 }
 
 void Storage::createPatchBank() {
+#ifndef BOOTLOADER
     for (int k=0; k<PFM_PATCH_SIZE; k++) {
         ((uint8_t*)&reachableParam)[k] = ((uint8_t*)presets)[k];
     }
@@ -161,6 +162,7 @@ void Storage::createPatchBank() {
         savePatch(2, patch, &reachableParam);
         savePatch(3, patch, &reachableParam);
     }
+#endif
 }
 
 

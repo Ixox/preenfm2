@@ -794,7 +794,7 @@ const MenuItem* SynthState::afterButtonPressed() {
     case MENU_LOAD_INTERNAL:
         // Make change definitive
         PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
-        fullState.presetModified = false;
+        fullState.presetModified[currentTimbre] = false;
         break;
     case MENU_SAVE_BANK_CONFIRM:
         // PresetUtil::copyBank(4, fullState.bankNumber);
@@ -817,7 +817,7 @@ const MenuItem* SynthState::afterButtonPressed() {
             PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
             propagateAfterNewParamsLoad();
         }
-        fullState.presetModified = false;
+        fullState.presetModified[currentTimbre] = false;
         break;
     case MENU_SAVE_SELECT_PRESET:
         if (fullState.bankNumber == 4) {

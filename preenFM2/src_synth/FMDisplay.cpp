@@ -30,15 +30,16 @@ FMDisplay::~FMDisplay() {
 }
 
 void FMDisplay::init(LiquidCrystal* lcd, Storage* storage) {
-	presetModifed = false;
 	refreshStatus = 0;
 	this->lcd = lcd;
     this->storage = storage;
 
 	for (int k=0; k<4; k++) {
+	    presetModifed[k] = false;
 	    noteOnCounter[k] = 0;
 	}
 	displaycounter = 0;
+	currentTimbre = 0;
 	lcd->clear();
 }
 
@@ -302,19 +303,20 @@ void FMDisplay::displayPreset() {
     FullState* fullState = &this->synthState->fullState;
     lcd->setCursor(0, 0);
     lcd->print("    ");
-    lcd->setCursor(this->synthState->currentTimbre, 0);
-    lcd->print((char)('0'+this->synthState->currentTimbre +1));
+    lcd->setCursor(currentTimbre, 0);
+    lcd->print((char)('0'+currentTimbre +1));
 
 	int length = getLength(this->synthState->params->presetName);
     lcd->setCursor(19-length,0);
     lcd->print(this->synthState->params->presetName);
-    if (fullState->presetModified) {
+    if (presetModifed[currentTimbre]) {
         lcd->print('*');
     }
 }
 
 
 void FMDisplay::newTimbre(int timbre) {
+    currentTimbre = timbre;
     if (this->synthState->fullState.synthMode == SYNTH_MODE_EDIT) {
         lcd->clearActions();
         lcd->clear();
@@ -329,8 +331,8 @@ void FMDisplay::newTimbre(int timbre) {
 
 
 void FMDisplay::newParamValueFromExternal(int timbre, SynthParamType type, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
-    if (timbre == this->synthState->currentTimbre) {
-        checkPresetModified();
+    if (timbre == currentTimbre) {
+        checkPresetModified(timbre);
         if (this->synthState->getSynthMode() == SYNTH_MODE_EDIT && currentRow == this->displayedRow) {
             if (currentRow >= ROW_LFOSEQ1 && encoder>1) {
                 updateStepSequencer(currentRow, encoder, oldValue, newValue);
@@ -371,7 +373,7 @@ void FMDisplay::updateStepSequencer(int currentRow, int encoder, int oldValue, i
 }
 
 void FMDisplay::newParamValue(int timbre, SynthParamType type, int currentRow, int encoder, ParameterDisplay* param,  float oldValue, float newValue) {
-    checkPresetModified();
+    checkPresetModified(timbre);
 	if (this->synthState->getSynthMode() == SYNTH_MODE_EDIT) {
 		if (currentRow != this->displayedRow) {
 			newcurrentRow(timbre, currentRow);
@@ -623,7 +625,7 @@ void FMDisplay::noteOn(int timbre, bool show) {
 		    noteOnCounter[timbre] = 2;
 	        lcd->print((char)0);
 		} else {
-		    if (timbre == this->synthState->currentTimbre) {
+		    if (timbre == currentTimbre) {
 		        lcd->print((char)('0'+timbre+1));
 		    } else {
 		        lcd->print(' ');

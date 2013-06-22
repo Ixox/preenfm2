@@ -75,10 +75,10 @@ public:
 	void displayPreset();
 	void displayInstrumentNumber();
 
-    void checkPresetModified() {
-        if (!presetModifed) {
-            if (this->synthState->fullState.presetModified && this->synthState->fullState.synthMode == SYNTH_MODE_EDIT) {
-                presetModifed = true;
+    void checkPresetModified(int timbre) {
+        if (!presetModifed[timbre]) {
+            if (this->synthState->fullState.synthMode == SYNTH_MODE_EDIT) {
+                presetModifed[timbre] = true;
                 lcd->setCursor(19,0);
                 lcd->print('*');
             }
@@ -107,10 +107,12 @@ public:
 
     void beforeNewParamsLoad(int timbre) { };
     void afterNewParamsLoad(int timbre) {
-        presetModifed = false;
+        presetModifed[timbre] = false;
     }
     void afterNewComboLoad() {
-        presetModifed = false;
+        for (int k=0; k<4; k++) {
+            presetModifed[k] = false;
+        }
     }
 
     // Overide SynthParamListener
@@ -136,8 +138,8 @@ private:
 
 	int menuRow;
 	// Local value preset modified to know whether it's currently showing up
-	bool presetModifed;
-
+	bool presetModifed[4];
+	int currentTimbre;
 	// Midi info
 	int noteOnCounter[4];
 	int displaycounter;
