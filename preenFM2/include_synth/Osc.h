@@ -60,7 +60,7 @@ public:
 		oscState->mainFrequencyPlusMatrix = oscState->mainFrequency + ((oscState->mainFrequency   * (this->matrix->getDestination(destFreq) + this->matrix->getDestination(ALL_OSC_FREQ)))) * .1f;
     }
 
-    float getNextSample(struct OscState *oscState)  {
+    inline float getNextSample(struct OscState *oscState)  {
         struct WaveTable* waveTable = &waveTables[(int) oscillator->shape];
 
         oscState->index +=  oscState->frequency * waveTable->precomputedValue + waveTable->floatToAdd;
@@ -69,12 +69,10 @@ public:
         int indexInteger = oscState->index;
         // keep decimal part;
         oscState->index -= indexInteger;
-        // float fp = oscState->index;
 
         indexInteger &= waveTable->max;
         oscState->index += indexInteger;
 
-        // return waveTable->table[indexInteger] * (1-fp) + waveTable->table[indexInteger+1] * fp;
         return waveTable->table[indexInteger];
     }
 

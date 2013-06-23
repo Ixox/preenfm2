@@ -36,18 +36,20 @@ uint8_t midiBuff[4];
 uint8_t midiNote = 0;
 char keyName[32];
 
-LiquidCrystal      lcd __attribute__ ((section(".ccmnoload")));
 SynthState         synthState __attribute__ ((section(".ccmnoload")));
 Synth              synth __attribute__ ((section(".ccmnoload")));
-MidiDecoder        midiDecoder __attribute__ ((section(".ccmnoload")));
-Encoders           encoders  __attribute__ ((section(".ccmnoload")));
-FMDisplay          fmDisplay  __attribute__ ((section(".ccmnoload"))) ;
-UsbKey             usbKey  __attribute__ ((section(".ccmnoload"))) ;
+USB_OTG_CORE_HANDLE          usbOTGDevice __attribute__ ((section(".ccmnoload")));
+
+// No need to put the following in t
+LiquidCrystal      lcd;
+FMDisplay          fmDisplay ;
+MidiDecoder        midiDecoder;
+Encoders           encoders ;
+UsbKey             usbKey ;
 
 uint32_t cpt1 = 0;
 uint32_t cpt2 = 0;
 
-USB_OTG_CORE_HANDLE          usbOTGDevice;
 
 // Init left/right
 struct sampleForSPI samples __attribute__ ((section(".ccmnoload"))) ;
@@ -192,7 +194,7 @@ void setup() {
 
     // XH : 1/2 of seconde to stabilise
     // Important Prevent USB from failing
-    int us = 80000000 / 2;
+    int us = 50000000 / 2;
 
     /* fudge for function call overhead  */
     //us--;

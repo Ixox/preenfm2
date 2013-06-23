@@ -26,7 +26,7 @@ float frequency[]  __attribute__ ((section(".ccm")))  = {
 8372.018089619156   , 8869.84419125991    , 9397.272573357039   , 9956.063479106588   , 10548.081821211841  ,
 11175.30340585612   , 11839.821526772303  };
 
-float sinTable[] = {
+float sinTable[] __attribute__ ((section(".ccm")))  = {
  // =================================================================
  // SIN : order 20 / 2048 steps
  // average : 0.0 / amplitude : 2.0
@@ -442,7 +442,7 @@ float sinTable[] = {
 -0.009203754782     , -0.006135884649     , -0.003067956763
 };
 
-float squareTable[]  = {
+float squareTable[]  __attribute__ ((section(".ccm")))  = {
  // =================================================================
  // SQUARE : order 20 / 2048 steps
  // average : 0.0 / amplitude : 2.35959731680782
@@ -858,7 +858,7 @@ float squareTable[]  = {
 -0.099142061303     , -0.066163686765     , -0.033102555752
 };
 
-float sawTable[]  = {
+float sawTable[]  __attribute__ ((section(".ccm")))  = {
  // =================================================================
  // SAWTOOTH : order 20 / 2048 steps
  // average : 0.0 / amplitude : 1.13095898406061
@@ -1274,7 +1274,7 @@ float sawTable[]  = {
 0.103408108424      , 0.069016371627      , 0.034531497709
 };
 
-float sinPosTable[]  = {
+float sinPosTable[]  __attribute__ ((section(".ccm")))  = {
  // =================================================================
  // SINPOS : order 20 / 1024 steps
  // average : 0.6366177749955104 / amplitude : 1.0
@@ -1485,7 +1485,7 @@ float sinPosTable[]  = {
 -1.224153092945     , -1.236422090179     , -1.24869247342      , -1.260963780693
 };
 
-float sinOrZeroTable[]  = {
+float sinOrZeroTable[]  __attribute__ ((section(".ccm")))  = {
  // =================================================================
  // SINORZERO : order 20 / 1024 steps
  // average : 0.31830888749775543 / amplitude : 1.0
@@ -1696,7 +1696,7 @@ float sinOrZeroTable[]  = {
 -0.636617774996     , -0.636617774996     , -0.636617774996     , -0.636617774996
 };
 
-float sinSquareTable[]  = {
+float sinSquareTable[]  __attribute__ ((section(".ccm")))  = {
  // =================================================================
  // SINSQUARE : order 20 / 1024 steps
  // average : 0.49999999999999994 / amplitude : 1.0

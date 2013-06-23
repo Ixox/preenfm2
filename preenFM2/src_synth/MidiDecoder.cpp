@@ -64,9 +64,6 @@ MidiDecoder::MidiDecoder() {
     this->isSequencerPlaying = false;
     this->midiClockCpt = 0;
     this->runningStatus = 0;
-    for (int k=0; k<NUMBER_OF_ECC; k++) {
-        previousECC[k] = 0;
-    }
 }
 
 MidiDecoder::~MidiDecoder() {
@@ -773,7 +770,7 @@ void MidiDecoder::sendMidiOut() {
     }
 }
 
-
+/* Not used anymore...
 void MidiDecoder::sendToExternalGear(int enumber) {
     // only on timbre 0
     int currentValue = this->synth->getTimbre(0)->getMatrix()->getDestination((DestinationEnum)(EXTERNAL_CC1 + enumber)) ;
@@ -796,3 +793,4 @@ void MidiDecoder::sendToExternalGear(int enumber) {
         midiToSend.insert(cc);
     }
 }
+*/
