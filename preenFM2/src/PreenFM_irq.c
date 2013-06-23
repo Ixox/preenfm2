@@ -20,8 +20,8 @@
 #include "usb_dcd_int.h"
 
 
-RingBuffer<uint8_t, 200> usartBuffer;
-unsigned int preenTimer = 0;
+RingBuffer<uint8_t, 200> usartBuffer  __attribute__ ((section(".ccmnoload")));
+unsigned int preenTimer  __attribute__ ((section(".ccm"))) = 0;
 
 
 /*
@@ -123,14 +123,12 @@ void SysTick_Handler(void)
 
 #ifdef USE_USB_OTG_HS
 void OTG_HS_IRQHandler(void) {
-	cpt2 ++;
 	USBH_OTG_ISR_Handler(&usbOTGHost);
 }
 #endif
 
 #ifdef USE_USB_OTG_FS
 void OTG_FS_IRQHandler(void) {
-	cpt1 ++;
 	USBD_OTG_ISR_Handler(&usbOTGDevice);
 }
 #endif

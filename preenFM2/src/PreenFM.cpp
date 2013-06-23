@@ -40,15 +40,12 @@ SynthState         synthState __attribute__ ((section(".ccmnoload")));
 Synth              synth __attribute__ ((section(".ccmnoload")));
 USB_OTG_CORE_HANDLE          usbOTGDevice __attribute__ ((section(".ccmnoload")));
 
-// No need to put the following in t
-LiquidCrystal      lcd;
+// No need to put the following in the CCM momry
+LiquidCrystal      lcd ;
 FMDisplay          fmDisplay ;
 MidiDecoder        midiDecoder;
 Encoders           encoders ;
 UsbKey             usbKey ;
-
-uint32_t cpt1 = 0;
-uint32_t cpt2 = 0;
 
 
 // Init left/right
@@ -290,10 +287,8 @@ void setup() {
 }
 
 int mainCpt = 0;
-unsigned short midiReceive = 0;
 unsigned int ledMicros = 0;
 unsigned int encoderMicros = 0;
-unsigned int midiInMicros = 0;
 unsigned int tempoMicros = 0;
 
 bool ledOn = false;
