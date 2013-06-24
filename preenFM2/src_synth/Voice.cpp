@@ -495,6 +495,136 @@ void Voice::nextBlock() {
             break;
         }
 
+        case ALGO7:
+            /*
+                            IM4
+                           ---->
+                 .---.  .---.  .---.
+                 | 2 |  | 4 |  | 6 |
+                 '---'  '---'  '---'
+                   |IM1   |IM2   |IM3
+                 .---.  .---.  .---.
+                 | 1 |  | 3 |  | 5 |
+                 '---'  '---'  '---'
+                   |Mix1  |Mix2  |Mix3
+
+             */
+        {
+            oscState2.frequency = oscState2.mainFrequencyPlusMatrix;
+            float* osc2Values = currentTimbre->osc2.getNextBlock(&oscState2);
+
+            oscState4.frequency = oscState4.mainFrequencyPlusMatrix;
+            float* osc4Values = currentTimbre->osc4.getNextBlock(&oscState4);
+
+            for (int k =0; k< BLOCK_SIZE; k++) {
+
+                float freq4 = osc4Values[k] * env4Value;
+                freq4 *=  oscState4.frequency;
+
+                float freq2 = osc2Values[k] * env2Value;
+                freq2 *=  oscState2.frequency;
+
+                oscState6.frequency = freq4 * currentTimbre->modulationIndex4 +  oscState6.mainFrequencyPlusMatrix;
+                float freq6 = currentTimbre->osc6.getNextSample(&oscState6) * env6Value * oscState6.frequency;
+
+                oscState5.frequency = freq6 * currentTimbre->modulationIndex3 +  oscState5.mainFrequencyPlusMatrix;
+                float currentSample = currentTimbre->osc5.getNextSample(&oscState5) * env5Value * currentTimbre->mix3 * .333f * this->velocity;
+
+                *sample++  += currentSample  * currentTimbre->pan3Right;
+                *sample--  += currentSample * currentTimbre->pan3Left;
+
+                oscState3.frequency = freq4 * currentTimbre->modulationIndex2 +  oscState3.mainFrequencyPlusMatrix;
+                currentSample = currentTimbre->osc3.getNextSample(&oscState3) * env3Value * currentTimbre->mix2 * .333f * this->velocity;
+
+                *sample++  += currentSample  * currentTimbre->pan2Right;
+                *sample--  += currentSample * currentTimbre->pan2Left;
+
+                oscState1.frequency = freq2 * currentTimbre->modulationIndex1 +  oscState1.mainFrequencyPlusMatrix;
+                currentSample = currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 * .333f * this->velocity;
+
+                *sample++  += currentSample  * currentTimbre->pan1Right;
+                *sample++  += currentSample * currentTimbre->pan1Left;
+
+                env1Value += env1Inc;
+                env2Value += env2Inc;
+                env3Value += env3Inc;
+                env4Value += env4Inc;
+                env5Value += env5Inc;
+                env6Value += env6Inc;
+            }
+            if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env5.isDead(&envState5)) {
+                endNoteOrBeginNextOne();
+            }
+        }
+        break;
+        case ALGO8:
+            /*
+              .---.  .---.  .---.       .---.
+              | 2 |  | 3 |  | 4 |       | 6 |
+              '---'  '---'  '---'       '---'
+                 \IM1  |IM2  /IM3         | IM4
+                     .---.              .---.
+                     | 1 |              | 5 |
+                     '---'              '---'
+                       |Mix1              | Mix2
+
+             */
+        {
+            oscState2.frequency = oscState2.mainFrequencyPlusMatrix;
+            float* osc2Values = currentTimbre->osc2.getNextBlock(&oscState2);
+
+            oscState3.frequency = oscState3.mainFrequencyPlusMatrix;
+            float* osc3Values = currentTimbre->osc3.getNextBlock(&oscState3);
+
+            oscState4.frequency = oscState4.mainFrequencyPlusMatrix;
+            float* osc4Values = currentTimbre->osc4.getNextBlock(&oscState4);
+
+            oscState6.frequency = oscState6.mainFrequencyPlusMatrix;
+            float* osc6Values = currentTimbre->osc6.getNextBlock(&oscState6);
+
+            for (int k =0; k< BLOCK_SIZE; k++) {
+
+                float freq6 = osc6Values[k] * env6Value;
+                freq6 *=  oscState6.frequency;
+
+                float freq4 = osc4Values[k] * env4Value;
+                freq4 *=  oscState4.frequency;
+
+                float freq3 = osc3Values[k] * env3Value;
+                freq3 *=  oscState3.frequency;
+
+                float freq2 = osc2Values[k] * env2Value;
+                freq2 *=  oscState2.frequency;
+
+
+                oscState1.frequency =  freq2*currentTimbre->modulationIndex1 + freq3*currentTimbre->modulationIndex2 + freq4*currentTimbre->modulationIndex3 + oscState1.mainFrequencyPlusMatrix;
+                float currentSample =  currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 * .5f * this->velocity;
+
+                *sample++  += currentSample  * currentTimbre->pan1Right;
+                *sample--  += currentSample * currentTimbre->pan1Left;
+
+
+                oscState5.frequency = freq6 * currentTimbre->modulationIndex4 +  oscState5.mainFrequencyPlusMatrix;
+                currentSample = currentTimbre->osc5.getNextSample(&oscState5) * env5Value * currentTimbre->mix2 * .5f * this->velocity;
+
+                *sample++ += currentSample  * currentTimbre->pan2Right;
+                *sample++  += currentSample * currentTimbre->pan2Left;
+
+                env1Value += env1Inc;
+                env2Value += env2Inc;
+                env3Value += env3Inc;
+                env4Value += env4Inc;
+                env5Value += env5Inc;
+                env6Value += env6Inc;
+
+            }
+
+            if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env5.isDead(&envState5)) {
+                endNoteOrBeginNextOne();
+            }
+
+            break;
+        }
 
 
         case ALGO9:
