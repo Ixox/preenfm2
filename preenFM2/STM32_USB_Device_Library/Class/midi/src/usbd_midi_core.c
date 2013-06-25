@@ -4,6 +4,10 @@
 #include "PreenFM.h"
 
 
+// Usb midi buffer..
+uint8_t midiBuff[4]  __attribute__ ((section(".ccmnoload")));
+
+
 /*********************************************
  midi Device library callbacks
  *********************************************/
@@ -33,8 +37,8 @@ USBD_Class_cb_TypeDef midiCallback = {
 };
 
 
-
-#define MIDI_CONFIG_DESC_SIZE 					103
+#define CLASS_SPECIFIC_DESC_SIZE                7+6+7+9+5+9+5
+#define MIDI_CONFIG_DESC_SIZE 					9+9+9+9+CLASS_SPECIFIC_DESC_SIZE
 #define USB_CONFIGURATION_DESCRIPTOR_TYPE       0x02
 #define USB_INTERFACE_DESCRIPTOR_TYPE           0x04
 #define USB_DEVICE_CLASS_AUDIO                  0x01
@@ -46,13 +50,13 @@ static uint8_t usbd_audio_CfgDesc[MIDI_CONFIG_DESC_SIZE] =
 	/* Configuration 1 */
 	0x09,                                 /* bLength */
 	USB_CONFIGURATION_DESCRIPTOR_TYPE,    /* bDescriptorType */
-	LOBYTE(MIDI_CONFIG_DESC_SIZE),        /* wTotalLength  86 bytes*/
+	LOBYTE(MIDI_CONFIG_DESC_SIZE),        /* wTotalLength  */
 	HIBYTE(MIDI_CONFIG_DESC_SIZE),
 	0x02,                                 /* bNumInterfaces */
 	0x01,                                 /* bConfigurationValue */
 	0x00,                                 /* iConfiguration */
 	0xC0,                                 /* bmAttributes  = b6 + b7 : self powered */
-	0x32,                                 /* bMaxPower = 100 mA*/
+	0x32,                                 /* bMaxPower = 150 mA*/
 	/* 09 byte*/
 
 	// B.3.1 Standard AC Interface Descriptor
@@ -99,7 +103,7 @@ static uint8_t usbd_audio_CfgDesc[MIDI_CONFIG_DESC_SIZE] =
 	0x24,         /* descriptor type */
 	0x01,         /* header functional descriptor */
 	0x0, 0x01,      /* bcdADC */
-	22, 0,         /* wTotalLength : Why 0x41 ?? XH : don't know... */
+	CLASS_SPECIFIC_DESC_SIZE, 0,         /* wTotalLength : Why 0x41 ?? XH : don't know... */
 
 	// B.4.3 MIDI IN Jack Descriptor
 	// Midi in Jack Descriptor (Embedded)
@@ -111,37 +115,17 @@ static uint8_t usbd_audio_CfgDesc[MIDI_CONFIG_DESC_SIZE] =
 	0x00,         /* UNUSEED */
 
 
-	// Midi in Jack Descriptor (External)
-//	0x06,         /* bLength */
-//	0x24,         /* descriptor type */
-//	0x02,         /* MIDI_IN_JACK desc subtype */
-//	0x02,         /* EXTERNAL bJackType */
-//	0x02,         /* bJackID */
-//	0x00,         /* UNUSEED */
-
 	// Table B4.4
 	// Midi Out Jack Descriptor (Embedded)
-	0x09,         /* length of descriptor in bytes */
+	0x07,         /* length of descriptor in bytes */
 	0x24,         /* descriptor type */
 	0x03,         /* MIDI_OUT_JACK descriptor */
 	0x01,         /* EMBEDDED bJackType */
-	0x03,         /* bJackID */
-	0x01,         /* No of input pins */
-	0x01,         /* BaSourceID  ID of the Entity to which this Pin is connected. */
-	0x01,         /* BaSourcePin Output Pin number of the Entity to which
-this Input Pin is connected */
+	0x02,         /* bJackID */
+	0x00,         /* No of input pins */
+//	0x01,
+//	0x01,
 	0X00,         /* iJack : UNUSED */
-
-	// Midi Out Jack Descriptor (External)
-//	0x09,         /* length of descriptor in bytes */
-//	0x24,         /* descriptor type */
-//	0x03,         /* MIDI_OUT_JACK descriptor */
-//	0x02,         /* EXTERNAL bJackType */
-//	0x04,         /* bJackID */
-//	0x01,         /* No of input pins */
-//	0x01,         /* BaSourceID  */
-//	0x01,         /* BaSourcePin  */
-//	0X00,         /* iJack : UNUSED */
 
 
 	// ===== B.5 Bulk OUT Endpoint Descriptors
@@ -175,11 +159,11 @@ this Input Pin is connected */
 	0X00,         /* bSyncAddress */
 
 	// B.6.2 Class-specific MS Bulk IN Endpoint Descriptor
-	0X06,         /* bLength of descriptor in bytes */
+	0X05,         /* bLength of descriptor in bytes */
 	0X25,         /* bDescriptorType */
 	0x01,         /* bDescriptorSubtype */
 	0X01,         /* bNumEmbMIDIJack (0) */
-	0X01,         /* baAssocJackID (0) ID of the Embedded MIDI OUT Jack	*/
+	0X02,         /* baAssocJackID (0) ID of the Embedded MIDI OUT Jack	*/
 
 };
 
@@ -233,12 +217,24 @@ static uint8_t usbd_midi_DataIn(void *pdev, uint8_t epnum) {
 }
 static uint8_t usbd_midi_DataOut(void *pdev, uint8_t epnum) {
 
-
-	if ((midiBuff[0] & 0xf) == 0x9 || (midiBuff[0] & 0xf) == 0x8  || (midiBuff[0] & 0xf) == 0xb || (midiBuff[0] & 0xf) == 0xe) {
+    switch (midiBuff[0] & 0xf) {
+    case 0x9:
+    case 0x8:
+    case 0xb:
+    case 0xe:
 	    usartBuffer.insert(midiBuff[1]);
 	    usartBuffer.insert(midiBuff[2]);
 	    usartBuffer.insert(midiBuff[3]);
-	}
+	    break;
+    case 0x2:
+        usartBuffer.insert(midiBuff[1]);
+        usartBuffer.insert(midiBuff[2]);
+        break;
+    case 0x5:
+    case 0xF:
+        usartBuffer.insert(midiBuff[1]);
+        break;
+    }
 
 	// Prepare for next midi information
 	DCD_EP_PrepareRx((USB_OTG_CORE_HANDLE *)pdev,
