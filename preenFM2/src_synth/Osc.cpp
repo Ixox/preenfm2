@@ -73,12 +73,6 @@ struct WaveTable waveTables[NUMBER_OF_WAVETABLES] __attribute__ ((section(".ccm"
 			silence,
 			0x7ff, // any value works
 			0,0
-		},
-		//	OSC_SHAPE_SUARE 2,
-		{
-			realSquare,
-            0x7ff,
-			1,0
 		}
 };
 

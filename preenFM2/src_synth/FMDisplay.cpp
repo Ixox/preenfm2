@@ -556,7 +556,7 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
         if (fullState->bankNumber == 4) {
             lcd->print(storage->readComboName(fullState->menuSelect));
         } else {
-            lcd->print(storage->readPresetName(fullState->menuSelect));
+            lcd->print(storage->readPresetName(fullState->bankNumber, fullState->menuSelect));
         }
 		break;
     case MENU_RENAME_PATCH:

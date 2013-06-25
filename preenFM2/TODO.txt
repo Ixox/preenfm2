@@ -1,6 +1,8 @@
 TODO (temporary list, grow over time) : 
 . Play note in combo (spec)
-. algo 7 & 8 missing
+. Freeze when no file on USB
+
+
 
 TO check hardware :
 . volume Pot make noise
@@ -13,6 +15,11 @@ OK A TESTER
 
 
 DONE:
+. USB CC + real time evant.
+. USB midi : buggy with Ipad.
+. algo 7 & 8 missing
+. Chose patch when saving always load first bank
+. Tools>Set>Name : start on second car instead of 1st.
 . Preset modified per timbre
 . Gliding fixed
 . Bug note off when voice=1

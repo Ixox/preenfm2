@@ -1,12 +1,15 @@
+PFM2_VERSION_NUMBER=1.0
+PFM2_VERSION=\"${PFM2_VERSION_NUMBER}\"
+
 TARGET_BOOTLOADER=build/pfm2_boot.hex
 EXECUTABLE_BOOTLOADER=build/pfm2_boot.elf
 BIN_BOOTLOADER=build/pfm2_boot.bin
 DFUBIN_BOOTLOADER=build/pfm2_boot.dfu
 SYMBOLS_BOOTLOADER=build/symbols_pfm2_boot.txt
 
-TARGET_FIRMWARE=build/pfm2.hex
-EXECUTABLE_FIRMWARE=build/pfm2.elf
-BIN_FIRMWARE=build/pfm2.bin
+TARGET_FIRMWARE=build/pfm2_${PFM2_VERSION_NUMBER}.hex
+EXECUTABLE_FIRMWARE=build/pfm2_${PFM2_VERSION_NUMBER}.elf
+BIN_FIRMWARE=build/pfm2_${PFM2_VERSION_NUMBER}.bin
 DFUBIN_FIRMWARE=build/pfm2.dfu
 SYMBOLS_FIRMWARE=build/symbols_pfm2.txt
 
@@ -113,6 +116,7 @@ INCLUDESDIR = -I./include  -I./include_synth  -I./STM32F4xx_StdPeriph_Driver/inc
 SMALLBINOPTS = -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions  -Wl,--gc-sections  
 
 # 
+DEFINE = -DPFM2_VERSION=${PFM2_VERSION}
 CFLAGS  =  -Os $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
 CFLAGS_NOOPTIM  =   $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
 AFLAGS  = -ahls -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16    

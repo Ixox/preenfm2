@@ -82,8 +82,8 @@ bool Storage::loadDefaultCombo() {
     return true;
 }
 
-const char* Storage::readPresetName(int patchNumber) {
-    int result = load(PATCH_BANK1, ALIGNED_PATCH_SIZE * patchNumber + PFM_PATCH_SIZE - 16,  (void*)presetName, 12);
+const char* Storage::readPresetName(int bankNumber, int patchNumber) {
+    int result = load((FILE_ENUM)(PATCH_BANK1 + bankNumber), ALIGNED_PATCH_SIZE * patchNumber + PFM_PATCH_SIZE - 16,  (void*)presetName, 12);
     presetName[12] = 0;
     return presetName;
 }

@@ -51,7 +51,7 @@ public:
     void loadCombo(int comboNumber);
     void savePatch(int bankNumber, int patchNumber, struct OneSynthParams *params);
     void saveCombo(int comboNumber, const char*comboName);
-    const char* readPresetName(int patchNumber);
+    const char* readPresetName(int bankNumber, int patchNumber);
     const char* readComboName(int comboNumber);
     void loadConfig(char* midiConfig);
     void saveConfig(const char* midiConfig);

@@ -32,9 +32,6 @@
 
 #include "ff.h"
 
-uint8_t midiBuff[4];
-uint8_t midiNote = 0;
-char keyName[32];
 
 SynthState         synthState __attribute__ ((section(".ccmnoload")));
 Synth              synth __attribute__ ((section(".ccmnoload")));
@@ -185,7 +182,7 @@ void setup() {
 
 
     lcd.setCursor(0,1);
-    lcd.print("PreenFM mk2 v0.1");
+    lcd.print("PreenFM2 v"PFM2_VERSION);
 	lcd.setCursor(5,2);
     lcd.print("By Xavier Hosxe");
 
@@ -286,7 +283,6 @@ void setup() {
     synth.buildNewSampleBlock();
 }
 
-int mainCpt = 0;
 unsigned int ledMicros = 0;
 unsigned int encoderMicros = 0;
 unsigned int tempoMicros = 0;
@@ -296,7 +292,6 @@ bool ledOn = false;
 void loop(void) {
     fillSoundBuffer();
 
-    mainCpt++;
     unsigned int newMicros = preenTimer;
 
     /*
@@ -327,7 +322,7 @@ void loop(void) {
         fillSoundBuffer();
         encoders.checkStatus(synthState.fullState.midiConfigValue[MIDICONFIG_ENCODER]);
         encoderMicros = newMicros;
-    } else if (fmDisplay.needRefresh() && ((mainCpt & 0x3) == 0)) {
+    } else if (fmDisplay.needRefresh()) {
         fillSoundBuffer();
         fmDisplay.refreshAllScreenByStep();
     }

@@ -105,7 +105,6 @@ struct FullState {
     unsigned char internalPresetNumber;
     const MenuItem* currentMenuItem;
     char name[13];
-    bool presetModified[4];
     unsigned char loadWhat;
     unsigned char saveWhat;
     unsigned char firstMenu;
