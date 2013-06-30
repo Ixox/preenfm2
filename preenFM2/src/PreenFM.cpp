@@ -216,6 +216,7 @@ void setup() {
     midiDecoder.setSynthState(&synthState);
     midiDecoder.setVisualInfo(&fmDisplay);
     PresetUtil::setSynthState(&synthState);
+    PresetUtil::setStorage(&usbKey);
     midiDecoder.setSynth(&synth);
     midiDecoder.setStorage(&usbKey);
 

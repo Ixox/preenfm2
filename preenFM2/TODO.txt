@@ -1,8 +1,11 @@
 TODO (temporary list, grow over time) : 
 . Play note in combo (spec)
 . Freeze when no file on USB
-
-
+. Sysex (usart+USB)
+. dump nrpn
+. USB Midi fo after touch program change
+. inverser usart and wait.
+. Change sysex header to be different from PFM
 
 TO check hardware :
 . volume Pot make noise

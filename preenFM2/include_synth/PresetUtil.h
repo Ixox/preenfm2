@@ -18,26 +18,14 @@
 #ifndef PRESETUTIL_H_
 #define PRESETUTIL_H_
 
-#define EEPROM_CONFIG_CHECK 86
-#define EEPROM_DEFPATCH_CHECK 116
 
 
-#define EEPROM1_ID 0b1010000;
-#define EEPROM2_ID 0b1010001;
-
-
-#define BANKSIZE 16384
-#define BLOCKSIZE 4096
-
-#define PART1_SIZE 128
-#define PART2_SIZE 64
-
-#define PATCH_SIZE PART1_SIZE+PART2_SIZE
 
 
 class SynthState;
+class Storage;
 struct OneSynthParams;
-
+struct ParameterDisplay;
 
 
 // is included by SynthState so cannot be SynthStateAware...
@@ -49,18 +37,21 @@ public:
     ~PresetUtil();
 
     static void setSynthState(SynthState* synthState);
+    static void setStorage(Storage* storage);
 
     static void dumpPatch();
     static void dumpLine(const char *enums1[], int a, const char *enums2[], int b, const char *enums3[], int c, const char *enums4[], int d) ;
 
-    static void createEmptyBanks();
     static void resetConfigAndSaveToEEPROM();
+    static unsigned short getShortFromParamFloat(int row, int encoder, float value);
+    static float getParamFloatFromShort(int row, int encoder, short value);
+
     static void saveConfigToEEPROM();
     static void loadConfigFromEEPROM();
-    static void checkReadEEPROM();
 
     static void sendBankToSysex(int bankNumber);
     static void sendCurrentPatchToSysex();
+    static void sendSysexByte(unsigned char byte);
     static void sendParamsToSysex(unsigned char* params);
     static int  readSysex(bool patchAllowed, bool bankAllowed);
     static int  readSysexPatch(unsigned char* params);
@@ -68,7 +59,6 @@ public:
 
 
     static int  getNextMidiByte();
-    static int  fillBufferWithNextMidiByte();
     static void copySynthParams(char* source, char* dest);
 
 
@@ -79,9 +69,8 @@ public:
     static void sendCurrentPatchAsNrpns(int timbre);
 
 private:
-    static char readName[13];
     static SynthState * synthState;
-
+    static Storage * storage;
     static unsigned char midiBuffer[1024];
     static int midiBufferWriteIndex;
     static int midiBufferReadIndex;

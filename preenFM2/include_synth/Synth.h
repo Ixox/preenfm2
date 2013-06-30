@@ -25,6 +25,7 @@
 #include "LfoStepSeq.h"
 #include "Env.h"
 #include "SynthParamListener.h"
+#include "SynthStateAware.h"
 
 #define MAX_NUMBER_OF_VOICES 16
 #define NUMBER_OF_TIMBRES 4

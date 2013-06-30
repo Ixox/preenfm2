@@ -16,23 +16,35 @@
  */
 
 #include "PresetUtil.h"
+#include "Storage.h"
 #include "SynthState.h"
 #include "LiquidCrystal.h"
 #include "ff.h"
 #include "usb_core.h"
 #include "usbh_core.h"
+#include "stm32f4xx_usart.h"
+
+
+extern RingBuffer<uint8_t, 200> usartBuffer;
+
 
 #define NULL 0
 extern LiquidCrystal lcd;
 extern const struct MidiConfig midiConfig[];
 
 
-char PresetUtil::readName[13];
 SynthState * PresetUtil::synthState;
+Storage * PresetUtil::storage;
 
 int PresetUtil::midiBufferWriteIndex;
 int PresetUtil::midiBufferReadIndex;
 unsigned char PresetUtil::midiBuffer[1024];
+
+#define PATCH_SIZE_PFM2 (NUMBER_OF_ROWS)*4*2 + 16*2 + 13
+uint8_t sysexTmpMem[PATCH_SIZE_PFM2];
+
+#define SYSEX_BYTE_PATCH 1
+#define SYSEX_BYTE_BANK 2
 
 OneSynthParams synthParamsEmpty  =  {
                 // patch name : 'Preen 2.0'
@@ -86,9 +98,6 @@ OneSynthParams synthParamsEmpty  =  {
 PresetUtil::PresetUtil() {
     midiBufferWriteIndex = 0;
     midiBufferReadIndex = 0;
-    for (int k=0; k<13; k==0) {
-        readName[k] = 0;
-    }
 }
 
 PresetUtil::~PresetUtil() {
@@ -97,10 +106,11 @@ PresetUtil::~PresetUtil() {
 
 
 void PresetUtil::setSynthState(SynthState* synthState) {
-    // init
     PresetUtil::synthState = synthState;
-    // enable the i2c bus
-    // i2c_master_enable(I2C1, I2C_FAST_MODE & I2C_BUS_RESET);
+}
+
+void PresetUtil::setStorage(Storage* storage) {
+    PresetUtil::storage = storage;
 }
 
 
@@ -274,41 +284,28 @@ void PresetUtil::dumpPatch() {
 
 
 
-void PresetUtil::resetConfigAndSaveToEEPROM() {
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL1] = 1;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL2] = 2;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL3] = 3;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL4] = 4;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_THROUGH] = 0;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_RECEIVES] = 3;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_SENDS] = 1;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_REALTIME_SYSEX] = 0;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] = 60;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY] = 120;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_ENCODER] = 0;
 
-//    saveConfigToEEPROM();
+
+void PresetUtil::sendSysexByte(uint8_t byte) {
+    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+    USART3->DR = (uint16_t)byte;
 }
 
-
-void PresetUtil::createEmptyBanks() {
-    for (int bankNumber = 0; bankNumber < 4; bankNumber++) {
-        lcd.setCursor(3,2);
-        lcd.print("Format ");
-        lcd.print((char)('A'+bankNumber));
-        for (int preset = 0; preset < 128; preset++) {
-
-            lcd.setCursor(12,2);
-            lcd.print(preset);
-            lcd.print("  ");
-
-            // PresetUtil::savePatchToEEPROM(&synthParamsEmpty, bankNumber, preset);
-        }
+void PresetUtil::sendCurrentPatchToSysex() {
+    uint8_t newPatch[] = { 0xf0, 0x7d, 0x01 };
+    for (int k = 0; k <= 2; k++) {
+        sendSysexByte(newPatch[k]);
     }
+
+    PresetUtil::convertSynthStateToCharArray(PresetUtil::synthState->params, sysexTmpMem);
+    PresetUtil::sendParamsToSysex(sysexTmpMem);
+
+    sendSysexByte(0xf7);
 }
+
 
 void PresetUtil::sendBankToSysex(int bankNumber) {
-    /*
+	/*
     unsigned char paramChars[PATCH_SIZE];
 
     unsigned char newPatch[] = { 0xf0, 0x7d, 0x02 };
@@ -325,28 +322,10 @@ void PresetUtil::sendBankToSysex(int bankNumber) {
     }
 
     Serial3.print((unsigned char) 0xf7);
-*/
-}
-
-
-void PresetUtil::checkReadEEPROM() {
-}
-
-
-void PresetUtil::sendCurrentPatchToSysex() {
-    /*
-    unsigned char paramChars[PATCH_SIZE];
-    unsigned char newPatch[] = { 0xf0, 0x7d, 0x01 };
-    for (int k = 0; k <= 2; k++) {
-        Serial3.print(newPatch[k]);
-    }
-
-    PresetUtil::convertSynthStateToCharArray(&PresetUtil::synthState->params, paramChars);
-    PresetUtil::sendParamsToSysex(paramChars);
-
-    Serial3.print((unsigned char) 0xf7);
     */
 }
+
+
 
 
 void PresetUtil::sendNrpn(struct MidiEvent cc) {
@@ -358,7 +337,7 @@ void PresetUtil::sendNrpn(struct MidiEvent cc) {
 }
 
 void PresetUtil::sendCurrentPatchAsNrpns(int timbre) {
-
+/*
     int channel = PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL1] -1;
     struct MidiEvent cc;
     cc.eventType = MIDI_CONTROL_CHANGE;
@@ -428,25 +407,20 @@ void PresetUtil::sendCurrentPatchAsNrpns(int timbre) {
             sendNrpn(cc);
         }
     }
+    */
 }
 
 
 void PresetUtil::sendParamsToSysex(unsigned char* params) {
-    /*
     int checksum = 0;
 
-    for (int k = 0; k < PATCH_SIZE; k++) {
+    for (int k = 0; k < PATCH_SIZE_PFM2; k++) {
         unsigned char byte = params[k];
         checksum += byte;
-        while (byte >= 127) {
-            Serial3.print((unsigned char) 127);
-            byte -= 127;
-        }
-        Serial3.print(byte);
+        sendSysexByte(byte);
     }
 
-    Serial3.print((unsigned char) (checksum % 128));
-    */
+    sendSysexByte((unsigned char) (checksum % 128));
 }
 
 int PresetUtil::readSysexPatch(unsigned char* params) {
@@ -454,23 +428,17 @@ int PresetUtil::readSysexPatch(unsigned char* params) {
     unsigned int index = 0;
     int value = 0;
 
-    while (index < PATCH_SIZE) {
+    for (int k = 0; k < PATCH_SIZE_PFM2; k++) {
 
         int byte = PresetUtil::getNextMidiByte();
         if (byte < 0) {
-            return -index - 1000;
+            return -k - 1000;
         }
-        value += byte;
 
-
-        if (byte < 127) {
-            params[index] = value;
-            index++;
-            checkSum += value;
-            value = 0;
-        }
+        params[k] = byte;
+		checkSum += byte;
+		value = 0;
     }
-
 
     int sentChecksum = PresetUtil::getNextMidiByte();
 
@@ -481,26 +449,31 @@ int PresetUtil::readSysexPatch(unsigned char* params) {
         checkSum = checkSum % 128;
 
         if (checkSum != sentChecksum) {
+        	lcd.setCursor(0,0);
             return -200 - sentChecksum;
         }
     }
     return sentChecksum;
 }
 
+void PresetUtil::resetConfigAndSaveToEEPROM() {
+    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL1] = 1;
+    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL2] = 2;
+    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL3] = 3;
+    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL4] = 4;
+    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_THROUGH] = 0;
+    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_RECEIVES] = 3;
+    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_SENDS] = 1;
+    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_REALTIME_SYSEX] = 0;
+    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] = 60;
+    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY] = 120;
+    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_ENCODER] = 0;
 
-int PresetUtil::fillBufferWithNextMidiByte() {
-    /*
-    if (midiBufferWriteIndex == 1024) {
-        midiBufferWriteIndex = 0;
-    }
-    while (Serial3.available()) {
-        midiBuffer[midiBufferWriteIndex++] = Serial3.read();
-    }
-    */
 }
 
+
+
 int PresetUtil::getNextMidiByte() {
-    /*
     int timeout = 0;
     if (midiBufferReadIndex != midiBufferWriteIndex) {
         if (midiBufferReadIndex == 1024) {
@@ -508,19 +481,19 @@ int PresetUtil::getNextMidiByte() {
         }
         return midiBuffer[midiBufferReadIndex++];
     }
-    while (!Serial3.available()) {
-        if (timeout++ >= 1000000) {
+    while (usartBuffer.getCount() == 0) {
+        if (timeout++ >= 2000000) {
             return -1;
         }
     }
-    unsigned char byte = Serial3.read();
+    unsigned char byte = usartBuffer.remove();
+    /*
     if (PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_THROUGH] == 1) {
-        Serial3.print((unsigned char) byte);
+        sendSysexByte((unsigned char) byte);
     }
-
+*/
     return (int)byte;
-    */
-    return 0;
+
 }
 
 /*
@@ -534,8 +507,6 @@ int PresetUtil::getNextMidiByte() {
  */
 
 int PresetUtil::readSysex(bool patchAllowed, bool bankAllowed) {
-    unsigned char paramChars[PATCH_SIZE];
-
     bool isPatch = true;
     bool bError = false;
     bool bSysexRead = false;
@@ -556,9 +527,9 @@ int PresetUtil::readSysex(bool patchAllowed, bool bankAllowed) {
         if (index  == 0) {
             // Batch or bank
             index++;
-            if (byte == 1) {
+            if (byte == SYSEX_BYTE_PATCH) {
                 isPatch = true;
-            } else if (byte == 2) {
+            } else if (byte == SYSEX_BYTE_BANK) {
                 isPatch = false;
             } else {
                 bError = true;
@@ -574,13 +545,16 @@ int PresetUtil::readSysex(bool patchAllowed, bool bankAllowed) {
         if (index >0 && !bSysexRead) {
             bSysexRead = true;
             if (isPatch) {
-                int errorCode = 0;
-                if ((errorCode = PresetUtil::readSysexPatch(paramChars)) <0) {
+                int errorCode = PresetUtil::readSysexPatch(sysexTmpMem);
+                lcd.setCursor(15,3);
+                lcd.print(errorCode);
+
+                if (errorCode < 0) {
                     index = -errorCode;
                     bError = true;
                 } else {
                     PresetUtil::synthState->propagateBeforeNewParamsLoad();
-                    PresetUtil::convertCharArrayToSynthState(paramChars, PresetUtil::synthState->params);
+                    PresetUtil::convertCharArrayToSynthState(sysexTmpMem, PresetUtil::synthState->params);
                     PresetUtil::synthState->propagateAfterNewParamsLoad();
                     PresetUtil::synthState->resetDisplay();
                 }
@@ -607,7 +581,6 @@ void PresetUtil::copySynthParams(char* source, char* dest) {
 
 
 int PresetUtil::readSysexBank() {
-    unsigned char paramChars[PATCH_SIZE];
     int errorCode = 0;
 
     lcd.setCursor(1,3);
@@ -619,7 +592,7 @@ int PresetUtil::readSysexBank() {
         lcd.setCursor(7,3);
         lcd.print(preset);
 
-        if ((errorCode = PresetUtil::readSysexPatch(paramChars)) <0) {
+        if ((errorCode = PresetUtil::readSysexPatch(sysexTmpMem)) <0) {
             lcd.setCursor(11,3);
             lcd.print("##");
             lcd.print(errorCode);
@@ -644,106 +617,67 @@ int PresetUtil::readSysexBank() {
 
 // ABSTRACTION OF MEMORY/SYSEX MANAGEMENT FOR FUTUR COMPATIBILITY
 
-void PresetUtil::convertSynthStateToCharArray(OneSynthParams* params, unsigned char* chars) {
-    // Clean
-    for (unsigned int k=0; k<PATCH_SIZE; k++) {
-        chars[k] = 0;
+uint16_t PresetUtil::getShortFromParamFloat(int row, int encoder, float value) {
+    // performance do not send NRPN
+    struct ParameterDisplay* param = &(allParameterRows.row[row]->params[encoder]);
+    uint16_t rValue;
+    uint16_t valueToSend = 0;
+
+    if (row != ROW_MODULATION) {
+        valueToSend = (param->numberOfValues - 1.0f) * (value - param->minValue) / (param->maxValue - param->minValue) + .1f ;
+    } else {
+        valueToSend = value * 100.0f + .1f ;
     }
 
-    // 2.00 compatibility performance mode which is not saved
-    unsigned int firstPartASize = 3*4;
-    for (unsigned int k=0; k<firstPartASize; k++) {
-        chars[k] = ((char*) params)[k];
-    }
-    unsigned  int firstPartBSize = 20*4;
-    for (unsigned int k=0; k<firstPartBSize; k++) {
-        chars[firstPartASize + k] = ((char*) &params->osc1)[k];
-    }
-    int firstPartSize = firstPartASize + firstPartBSize;
-    // LFO 1->4
-    unsigned int secondPartSize = 4*4;
-    for (unsigned int k=0; k<secondPartSize; k++) {
-        chars[firstPartSize + k] = ((char*) &params->lfoOsc1)[k];
-    }
+    return valueToSend;
+}
 
-    // Then the title
-    for (unsigned int k=0; k<12; k++) {
-        chars[27*4 + k] = params->presetName[k];
-    }
+float PresetUtil::getParamFloatFromShort(int row, int encoder, short value) {
+    struct ParameterDisplay* param = &(allParameterRows.row[row]->params[encoder]);
+	if (row != ROW_MODULATION) {
+		return param->minValue + value / (param->numberOfValues - 1.0f) * (param->maxValue - param->minValue);
+	} else {
+		return value * .01f;
+	}
+}
 
-    // 120 - 128 : step seqs
-    for (unsigned int k=0; k<8; k++) {
-        chars[120 + k] = ((char*) &params->lfoSeq1)[k];
-    }
 
-    // 128 : 16 step of seq 1 on 8 bits
-    // 4 left bits + 4 right bits
-    for (unsigned int k=0; k<8; k++) {
-        chars[128+k] = (params->lfoSteps1.steps[k*2]<<4) + params->lfoSteps1.steps[k*2+1] ;
+void PresetUtil::convertSynthStateToCharArray(OneSynthParams* params, uint8_t* chars) {
+    int indexParam;
+    int indexSysex = 0;
+    for (int row=0; row < NUMBER_OF_ROWS; row++) {
+        for (int encoder = 0; encoder < NUMBER_OF_ENCODERS; encoder++) {
+            indexParam = row * NUMBER_OF_ENCODERS + encoder;
+            float value = ((float*)params)[indexParam];
+            uint16_t toSend = PresetUtil::getShortFromParamFloat(row, encoder, value);
+            //  MSB and LSB
+            chars[indexSysex++] = toSend >> 7;
+            chars[indexSysex++] = toSend & 0x7F;
+        }
     }
-    // 136 : 16 step of seq 2 on 8 bits
-    for (unsigned int k=0; k<8; k++) {
-        chars[136+k] = (params->lfoSteps2.steps[k*2]<<4) + params->lfoSteps2.steps[k*2+1] ;
+    char *params2 = params->lfoSteps1.steps;
+    // Step seq + title
+    for (int k=0; k< 16*2 + 13; k++) {
+        uint8_t toSend =
+        chars[indexSysex++] = params2[k] & 0x7F;
     }
-
-    // 144 : Matrix 9->12
-    for (unsigned int k=0; k<16; k++) {
-        chars[144 + k] = ((char*) &params->matrixRowState9)[k];
-    }
-
 }
 
 void PresetUtil::convertCharArrayToSynthState(unsigned char* chars, OneSynthParams* params) {
-    // In 2.0...
-    // performance mode added... CC1..4 must not be saved
+    int indexSysex = 0;
+    for (int row=0; row < NUMBER_OF_ROWS; row++) {
+        for (int encoder = 0; encoder < NUMBER_OF_ENCODERS; encoder++) {
+        	short shortValue = chars[indexSysex++] << 7;
+        	shortValue |= chars[indexSysex++];
 
-    // Copy first part A
-    unsigned int firstPartASize = 3*4;
-    for (unsigned int k=0; k<firstPartASize; k++) {
-        ((char*) params)[k] = chars[k];
+        	int indexParam = row * NUMBER_OF_ENCODERS + encoder;
+            ((float*)params)[indexParam] =  getParamFloatFromShort(row, encoder, shortValue);
+        }
     }
-    // performance
-    for (unsigned int k=0; k<4; k++) {
-        ((char*) &params->engine4)[k] = 0;
-    }
-    // Copy first part B
-    unsigned  int firstPartBSize = 20*4;
-    for (unsigned int k=0; k<firstPartBSize; k++) {
-        ((char*) &params->osc1)[k] = chars[firstPartASize + k];
-    }
-    int firstPartSize = firstPartASize + firstPartBSize;
-    // LFO 1->4
-    unsigned int secondPartSize = 4*4;
-    for (unsigned int k=0; k<secondPartSize; k++) {
-        ((char*) &params->lfoOsc1)[k] = chars[firstPartSize + k];
-    }
-
-    // Title
-    for (unsigned int k=0; k<12; k++) {
-        params->presetName[k] = chars[27*4+k];
-    }
-    params->presetName[12] = '\0';
-
-
-    // 120 - 128 : step seqs
-    for (unsigned int k=0; k<8; k++) {
-        ((char*) &params->lfoSeq1)[k] = chars[120 + k];
-    }
-
-    // 128 : 16 step of seq 1 on 8 bits
-    // 4 left bits + 4 right bits
-    for (unsigned int k=0; k<8; k++) {
-        params->lfoSteps1.steps[k*2]   = chars[128+k] >> 4;
-        params->lfoSteps1.steps[k*2+1] = chars[128+k] & 0xf;
-    }
-    // 136 : 16 step of seq 2 on 8 bits
-    for (unsigned int k=0; k<8; k++) {
-        params->lfoSteps2.steps[k*2]   = chars[136+k] >> 4;
-        params->lfoSteps2.steps[k*2+1] = chars[136+k] & 0xf;
-    }
-    // 144 : Matrix 9->12
-    for (unsigned int k=0; k<16; k++) {
-        ((char*) &params->matrixRowState9)[k] = chars[144 + k];
+    // Step seq + title
+    char *params2 = params->lfoSteps1.steps;
+    for (int k=0; k< 16*2 + 13; k++) {
+        params2[k] = chars[indexSysex++];
     }
 }
 

@@ -42,7 +42,7 @@ extern int spiState ;
 extern LiquidCrystal lcd;
 extern Synth synth;
 extern MidiDecoder        midiDecoder;
-extern RingBuffer<u8, 200> usartBuffer;
+extern RingBuffer<uint8_t, 200> usartBuffer;
 extern USB_OTG_CORE_HANDLE  usbOTGHost;
 extern USB_OTG_CORE_HANDLE          usbOTGDevice;
 extern USBD_Usr_cb_TypeDef midiStreamingUsrCallback;

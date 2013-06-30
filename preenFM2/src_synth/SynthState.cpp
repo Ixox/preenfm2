@@ -893,8 +893,6 @@ const MenuItem* SynthState::afterButtonPressed() {
             storage->createPatchBank();
             storage->createComboBank();
             fullState.currentMenuItem = cmi;
-    	} else if (fullState.menuSelect == 1) {
-			PresetUtil::checkReadEEPROM();
     	} else {
     		return fullState.currentMenuItem;
     	}
