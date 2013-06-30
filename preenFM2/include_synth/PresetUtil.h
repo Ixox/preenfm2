@@ -67,13 +67,10 @@ public:
 
     static void sendNrpn(struct MidiEvent cc);
     static void sendCurrentPatchAsNrpns(int timbre);
-
+    static void copyBank(int source, int dest);
 private:
     static SynthState * synthState;
     static Storage * storage;
-    static unsigned char midiBuffer[1024];
-    static int midiBufferWriteIndex;
-    static int midiBufferReadIndex;
 };
 
 #endif /* PRESETUTIL_H_ */

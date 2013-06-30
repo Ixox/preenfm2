@@ -797,7 +797,9 @@ const MenuItem* SynthState::afterButtonPressed() {
         PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
         break;
     case MENU_SAVE_BANK_CONFIRM:
-        // PresetUtil::copyBank(4, fullState.bankNumber);
+    	lcd.setRealTimeAction(true);
+        PresetUtil::copyBank(4, fullState.bankNumber);
+    	lcd.setRealTimeAction(false);
     	break;
     case MENU_LOAD_USER_SELECT_PRESET:
     	// Disable the audio interupt because
@@ -875,10 +877,12 @@ const MenuItem* SynthState::afterButtonPressed() {
     {
     	const MenuItem *cmi = fullState.currentMenuItem;
     	// Update display while sending
+    	lcd.setRealTimeAction(true);
     	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
     	propagateNewMenuState();
         PresetUtil::sendBankToSysex(fullState.menuSelect);
         fullState.currentMenuItem = cmi;
+    	lcd.setRealTimeAction(false);
         break;
     }
     case MENU_DONE:
@@ -997,7 +1001,7 @@ const MenuItem* SynthState::menuBack() {
         propagateAfterNewParamsLoad();
         break;
     case MENU_SAVE_BANK:
-    	// After back, bank should noe be receivable anymore
+    	// After back, bank should no be receivable anymore
         fullState.synthMode = SYNTH_MODE_EDIT;
     	return MenuItemUtil::getMenuItem(MENU_LOAD);
     	break;

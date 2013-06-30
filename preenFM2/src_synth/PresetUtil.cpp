@@ -36,15 +36,14 @@ extern const struct MidiConfig midiConfig[];
 SynthState * PresetUtil::synthState;
 Storage * PresetUtil::storage;
 
-int PresetUtil::midiBufferWriteIndex;
-int PresetUtil::midiBufferReadIndex;
-unsigned char PresetUtil::midiBuffer[1024];
+#define PATCH_SIZE_PFM2 ((NUMBER_OF_ROWS)*4*2 + 16*2 + 13)
+// TODO NOLAD !!
+uint8_t sysexTmpMem[PATCH_SIZE_PFM2 * 128];
+struct OneSynthParams oneSynthParamsTmp;
 
-#define PATCH_SIZE_PFM2 (NUMBER_OF_ROWS)*4*2 + 16*2 + 13
-uint8_t sysexTmpMem[PATCH_SIZE_PFM2];
 
-#define SYSEX_BYTE_PATCH 1
-#define SYSEX_BYTE_BANK 2
+#define SYSEX_BYTE_PATCH 3
+#define SYSEX_BYTE_BANK 4
 
 OneSynthParams synthParamsEmpty  =  {
                 // patch name : 'Preen 2.0'
@@ -96,8 +95,6 @@ OneSynthParams synthParamsEmpty  =  {
 
 
 PresetUtil::PresetUtil() {
-    midiBufferWriteIndex = 0;
-    midiBufferReadIndex = 0;
 }
 
 PresetUtil::~PresetUtil() {
@@ -292,7 +289,7 @@ void PresetUtil::sendSysexByte(uint8_t byte) {
 }
 
 void PresetUtil::sendCurrentPatchToSysex() {
-    uint8_t newPatch[] = { 0xf0, 0x7d, 0x01 };
+    uint8_t newPatch[] = { 0xf0, 0x7d, SYSEX_BYTE_PATCH };
     for (int k = 0; k <= 2; k++) {
         sendSysexByte(newPatch[k]);
     }
@@ -305,24 +302,23 @@ void PresetUtil::sendCurrentPatchToSysex() {
 
 
 void PresetUtil::sendBankToSysex(int bankNumber) {
-	/*
-    unsigned char paramChars[PATCH_SIZE];
 
-    unsigned char newPatch[] = { 0xf0, 0x7d, 0x02 };
+
+    unsigned char newPatch[] = { 0xf0, 0x7d, SYSEX_BYTE_BANK };
     for (int k = 0; k <= 2; k++) {
-        Serial3.print(newPatch[k]);
+        sendSysexByte(newPatch[k]);
     }
 
     for (int preset = 0; preset < 128; preset++) {
         lcd.setCursor(3,2);
         lcd.print(preset);
         lcd.print(" / 128");
-        PresetUtil::readCharsFromEEPROM(bankNumber, preset, paramChars);
-        PresetUtil::sendParamsToSysex(paramChars);
+        storage->loadPatch(bankNumber, preset, &oneSynthParamsTmp);
+        PresetUtil::convertSynthStateToCharArray(&oneSynthParamsTmp, sysexTmpMem);
+        PresetUtil::sendParamsToSysex(sysexTmpMem);
     }
 
-    Serial3.print((unsigned char) 0xf7);
-    */
+    sendSysexByte((unsigned char) 0xf7);
 }
 
 
@@ -475,23 +471,19 @@ void PresetUtil::resetConfigAndSaveToEEPROM() {
 
 int PresetUtil::getNextMidiByte() {
     int timeout = 0;
-    if (midiBufferReadIndex != midiBufferWriteIndex) {
-        if (midiBufferReadIndex == 1024) {
-            midiBufferReadIndex = 0;
-        }
-        return midiBuffer[midiBufferReadIndex++];
-    }
     while (usartBuffer.getCount() == 0) {
         if (timeout++ >= 2000000) {
             return -1;
         }
     }
     unsigned char byte = usartBuffer.remove();
-    /*
+
+    /* TODO : to put back...
     if (PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_THROUGH] == 1) {
         sendSysexByte((unsigned char) byte);
     }
-*/
+    */
+
     return (int)byte;
 
 }
@@ -585,26 +577,18 @@ int PresetUtil::readSysexBank() {
 
     lcd.setCursor(1,3);
     lcd.print("Bank:");
-    midiBufferWriteIndex = 0;
-    midiBufferReadIndex = 0;
 
     for (int preset = 0; preset<128 && errorCode>=0; preset++) {
         lcd.setCursor(7,3);
         lcd.print(preset);
 
-        if ((errorCode = PresetUtil::readSysexPatch(sysexTmpMem)) <0) {
+        if ((errorCode = PresetUtil::readSysexPatch(sysexTmpMem + PATCH_SIZE_PFM2 * preset)) <0) {
             lcd.setCursor(11,3);
             lcd.print("##");
             lcd.print(errorCode);
             errorCode = -500 - preset;
             break;
         }
-
-        if (midiBufferWriteIndex == midiBufferReadIndex) {
-            midiBufferWriteIndex = 0;
-            midiBufferReadIndex = 0;
-        }
-        // PresetUtil::saveCharParamsToEEPROM(paramChars, 4, preset, true);
     }
 
     return errorCode;
@@ -682,4 +666,17 @@ void PresetUtil::convertCharArrayToSynthState(unsigned char* chars, OneSynthPara
 }
 
 
-
+void PresetUtil::copyBank(int source, int dest) {
+	if (source == 4) {
+		lcd.setCursor(1,3);
+		lcd.print("Save:");
+		for (int preset=0; preset<128; preset++) {
+			lcd.setCursor(7,3);
+			lcd.print(preset);
+			PresetUtil::convertCharArrayToSynthState(sysexTmpMem + PATCH_SIZE_PFM2 * preset, &oneSynthParamsTmp);
+			storage->savePatch(dest, preset, &oneSynthParamsTmp);
+		}
+	}  else {
+		// CAN ONLY COPY FROM sysexTmpMem for the moment
+	}
+}
