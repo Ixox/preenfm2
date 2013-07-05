@@ -18,6 +18,7 @@
 #ifndef BOOTLOADER_H_
 #define BOOTLOADER_H_
 
+#include <stdint.h>
 #include "EncodersListener.h"
 
 class LiquidCrystal;
@@ -28,6 +29,10 @@ typedef enum {
     BL_READING_FIRMWARE,
     BL_SHOWING_FIRMWARE,
     BL_BURNING_FIRMWARE,
+    BL_SYSEX_INIT,
+    BL_SYSEX_WAITING_FORMAT,
+    BL_SYSEX_READING_HEADER,
+    BL_SYSEX_READING,
     BL_FINISHED
 } BL_State;
 
@@ -43,10 +48,15 @@ public:
 	void buttonPressed(int number);
 	void resetButtonPressed();
 	void buttonLongPressed(int number);
+	void welcome();
+	void USART_Config();
 	int getButton() { return button; }
 
 	bool formatFlash(int firmwareSize);
+	bool sysexWaitFor(uint8_t byte);
+	uint32_t sysexReadInt(int index);
 	bool burnFlash();
+	void sysexMode();
 
 private:
 	LiquidCrystal* lcd;
@@ -55,6 +65,7 @@ private:
 	char firmwareName[13];
 	int firmwareSize;
 	bool oneFirmwareAtLeast;
+
 };
 
 #endif /* BOOTLOADER_H_ */

@@ -12,6 +12,7 @@ EXECUTABLE_FIRMWARE=build/pfm2_${PFM2_VERSION_NUMBER}.elf
 BIN_FIRMWARE=build/pfm2_${PFM2_VERSION_NUMBER}.bin
 DFUBIN_FIRMWARE=build/pfm2.dfu
 SYMBOLS_FIRMWARE=build/symbols_pfm2.txt
+EXECUTABLE_SYSEX=build/pfm2_${PFM2_VERSION_NUMBER}.syx
 
 C      = arm-none-eabi-gcc 
 CC      = arm-none-eabi-c++ 
@@ -94,6 +95,7 @@ SRC_BOOTLOADER = BootLoader.cpp \
 	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c \
 	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c \
 	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.c   \
+	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c \
 	usbKey_usr.c \
 	usb_bsp.c \
 	fat_fs/src/ff.c \
@@ -153,6 +155,14 @@ installboot:boot
 installbootdfu:boot
 	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_BOOTLOADER) -R -s 0x8000000
 
+sysex : sysex/sysex.class
+	java -classpath sysex sysex $(BIN_FIRMWARE)
+
+amidi:
+    amidi -p hw:1,0,0 -s ./pfm2_1.0.syx
+
+sysex/sysex.class : sysex/sysex.java
+	javac sysex/sysex.java
 
 $(TARGET_FIRMWARE): $(EXECUTABLE_FIRMWARE)
 	$(CP) -O ihex $^ $@

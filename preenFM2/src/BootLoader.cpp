@@ -20,8 +20,10 @@
 #include "Encoders.h"
 #include "UsbKey.h"
 #include "usbKey_usr.h"
+#include "RingBuffer.h"
 #include "flash_if.h"
 #include "usb_hcd_int.h"
+#include "stm32f4xx_conf.h"
 
 /**
   * @brief  USB_OTG_BSP_uDelay
@@ -34,6 +36,15 @@
 
 
 UsbKey             usbKey ;
+RingBuffer<uint8_t, 100> usartBuffer;
+
+
+extern "C" {
+// USART 3 IRQ
+void USART3_IRQHandler(void) {
+	usartBuffer.insert((char) USART3->DR);
+}
+}
 
 // Dummy function ... UsbKey was written for PreenFM
 void fillSoundBuffer() {}
@@ -84,6 +95,9 @@ void BootLoader::initKey() {
     usbKey.init(0,0,0,0);
     this->lcd->setCursor(0, 0);
     this->lcd->print("   Flash Firmware   ");
+    this->lcd->setCursor(4,2);
+    this->lcd->print("           ");
+
     if (usbKey.firmwareInit() != COMMAND_SUCCESS) {
         this->lcd->setCursor(0, 1);
         this->lcd->print("No '/pfm2' directory");
@@ -95,6 +109,10 @@ void BootLoader::initKey() {
     this->state = BL_READING_FIRMWARE;
 }
 
+void BootLoader::sysexMode() {
+	USART_Config();
+	this->state = BL_SYSEX_INIT;
+}
 
 void BootLoader::process() {
     int res;
@@ -153,7 +171,140 @@ void BootLoader::process() {
         this->lcd->print("Please Reboot ");
         while (1);
         break;
+    case BL_SYSEX_INIT:
+    	this->lcd->setCursor(3,2);
+    	this->lcd->print("Sysex upgrade");
+    	this->lcd->setCursor(3,3);
+        this->lcd->print("Erase Firmware ->");
+        this->state = BL_SYSEX_WAITING_FORMAT;
+        break;
+    case BL_SYSEX_WAITING_FORMAT:
+        if (this->button >= 6 && this->button <= 7) {
+        	this->lcd->setCursor(0,3);
+            this->lcd->print("                    ");
+            // TODO !!
+        	FLASH_Unlock();
+        	formatFlash(500000);
+         	this->lcd->clear();
+            this->lcd->setCursor(0,1);
+            this->lcd->print("Waiting for sysex...");
+            this->state = BL_SYSEX_READING_HEADER;
+        }
+        break;
+    case BL_SYSEX_READING_HEADER:
+
+    	while (usartBuffer.getCount() == 0);
+    	if (!sysexWaitFor(0xf0)) {
+            this->state = BL_FINISHED;
+            break;
+    	}
+    	if (!sysexWaitFor(0x7d)) {
+            this->state = BL_FINISHED;
+            break;
+    	}
+    	if (!sysexWaitFor((uint8_t)100)) {
+            this->state = BL_FINISHED;
+            break;
+    	}
+    	firmwareSize = sysexReadInt(0);
+
+        this->lcd->setCursor(0,2);
+        this->lcd->print("Size   : ");
+        this->lcd->print(firmwareSize);
+
+        for (int i=0; i<firmwareSize; i++) {
+        	uint32_t newInt = sysexReadInt(i);
+        	// WRITE I
+			if (i>0 && (i % 100) == 0) {
+				uint32_t check = sysexReadInt(i);
+                this->lcd->setCursor(0,3);
+                this->lcd->print("Burning: ");
+                this->lcd->print((int)check);
+                if (check != i) {
+                    this->lcd->setCursor(0,0);
+        			lcd->print("Check Error at ");
+        			lcd->print(i);
+                	while (1);
+                }
+			}
+            FLASH_Status status = FLASH_ProgramWord(APPLICATION_ADDRESS + i * 4, newInt);
+            if (status != FLASH_COMPLETE) {
+                this->lcd->setCursor(0,0);
+    			lcd->print("Write Error at ");
+    			lcd->print(i);
+            	while (1);
+            }
+        }
+    	sysexWaitFor(0xf7);
+        this->lcd->clear();
+        this->lcd->setCursor(0,1);
+        this->lcd->print("New firmware burned");
+
+        this->state = BL_FINISHED;
+        break;
+
+
+/*
+
+    	long recode = (long)sysex[0] & 0xff;
+		recode <<= 7;
+		recode |= (long)sysex[1] & 0xff;
+		recode <<= 7;
+		recode |= (long)sysex[2] & 0xff;
+		recode <<= 7;
+		recode |= (long)sysex[3] & 0xff;
+		recode <<= 7;
+		recode |= (long)sysex[4] & 0xff;
+*/
+
+    	// TO DO... decode sysex...
+    	break;
     }
+}
+
+bool BootLoader::sysexWaitFor(uint8_t byte) {
+	int cpt = 0;
+	while (cpt++ < 100000000 && usartBuffer.getCount() == 0);
+	if (usartBuffer.getCount() == 0) {
+		return false;
+	}
+	uint8_t readByte = usartBuffer.remove();
+	if (readByte == byte) {
+		return true;
+	} else {
+		lcd->setCursor(0,0);
+		lcd->print("Error ");
+		lcd->print((int)readByte);
+		lcd->print(" / ");
+		lcd->print((int)byte);
+	}
+	return true;
+}
+
+uint32_t BootLoader::sysexReadInt(int index) {
+	uint8_t sysex[5];
+	for (int k=0; k<5; k++) {
+		int cpt = 0;
+		while (cpt++ < 100000000 && usartBuffer.getCount() == 0);
+		if (usartBuffer.getCount() == 0) {
+			lcd->setCursor(0,3);
+			lcd->print("Error at ");
+			lcd->print(index);
+			while (1);
+			return false;
+		}
+		sysex[k] = usartBuffer.remove();
+	}
+	uint32_t recode = (long)sysex[0] & 0xff;
+	recode <<= 7;
+	recode |= (uint32_t)sysex[1] & 0xff;
+	recode <<= 7;
+	recode |= (uint32_t)sysex[2] & 0xff;
+	recode <<= 7;
+	recode |= (uint32_t)sysex[3] & 0xff;
+	recode <<= 7;
+	recode |= (uint32_t)sysex[4] & 0xff;
+	return recode;
 }
 
 bool BootLoader::formatFlash(int firmwareSize) {
@@ -259,11 +410,77 @@ void BootLoader::resetButtonPressed() {
 void BootLoader::buttonLongPressed(int number) {
 }
 
-// Symbol usefull in other modules... so must be global
+void BootLoader::welcome() {
+    this->lcd->begin(20,4);
+    this->lcd->clear();
+    this->lcd->setCursor(1,0);
+    this->lcd->print("PreenFM bootloader");
+    this->lcd->setCursor(1,1);
+    this->lcd->print("      v1.00");
+}
+
+
+void BootLoader::USART_Config() {
+
+	/* --------------------------- System Clocks Configuration -----------------*/
+	/* USART3 clock enable */
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
+
+	/* GPIOB clock enable */
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+
+	GPIO_InitTypeDef GPIO_InitStructure;
+
+	/*-------------------------- GPIO Configuration ----------------------------*/
+	// TX
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	// RX
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+	/* Connect USART pins to AF */
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_USART3);
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_USART3);
+
+	// Init USART
+	USART_InitTypeDef USART_InitStructure;
+	USART_InitStructure.USART_BaudRate = 31250;
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;
+	USART_InitStructure.USART_Parity = USART_Parity_No;
+	USART_InitStructure.USART_HardwareFlowControl =
+			USART_HardwareFlowControl_None;
+	USART_InitStructure.USART_Mode = USART_Mode_Rx; // | USART_Mode_Tx;
+	USART_Init(USART3, &USART_InitStructure);
+
+	/* Here the USART3 receive interrupt is enabled
+	 * and the interrupt controller is configured
+	 * to jump to the USART3_IRQHandler() function
+	 * if the USART3 receive interrupt occurs
+	 */
+	NVIC_InitTypeDef NVIC_InitStructure;
+	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE); // enable the USART3 receive interrupt
+
+	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn; // we want to configure the USART3 interrupts
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0; // this sets the priority group of the USART3 interrupts
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0; // this sets the subpriority inside the group
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; // the USART3 interrupts are globally enabled
+	NVIC_Init(&NVIC_InitStructure); // the properties are passed to the NVIC_Init function which takes care of the low level stuff
+
+	USART_Cmd(USART3, ENABLE);
+}
+
 LiquidCrystal lcd;
 
 int main(void) {
     unsigned int encoderCpt = 0;
+
 
 
     BootLoader bootLoader(&lcd);
@@ -278,13 +495,11 @@ int main(void) {
 */
     if (bootLoader.getButton() == 2) {
         // Button... flash new firmware
-        lcd.begin(20,4);
-        lcd.clear();
-        lcd.setCursor(1,0);
-        lcd.print("PreenFM bootloader");
-        lcd.setCursor(1,1);
-        lcd.print("      v1.00");
+    	bootLoader.welcome();
+    	lcd.setCursor(4,2);
+    	lcd.print("USB upgrade");
         uDelay(1000000);
+        // Init state
         bootLoader.initKey();
 
         while (1) {
@@ -294,14 +509,16 @@ int main(void) {
             USB_OTG_BSP_uDelay(10000);
         }
     } else if (bootLoader.getButton() == 4) {
-        lcd.begin(20,4);
-        lcd.clear();
-        FLASH_Unlock();
-        bootLoader.formatFlash(500000);
-        lcd.setCursor(1, 0);
-        lcd.print("PreenFM Firmware");
-        lcd.setCursor(1, 1);
-        lcd.print("Formatted...");
+    	bootLoader.welcome();
+
+    	bootLoader.sysexMode();
+
+        while (1) {
+            bootLoader.resetButtonPressed();
+            encoders.checkStatus(0);
+            bootLoader.process();
+            USB_OTG_BSP_uDelay(10000);
+        }
     }
     else {
         // App ready ?
@@ -324,6 +541,11 @@ int main(void) {
             lcd.print("Bootloader OK but");
             lcd.setCursor(1, 1);
             lcd.print("No PreenFM Firmware");
+            lcd.setCursor(1,2);
+            lcd.print((int)(*(__IO uint32_t*) APPLICATION_ADDRESS));
+            lcd.setCursor(1,3);
+            lcd.print((int)(*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFE0000);
+
         }
     }
 
