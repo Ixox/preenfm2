@@ -188,10 +188,10 @@ void BootLoader::process() {
          	this->lcd->clear();
             this->lcd->setCursor(0,1);
             this->lcd->print("Waiting for sysex...");
-            this->state = BL_SYSEX_READING_HEADER;
+            this->state = BL_SYSEX_READING;
         }
         break;
-    case BL_SYSEX_READING_HEADER:
+    case BL_SYSEX_READING:
 
     	while (usartBuffer.getCount() == 0);
     	if (!sysexWaitFor(0xf0)) {
@@ -207,21 +207,21 @@ void BootLoader::process() {
             break;
     	}
     	firmwareSize = sysexReadInt(0);
+    	checkSum = 0;
 
-        this->lcd->setCursor(0,2);
-        this->lcd->print("Size   : ");
-        this->lcd->print(firmwareSize);
+        this->lcd->setCursor(0,1);
+        this->lcd->print("  Receiving sysex...");
 
         for (int i=0; i<firmwareSize; i++) {
         	uint32_t newInt = sysexReadInt(i);
         	// WRITE I
-			if (i>0 && (i % 100) == 0) {
+			if (i>0 && (i % 1000) == 0) {
 				uint32_t check = sysexReadInt(i);
-                this->lcd->setCursor(0,3);
-                this->lcd->print("Burning: ");
-                this->lcd->print((int)check);
+				float x = 20.0f * check / firmwareSize;
+                this->lcd->setCursor((int) x, 2);
+                this->lcd->print(".");
                 if (check != i) {
-                    this->lcd->setCursor(0,0);
+                    this->lcd->setCursor(0,3);
         			lcd->print("Check Error at ");
         			lcd->print(i);
                 	while (1);
@@ -229,36 +229,26 @@ void BootLoader::process() {
 			}
             FLASH_Status status = FLASH_ProgramWord(APPLICATION_ADDRESS + i * 4, newInt);
             if (status != FLASH_COMPLETE) {
-                this->lcd->setCursor(0,0);
+                this->lcd->setCursor(0,3);
     			lcd->print("Write Error at ");
     			lcd->print(i);
             	while (1);
             }
+            checkSum += newInt;
         }
+        checkSumReceived = sysexReadInt(firmwareSize);
     	sysexWaitFor(0xf7);
+        if (checkSum != checkSumReceived) {
+            this->lcd->setCursor(0,3);
+			lcd->print("# Check sum  Error #");
+			while(1);
+        }
         this->lcd->clear();
         this->lcd->setCursor(0,1);
         this->lcd->print("New firmware burned");
 
         this->state = BL_FINISHED;
         break;
-
-
-/*
-
-    	long recode = (long)sysex[0] & 0xff;
-		recode <<= 7;
-		recode |= (long)sysex[1] & 0xff;
-		recode <<= 7;
-		recode |= (long)sysex[2] & 0xff;
-		recode <<= 7;
-		recode |= (long)sysex[3] & 0xff;
-		recode <<= 7;
-		recode |= (long)sysex[4] & 0xff;
-*/
-
-    	// TO DO... decode sysex...
-    	break;
     }
 }
 
@@ -272,7 +262,7 @@ bool BootLoader::sysexWaitFor(uint8_t byte) {
 	if (readByte == byte) {
 		return true;
 	} else {
-		lcd->setCursor(0,0);
+		lcd->setCursor(0,3);
 		lcd->print("Error ");
 		lcd->print((int)readByte);
 		lcd->print(" / ");
@@ -476,23 +466,19 @@ void BootLoader::USART_Config() {
 	USART_Cmd(USART3, ENABLE);
 }
 
-LiquidCrystal lcd;
+
+void jumpToDfuLoader() {
+}
+
 
 int main(void) {
-    unsigned int encoderCpt = 0;
-
-
-
+	LiquidCrystal lcd;
     BootLoader bootLoader(&lcd);
     Encoders encoders;
 
     encoders.insertListener(&bootLoader);
     encoders.checkSimpleStatus();
-/*
-    lcd.setCursor(17, 0);
-    lcd.print("B:");
-    lcd.print(bootLoader.getButton());
-*/
+
     if (bootLoader.getButton() == 2) {
         // Button... flash new firmware
     	bootLoader.welcome();
@@ -519,13 +505,33 @@ int main(void) {
             bootLoader.process();
             USB_OTG_BSP_uDelay(10000);
         }
-    }
-    else {
+        /*
+    } else if (bootLoader.getButton() == 4) {
+        // Button... flash new firmware
+    	bootLoader.welcome();
+    	lcd.setCursor(2,2);
+    	lcd.print("!!Embedded DFU!!");
+    	RCC_DeInit();
+        RCC_SYSCLKConfig(RCC_SYSCLKSource_HSI);
+    	SystemCoreClockUpdate();
+        uint32_t dfuAdress = (uint32_t)0x1FFF0004;
+        pFunction Jump_To_EmbeddedLoader= (pFunction) dfuAdress;
+        SysTick->CTRL = 0;
+        SysTick->LOAD = 0;
+        SysTick->VAL = 0;
+        __set_PRIMASK(1);
+        __set_MSP(0x20001000);
+    	Jump_To_EmbeddedLoader();
+
+    	// App ready ?
+
+    	 */
+    } else {
         // App ready ?
         pFunction Jump_To_Application;
         uint32_t JumpAddress;
 
-	// Stack can be on RAM or CCRAM
+        // Stack can be on RAM or CCRAM
         if (((*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFC0000) == 0x20000000
 		|| ((*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFE0000) == 0x10000000) {
             /* Jump to user application */
@@ -541,14 +547,8 @@ int main(void) {
             lcd.print("Bootloader OK but");
             lcd.setCursor(1, 1);
             lcd.print("No PreenFM Firmware");
-            lcd.setCursor(1,2);
-            lcd.print((int)(*(__IO uint32_t*) APPLICATION_ADDRESS));
-            lcd.setCursor(1,3);
-            lcd.print((int)(*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFE0000);
-
         }
     }
 
-    while (1)
-        ;
+    while (1);
 }

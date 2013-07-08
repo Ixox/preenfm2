@@ -87,9 +87,9 @@ public class sysex {
 			dos.writeByte( 0xf0);
 			dos.writeByte( 0x7d);
 			dos.writeByte( 100);
-
-
+			// Write length
 			writeInt(dos, length4);
+			long check = 0;
 			for (int k=0; k< length4; k++) {
 				long toWrite = (long)bin[k*4+3] & 0xff;
 				toWrite <<= 8;
@@ -98,55 +98,16 @@ public class sysex {
 				toWrite |= (long)bin[k*4+1] & 0xff; 
 				toWrite <<= 8;
 				toWrite |= (long)bin[k*4] & 0xff;
-				if (k==0) {
-					for (int j=0; j<4; j++) {
-						System.out.println("=====> bin["+(k*4+j)+"] = " + bin[k*4+j]);
-					}
-					System.out.println("k=0 : "+ toWrite);
-					byte[] sysex = new byte[5];
-					for (int j=0; j<5; j++) {
-						sysex[4-j] = (byte)(toWrite & 0x7f);
-						toWrite >>= 7;
-						System.out.println("=====> sysex["+(4-j)+"] = " + sysex[4-j]);
-						System.out.println("=====> toWrite = " + toWrite);
-					}
-					dos.write(sysex, 0, 5);		
+				writeInt(dos, toWrite);					
 
-				} else {
-					writeInt(dos, toWrite);					
-				}
-
-				if (k>0 && (k % 100) == 0) {
+				if (k>0 && (k % 1000) == 0) {
 					writeInt(dos, k);
 				}
-
-				/*				
-				long recode = (long)sysex[0] & 0xff;
-				recode <<= 7;
-				recode |= (long)sysex[1] & 0xff;
-				recode <<= 7;
-				recode |= (long)sysex[2] & 0xff;
-				recode <<= 7;
-				recode |= (long)sysex[3] & 0xff;
-				recode <<= 7;
-				recode |= (long)sysex[4] & 0xff;
-				
-				if (k==204) {
-					for (int b=0; b<4; b++) {
-						System.out.println("byte["+b+"]="+bin[k*4+b]);
-					}
-					System.out.println("toWrite : "+ toWrite);
-					for (int b=0; b<5; b++) {
-						System.out.println("sysex["+b+"]="+(int)sysex[b]);
-					}
-					System.out.println("recode : "+ recode);				
-					for (int b=3; b>=0; b--) {
-						System.out.println("byte["+b+"]="+ (byte)(recode &0xff));
-						recode >>=8;
-					}
-				}
-				*/
+				check += toWrite;
 			}
+			check &= 0xffffffff;
+			writeInt(dos, (int)check);			
+			
 			dos.writeByte( 0xf7);
 
 			dos.close();

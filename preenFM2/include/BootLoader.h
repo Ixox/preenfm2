@@ -31,7 +31,6 @@ typedef enum {
     BL_BURNING_FIRMWARE,
     BL_SYSEX_INIT,
     BL_SYSEX_WAITING_FORMAT,
-    BL_SYSEX_READING_HEADER,
     BL_SYSEX_READING,
     BL_FINISHED
 } BL_State;
@@ -64,6 +63,7 @@ private:
 	BL_State state;
 	char firmwareName[13];
 	int firmwareSize;
+	uint32_t checkSum, checkSumReceived;
 	bool oneFirmwareAtLeast;
 
 };
