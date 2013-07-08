@@ -301,13 +301,11 @@ void FMDisplay::refreshAllScreenByStep() {
 
 void FMDisplay::displayPreset() {
     FullState* fullState = &this->synthState->fullState;
-    lcd->setCursor(0, 0);
+    lcd->setCursor(16, 0);
     lcd->print("    ");
-    lcd->setCursor(currentTimbre, 0);
+    lcd->setCursor(0, 0);
     lcd->print((char)('0'+currentTimbre +1));
-
-	int length = getLength(this->synthState->params->presetName);
-    lcd->setCursor(19-length,0);
+    lcd->print((char)0);
     lcd->print(this->synthState->params->presetName);
     if (presetModifed[currentTimbre]) {
         lcd->print('*');
@@ -620,16 +618,12 @@ void FMDisplay::midiClock(bool show) {
 
 void FMDisplay::noteOn(int timbre, bool show) {
 	if (this->synthState->fullState.synthMode  == SYNTH_MODE_EDIT) {
-        lcd->setCursor(timbre, 0);
+        lcd->setCursor(16+timbre, 0);
 		if (show) {
 		    noteOnCounter[timbre] = 2;
-	        lcd->print((char)0);
+	        lcd->print((char)('0'+ timbre+1));
 		} else {
-		    if (timbre == currentTimbre) {
-		        lcd->print((char)('0'+timbre+1));
-		    } else {
-		        lcd->print(' ');
-		    }
+			lcd->print(' ');
 		}
 	}
 }

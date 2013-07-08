@@ -1,23 +1,19 @@
 TODO (temporary list, grow over time) : 
 . Play note in combo (spec)
 . Freeze when no file on USB
-. Sysex (usart+USB)
-. dump nrpn
-. USB Midi fo after touch program change
-. inverser usart and wait.
-. Change sysex header to be different from PFM
+. USB Midi : SYSEX, after touch, program change
 
 TO check hardware :
 . volume Pot make noise
 
 
 OK A TESTER  
-. USB midi... to finish
 . env attack as target...
 . env all release as target.
 
 
 DONE:
+. SYSEX USART
 . USB CC + real time evant.
 . USB midi : buggy with Ipad.
 . algo 7 & 8 missing
@@ -53,16 +49,16 @@ DONE:
 
 What's new PreenFM2 : 
 . multi timbral : 4 timbres 
-. more voices, flexible allocation : 48 operators to distribute in the voices of the 4 timbres...
+. more voices, flexible allocation : 48 operators to spread in the the 4 timbres...
 . stereo : pan of carrier operators modifiable + targetable in the matrix
 . Midi through USB (DIN5 still available)
 . patches and banks storage on USB Key
 . New LFO env (silence, attack, decay, loop) Silence time targetable in the matrix to make it change (saw that in the Mopho).
 . Enveloppe attack, decay, release in seconds.. comprehensive tweaking.
-. 4 * 12 bits DAC : 12 + 6 = 18 bits per channel (left and right)
-. sampling rate 40khz (eventually 45Khz with overvlocking)
+. DAC 18 bits : 12 + 6 bits... 
+. sampling rate 40khz
 . Full floating point engine (32 bits)
 . Pins available for any future evolution (analog input, surface control expansion, mutable instrument SMR4 mkII...)
-. DC 2.1mm for 7V or 9V wall adapter
+. DC 2.1mm for 7.5V or 9V wall adapter
 . Custom bootloader : flash new firmware from USBKey
 

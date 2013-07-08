@@ -20,7 +20,7 @@
 #include "LiquidCrystal.h"
 extern LiquidCrystal lcd;
 
-
+float Voice::glidePhaseInc[10];
 
 Voice::Voice(void)
 {
@@ -38,6 +38,24 @@ Voice::Voice(void)
     this->oscState[4] = &oscState5;
     this->oscState[5] = &oscState6;
 
+
+    if (glidePhaseInc[0] != .2f) {
+    	float tmp[] = {
+    			5.0f,
+    			9.0f,
+    			15.0f,
+    			22.0f,
+    			35.0f,
+    			50.0f,
+    			90.0f,
+    			140.0f,
+    			200.0f,
+    			500.0f
+    	};
+    	for (int k = 0 ; k <10 ; k++) {
+    		glidePhaseInc[k] = 1.0f/tmp[k];
+    	}
+    }
 }
 
 
@@ -94,7 +112,7 @@ void Voice::glide() {
     if (!this->gliding) {
         return;
     }
-    this->glidePhase += currentTimbre->params.engine1.glide * currentTimbre->params.engine1.glide * .001f;
+    this->glidePhase += glidePhaseInc[(int)(currentTimbre->params.engine1.glide - .95f)];
     if (glidePhase < 1.0f) {
 
         for (int k=0; k<NUMBER_OF_OPERATORS; k++) {

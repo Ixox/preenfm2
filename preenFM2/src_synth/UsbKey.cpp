@@ -107,11 +107,10 @@ int UsbKey::checkSize(FILE_ENUM file) {
 
 bool UsbKey::isFirmwareFile(char *name)  {
     if (name[0] != 'p' && name[0] != 'P') return false;
-    if (name[1] != 'f' && name[1] != 'F') return false;
-    if (name[2] != 'm' && name[2] != 'M') return false;
+    if (name[1] != '2') return false;
 
     int pointPos = -1;
-    for (int k=3; k<10 && pointPos == -1; k++) {
+    for (int k=2; k<10 && pointPos == -1; k++) {
         if (name[k] == '.') {
             pointPos = k;
         }

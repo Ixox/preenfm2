@@ -325,16 +325,14 @@ void PresetUtil::sendBankToSysex(int bankNumber) {
 
 
 void PresetUtil::sendNrpn(struct MidiEvent cc) {
-    /*
-    Serial3.print((unsigned char) (cc.eventType + cc.channel));
-    Serial3.print((unsigned char) cc.value[0]);
-    Serial3.print((unsigned char) cc.value[1]);
-    */
+    sendSysexByte((unsigned char) (cc.eventType + cc.channel));
+    sendSysexByte((unsigned char) cc.value[0]);
+    sendSysexByte((unsigned char) cc.value[1]);
 }
 
 void PresetUtil::sendCurrentPatchAsNrpns(int timbre) {
-/*
-    int channel = PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL1] -1;
+/* TODO : when working on the VST...
+	int channel = PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL1] -1;
     struct MidiEvent cc;
     cc.eventType = MIDI_CONTROL_CHANGE;
     // Si channel = ALL envoie sur 1
@@ -403,7 +401,7 @@ void PresetUtil::sendCurrentPatchAsNrpns(int timbre) {
             sendNrpn(cc);
         }
     }
-    */
+*/
 }
 
 

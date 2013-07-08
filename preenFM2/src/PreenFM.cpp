@@ -62,10 +62,10 @@ void fillSoundBuffer() {
 void setup() {
 
     unsigned char midiIn[8] = {
-            0b01100,
-            0b10010,
-            0b10010,
-            0b01100,
+            0b00000,
+            0b00000,
+            0b00000,
+            0b01110,
             0b00000,
             0b00000,
             0b00000,

@@ -89,9 +89,10 @@ void USBH_USR_DeviceAttached(void) {
  */
 void USBH_USR_UnrecoveredError(int err) {
 	/* Toggle Red LED in infinite loop */
-    lcd.setCursor(0,3);
+/*    lcd.setCursor(0,3);
     lcd.print(err);
 	Fail_Handler("#UE : ");
+	*/
 }
 
 /**
@@ -236,9 +237,9 @@ void USBH_USR_OverCurrentDetected(void) {
 
 
 void displayFileError(const char* msg) {
-    lcd.clear();
+/*    lcd.clear();
     lcd.setCursor(0,1);
-    lcd.print(msg);
+    lcd.print(msg);*/
     while (true);
 }
 
@@ -345,8 +346,8 @@ void USBH_USR_DeInit(void) {
  * @retval None
  */
 void Fail_Handler(const char*msg) {
-	lcd.setCursor(0, 0);
-	lcd.print(msg);
+/*	lcd.setCursor(0, 0);
+	lcd.print(msg);*/
 	while (1) {	}
 }
 

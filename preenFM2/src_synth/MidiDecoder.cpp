@@ -738,14 +738,14 @@ void MidiDecoder::sendMidiOut() {
     case MIDI_CONTROL_CHANGE:
     case MIDI_PITCH_BEND:
 
+        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
         USART3->DR = (uint16_t)toSend.eventType + toSend.channel;
-        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
 
+        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
         USART3->DR = (uint16_t)toSend.value[0];
-        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
 
-        USART3->DR = (uint16_t)toSend.value[1];
         while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+        USART3->DR = (uint16_t)toSend.value[1];
 
         if (usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
             // usbBuf[0] = [number of cable on 4 bits] [event type on 4 bites]
@@ -760,37 +760,11 @@ void MidiDecoder::sendMidiOut() {
         break;
     case MIDI_AFTER_TOUCH:
     case MIDI_PROGRAM_CHANGE:
-//        Serial3.print((unsigned char) (toSend.eventType + toSend.channel));
-  //      Serial3.print((unsigned char) toSend.value[0]);
+        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
         USART3->DR = (uint16_t)toSend.eventType + toSend.channel;
         while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
         USART3->DR = (uint16_t)toSend.value[0];
-        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
         break;
     }
 }
 
-/* Not used anymore...
-void MidiDecoder::sendToExternalGear(int enumber) {
-    // only on timbre 0
-    int currentValue = this->synth->getTimbre(0)->getMatrix()->getDestination((DestinationEnum)(EXTERNAL_CC1 + enumber)) ;
-    currentValue >>= 4;
-
-    if (currentValue<0) {
-        currentValue =0;
-    }
-    if (currentValue>127) {
-        currentValue = 127;
-    }
-    if (currentValue != previousECC[enumber]) {
-        previousECC[enumber] = currentValue;
-
-        struct MidiEvent cc;
-        cc.eventType = MIDI_CONTROL_CHANGE;
-        cc.channel = this->synthState->fullState.midiConfigValue[MIDICONFIG_ECHANNEL];
-        cc.value[0] = this->synthState->fullState.midiConfigValue[MIDICONFIG_ECC1 + enumber] ;
-        cc.value[1] = currentValue;
-        midiToSend.insert(cc);
-    }
-}
-*/

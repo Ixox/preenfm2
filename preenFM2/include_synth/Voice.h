@@ -110,6 +110,9 @@ private:
     int voiceTimbre;
     Timbre* timbres[4];
     Timbre* currentTimbre;
+
+    // glide phase increment
+    static float glidePhaseInc[10];
 };
 
 #endif

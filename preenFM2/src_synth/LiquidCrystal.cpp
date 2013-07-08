@@ -355,7 +355,7 @@ void LiquidCrystal::send(unsigned char value, bool mode) {
 		write4bits(value >> 4);
 		pulseEnable(1);
 		write4bits(value);
-		pulseEnable(32);
+		pulseEnable(34);
 
 	} else {
 		if (!lcdActions.isFull()) {

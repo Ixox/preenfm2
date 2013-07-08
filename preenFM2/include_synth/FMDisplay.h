@@ -79,7 +79,8 @@ public:
         if (!presetModifed[timbre]) {
             if (this->synthState->fullState.synthMode == SYNTH_MODE_EDIT) {
                 presetModifed[timbre] = true;
-                lcd->setCursor(19,0);
+            	int length = getLength(this->synthState->params->presetName);
+                lcd->setCursor(2 + length,0);
                 lcd->print('*');
             }
         }
