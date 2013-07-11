@@ -247,6 +247,8 @@ void Synth::afterNewParamsLoad(int timbre) {
 
     if (numberOfVoice > voicesMax) {
     	timbres[timbre].params.engine1.numberOfVoice = voicesMax;
+    } else {
+    	timbres[timbre].params.engine1.numberOfVoice = numberOfVoice;
     }
 
     rebuidVoiceTimbre();
