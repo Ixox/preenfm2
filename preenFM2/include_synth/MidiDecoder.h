@@ -139,7 +139,6 @@ private:
     struct MidiEvent currentEvent;
     Synth* synth;
     VisualInfo *visualInfo;
-    Matrix* matrix;
     Storage* storage;
     RingBuffer<MidiEvent, 64> midiToSend;
     MidiEvent toSend ;

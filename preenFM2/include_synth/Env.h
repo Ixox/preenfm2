@@ -119,7 +119,7 @@ public:
     void noteOn(struct EnvData* env) {
         float attack = envParams->attack + this->matrix->getDestination(destAttack) + this->matrix->getDestination(ALL_ENV_ATTACK);
         if (attack > 2.0f) {
-            attack = 0.0f;
+            attack = 2.0f;
         } else if (attack < 0.0f) {
             attack = 0.0f;
         }

@@ -16,6 +16,7 @@
  */
 
 #include "SynthState.h"
+#include "Hexter.h"
 
 #include "LiquidCrystal.h"
 extern LiquidCrystal      lcd;
@@ -29,7 +30,7 @@ const char* allChars  = "_ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 
 
 const char* nullNames []= {};
 const unsigned char* nullNamesOrder = NULL;
-const char* algoNames [] = { "alg1", "alg2", "alg3", "alg4", "alg5", "alg6", "alg7", "alg8", "alg9" };
+const char* algoNames [] = { "alg1", "alg2", "alg3", "alg4", "alg5", "alg6", "alg7", "alg8", "alg9", "al10", "al11", "al12", "al13", "al14" };
 struct ParameterRowDisplay engine1ParameterRow  = {
         "Engine" ,
         { "Algo", "Velo", "Voic", "Glid" },
@@ -41,7 +42,7 @@ struct ParameterRowDisplay engine1ParameterRow  = {
         }
 };
 
-struct ParameterRowDisplay engine2ParameterRow = {
+struct ParameterRowDisplay engineIM1ParameterRow = {
         "Modulation" ,
         { "IM1 ", "IM2 ", "IM3 ", "IM4 "},
         {
@@ -52,7 +53,19 @@ struct ParameterRowDisplay engine2ParameterRow = {
         }
 };
 
-struct ParameterRowDisplay engine3ParameterRow = {
+struct ParameterRowDisplay engineIM2ParameterRow = {
+        "Modulation" ,
+        { "IM5 ", "IM6 ", "IM7 ", "IM8 "},
+        {
+                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
+        }
+};
+
+
+struct ParameterRowDisplay engineMix1ParameterRow = {
         "Mixer" ,
         { "Mix1", "Pan1", "Mix2", "Pan2" },
         {
@@ -63,9 +76,20 @@ struct ParameterRowDisplay engine3ParameterRow = {
         }
 };
 
-struct ParameterRowDisplay engine4ParameterRow = {
+struct ParameterRowDisplay engineMix2ParameterRow = {
         "Mixer" ,
         { "Mix3", "Pan3", "Mix4", "Pan4" },
+        {
+                {0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {-1, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {-1, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
+        }
+};
+
+struct ParameterRowDisplay engineMix3ParameterRow = {
+        "Mixer" ,
+        { "Mix5", "Pan5", "Mix6", "Pan6" },
         {
                 {0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 {-1, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
@@ -212,9 +236,11 @@ struct ParameterRowDisplay lfoStepParameterRow = {
 struct AllParameterRowsDisplay allParameterRows = {
         {
                 &engine1ParameterRow,
-                &engine2ParameterRow,
-                &engine3ParameterRow,
-                &engine4ParameterRow,
+                &engineIM1ParameterRow,
+                &engineIM2ParameterRow,
+                &engineMix1ParameterRow,
+                &engineMix2ParameterRow,
+                &engineMix3ParameterRow,
                 &oscParameterRow,
                 &oscParameterRow,
                 &oscParameterRow,
@@ -360,7 +386,7 @@ void SynthState::encoderTurned(int encoder, int ticks) {
 		}
 
 		if (param->valueNameOrder == NULL) {
-		    if (currentRow == ROW_MODULATION) {
+		    if (currentRow == ROW_MODULATION1 || currentRow == ROW_MODULATION2) {
 		        // Specific rule for modulation
                 float &value = ((float*)params)[num];
                 oldValue = value;
@@ -505,9 +531,10 @@ void SynthState::encoderTurned(int encoder, int ticks) {
 
         if (fullState.menuSelect != oldMenuSelect) {
             if (fullState.currentMenuItem->menuState == MENU_LOAD_INTERNAL) {
-                float* preset = (float*)&(presets[fullState.menuSelect].engine1);
                 propagateBeforeNewParamsLoad();
-                PresetUtil::copySynthParams((char*)preset, (char*)params);
+                float* preset = (float*)&(presets[fullState.menuSelect].engine1);
+                // PresetUtil::copySynthParams((char*)preset, (char*)params);
+                hexter->loadFriendlyHexterPatch(params, fullState.menuSelect);
                 propagateAfterNewParamsLoad();
                 fullState.internalPresetNumber = fullState.menuSelect;
             } else if (fullState.currentMenuItem->menuState == MENU_LOAD_USER_SELECT_PRESET) {
@@ -543,6 +570,33 @@ void SynthState::changeSynthModeRow(int button, int step) {
 				currentRow += step;
 				if (algoInformation[(int)params->engine1.algo].mix <= 2) {
 					if (currentRow == ROW_OSC_MIX2 ) {
+						currentRow += step;
+					}
+				}
+				if (algoInformation[(int)params->engine1.algo].mix <= 4) {
+					if (currentRow == ROW_OSC_MIX3 ) {
+						currentRow += step;
+					}
+				}
+				// Again so that it works in both direction
+				if (algoInformation[(int)params->engine1.algo].mix <= 2) {
+					if (currentRow == ROW_OSC_MIX2 ) {
+						currentRow += step;
+					}
+				}
+				if (algoInformation[(int)params->engine1.algo].im == 0) {
+					if (currentRow == ROW_MODULATION1 ) {
+						currentRow += step;
+					}
+				}
+				if (algoInformation[(int)params->engine1.algo].im <= 4) {
+					if (currentRow == ROW_MODULATION2 ) {
+						currentRow += step;
+					}
+				}
+				// Again so that it works in both direction
+				if (algoInformation[(int)params->engine1.algo].im == 0) {
+					if (currentRow == ROW_MODULATION1 ) {
 						currentRow += step;
 					}
 				}
@@ -959,7 +1013,8 @@ const MenuItem* SynthState::afterButtonPressed() {
         break;
     case MENU_LOAD_INTERNAL:
         propagateBeforeNewParamsLoad();
-        PresetUtil::copySynthParams((char*)&presets[fullState.internalPresetNumber], (char*)params);
+        hexter->loadFriendlyHexterPatch(params, fullState.internalPresetNumber);
+        //PresetUtil::copySynthParams((char*)&presets[fullState.internalPresetNumber], (char*)params);
         propagateAfterNewParamsLoad();
         fullState.menuSelect = fullState.internalPresetNumber;
         break;

@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PreenFM.h"
 #include "PresetUtil.h"
 #include "Storage.h"
 #include "SynthState.h"
@@ -23,7 +24,8 @@
 #include "usb_core.h"
 #include "usbh_core.h"
 #include "stm32f4xx_usart.h"
-
+#include "usb_dcd.h"
+#include "usbKey_usr.h"
 
 extern RingBuffer<uint8_t, 200> usartBuffer;
 
@@ -41,6 +43,9 @@ Storage * PresetUtil::storage;
 uint8_t sysexTmpMem[PATCH_SIZE_PFM2 * 128];
 struct OneSynthParams oneSynthParamsTmp;
 
+uint8_t usbBuffer[4];
+uint8_t sysexBuffer[3];
+int sysexIndex = 0;
 
 #define SYSEX_BYTE_PATCH 3
 #define SYSEX_BYTE_BANK 4
@@ -50,6 +55,8 @@ OneSynthParams synthParamsEmpty  =  {
                 // Engine
                 { ALGO9, 7, 8, 4} ,
                 { 1.5,1.9,1.8,0.7} ,
+                { 1, 0, 1, 0} ,
+                { 1, 0, 1, 0} ,
                 { 1, 0, 1, 0} ,
                 { 1, 0, 1, 0} ,
                 // Oscillator
@@ -284,8 +291,85 @@ void PresetUtil::dumpPatch() {
 
 
 void PresetUtil::sendSysexByte(uint8_t byte) {
-    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
-    USART3->DR = (uint16_t)byte;
+	if (sysexIndex > 2) {
+	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+	    USART3->DR = (uint16_t)sysexBuffer[0];
+
+	    if (usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
+	        // usbBuf[0] = [number of cable on 4 bits] [event type on 4 bites]
+	    	// 0x4 SysEx starts or continues
+	        usbBuffer[0] = 0x00  | 0x4;
+	        usbBuffer[1] = sysexBuffer[0];
+	        usbBuffer[2] = sysexBuffer[1];
+	        usbBuffer[3] = sysexBuffer[2];
+
+	        DCD_EP_Tx(&usbOTGDevice, 0x81, usbBuffer, 4);
+	    }
+
+	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+	    USART3->DR = (uint16_t)sysexBuffer[1];
+	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+	    USART3->DR = (uint16_t)sysexBuffer[2];
+
+	    sysexIndex = 0;
+	}
+	sysexBuffer[sysexIndex] = byte;
+	sysexIndex ++;
+}
+
+void PresetUtil::sendSysexFinished() {
+	if (sysexIndex == 1) {
+
+	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+	    USART3->DR = (uint16_t)sysexBuffer[0];
+
+	    if (usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
+	    	// 0x5 SysEx ends with 1 byte
+	        usbBuffer[0] = 0x00  | 0x5;
+	        usbBuffer[1] = sysexBuffer[0];
+	        usbBuffer[2] = 0;
+	        usbBuffer[3] = 0;
+
+	        DCD_EP_Tx(&usbOTGDevice, 0x81, usbBuffer, 4);
+	    }
+
+	} else if (sysexIndex == 2) {
+
+		while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+	    USART3->DR = (uint16_t)sysexBuffer[0];
+
+	    if (usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
+	    	// 0x6 SysEx ends with 2 bytes
+	        usbBuffer[0] = 0x00  | 0x6;
+	        usbBuffer[1] = sysexBuffer[0];
+	        usbBuffer[2] = sysexBuffer[1];
+	        usbBuffer[3] = 0;
+
+	        DCD_EP_Tx(&usbOTGDevice, 0x81, usbBuffer, 4);
+	    }
+	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+	    USART3->DR = (uint16_t)sysexBuffer[1];
+
+	} else if (sysexIndex == 3) {
+
+		while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+	    USART3->DR = (uint16_t)sysexBuffer[0];
+
+	    if (usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
+	    	// 0x7 SysEx ends with 3 bytes
+	        usbBuffer[0] = 0x00  | 0x7;
+	        usbBuffer[1] = sysexBuffer[0];
+	        usbBuffer[2] = sysexBuffer[1];
+	        usbBuffer[3] = sysexBuffer[2];
+
+	        DCD_EP_Tx(&usbOTGDevice, 0x81, usbBuffer, 4);
+	    }
+	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+	    USART3->DR = (uint16_t)sysexBuffer[1];
+
+	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+	    USART3->DR = (uint16_t)sysexBuffer[2];
+	}
 }
 
 void PresetUtil::sendCurrentPatchToSysex() {
@@ -298,6 +382,7 @@ void PresetUtil::sendCurrentPatchToSysex() {
     PresetUtil::sendParamsToSysex(sysexTmpMem);
 
     sendSysexByte(0xf7);
+    sendSysexFinished();
 }
 
 
@@ -470,7 +555,7 @@ void PresetUtil::resetConfigAndSaveToEEPROM() {
 int PresetUtil::getNextMidiByte() {
     int timeout = 0;
     while (usartBuffer.getCount() == 0) {
-        if (timeout++ >= 2000000) {
+        if (timeout++ >= 50000000) {
             return -1;
         }
     }
@@ -536,7 +621,8 @@ int PresetUtil::readSysex(bool patchAllowed, bool bankAllowed) {
             bSysexRead = true;
             if (isPatch) {
                 int errorCode = PresetUtil::readSysexPatch(sysexTmpMem);
-                lcd.setCursor(15,3);
+                lcd.setCursor(2,3);
+                lcd.print("Patch Err ");
                 lcd.print(errorCode);
 
                 if (errorCode < 0) {
@@ -605,7 +691,7 @@ uint16_t PresetUtil::getShortFromParamFloat(int row, int encoder, float value) {
     uint16_t rValue;
     uint16_t valueToSend = 0;
 
-    if (row != ROW_MODULATION) {
+    if (row != ROW_MODULATION1 && row != ROW_MODULATION2) {
         valueToSend = (param->numberOfValues - 1.0f) * (value - param->minValue) / (param->maxValue - param->minValue) + .1f ;
     } else {
         valueToSend = value * 100.0f + .1f ;
@@ -616,7 +702,7 @@ uint16_t PresetUtil::getShortFromParamFloat(int row, int encoder, float value) {
 
 float PresetUtil::getParamFloatFromShort(int row, int encoder, short value) {
     struct ParameterDisplay* param = &(allParameterRows.row[row]->params[encoder]);
-	if (row != ROW_MODULATION) {
+    if (row != ROW_MODULATION1 && row != ROW_MODULATION2) {
 		return param->minValue + value / (param->numberOfValues - 1.0f) * (param->maxValue - param->minValue);
 	} else {
 		return value * .01f;
@@ -678,3 +764,6 @@ void PresetUtil::copyBank(int source, int dest) {
 		// CAN ONLY COPY FROM sysexTmpMem for the moment
 	}
 }
+
+
+

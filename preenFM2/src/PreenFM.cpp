@@ -29,6 +29,7 @@
 #include "RingBuffer.h"
 #include "MidiDecoder.h"
 #include "UsbKey.h"
+#include "Hexter.h"
 
 #include "ff.h"
 
@@ -37,13 +38,13 @@ SynthState         synthState __attribute__ ((section(".ccmnoload")));
 Synth              synth __attribute__ ((section(".ccmnoload")));
 USB_OTG_CORE_HANDLE          usbOTGDevice __attribute__ ((section(".ccmnoload")));
 
-// No need to put the following in the CCM momry
+// No need to put the following in the CCM memory
 LiquidCrystal      lcd ;
 FMDisplay          fmDisplay ;
 MidiDecoder        midiDecoder;
 Encoders           encoders ;
 UsbKey             usbKey ;
-
+Hexter             hexter;
 
 // Init left/right
 struct sampleForSPI samples __attribute__ ((section(".ccmnoload"))) ;
@@ -237,6 +238,7 @@ void setup() {
     synthState.insertParamChecker(&synth);
 
     synthState.setStorage(&usbKey);
+    synthState.setHexter(&hexter);
 
     usbKey.init(synth.getTimbre(0)->getParamRaw(), synth.getTimbre(1)->getParamRaw(), synth.getTimbre(2)->getParamRaw(), synth.getTimbre(3)->getParamRaw());
     usbKey.loadConfig(synthState.fullState.midiConfigValue);
@@ -318,7 +320,7 @@ void loop(void) {
 	}
 
 	// Comment following line for debug....
-	lcd.setRealTimeAction(false);
+	lcd.setRealTimeAction(true);
     if ((newMicros - encoderMicros) > 80) {
         fillSoundBuffer();
         encoders.checkStatus(synthState.fullState.midiConfigValue[MIDICONFIG_ENCODER]);

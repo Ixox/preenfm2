@@ -5,7 +5,7 @@
 
 
 // Usb midi buffer..
-uint8_t midiBuff[4]  __attribute__ ((section(".ccmnoload")));
+uint8_t midiBuff[4];
 
 
 /*********************************************
@@ -207,25 +207,27 @@ static uint8_t usbd_midi_EP0_RxReady(void *pdev) {
 	return 0;
 }
 
-// TODO : put that somewhere else in fast memory...
-uint8_t usbBuf[3];
-static int dataInCpt = 0;
+
 static uint8_t usbd_midi_DataIn(void *pdev, uint8_t epnum) {
     DCD_EP_Flush((USB_OTG_CORE_HANDLE *)pdev, 0x81);
     return USBD_OK;
 	return USBD_OK;
 }
-static uint8_t usbd_midi_DataOut(void *pdev, uint8_t epnum) {
 
+static uint8_t usbd_midi_DataOut(void *pdev, uint8_t epnum) {
     switch (midiBuff[0] & 0xf) {
     case 0x9:
     case 0x8:
     case 0xb:
     case 0xe:
+    case 0x3:
+    case 0x4:
+    case 0x7:
 	    usartBuffer.insert(midiBuff[1]);
 	    usartBuffer.insert(midiBuff[2]);
 	    usartBuffer.insert(midiBuff[3]);
 	    break;
+    case 0x6:
     case 0x2:
         usartBuffer.insert(midiBuff[1]);
         usartBuffer.insert(midiBuff[2]);
@@ -234,6 +236,21 @@ static uint8_t usbd_midi_DataOut(void *pdev, uint8_t epnum) {
     case 0xF:
         usartBuffer.insert(midiBuff[1]);
         break;
+    }
+
+    switch (midiBuff[0] & 0xf) {
+    case 0x5:
+    case 0x6:
+    case 0x7:
+    	lcd.setCursor(10,0);
+    	lcd.print("END...");
+    	break;
+    case 0xF:
+    	lcd.setCursor(10,1);
+    	lcd.print("FFFFF");
+    	break;
+    default:
+    	break;
     }
 
 	// Prepare for next midi information

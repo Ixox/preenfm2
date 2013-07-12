@@ -57,6 +57,7 @@ SRC_FIRMWARE = PreenFM.cpp \
 	STM32_USB_Device_Library/Core/usbd_req.c \
 	src_synth/Env.cpp \
 	src_synth/FMDisplay.cpp \
+	src_synth/Hexter.cpp \
 	src_synth/Lfo.cpp \
 	src_synth/LfoEnv.cpp \
 	src_synth/LfoEnv2.cpp \

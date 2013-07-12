@@ -1,7 +1,15 @@
 TODO (temporary list, grow over time) : 
 . Play note in combo (spec)
 . Freeze when no file on USB
-. USB Midi : SYSEX, after touch, program change
+. !!! USB Midi : SYSEX, after touch, program change
+. Pitch bend 1 modwheel to adjust (too strong).
+. Must not be able to sysex combo bank
+. 'Panic!' to add...
+. Remove CC from matrix...
+. Add mix4/pan4 mix5.... pan6 to matrix (??)
+. Rename LFO on LCDnumberOfVoice
+. env all release as target.
+. ADD DX7 algo for compatibility...
 
 TO check hardware :
 . volume Pot make noise
@@ -9,10 +17,11 @@ TO check hardware :
 
 OK A TESTER  
 . env attack as target...
-. env all release as target.
+. Fine tune to hard !
 
 
 DONE:
+. voice = 0 after patch load
 . SYSEX USART
 . USB CC + real time evant.
 . USB midi : buggy with Ipad.

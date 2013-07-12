@@ -89,8 +89,10 @@ void FMDisplay::printFloatWithSpace(float value) {
 
 bool FMDisplay::shouldThisValueShowUp(int row, int encoder) {
     int algo = this->synthState->params->engine1.algo;
-    if (row == ROW_MODULATION && (encoder+1)> algoInformation[algo].im) {
+    if (row == ROW_MODULATION1 && (encoder+1)> algoInformation[algo].im) {
         return false;
+    } else if (row == ROW_MODULATION2 && (encoder+5)> algoInformation[algo].im) {
+            return false;
     } else if (row == ROW_OSC_MIX1) {
         if ((encoder>>1) >= algoInformation[algo].mix) {
             return false;

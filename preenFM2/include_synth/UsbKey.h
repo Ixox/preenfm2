@@ -50,9 +50,6 @@ public:
     int readNextFirmwareName(char *name, int*size);
     int loadFirmwarePart(char *fileName, int seek, void* bytes, int size);
 
-
-
-
 private:
     void usbProcess();
     int save(FILE_ENUM file, int seek, void* bytes, int size);

@@ -349,11 +349,11 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
         case CC_IM4:
             if (midiEvent.value[1] <= 50) {
                 // cc.value[1] = (newValue * 50.0f + .1f);
-                this->synth->setNewValueFromMidi(timbre, ROW_MODULATION, ENCODER_ENGINE_IM1  + midiEvent.value[0] - CC_IM1,
+                this->synth->setNewValueFromMidi(timbre, ROW_MODULATION1, ENCODER_ENGINE_IM1  + midiEvent.value[0] - CC_IM1,
                         (float)midiEvent.value[1] * .02f );
             } else {
                 // cc.value[1] = 50.0 + (newValue - 1.0f) * 5.0f + .1f;
-                this->synth->setNewValueFromMidi(timbre, ROW_MODULATION, ENCODER_ENGINE_IM1  + midiEvent.value[0] - CC_IM1,
+                this->synth->setNewValueFromMidi(timbre, ROW_MODULATION1, ENCODER_ENGINE_IM1  + midiEvent.value[0] - CC_IM1,
                         (float)1.0f + (midiEvent.value[1] - 50.0f) * .2f );
             }
             break;
@@ -502,7 +502,7 @@ void MidiDecoder::decodeNrpn(int timbre) {
 
 
         if (row < NUMBER_OF_ROWS) {
-            if (row != ROW_MODULATION) {
+            if (row != ROW_MODULATION1 && row != ROW_MODULATION2) {
                 // value = (newValue - param->minValue) / (param->maxValue - param->minValue) * param->numberOfValues + .1f ;
                 struct ParameterDisplay* param = &(allParameterRows.row[row]->params[encoder]);
                 value =  param->minValue + value / (param->numberOfValues - 1.0f) * (param->maxValue - param->minValue);
@@ -576,7 +576,7 @@ void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
             // performance do not send NRPN
             int valueToSend = 0;
 
-            if (currentrow != ROW_MODULATION) {
+            if (currentrow != ROW_MODULATION1 && currentrow != ROW_MODULATION2) {
                 valueToSend = (param->numberOfValues - 1.0f) * (newValue - param->minValue) / (param->maxValue - param->minValue) + .1f ;
             } else {
                 valueToSend = newValue * 100.0f + .1f ;
@@ -615,7 +615,7 @@ void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
                 cc.value[1] = newValue;
             }
             break;
-        case ROW_MODULATION:
+        case ROW_MODULATION1:
             // CC allows from 0-127 and the value from 0-200
             // Let's keep the resolution for the 50 first values  than keep half the resolution
             if (newValue < 1.0f) {
@@ -730,7 +730,6 @@ void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
 void MidiDecoder::sendMidiOut() {
 
     MidiEvent toSend = midiToSend.remove();
-    USB_OTG_EP *ep2 = &usbOTGDevice.dev.in_ep[1];
 
     switch (toSend.eventType) {
     case MIDI_NOTE_OFF:
@@ -741,12 +740,7 @@ void MidiDecoder::sendMidiOut() {
         while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
         USART3->DR = (uint16_t)toSend.eventType + toSend.channel;
 
-        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
-        USART3->DR = (uint16_t)toSend.value[0];
-
-        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
-        USART3->DR = (uint16_t)toSend.value[1];
-
+        // Between the USART3 to save a couple of cycle
         if (usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
             // usbBuf[0] = [number of cable on 4 bits] [event type on 4 bites]
             usbBuf[0] = 0x00  | (toSend.eventType >> 4);
@@ -757,11 +751,31 @@ void MidiDecoder::sendMidiOut() {
             DCD_EP_Tx(&usbOTGDevice, 0x81, usbBuf, 4);
         }
 
+        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+        USART3->DR = (uint16_t)toSend.value[0];
+
+        while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
+        USART3->DR = (uint16_t)toSend.value[1];
+
+
         break;
     case MIDI_AFTER_TOUCH:
     case MIDI_PROGRAM_CHANGE:
         while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
         USART3->DR = (uint16_t)toSend.eventType + toSend.channel;
+
+        // Between the USART3 to save a couple of cycle
+        if (usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
+            // usbBuf[0] = [number of cable on 4 bits] [event type on 4 bites]
+            usbBuf[0] = 0x00  | (toSend.eventType >> 4);
+            usbBuf[1] = toSend.eventType + toSend.channel;
+            usbBuf[2] = toSend.value[0];
+            usbBuf[3] = 0;
+
+            DCD_EP_Tx(&usbOTGDevice, 0x81, usbBuf, 4);
+        }
+
+
         while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
         USART3->DR = (uint16_t)toSend.value[0];
         break;

@@ -19,6 +19,7 @@
 #define PRESETUTIL_H_
 
 
+#include <stdint.h>
 
 
 
@@ -51,7 +52,9 @@ public:
 
     static void sendBankToSysex(int bankNumber);
     static void sendCurrentPatchToSysex();
-    static void sendSysexByte(unsigned char byte);
+    static void sendSysexByte(uint8_t bytes);
+    static void send3SysexBytes(uint8_t* bytes);
+    static void sendSysexFinished();
     static void sendParamsToSysex(unsigned char* params);
     static int  readSysex(bool patchAllowed, bool bankAllowed);
     static int  readSysexPatch(unsigned char* params);

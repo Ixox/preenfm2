@@ -123,6 +123,11 @@ enum Algorithm {
     ALGO7,
     ALGO8,
     ALGO9,
+    ALG10,
+    ALG11,
+    ALG12,
+    ALG13,
+    ALG14,
 	ALGO_END
 };
 
@@ -164,10 +169,12 @@ enum OscEnv2Loop {
 enum {
     ROW_ENGINE_FIRST = 0,
     ROW_ENGINE = ROW_ENGINE_FIRST,
-    ROW_MODULATION ,
+    ROW_MODULATION1 ,
+    ROW_MODULATION2 ,
     ROW_OSC_MIX1,
     ROW_OSC_MIX2,
-    ROW_ENGINE_LAST = ROW_OSC_MIX2
+    ROW_OSC_MIX3,
+    ROW_ENGINE_LAST = ROW_OSC_MIX3
 };
 
 enum {
@@ -278,7 +285,7 @@ struct MidiEvent {
 	unsigned char value[2];
 };
 
-
+class Hexter;
 
 class SynthState : public EncodersListener {
 public:
@@ -286,6 +293,9 @@ public:
 
 	void setStorage(Storage* storage) {
 	    this->storage = storage;
+	}
+	void setHexter(Hexter* hexter) {
+	    this->hexter = hexter;
 	}
 	void encoderTurned(int num, int ticks);
 	void encoderTurnedForStepSequencer(int row, int num, int ticks);
@@ -467,6 +477,7 @@ private:
     }
 
     Storage* storage;
+    Hexter* hexter;
 };
 
 // Global structure used all over the code

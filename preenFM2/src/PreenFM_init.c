@@ -170,8 +170,6 @@ void Systick_disable() {
 }
 
 void SysTick_Config(void) {
-	//  32768 Hz : 168000000/40000 = 4200...
-    // 4200 / 5 = 840
 	int numberOfTick = 168000000 / PREENFM_FREQUENCY / 4;
 
 

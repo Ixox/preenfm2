@@ -22,7 +22,7 @@
 
 #define BLOCK_SIZE 32
 
-#define PREENFM_FREQUENCY 40000.0f
+#define PREENFM_FREQUENCY 38000.0f
 #define PREENFM_FREQUENCY_INVERSED 1.0f/PREENFM_FREQUENCY
 #define PREENFM_FREQUENCY_INVERSED_LFO PREENFM_FREQUENCY_INVERSED*32.0f
 #define PREENFM_FREQUENCY_DIV_2 PREENFM_FREQUENCY/2.0f
@@ -45,25 +45,39 @@ struct Engine1Params {
     float glide;
 };
 
-struct Engine2Params {
+struct EngineIm1 {
     float modulationIndex1;
     float modulationIndex2;
     float modulationIndex3;
     float modulationIndex4;
 };
 
-struct Engine3Params {
+struct EngineIm2 {
+    float modulationIndex5;
+    float modulationIndex6;
+    float notUsed1;
+    float notUsed2;
+};
+
+struct EngineMix1 {
     float mixOsc1;
     float panOsc1;
     float mixOsc2;
     float panOsc2;
 };
 
-struct Engine4Params {
+struct EngineMix2 {
     float mixOsc3;
     float panOsc3;
     float mixOsc4;
     float panOsc4;
+};
+
+struct EngineMix3 {
+    float mixOsc5;
+    float panOsc5;
+    float mixOsc6;
+    float panOsc6;
 };
 
 struct EnvelopeParams {
@@ -116,9 +130,11 @@ struct StepSequencerSteps {
 
 struct OneSynthParams {
     struct Engine1Params engine1;
-    struct Engine2Params engine2;
-    struct Engine3Params engine3;
-    struct Engine4Params engine4;
+    struct EngineIm1 engineIm1;
+    struct EngineIm2 engineIm2;
+    struct EngineMix1 engineMix1;
+    struct EngineMix2 engineMix2;
+    struct EngineMix3 engineMix3;
     struct OscillatorParams osc1;
     struct OscillatorParams osc2;
     struct OscillatorParams osc3;

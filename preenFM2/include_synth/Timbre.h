@@ -61,25 +61,37 @@ public:
     }
 
     void updateAllModulationIndexes() {
-        modulationIndex1 = params.engine2.modulationIndex1 + matrix.getDestination(INDEX_MODULATION1);
+    	int numberOfIMs = algoInformation[(int)(params.engine1.algo)].mix;
+    	modulationIndex1 = params.engineIm1.modulationIndex1 + matrix.getDestination(INDEX_MODULATION1);
         modulationIndex1 = (modulationIndex1 < 0.0f) ? 0.0f : modulationIndex1;
-        modulationIndex2 = params.engine2.modulationIndex2 + matrix.getDestination(INDEX_MODULATION2);
+        modulationIndex2 = params.engineIm1.modulationIndex2 + matrix.getDestination(INDEX_MODULATION2);
         modulationIndex2 = (modulationIndex2 < 0.0f) ? 0.0f : modulationIndex2;
-        modulationIndex3 = params.engine2.modulationIndex3 + matrix.getDestination(INDEX_MODULATION3);
+
+        if (numberOfIMs <= 2) {
+        	return;
+        }
+
+        modulationIndex3 = params.engineIm1.modulationIndex3 + matrix.getDestination(INDEX_MODULATION3);
         modulationIndex3 = (modulationIndex3 < 0.0f) ? 0.0f : modulationIndex3;
-        modulationIndex4 = params.engine2.modulationIndex4 + matrix.getDestination(INDEX_MODULATION4);
+        modulationIndex4 = params.engineIm1.modulationIndex4 + matrix.getDestination(INDEX_MODULATION4);
         modulationIndex4 = (modulationIndex4 < 0.0f) ? 0.0f : modulationIndex4;
+
+        if (numberOfIMs < 4) {
+        	return;
+        }
+
+        modulationIndex5 = params.engineIm2.modulationIndex5 ;
+        modulationIndex5 = (modulationIndex5 < 0.0f) ? 0.0f : modulationIndex5;
+        modulationIndex6 = params.engineIm2.modulationIndex6 ;
+        modulationIndex6 = (modulationIndex6 < 0.0f) ? 0.0f : modulationIndex6;
+
     }
 
     void updateAllMixOscsAndPans() {
-        mix1 = params.engine3.mixOsc1 + matrix.getDestination(MIX_OSC1);
+        mix1 = params.engineMix1.mixOsc1 + matrix.getDestination(MIX_OSC1);
         mix1 = (mix1 < 0) ? 0 : (mix1 >1.0f ? 1.0f : mix1);
-        mix2 = params.engine3.mixOsc2 + matrix.getDestination(MIX_OSC2);
-        mix2 = (mix2 < 0) ? 0 : (mix2 >1.0f ? 1.0f : mix2);
-        mix3 = params.engine4.mixOsc3 + matrix.getDestination(MIX_OSC3);
-        mix3 = (mix3 < 0) ? 0 : (mix3 >1.0f ? 1.0f : mix3);
 
-        float pan1 = params.engine3.panOsc1 + matrix.getDestination(PAN_OSC1) + 1;
+        float pan1 = params.engineMix1.panOsc1 + matrix.getDestination(PAN_OSC1) + 1;
         if (pan1 < 1) {
             pan1Left = pan1 * .80f +.2f;
             pan1Right = 1;
@@ -88,7 +100,11 @@ public:
             pan1Left = 1;
         }
 
-        float pan2 = params.engine3.panOsc2 + matrix.getDestination(PAN_OSC2) + 1;
+
+        mix2 = params.engineMix1.mixOsc2 + matrix.getDestination(MIX_OSC2);
+        mix2 = (mix2 < 0) ? 0 : (mix2 >1.0f ? 1.0f : mix2);
+
+        float pan2 = params.engineMix1.panOsc2 + matrix.getDestination(PAN_OSC2) + 1;
         if (pan2 < 1) {
             pan2Left = pan2 * .80f +.2f;
             pan2Right = 1;
@@ -97,7 +113,15 @@ public:
             pan2Left = 1;
         }
 
-        float pan3 = params.engine4.panOsc3 + matrix.getDestination(PAN_OSC3) + 1;
+        // A bit lighter for algo with 1 or 2 mix...
+        if (algoInformation[(int)(params.engine1.algo)].mix <=2) {
+        	return;
+        }
+
+        mix3 = params.engineMix2.mixOsc3 + matrix.getDestination(MIX_OSC3);
+        mix3 = (mix3 < 0) ? 0 : (mix3 >1.0f ? 1.0f : mix3);
+
+        float pan3 = params.engineMix2.panOsc3 + matrix.getDestination(PAN_OSC3) + 1;
         if (pan3 < 1) {
             pan3Left = pan3 * .80f +.2f;
             pan3Right = 1;
@@ -105,6 +129,48 @@ public:
             pan3Right = 1.8f - pan3 * .8f;
             pan3Left = 1;
         }
+
+        // No matrix for mix4 and pan4
+        mix4 = params.engineMix2.mixOsc4;
+        float pan4 = params.engineMix2.panOsc4 + 1;
+        if (pan4 < 1) {
+            pan4Left = pan4 * .80f +.2f;
+            pan4Right = 1;
+        } else {
+            pan4Right = 1.8f - pan4 * .8f;
+            pan4Left = 1;
+        }
+
+
+        // A bit lighter for algo with 5 or 6 mix...
+        if (algoInformation[(int)(params.engine1.algo)].mix <=4) {
+        	return;
+        }
+
+        // No more matrix....
+
+        mix5 = params.engineMix3.mixOsc5 ;
+        mix5 = (mix5 < 0) ? 0 : (mix5 >1.0f ? 1.0f : mix5);
+        float pan5 = params.engineMix3.panOsc5 + 1;
+        if (pan5 < 1) {
+            pan5Left = pan5 * .80f +.2f;
+            pan5Right = 1;
+        } else {
+            pan5Right = 1.8f - pan5 * .8f;
+            pan5Left = 1;
+        }
+
+        mix6 = params.engineMix3.mixOsc6;
+        float pan6 = params.engineMix3.panOsc6 + 1;
+        if (pan6 < 1) {
+            pan6Left = pan6 * .80f +.2f;
+            pan6Right = 1;
+        } else {
+            pan6Right = 1.8f - pan6 * .8f;
+            pan6Left = 1;
+        }
+
+
 
     }
 
@@ -147,10 +213,10 @@ public:
     }
 
     // optimization
-    float modulationIndex1, modulationIndex2, modulationIndex3, modulationIndex4;
-    float mix1, mix2, mix3;
-    float pan1Left, pan2Left, pan3Left;
-    float pan1Right, pan2Right, pan3Right;
+    float modulationIndex1, modulationIndex2, modulationIndex3, modulationIndex4, modulationIndex5, modulationIndex6;
+    float mix1, mix2, mix3, mix4, mix5, mix6;
+    float pan1Left, pan2Left, pan3Left, pan4Left, pan5Left, pan6Left  ;
+    float pan1Right, pan2Right, pan3Right, pan4Right, pan5Right, pan6Right ;
 
 private:
     struct OneSynthParams params;
