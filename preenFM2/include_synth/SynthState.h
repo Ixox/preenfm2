@@ -129,6 +129,8 @@ enum Algorithm {
     ALG13,
     ALG14,
     ALG15,
+    ALG16,
+    ALG17,
 	ALGO_END
 };
 
