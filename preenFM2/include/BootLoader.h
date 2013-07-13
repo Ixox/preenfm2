@@ -44,9 +44,9 @@ public:
 	void initKey();
 	void readFirmwares();
 	void encoderTurned(int num, int ticks);
-	void buttonPressed(int number);
+	void buttonReleased(int number);
 	void resetButtonPressed();
-	void buttonLongPressed(int number);
+	void buttonPressed(int number);
 	void welcome();
 	void USART_Config();
 	int getButton() { return button; }

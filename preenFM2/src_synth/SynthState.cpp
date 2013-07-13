@@ -30,7 +30,7 @@ const char* allChars  = "_ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 
 
 const char* nullNames []= {};
 const unsigned char* nullNamesOrder = NULL;
-const char* algoNames [] = { "alg1", "alg2", "alg3", "alg4", "alg5", "alg6", "alg7", "alg8", "alg9", "al10", "al11", "al12", "al13", "al14" };
+const char* algoNames [] = { "alg1", "alg2", "alg3", "alg4", "alg5", "alg6", "alg7", "alg8", "alg9", "al10", "al11", "al12", "al13", "al14", "al15" };
 struct ParameterRowDisplay engine1ParameterRow  = {
         "Engine" ,
         { "Algo", "Velo", "Voic", "Glid" },
@@ -99,22 +99,9 @@ struct ParameterRowDisplay engineMix3ParameterRow = {
 };
 
 
-const char* oscShapeNames []=  {"sin ", "s^2 ", "1/2s", "spos", "rand", "squa", "saw ", "off "} ;
-/*
-enum OscShape {
-	OSC_SHAPE_SIN = 0,
-    OSC_SHAPE_SIN2,
-    OSC_SHAPE_SIN3,
-    OSC_SHAPE_SIN4,
-    OSC_SHAPE_RAND,
-    OSC_SHAPE_SQUARE,
-    OSC_SHAPE_SAW,
-	OSC_SHAPE_OFF
-};
-*/
-unsigned char oscShameOrder[] = { OSC_SHAPE_SIN, OSC_SHAPE_SQUARE, OSC_SHAPE_SAW, OSC_SHAPE_RAND, OSC_SHAPE_SIN2, OSC_SHAPE_SIN3, OSC_SHAPE_SIN4, OSC_SHAPE_OFF };
-// index = enum value, value = position dans oscShameOrder
-unsigned char oscShameOrderReversed[] = { 0, 4, 5, 6, 3, 1, 2, 7};
+
+const char* oscShapeNames []=  {"sin ", "saw ", "squa", "s^2 ", "szer", "spos", "rand", "off "} ;
+
 
 
 const char* oscTypeNames [] = { "keyb", "fixe"};
@@ -122,7 +109,7 @@ struct ParameterRowDisplay oscParameterRow = {
         "Oscillator",
         { "Shap", "FTyp", "Freq", "FTun" },
         {
-                { OSC_SHAPE_SIN, OSC_SHAPE_LAST -1, OSC_SHAPE_LAST, DISPLAY_TYPE_STRINGS, oscShapeNames, oscShameOrder, oscShameOrderReversed },
+                { OSC_SHAPE_SIN, OSC_SHAPE_LAST -1, OSC_SHAPE_LAST, DISPLAY_TYPE_STRINGS, oscShapeNames, nullNamesOrder, nullNamesOrder},
                 { OSC_FT_KEYBOARD, OSC_FT_FIXE, 2, DISPLAY_TYPE_STRINGS, oscTypeNames, nullNamesOrder, nullNamesOrder},
                 { 0, 8, 193, DISPLAY_TYPE_FLOAT ,  nullNames, nullNamesOrder, nullNamesOrder },
                 { -1, 1, 201, DISPLAY_TYPE_FLOAT,  nullNames, nullNamesOrder, nullNamesOrder }
@@ -165,27 +152,14 @@ struct ParameterRowDisplay lfoEnv2ParameterRow = {
 
 const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "env2", "seq1", "seq2",
         "PitB", "AftT", "ModW", "Velo", "Key", "CC1 ", "CC2 ", "CC3 ", "CC4 "} ;
-/*
-    DESTINATION_NONE = 0,
-    MAIN_GATE,    INDEX_MODULATION1,    INDEX_MODULATION2,    INDEX_MODULATION3,    INDEX_MODULATION4,
-    OSC1_FREQ,    OSC2_FREQ,    OSC3_FREQ,    OSC4_FREQ,    OSC5_FREQ,    OSC6_FREQ,    ALL_OSC_FREQ,
-    LFO1_FREQ,    LFO2_FREQ,    LFO3_FREQ,    LFOENV2_SILENCE,    LFOSEQ1_GATE,    LFOSEQ2_GATE,
-    MIX_OSC1,    MIX_OSC2,    MIX_OSC3,    MIX_OSC4,
-    PAN_OSC1,    PAN_OSC2,    PAN_OSC3,    PAN_OSC4,
-    ENV1_ATTACK,    ENV2_ATTACK,    ENV3_ATTACK,    ENV4_ATTACK,    ENV5_ATTACK,    ENV6_ATTACK,    ALL_ENV_ATTACK,
-    MTX1_MUL,    MTX2_MUL,    MTX3_MUL,    MTX4_MUL,    MTX5_MUL,    MTX6_MUL,    MTX7_MUL,    MTX8_MUL,    MTX9_MUL,    MTX10_MUL,    MTX11_MUL,    MTX12_MUL,
-    EXTERNAL_CC1,    EXTERNAL_CC2,    EXTERNAL_CC3,    EXTERNAL_CC4,
-
-*/
 
 const char* matrixDestNames [] = {
         "None", "Gate", "IM1 ", "IM2 ", "IM3 ", "IM4 ",
         "o1Fq", "o2Fq", "o3Fq", "o4Fq", "o5Fq", "o6Fq", "o*Fq",
         "l1Fq", "l2Fq", "l3Fq", "e2si", "s1ga", "s2ga",
-        "Mix1", "Pan1", "Mix2", "Pan2", "Mix3", "Pan3",
+        "Mix1", "Pan1", "Mix2", "Pan2", "Mix3", "Pan3", "Mix3", "Pan3", "Mix*", "Pan*",
         "Env1", "Env2", "Env3", "Env4", "Env5", "Env6", "Env*",
-	    "mx01", "mx02", "mx03", "mx04", "mx05", "mx06", "mx07", "mx08", "mx09", "mx10", "mx11", "mx12",
-        "Ecc1", "Ecc2", "Ecc3", "Ecc4"
+	    "mx01", "mx02", "mx03", "mx04", "mx05", "mx06", "mx07", "mx08", "mx09", "mx10", "mx11", "mx12"
 	   } ;
 
 
@@ -202,16 +176,14 @@ struct ParameterRowDisplay matrixParameterRow = {
 
 const char* lfoOscMidiClock[] =  { "M/16", "MC/8", "MC/4", "MC/2", "MClk", "MC*2", "MC*3", "MC*4", "MC*8"};
 
-const char* lfoShapeNames [] =  { "Saw ", "Ramp", "Squa", "Rand", "Sin "} ;
+const char* lfoShapeNames [] =  { "Sin ", "Ramp",  "Saw ","Squa", "Rand" } ;
 
-unsigned char  lfoShapeNamesOrder[] = { LFO_SIN, LFO_SAW, LFO_RAMP, LFO_SQUARE, LFO_RANDOM };
-unsigned char  lfoShapeNamesOrderReversed[] = { 1, 2, 3, 4, 0};
 
 struct ParameterRowDisplay lfoParameterRow = {
         "LFO Osc",
         { "Shap", "Freq", "Bias", "KSyn" },
         {
-                { LFO_SAW, LFO_TYPE_MAX-1, 1, DISPLAY_TYPE_STRINGS,  lfoShapeNames, lfoShapeNamesOrder, lfoShapeNamesOrderReversed},
+                { LFO_SAW, LFO_TYPE_MAX-1, 1, DISPLAY_TYPE_STRINGS,  lfoShapeNames, nullNamesOrder, nullNamesOrder},
                 { 0, 24.9, 250,DISPLAY_TYPE_LFO_HZ, nullNames, nullNamesOrder, nullNamesOrder },
                 { -1, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
@@ -362,6 +334,27 @@ void SynthState::encoderTurnedForStepSequencer(int row, int encoder, int ticks) 
 	}
 }
 
+void SynthState::encoderTurnedWhileButtonPressed(int encoder, int ticks, int button) {
+    int oldCurrentRow = currentRow;
+
+    if (fullState.synthMode == SYNTH_MODE_EDIT)  {
+        switch (button) {
+        case BUTTON_SYNTH:
+        case BUTTON_OSC:
+        case BUTTON_ENV:
+        case BUTTON_MATRIX:
+        case BUTTON_LFO:
+        	changeSynthModeRow(button , ticks>0 ? 1 : -1);
+            break;
+        case BUTTON_BACK:
+        	// NOTE !!!!
+        	break;
+        }
+    }
+    if (oldCurrentRow != currentRow) {
+        propagateNewCurrentRow(currentRow);
+    }
+}
 
 void SynthState::encoderTurned(int encoder, int ticks) {
     if (fullState.synthMode == SYNTH_MODE_EDIT) {
@@ -760,7 +753,8 @@ void SynthState::buttonPressed(int button) {
     }
 }
 
-void SynthState::buttonLongPressed(int button) {
+/*
+void SynthState::buttonPressed(int button) {
     int oldCurrentRow = currentRow;
 
     if (fullState.synthMode == SYNTH_MODE_EDIT)  {
@@ -785,6 +779,7 @@ void SynthState::buttonLongPressed(int button) {
         propagateNewCurrentRow(currentRow);
     }
 }
+*/
 
 
 void SynthState::setNewStepValue(int timbre, int whichStepSeq, int step, int newValue) {

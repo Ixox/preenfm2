@@ -26,98 +26,98 @@ float noise[32] __attribute__ ((section(".ccmnoload")));
 
 
 struct WaveTable waveTables[NUMBER_OF_WAVETABLES] __attribute__ ((section(".ccm"))) = {
-//		OSC_SHAPE_SIN = 0,
+		//		OSC_SHAPE_SIN = 0,
 		{
-			sinTable,
-			0x7ff,
-			1,0
+				sinTable,
+				0x7ff,
+				1,0
 		},
-//		OSC_SHAPE_SIN2,
+		//		OSC_SHAPE_SAW,
 		{
-			sinSquareTable,
-            0x3ff,
-			1,0
+				sawTable,
+				0x7ff,
+				1,0
 		},
-//		OSC_SHAPE_SIN3,
+		//		OSC_SHAPE_SQUARE,
 		{
-			sinOrZeroTable,
-            0x3ff,
-			1,0
+				squareTable,
+				0x7ff,
+				1,0
 		},
-//		OSC_SHAPE_SIN4,
+		//		OSC_SHAPE_SIN_SQUARE,
 		{
-			sinPosTable,
-            0x3ff,
-			1,0
+				sinSquareTable,
+				0x3ff,
+				1,0
 		},
-//		OSC_SHAPE_RAND,
+		//		OSC_SHAPE_SIN_ZERO,
 		{
-			noise,
-            0x1f,
-			0,1 //
+				sinOrZeroTable,
+				0x3ff,
+				1,0
 		},
-//		OSC_SHAPE_SQUARE,
+		//		OSC_SHAPE_SIN_POS,
 		{
-			squareTable,
-            0x7ff,
-			1,0
+				sinPosTable,
+				0x3ff,
+				1,0
 		},
-//		OSC_SHAPE_SAW,
+		//		OSC_SHAPE_RAND,
 		{
-			sawTable,
-            0x7ff,
-			1,0
+				noise,
+				0x1f,
+				0,1 //
 		},
 		//	OSC_SHAPE_OFF,
 		{
-			silence,
-			0x7ff, // any value works
-			0,0
+				silence,
+				0x7ff, // any value works
+				0,0
 		}
 };
 
 
 void Osc::init(Matrix* matrix, struct OscillatorParams *oscParams, DestinationEnum df) {
-    this->destFreq = df;
+	this->destFreq = df;
 
-    this->matrix = matrix;
+	this->matrix = matrix;
 
-    oscillator = oscParams;
+	oscillator = oscParams;
 
-    if (waveTables[0].precomputedValue <= 0) {
-        for (int k=0; k<NUMBER_OF_WAVETABLES; k++) {
-            waveTables[k].precomputedValue = (waveTables[k].max + 1) * waveTables[k].useFreq * PREENFM_FREQUENCY_INVERSED;
-        }
-    }
+	if (waveTables[0].precomputedValue <= 0) {
+		for (int k=0; k<NUMBER_OF_WAVETABLES; k++) {
+			waveTables[k].precomputedValue = (waveTables[k].max + 1) * waveTables[k].useFreq * PREENFM_FREQUENCY_INVERSED;
+		}
+	}
 }
 
 void Osc::newNote(struct OscState* oscState, int note) {
-    oscState->index = 1; // << number;
-    switch ((int)oscillator->frequencyType) {
-    case OSC_FT_KEYBOARD:
-        oscState->mainFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .1f);
-        break;
-    case OSC_FT_FIXE:
-        oscState->mainFrequency = oscillator->frequencyMul* 1000.0f * (1.0f + oscillator->detune * .1f);
-        break;
-    }
-    oscState->frequency = oscState->mainFrequency;
+	oscState->index = 1; // << number;
+	switch ((int)oscillator->frequencyType) {
+	case OSC_FT_KEYBOARD:
+		oscState->mainFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .1f);
+		break;
+	case OSC_FT_FIXE:
+		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f * (1.0f + oscillator->detune * .1f);
+		break;
+	}
+	oscState->frequency = oscState->mainFrequency;
 }
 
 
 void Osc::glideToNote(struct OscState* oscState, int note) {
-    switch ((int)oscillator->frequencyType) {
-    case OSC_FT_KEYBOARD:
-        oscState->nextFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .1f);
-        break;
-    case OSC_FT_FIXE:
-        oscState->mainFrequency = oscillator->frequencyMul* 1000.0f * (1.0f + oscillator->detune * .1f);
-        break;
-    }
-    oscState->fromFrequency = oscState->mainFrequency;
+	switch ((int)oscillator->frequencyType) {
+	case OSC_FT_KEYBOARD:
+		oscState->nextFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .1f);
+		break;
+	case OSC_FT_FIXE:
+		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f * (1.0f + oscillator->detune * .1f);
+		break;
+	}
+	oscState->fromFrequency = oscState->mainFrequency;
 }
 
 
 void Osc::glideStep(struct OscState* oscState, float phase) {
-    oscState->mainFrequency = oscState->fromFrequency * (1 - phase) + oscState->nextFrequency * phase;
+	oscState->mainFrequency = oscState->fromFrequency * (1 - phase) + oscState->nextFrequency * phase;
 }

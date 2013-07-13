@@ -128,6 +128,7 @@ enum Algorithm {
     ALG12,
     ALG13,
     ALG14,
+    ALG15,
 	ALGO_END
 };
 
@@ -135,22 +136,22 @@ enum Algorithm {
 
 enum OscShape {
 	OSC_SHAPE_SIN = 0,
-    OSC_SHAPE_SIN2,
-    OSC_SHAPE_SIN3,
-    OSC_SHAPE_SIN4,
-    OSC_SHAPE_RAND,
-    OSC_SHAPE_SQUARE,
     OSC_SHAPE_SAW,
+    OSC_SHAPE_SQUARE,
+    OSC_SHAPE_SIN_SQUARE,
+    OSC_SHAPE_SIN_ZERO,
+    OSC_SHAPE_SIN_POS,
+    OSC_SHAPE_RAND,
 	OSC_SHAPE_OFF,
 	OSC_SHAPE_LAST
 };
 
 enum LfoType {
-	LFO_SAW= 0,
+	LFO_SIN = 0,
 	LFO_RAMP,
+	LFO_SAW,
 	LFO_SQUARE,
 	LFO_RANDOM,
-	LFO_SIN,
 	LFO_TYPE_MAX
 };
 
@@ -297,7 +298,9 @@ public:
 	void setHexter(Hexter* hexter) {
 	    this->hexter = hexter;
 	}
-	void encoderTurned(int num, int ticks);
+	void encoderTurned(int encoder, int ticks);
+	void buttonPressed(int button);
+	void encoderTurnedWhileButtonPressed(int encoder, int ticks, int button);
 	void encoderTurnedForStepSequencer(int row, int num, int ticks);
 
 	static SynthParamType getListenerType(int row) {
@@ -316,8 +319,6 @@ public:
 	}
 
 	void changeSynthModeRow(int button, int step);
-	void buttonPressed(int number);
-	void buttonLongPressed(int number);
 	void setNewValue(int timbre, int row, int encoder, float newValue);
 	void setNewStepValue(int timbre, int whichStepSeq, int step, int newValue);
 

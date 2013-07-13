@@ -55,22 +55,29 @@ public:
 		firstListener = listener;
 	}
 
-	void encoderTurned(int num, int ticks) {
-		for (EncodersListener* listener = firstListener; listener !=0; listener = listener->nextListener) {
-			listener->encoderTurned(num, ticks);
+	void encoderTurned(int encoder, int ticks) {
+		if (firstButtonDown == -1) {
+			for (EncodersListener* listener = firstListener; listener !=0; listener = listener->nextListener) {
+				listener->encoderTurned(encoder, ticks);
+			}
+		} else {
+			for (EncodersListener* listener = firstListener; listener !=0; listener = listener->nextListener) {
+				listener->encoderTurnedWhileButtonPressed(encoder, ticks, firstButtonDown);
+			}
+			buttonEncoderTurned[firstButtonDown] = true;
 		}
 	}
 
-	void buttonPressed(int num) {
-		int cpt =0;
+	void encoderTurnedWileButtonDown(int encoder, int ticks) {
 		for (EncodersListener* listener = firstListener; listener !=0; listener = listener->nextListener) {
-			listener->buttonPressed(num);
+			listener->encoderTurned(encoder, ticks);
 		}
 	}
 
-	void buttonLongPressed(int num) {
+
+	void buttonPressed(int button) {
 		for (EncodersListener* listener = firstListener; listener !=0; listener = listener->nextListener) {
-			listener->buttonLongPressed(num);
+			listener->buttonPressed(button);
 		}
 	}
 
@@ -85,9 +92,10 @@ private:
     int tickSpeed[NUMBER_OF_ENCODERS];
 
 	int buttonBit[NUMBER_OF_BUTTONS];
-	bool buttonOldState[NUMBER_OF_BUTTONS];
 	int buttonTimer[NUMBER_OF_BUTTONS];
-	bool buttonLongPress[NUMBER_OF_BUTTONS];
+	bool buttonEncoderTurned[NUMBER_OF_BUTTONS];
+	bool buttonPreviousState[NUMBER_OF_BUTTONS];
+	int firstButtonDown;
 
 	int encoderTimer;
 

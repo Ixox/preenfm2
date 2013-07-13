@@ -20,10 +20,14 @@
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_rcc.h"
 
+
+#include "LiquidCrystal.h"
+extern LiquidCrystal lcd;
+
+
 Encoders::Encoders() {
-//    char encoderPins[] = { 14,12,  13,1,   8,2,   7,3};
-    char encoderPins[] = { 12,14, 1,13, 2,8, 3,7};
-//    char buttonPins[] = { 4, 5, 11, 15, 10, 16, 9};
+	// PreenFM PCB R4
+    char encoderPins[] = { 12, 14, 1, 13, 2, 8, 3, 7};
     char buttonPins[] = { 9, 16, 10, 15, 11, 5, 4};
 
     // GPIOG Periph clock enable
@@ -88,12 +92,13 @@ Encoders::Encoders() {
 
 	for (int k=0; k<NUMBER_OF_BUTTONS; k++) {
 		buttonBit[k] = 1 << (buttonPins[k] -1);
-		buttonOldState[k] = false;
-		buttonTimer[k] = -1;
-		buttonLongPress[k] = false;
+		buttonPreviousState[k] = false;
+		buttonTimer[k] = 0;
+		buttonEncoderTurned[k] = false;
 	}
 
 	encoderTimer = 0;
+	firstButtonDown = -1;
 }
 
 Encoders::~Encoders() {
@@ -176,35 +181,31 @@ void Encoders::checkStatus(int encoderType) {
 
 		// button is pressed
 		if (b1) {
-			if (!buttonOldState[k]) {
-				// New press
-				buttonTimer[k] = 1;
-				buttonLongPress[k] = false;
-			} else {
-				// still pressing
-				if (buttonTimer[k] > 200) {
-					buttonTimer[k] = 1;
-					buttonLongPress[k] = true;
-					buttonLongPressed(k);
+			buttonTimer[k]++;
+			// just pressed ?
+			if (!buttonPreviousState[k]) {
+				if (firstButtonDown == -1) {
+					firstButtonDown = k;
 				}
-				if (buttonTimer[k]>0) {
-					buttonTimer[k] ++;
-				}
+				buttonEncoderTurned[k] = false;
 			}
-
 		} else {
-		// Button is not pressed
-			if (buttonOldState[k]) {
-				// Just released
-				if (!buttonLongPress[k]) {
-					// short press
-					buttonPressed(k);
+			// Just unpressed ?
+			if (buttonPreviousState[k]) {
+				if (firstButtonDown == k) {
+					firstButtonDown = -1;
 				}
-				buttonTimer[k] = 0;
+				if (buttonPreviousState[k] && !buttonEncoderTurned[k]) {
+					// Just released
+					if (buttonTimer[k] > 7) {
+						buttonPressed(k);
+					}
+				}
+				buttonTimer[k]=0;
 			}
 		}
 
-		buttonOldState[k] = b1;
+		buttonPreviousState[k] = b1;
 	}
 	encoderTimer++;
 }

@@ -21,7 +21,8 @@ OK A TESTER
 
 
 DONE:
-. voice = 0 after patch load
+. Turn encoder while button pressed : browse row
+. Bug : voice = 0 after patch load
 . SYSEX USART
 . USB CC + real time evant.
 . USB midi : buggy with Ipad.

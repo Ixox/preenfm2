@@ -219,6 +219,10 @@ enum DestinationEnum {
     PAN_OSC2,
     MIX_OSC3,
     PAN_OSC3,
+    MIX_OSC4,
+    PAN_OSC4,
+    ALL_MIX,
+    ALL_PAN,
     ENV1_ATTACK,
     ENV2_ATTACK,
     ENV3_ATTACK,
@@ -238,10 +242,6 @@ enum DestinationEnum {
     MTX10_MUL,
     MTX11_MUL,
     MTX12_MUL,
-    EXTERNAL_CC1,
-    EXTERNAL_CC2,
-    EXTERNAL_CC3,
-    EXTERNAL_CC4,
     DESTINATION_MAX
 };
 

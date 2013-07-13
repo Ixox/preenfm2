@@ -389,7 +389,7 @@ bool BootLoader::burnFlash() {
 void BootLoader::encoderTurned(int num, int ticks) {
 }
 
-void BootLoader::buttonPressed(int number) {
+void BootLoader::buttonReleased(int number) {
     this->button = number + 1;
 }
 
@@ -397,7 +397,7 @@ void BootLoader::resetButtonPressed() {
     this->button = 0;
 }
 
-void BootLoader::buttonLongPressed(int number) {
+void BootLoader::buttonPressed(int number) {
 }
 
 void BootLoader::welcome() {

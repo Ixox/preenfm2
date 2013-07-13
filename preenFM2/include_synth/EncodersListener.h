@@ -22,9 +22,9 @@
 class EncodersListener {
 public:
 	virtual ~EncodersListener() {}
-	virtual void encoderTurned(int num, int ticks) = 0;
-	virtual void buttonPressed(int number) = 0;
-	virtual void buttonLongPressed(int number) = 0;
+	virtual void encoderTurned(int encoder, int ticks) = 0;
+	virtual void encoderTurnedWhileButtonPressed(int encoder, int ticks, int button) = 0;
+	virtual void buttonPressed(int button) = 0;
 	EncodersListener* nextListener;
 };
 

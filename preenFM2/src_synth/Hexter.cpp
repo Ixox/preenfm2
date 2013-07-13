@@ -22,8 +22,9 @@
 
 
 
+#include <math.h>
 #include "Hexter.h"
-
+#include "SynthState.h"
 
 float dx7_voice_eg_rate_rise_duration[128] = {  /* generated from my f04new */
 
@@ -232,6 +233,7 @@ float dx7_voice_pms_to_semitones[8] = {
     2.587385, 4.232292, 6.982097, /* 11.722111 */ 12.0
 };
 
+
 /* This table converts amplitude modulation depth to output level
  * reduction at full modulation with an amplitude modulation sensitivity
  * of 3.  It was constructed from regression of a very few data points,
@@ -258,7 +260,6 @@ float dx7_voice_amd_to_ol_adjustment[100] = {
     35.721330, 37.287095, 38.921492, 40.627529, 42.408347,
     44.267222, 46.207578, 48.232984, 50.347169, 52.75
 };
-
 
 Hexter::Hexter() {
 
@@ -347,22 +348,31 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		uint8_t *eb_op = patch + ((5 - i) * 21);
 		struct OscillatorParams* oscParam = oscParams[i];
 		struct EnvelopeParams* envParam = envParams[i];
-		// voice->op[i].output_level  = limit(eb_op[16], 0, 99);
 
-		oscParam->shape = 0;
+		oscParam->shape = OSC_SHAPE_SIN;
 
 		// voice->op[i].osc_mode      = eb_op[17] & 0x01;
 		oscParam->frequencyType = eb_op[17] & 0x01;
 
-		// voice->op[i].coarse        = eb_op[18] & 0x1f;
-		if ((eb_op[18] & 0x1f) == 0) {
-			oscParam->frequencyMul = .5;
+		// Keyboard
+		if ((eb_op[17] & 0x01) == 0) {
+			// voice->op[i].coarse        = eb_op[18] & 0x1f;
+			if ((eb_op[18] & 0x1f) == 0) {
+				oscParam->frequencyMul = .5;
+			} else {
+				oscParam->frequencyMul = eb_op[18] & 0x1f;
+			}
+			// voice->op[i].fine          = limit(eb_op[19], 0, 99);
+			oscParam->frequencyMul *= 1.0f + (float)limit(eb_op[19], 0, 99) / 100.0f;
 		} else {
-			oscParam->frequencyMul = eb_op[18] & 0x1f;
+			float freq = exp(M_LN10 * ((double)(eb_op[18] & 3) + (double)eb_op[19] / 100.0f));
+			if (freq < 40) {
+				oscParam->frequencyMul  = 0.4;
+			} else {
+				oscParam->frequencyMul = freq / 1000;
+			}
 		}
 
-		// voice->op[i].fine          = limit(eb_op[19], 0, 99);
-		oscParam->frequencyMul *= 1.0f + (float)limit(eb_op[19], 0, 99) / 100.0f;
 
 		// voice->op[i].detune        = limit(eb_op[20], 0, 14);
 		oscParam->detune = ((float)limit(eb_op[20], 0, 14) - 7.0f) / 100.0f / 2.0f;
@@ -383,9 +393,9 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		envParam->attack = dx7_voice_eg_rate_rise_duration[limit(eb_op[0], 0, 99)];
 
 
-		//
-		if (eb_op[1] > eb_op[2] && eb_op[4] < eb_op[5]) {
-			envParam->decay = dx7_voice_eg_rate_decay_duration[limit(eb_op[1], 0, 99)] * (eb_op[1] - eb_op[2]) / 100.0f;
+		// If level 2 is small then use rate 1 as decay
+		if ( (eb_op[5] < 50) || (eb_op[1] > eb_op[2] && eb_op[4] < eb_op[5])) {
+			envParam->decay = dx7_voice_eg_rate_decay_duration[limit(eb_op[1], 0, 99)];
 			envParam->sustain = dx7_voice_eg_rate_decay_percent[limit(eb_op[5], 0, 99)];
 		} else {
 			envParam->decay = dx7_voice_eg_rate_decay_duration[limit(eb_op[2], 0, 99)] / 2.0f;
@@ -393,7 +403,8 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		}
 
 		// Use base_rate[3]
-		envParam->release= dx7_voice_eg_rate_decay_duration[limit(eb_op[3], 0, 99)];
+		int release = (dx7_voice_eg_rate_decay_duration[limit(eb_op[3], 0, 99)] + .02f) * 50.0f;
+		envParam->release = release  / 50.0f;
 
 		if (envParam->attack > 2.0) {
 			envParam->attack = 2.0;
@@ -415,6 +426,9 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 //	}
 
 
+	// voice->op[i].output_level  = limit(eb_op[16], 0, 99);
+
+
 	int fb = patch[135] & 0x07;
 
 	int preenAlgo = -1;
@@ -431,9 +445,9 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setMix(params, 2, patch, 3);
 		if (fb >=4) {
 			if (algo == 1) {
-				params->osc6.shape = 6.0f;
+				params->osc6.shape = OSC_SHAPE_SAW;;
 			} else {
-				params->osc2.shape = 6.0f;
+				params->osc2.shape = OSC_SHAPE_SAW;;
 			}
 		}
 		break;
@@ -448,9 +462,9 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setMix(params, 2, patch, 4);
 		if (fb >=4) {
 			if (algo == 3) {
-				params->osc6.shape = 6.0f;
+				params->osc6.shape = OSC_SHAPE_SAW;;
 			} else {
-				params->osc4.shape = 6.0f;
+				params->osc4.shape = OSC_SHAPE_SAW;;
 			}
 		}
 
@@ -467,9 +481,9 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setMix(params, 3, patch, 5);
 		if (fb >=4) {
 			if (algo == 5) {
-				params->osc6.shape = 6.0f;
+				params->osc6.shape = OSC_SHAPE_SAW;;
 			} else {
-				params->osc6.shape = 6.0f;
+				params->osc6.shape = OSC_SHAPE_SAW;;
 			}
 		}
 		break;
@@ -480,13 +494,34 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setIM(params, 2, patch, 3);
 		setIM(params, 3, patch, 4);
 		setIM(params, 4, patch, 5);
+		setIM(params, 5, patch, 6);
 		setMix(params, 1, patch, 1);
-		// TODO : setIM(params, 5, patch, 6);
 		if (fb >=4) {
 			if (algo == 16) {
-				params->osc6.shape = 6.0f;
+				params->osc6.shape = OSC_SHAPE_SAW;;
 			} else {
-				params->osc2.shape = 6.0f;
+				params->osc2.shape = OSC_SHAPE_SAW;;
+			}
+		}
+
+		break;
+	case 7:
+	case 8:
+	case 9:
+		preenAlgo = 15;
+		setIM(params, 1, patch, 2);
+		setIM(params, 2, patch, 4);
+		setIM(params, 3, patch, 5);
+		setIM(params, 4, patch, 6);
+		setMix(params, 1, patch, 1);
+		setMix(params, 2, patch, 3);
+		if (fb >=4) {
+			if (algo == 7) {
+				params->osc6.shape = OSC_SHAPE_SAW;;
+			} else if (algo == 8) {
+				params->osc4.shape = OSC_SHAPE_SAW;;
+			} else {
+				params->osc2.shape = OSC_SHAPE_SAW;;
 			}
 		}
 
@@ -502,7 +537,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setMix(params, 3, patch, 4);
 		setMix(params, 4, patch, 5);
 		if (fb >=4) {
-			params->osc3.shape = 6.0f;
+			params->osc3.shape = OSC_SHAPE_SAW;;
 		}
 		break;
 	case 23:
@@ -516,7 +551,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setMix(params, 3, patch, 4);
 		setMix(params, 4, patch, 5);
 		if (fb >=4) {
-			params->osc6.shape = 6.0f;
+			params->osc6.shape = OSC_SHAPE_SAW;;
 		}
 		break;
 	case 32:
@@ -528,7 +563,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setMix(params, 5, patch, 5);
 		setMix(params, 6, patch, 6);
 		if (fb >=4) {
-			params->osc6.shape = 6.0f;
+			params->osc6.shape = OSC_SHAPE_SAW;;
 		}
 		break;
 	}
@@ -554,28 +589,59 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 //	voice->feedback_multiplier = DOUBLE_TO_FP(aux_feedbk / 99.0);
 //
 //	voice->osc_key_sync = edit_buffer[136] & 0x01;
-//
+
+
 	//	voice->lfo_speed    = limit(edit_buffer[137], 0, 99);
-	params->lfoOsc1.freq = dx7_voice_lfo_frequency[limit(patch[137], 0, 99)];
-
-//	voice->lfo_delay    = limit(edit_buffer[138], 0, 99);
-	params->lfoOsc1.keybRamp = (float)limit(patch[138], 0, 99)/ 10.0f;
-
+	//	voice->lfo_delay    = limit(edit_buffer[138], 0, 99);
 	//	voice->lfo_wave     = limit(edit_buffer[142], 0, 5);
-	params->lfoOsc1.shape = 1;
+	params->lfoOsc1.freq = dx7_voice_lfo_frequency[limit(patch[137], 0, 99)];
+	params->lfoOsc1.keybRamp = (float)limit(patch[138], 0, 99)/ 10.0f;
+	params->lfoOsc1.shape = LFO_SIN;
+	params->lfoOsc1.bias = 0;
+
+	// lfo2 for mix
+	params->lfoOsc2.freq = dx7_voice_lfo_frequency[limit(patch[137], 0, 99)];
+	params->lfoOsc2.keybRamp = (float)limit(patch[138], 0, 99)/ 10.0f;
+	params->lfoOsc2.shape = LFO_SIN;
+	// To avoid mix to overload...
+	params->lfoOsc2.bias = -1.0f;
 
 //	voice->lfo_pmd      = limit(edit_buffer[139], 0, 99);
 //	voice->lfo_amd      = limit(edit_buffer[140], 0, 99);
 //	voice->lfo_key_sync = edit_buffer[141] & 0x01;
 //	voice->lfo_pms      = (compat059 ? 0 : edit_buffer[143] & 0x07);
+	//	voice->lfo_pmd      = limit(edit_buffer[139], 0, 99);
+	//	voice->lfo_amd      = limit(edit_buffer[140], 0, 99);
+
+
+/*
+	float *toDelete = &params->matrixRowState1.source;
+	for (int k=0; 12 * 4; k++) {
+		toDelete[k] = 0.0f;
+	}
+*/
 
 	// Matrix use LFO 1 (o all frequency
 	params->matrixRowState1.source = MATRIX_SOURCE_LFO1;
+	params->matrixRowState1.mul = dx7_voice_pms_to_semitones[ (int)patch[139] & 0x07] / 20.0f;
 	params->matrixRowState1.destination = ALL_OSC_FREQ;
-	//	voice->lfo_pmd      = limit(edit_buffer[139], 0, 99);
-	//	voice->lfo_amd      = limit(edit_buffer[140], 0, 99);
-	params->matrixRowState1.mul = 0; //dx7_voice_pms_to_semitones( (patch[143] & 0x07));
 
+	params->matrixRowState2.source = MATRIX_SOURCE_LFO2;
+	params->matrixRowState2.mul = dx7_voice_amd_to_ol_adjustment[(patch[140])] / 100.0f;
+	params->matrixRowState2.destination = ALL_MIX;
+
+
+	params->matrixRowState10.source = MATRIX_SOURCE_AFTERTOUCH;
+	params->matrixRowState10.mul = 2.0f;
+	params->matrixRowState10.destination = INDEX_MODULATION2;
+
+	params->matrixRowState11.source = MATRIX_SOURCE_MODWHEEL;
+	params->matrixRowState11.mul = 2.0f;
+	params->matrixRowState11.destination = INDEX_MODULATION1;
+
+	params->matrixRowState12.source = MATRIX_SOURCE_PITCHBEND;
+	params->matrixRowState12.mul = 1.0f;
+	params->matrixRowState12.destination = ALL_OSC_FREQ;
 }
 
 

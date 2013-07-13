@@ -63,7 +63,7 @@ OneSynthParams synthParamsEmpty  =  {
                 { OSC_SHAPE_SAW,  OSC_FT_KEYBOARD , 1.0, 0} ,
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , .5, 0} ,
                 { OSC_SHAPE_SIN, OSC_FT_KEYBOARD , 2, 0} ,
-                { OSC_SHAPE_SIN4, OSC_FT_KEYBOARD , 4, 0} ,
+                { OSC_SHAPE_SIN_POS, OSC_FT_KEYBOARD , 4, 0} ,
                 { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 6, 0} ,
                 { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 2.5, 0} ,
                 // Enveloppe

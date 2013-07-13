@@ -88,10 +88,10 @@ public:
     }
 
     void updateAllMixOscsAndPans() {
-        mix1 = params.engineMix1.mixOsc1 + matrix.getDestination(MIX_OSC1);
+        mix1 = params.engineMix1.mixOsc1 + matrix.getDestination(MIX_OSC1) + matrix.getDestination(ALL_MIX);
         mix1 = (mix1 < 0) ? 0 : (mix1 >1.0f ? 1.0f : mix1);
 
-        float pan1 = params.engineMix1.panOsc1 + matrix.getDestination(PAN_OSC1) + 1;
+        float pan1 = params.engineMix1.panOsc1 + matrix.getDestination(PAN_OSC1) + matrix.getDestination(ALL_PAN) + 1;
         if (pan1 < 1) {
             pan1Left = pan1 * .80f +.2f;
             pan1Right = 1;
@@ -101,10 +101,10 @@ public:
         }
 
 
-        mix2 = params.engineMix1.mixOsc2 + matrix.getDestination(MIX_OSC2);
+        mix2 = params.engineMix1.mixOsc2 + matrix.getDestination(MIX_OSC2) + matrix.getDestination(ALL_MIX);
         mix2 = (mix2 < 0) ? 0 : (mix2 >1.0f ? 1.0f : mix2);
 
-        float pan2 = params.engineMix1.panOsc2 + matrix.getDestination(PAN_OSC2) + 1;
+        float pan2 = params.engineMix1.panOsc2 + matrix.getDestination(PAN_OSC2) + matrix.getDestination(ALL_PAN) + 1;
         if (pan2 < 1) {
             pan2Left = pan2 * .80f +.2f;
             pan2Right = 1;
@@ -118,10 +118,10 @@ public:
         	return;
         }
 
-        mix3 = params.engineMix2.mixOsc3 + matrix.getDestination(MIX_OSC3);
+        mix3 = params.engineMix2.mixOsc3 + matrix.getDestination(MIX_OSC3) + matrix.getDestination(ALL_MIX);
         mix3 = (mix3 < 0) ? 0 : (mix3 >1.0f ? 1.0f : mix3);
 
-        float pan3 = params.engineMix2.panOsc3 + matrix.getDestination(PAN_OSC3) + 1;
+        float pan3 = params.engineMix2.panOsc3 + matrix.getDestination(PAN_OSC3) + matrix.getDestination(ALL_PAN) + 1;
         if (pan3 < 1) {
             pan3Left = pan3 * .80f +.2f;
             pan3Right = 1;
@@ -131,8 +131,8 @@ public:
         }
 
         // No matrix for mix4 and pan4
-        mix4 = params.engineMix2.mixOsc4;
-        float pan4 = params.engineMix2.panOsc4 + 1;
+        mix4 = params.engineMix2.mixOsc4 + matrix.getDestination(ALL_MIX);
+        float pan4 = params.engineMix2.panOsc4 + matrix.getDestination(ALL_PAN) + 1;
         if (pan4 < 1) {
             pan4Left = pan4 * .80f +.2f;
             pan4Right = 1;
@@ -149,9 +149,9 @@ public:
 
         // No more matrix....
 
-        mix5 = params.engineMix3.mixOsc5 ;
+        mix5 = params.engineMix3.mixOsc5  + matrix.getDestination(ALL_MIX);
         mix5 = (mix5 < 0) ? 0 : (mix5 >1.0f ? 1.0f : mix5);
-        float pan5 = params.engineMix3.panOsc5 + 1;
+        float pan5 = params.engineMix3.panOsc5 + matrix.getDestination(ALL_PAN) + 1;
         if (pan5 < 1) {
             pan5Left = pan5 * .80f +.2f;
             pan5Right = 1;
@@ -160,8 +160,8 @@ public:
             pan5Left = 1;
         }
 
-        mix6 = params.engineMix3.mixOsc6;
-        float pan6 = params.engineMix3.panOsc6 + 1;
+        mix6 = params.engineMix3.mixOsc6 + matrix.getDestination(ALL_MIX);
+        float pan6 = params.engineMix3.panOsc6 + matrix.getDestination(ALL_PAN) + 1;
         if (pan6 < 1) {
             pan6Left = pan6 * .80f +.2f;
             pan6Right = 1;
