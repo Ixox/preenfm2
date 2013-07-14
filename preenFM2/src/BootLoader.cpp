@@ -85,6 +85,8 @@ BootLoader::BootLoader(LiquidCrystal* lcd) {
     this->state = BL_BOOTING;
     this->oneFirmwareAtLeast = false;
     this->firmwareSize = 0;
+    this->checkSum = 0;
+    this->checkSumReceived = 0;
 }
 
 BootLoader::~BootLoader() {
@@ -386,10 +388,13 @@ bool BootLoader::burnFlash() {
     return true;
 }
 
-void BootLoader::encoderTurned(int num, int ticks) {
+void BootLoader::encoderTurned(int encoder, int ticks) {
 }
 
-void BootLoader::buttonReleased(int number) {
+void BootLoader::encoderTurnedWhileButtonPressed(int encoder, int ticks, int button) {
+}
+
+void BootLoader::buttonPressed(int number) {
     this->button = number + 1;
 }
 
@@ -397,8 +402,6 @@ void BootLoader::resetButtonPressed() {
     this->button = 0;
 }
 
-void BootLoader::buttonPressed(int number) {
-}
 
 void BootLoader::welcome() {
     this->lcd->begin(20,4);

@@ -160,6 +160,8 @@ void Voice::noteOff() {
     this->gliding = false;
     for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
         currentTimbre->env[k]->noteOff(envState[k]);
+    }
+    for (int k=0; k<NUMBER_OF_LFO; k++) {
         currentTimbre->lfo[k]->noteOff();
     }
 }
@@ -1048,12 +1050,12 @@ void Voice::nextBlock() {
                 float freq2 = osc2Values[k] * env2Value;
                 freq2 *=  oscState2.frequency;
 
+                oscState1.frequency = freq2 * currentTimbre->modulationIndex1 +  oscState1.mainFrequencyPlusMatrix;
+                float car1 = currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 * div2TimesVelocity;
+
                 oscState5.frequency =  freq6 * currentTimbre->modulationIndex4 + oscState5.mainFrequencyPlusMatrix;
                 float freq5 = currentTimbre->osc5.getNextSample(&oscState5) * env5Value;
                 freq5 *=  oscState5.frequency;
-
-                oscState1.frequency = freq2 * currentTimbre->modulationIndex1 +  oscState1.mainFrequencyPlusMatrix;
-                float car1 = currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 * div2TimesVelocity;
 
                 oscState3.frequency = freq4 * currentTimbre->modulationIndex2 + freq5 * currentTimbre->modulationIndex3 +  oscState3.mainFrequencyPlusMatrix;
                 float car3 = currentTimbre->osc3.getNextSample(&oscState3) * env3Value * currentTimbre->mix2 * div2TimesVelocity;
@@ -1102,7 +1104,7 @@ void Voice::nextBlock() {
                  freq6 *=  oscState6.frequency;
 
                  float freq2 = osc2Values[k] * env2Value;
-                 freq2 *=  oscState3.frequency;
+                 freq2 *=  oscState2.frequency;
 
                  oscState1.frequency = freq2 * currentTimbre->modulationIndex1 +  oscState1.mainFrequencyPlusMatrix;
                  float car1 = currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 * div4TimesVelocity;

@@ -186,9 +186,6 @@ void setup() {
     lcd.print("PreenFM2 v"PFM2_VERSION);
 	lcd.setCursor(5,2);
     lcd.print("By Xavier Hosxe");
-	lcd.setCursor(3,3);
-    lcd.print("sizeof:");
-    lcd.print((int)sizeof(struct OneSynthParams));
 
     // XH : 1/2 of seconde to stabilise
     // Important Prevent USB from failing
@@ -323,7 +320,7 @@ void loop(void) {
 	}
 
 	// Comment following line for debug....
-	lcd.setRealTimeAction(true);
+	lcd.setRealTimeAction(false);
     if ((newMicros - encoderMicros) > 80) {
         fillSoundBuffer();
         encoders.checkStatus(synthState.fullState.midiConfigValue[MIDICONFIG_ENCODER]);

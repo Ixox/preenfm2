@@ -43,10 +43,9 @@ public:
 	void process();
 	void initKey();
 	void readFirmwares();
-	void encoderTurned(int num, int ticks);
-	void buttonReleased(int number);
+
+
 	void resetButtonPressed();
-	void buttonPressed(int number);
 	void welcome();
 	void USART_Config();
 	int getButton() { return button; }
@@ -56,6 +55,11 @@ public:
 	uint32_t sysexReadInt(int index);
 	bool burnFlash();
 	void sysexMode();
+
+	// For EncodersListenr
+	void encoderTurned(int encoder, int ticks);
+	void encoderTurnedWhileButtonPressed(int encoder, int ticks, int button);
+	void buttonPressed(int button);
 
 private:
 	LiquidCrystal* lcd;

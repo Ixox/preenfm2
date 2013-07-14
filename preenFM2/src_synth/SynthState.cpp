@@ -140,7 +140,7 @@ struct ParameterRowDisplay lfoEnvParameterRow = {
 
 const char* lofEnv2Loop [] = { "No  ", "Sile", "Attk"};
 struct ParameterRowDisplay lfoEnv2ParameterRow = {
-        "LFO Env2",
+        "LFO Env",
         { "Sile", "Attk", "Deca", "Loop" },
         {
                 { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
@@ -180,7 +180,7 @@ const char* lfoShapeNames [] =  { "Sin ", "Ramp",  "Saw ","Squa", "Rand" } ;
 
 
 struct ParameterRowDisplay lfoParameterRow = {
-        "LFO Osc",
+        "LFO",
         { "Shap", "Freq", "Bias", "KSyn" },
         {
                 { LFO_SAW, LFO_TYPE_MAX-1, 1, DISPLAY_TYPE_STRINGS,  lfoShapeNames, nullNamesOrder, nullNamesOrder},
@@ -260,8 +260,9 @@ SynthState::SynthState() {
     // First default preset
     fullState.synthMode = SYNTH_MODE_EDIT;
     fullState.bankNumber = 0;
+    fullState.dx7BankNumber = 0;
     fullState.presetNumber = 0;
-    fullState.internalPresetNumber = 0;
+    fullState.dx7PresetNumber = 0;
     fullState.loadWhat = 0;
     fullState.saveWhat = 0;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL1] = 1; // all
@@ -523,20 +524,28 @@ void SynthState::encoderTurned(int encoder, int ticks) {
         }
 
         if (fullState.menuSelect != oldMenuSelect) {
-            if (fullState.currentMenuItem->menuState == MENU_LOAD_INTERNAL) {
+        	switch (fullState.currentMenuItem->menuState) {
+        	case MENU_LOAD_DX7_SELECT_BANK:
+        		// Did we really change DX7 bank?
+        		if (fullState.dx7BankName != storage->getDx7BankName(fullState.menuSelect)) {
+        			fullState.dx7BankName = storage->getDx7BankName(fullState.menuSelect);
+        			fullState.dx7PresetNumber = 0;
+        		}
+        		break;
+        	case MENU_LOAD_DX7_SELECT_PRESET:
                 propagateBeforeNewParamsLoad();
-                float* preset = (float*)&(presets[fullState.menuSelect].engine1);
-                // PresetUtil::copySynthParams((char*)preset, (char*)params);
-                hexter->loadFriendlyHexterPatch(params, fullState.menuSelect);
+        		hexter->loadHexterPatch(storage->dx7LoadPatch(fullState.dx7BankName, fullState.menuSelect), params);
                 propagateAfterNewParamsLoad();
-                fullState.internalPresetNumber = fullState.menuSelect;
-            } else if (fullState.currentMenuItem->menuState == MENU_LOAD_USER_SELECT_PRESET) {
+                fullState.dx7PresetNumber = fullState.menuSelect;
+                break;
+			case MENU_LOAD_USER_SELECT_PRESET:
                 if (fullState.bankNumber < 4) {
                     propagateBeforeNewParamsLoad();
                     storage->loadPatch(fullState.bankNumber, fullState.menuSelect, params);
                     propagateAfterNewParamsLoad();
                 }
                 fullState.presetNumber = fullState.menuSelect;
+                break;
             }
             propagateNewMenuSelect();
         }
@@ -841,17 +850,15 @@ const MenuItem* SynthState::afterButtonPressed() {
     case MENU_SAVE_BANK:
         fullState.bankNumber = fullState.menuSelect;
         break;
-    case MENU_LOAD_INTERNAL:
-        // Make change definitive
-        PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
-        break;
+    case MENU_LOAD_DX7_SELECT_BANK:
+    	fullState.dx7BankNumber = fullState.menuSelect;
+    	break;
     case MENU_SAVE_BANK_CONFIRM:
     	lcd.setRealTimeAction(true);
         PresetUtil::copyBank(4, fullState.bankNumber);
     	lcd.setRealTimeAction(false);
     	break;
     case MENU_LOAD_USER_SELECT_PRESET:
-    	// Disable the audio interupt because
         propagateBeforeNewParamsLoad();
         if (fullState.bankNumber == 4) {
             storage->loadCombo(fullState.menuSelect);
@@ -865,6 +872,12 @@ const MenuItem* SynthState::afterButtonPressed() {
             PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
             propagateAfterNewParamsLoad();
         }
+        break;
+    case MENU_LOAD_DX7_SELECT_PRESET:
+    	// propagateBeforeNewParamsLoad();
+		// hexter->loadHexterPatch(storage->dx7LoadPatch(fullState.dx7BankName, fullState.menuSelect), params);
+		PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
+		// propagateAfterNewParamsLoad();
         break;
     case MENU_SAVE_SELECT_PRESET:
         if (fullState.bankNumber == 4) {
@@ -997,6 +1010,12 @@ const MenuItem* SynthState::afterButtonPressed() {
         }
         fullState.menuSelect = fullState.presetNumber;
         break;
+    case MENU_LOAD_DX7_SELECT_PRESET:
+		propagateBeforeNewParamsLoad();
+		hexter->loadHexterPatch(storage->dx7LoadPatch(fullState.dx7BankName, fullState.dx7PresetNumber), params);
+		propagateAfterNewParamsLoad();
+        fullState.menuSelect = fullState.dx7PresetNumber;
+        break;
     case MENU_SAVE_SELECT_USER_BANK:
         fullState.menuSelect = fullState.bankNumber;
         break;
@@ -1006,16 +1025,13 @@ const MenuItem* SynthState::afterButtonPressed() {
     case MENU_SAVE:
         fullState.menuSelect = fullState.saveWhat;
         break;
-    case MENU_LOAD_INTERNAL:
-        propagateBeforeNewParamsLoad();
-        hexter->loadFriendlyHexterPatch(params, fullState.internalPresetNumber);
-        //PresetUtil::copySynthParams((char*)&presets[fullState.internalPresetNumber], (char*)params);
-        propagateAfterNewParamsLoad();
-        fullState.menuSelect = fullState.internalPresetNumber;
-        break;
     case MENU_LOAD_USER_SELECT_BANK:
         fullState.menuSelect = fullState.bankNumber;
         break;
+    case MENU_LOAD_DX7_SELECT_BANK:
+        fullState.menuSelect = fullState.dx7BankNumber;
+    	fullState.dx7BankName = storage->getDx7BankName(fullState.menuSelect);
+    	break;
     default:
         fullState.menuSelect = 0;
     }
@@ -1045,7 +1061,8 @@ const MenuItem* SynthState::menuBack() {
         PresetUtil::copySynthParams((char*)&backupParams, (char*)params);
         propagateAfterNewParamsLoad();
         break;
-    case MENU_LOAD_INTERNAL:
+    case MENU_LOAD_DX7_SELECT_PRESET:
+        fullState.menuSelect = fullState.dx7BankNumber;
         propagateBeforeNewParamsLoad();
         PresetUtil::copySynthParams((char*)&backupParams, (char*)params);
         propagateAfterNewParamsLoad();

@@ -54,7 +54,7 @@ public:
 		return length;
 	}
 
-	int getRowNumberRelative(int row) {
+	int getRowNumberToDiplay(int row) {
 		if (row <= ROW_ENGINE_LAST) {
 			return row - ROW_ENGINE_FIRST +1;
 		} else if (row <= ROW_OSC_LAST) {
@@ -63,8 +63,12 @@ public:
             return row - ROW_ENV_FIRST +1;
         } else if (row <= ROW_MATRIX_LAST) {
             return row - ROW_MATRIX_FIRST +1;
-        } else if (row <= ROW_LFO_LAST) {
+        } else if (row <= ROW_LFOOSC3) {
             return row - ROW_LFO_FIRST +1;
+        } else if (row <= ROW_LFOENV2) {
+            return row - ROW_LFOENV1 +1;
+        } else if (row <= ROW_LFOSEQ2) {
+            return row - ROW_LFOSEQ1 +1;
         }
 		return 0;
 	}

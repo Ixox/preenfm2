@@ -2,14 +2,13 @@ TODO (temporary list, grow over time) :
 . Play note in combo (spec)
 . Freeze when no file on USB
 . !!! USB Midi : SYSEX, after touch, program change
-. Pitch bend 1 modwheel to adjust (too strong).
 . Must not be able to sysex combo bank
 . 'Panic!' to add...
 . Remove CC from matrix...
 . Add mix4/pan4 mix5.... pan6 to matrix (??)
-. Rename LFO on LCDnumberOfVoice
 . env all release as target.
 . ADD DX7 algo for compatibility...
+. audio glich when changing patch while playing.
 
 TO check hardware :
 . volume Pot make noise
@@ -21,6 +20,9 @@ OK A TESTER
 
 
 DONE:
+. Rename LFO on LCD
+. Pitch bend 1 modwheel to adjust (too strong).
+. DX7 sysex can be read directly from USBKey thought the menu (300 banks * 32 patch max)
 . Turn encoder while button pressed : browse row
 . Bug : voice = 0 after patch load
 . SYSEX USART

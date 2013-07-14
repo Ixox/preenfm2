@@ -50,6 +50,12 @@ int sysexIndex = 0;
 #define SYSEX_BYTE_PATCH 3
 #define SYSEX_BYTE_BANK 4
 
+enum {
+	SYSEX_UNKNOWN = 0,
+    SYSEX_PREENFM_PATCH,
+    SYSEX_PREENFM_BANK,
+    SYSEX_DX7_BANK
+};
 OneSynthParams synthParamsEmpty  =  {
                 // patch name : 'Preen 2.0'
                 // Engine
@@ -582,8 +588,8 @@ int PresetUtil::getNextMidiByte() {
  */
 
 int PresetUtil::readSysex(bool patchAllowed, bool bankAllowed) {
-    bool isPatch = true;
-    bool bError = false;
+	int sysexType = SYSEX_UNKNOWN;
+	bool bError = false;
     bool bSysexRead = false;
     int index = 0;
 
@@ -603,14 +609,14 @@ int PresetUtil::readSysex(bool patchAllowed, bool bankAllowed) {
             // Batch or bank
             index++;
             if (byte == SYSEX_BYTE_PATCH) {
-                isPatch = true;
+            	sysexType = SYSEX_PREENFM_PATCH;
             } else if (byte == SYSEX_BYTE_BANK) {
-                isPatch = false;
+            	sysexType = SYSEX_PREENFM_BANK;
             } else {
                 bError = true;
                 break;
             }
-            if ((isPatch && !patchAllowed) || (!isPatch && !bankAllowed)) {
+            if (((sysexType == SYSEX_PREENFM_PATCH) && !patchAllowed) || ((sysexType == SYSEX_PREENFM_BANK) && !bankAllowed)) {
                 // Will wait untill F7 is received (end of sysex)
                 bSysexRead = true;
                 bError = true;
@@ -619,7 +625,7 @@ int PresetUtil::readSysex(bool patchAllowed, bool bankAllowed) {
 
         if (index >0 && !bSysexRead) {
             bSysexRead = true;
-            if (isPatch) {
+            if (sysexType == SYSEX_PREENFM_PATCH) {
                 int errorCode = PresetUtil::readSysexPatch(sysexTmpMem);
                 lcd.setCursor(2,3);
                 lcd.print("Patch Err ");
@@ -645,7 +651,7 @@ int PresetUtil::readSysex(bool patchAllowed, bool bankAllowed) {
         }
     }
 
-    return bError ? -index : (isPatch ? 1 : 2);
+    return bError ? -index : ((sysexType == SYSEX_PREENFM_PATCH) ? 1 : 2);
 }
 
 

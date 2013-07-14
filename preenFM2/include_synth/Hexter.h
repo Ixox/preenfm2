@@ -47,6 +47,7 @@ public:
 	virtual ~Hexter() {}
 
 	void loadFriendlyHexterPatch(struct OneSynthParams *params, int n);
+	void loadHexterPatch(uint8_t* packedPatch, struct OneSynthParams *params);
 
 protected:
 	void patchUnpack(uint8_t *packed_patch, uint8_t *unpacked_patch);

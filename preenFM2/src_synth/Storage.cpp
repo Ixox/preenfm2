@@ -20,8 +20,10 @@
 #include "Storage.h"
 #include "Menu.h"
 
+
 // Set param in mememory reachable with USB : static is OK
 struct OneSynthParams reachableParam;
+uint8_t dx7PackedPatch[DX7_PACKED_PATCH_SIZED];
 
 void Storage::init(uint8_t*timbre1, uint8_t*timbre2, uint8_t*timbre3, uint8_t*timbre4) {
     timbre[0] = timbre1;
@@ -198,4 +200,37 @@ void Storage::saveConfig(const char* midiConfig) {
     // delete it so that we're sure the new one has the right size...
     remove(PROPERTIES);
     save(PROPERTIES, 0,  reachableProperties, MIDICONFIG_SIZE);
+}
+
+
+uint8_t* Storage::dx7LoadPatch(const char *bankName, int patchNumber) {
+	uint8_t first6Bytes[6];
+	const char* fullBankName = getDX7BankFullName(bankName);
+    int result = load(fullBankName, 0,  (void*)first6Bytes, 6);
+    if (result > 0) {
+    	return (uint8_t*)0;
+    }
+	if (first6Bytes[0] != 0xf0
+    		|| first6Bytes[1] != 0x43
+    		|| first6Bytes[2] > 0x0f
+    		|| first6Bytes[3] != 0x09
+    		|| first6Bytes[5] != 0x00) {
+    	return (uint8_t*)0;
+    }
+
+    result = load(fullBankName, patchNumber * DX7_PACKED_PATCH_SIZED + 6,  (void*)dx7PackedPatch, DX7_PACKED_PATCH_SIZED);
+    if (result >0) {
+    	return (uint8_t*)0;
+    }
+    return dx7PackedPatch;
+}
+
+const char* Storage::dx7ReadPresetName(const char *bankName, int patchNumber) {
+    int result = load(getDX7BankFullName(bankName), DX7_PACKED_PATCH_SIZED * patchNumber + 118 + 6,  (void*)presetName, 10);
+    if (result > 0) {
+    	presetName[0] = '#';
+        presetName[1] = 0;
+    }
+    presetName[10] = 0;
+    return presetName;
 }

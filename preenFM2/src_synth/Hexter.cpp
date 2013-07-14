@@ -274,6 +274,17 @@ void Hexter::loadFriendlyHexterPatch(struct OneSynthParams *params, int n) {
 	voiceSetData(params, unpackedData);
 }
 
+void Hexter::loadHexterPatch(uint8_t* packedPatch, struct OneSynthParams *params) {
+	if (packedPatch == 0) {
+		// ERROR in the bank...
+		patchUnpack((uint8_t*)friendly_patches[0].data, unpackedData);
+		voiceSetData(params, unpackedData);
+
+	} else {
+		patchUnpack(packedPatch, unpackedData);
+		voiceSetData(params, unpackedData);
+	}
+}
 
 void Hexter::patchUnpack(uint8_t *packed_patch, uint8_t *unpacked_patch) {
 	uint8_t *up = unpacked_patch,
@@ -495,6 +506,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setIM(params, 3, patch, 4);
 		setIM(params, 4, patch, 5);
 		setIM(params, 5, patch, 6);
+
 		setMix(params, 1, patch, 1);
 		if (fb >=4) {
 			if (algo == 16) {

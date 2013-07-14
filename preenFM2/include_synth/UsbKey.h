@@ -32,12 +32,14 @@
 #define PROPERTIES_NAME          "0:/pfm2/Settings.pfm"
 
 #define FIRMWARE_DIR             "0:/pfm2"
+#define DX7_DIR                  "0:/pfm2/dx7"
 
 #define PFM_PATCH_SIZE sizeof(struct OneSynthParams)
 #define USB_PATCH_SIZE 1024
 #define USB_PATCH_ZERO USB_PATCH_SIZE-PFM_PATCH_SIZE
 #define USB_COMBO_SIZE USB_PATCH_SIZE*4+13
 
+#define NUMBEROFDX7BANKS 300
 
 class UsbKey : public Storage {
 public:
@@ -46,22 +48,38 @@ public:
     // get firmware name available on disk
     // not in storage.. specific to USB
     // Used by bootloader
+
+    const char* getDx7BankName(int bankNumber);
+
     int firmwareInit();
     int readNextFirmwareName(char *name, int*size);
     int loadFirmwarePart(char *fileName, int seek, void* bytes, int size);
 
 private:
+    const char* getDX7BankFullName(const char* bankName);
     void usbProcess();
     int save(FILE_ENUM file, int seek, void* bytes, int size);
     int load(FILE_ENUM file, int seek, void* bytes, int size);
-    int remove(FILE_ENUM file);
+    int load(const char* fileName, int seek, void* bytes, int size);
+   	int remove(FILE_ENUM file);
     int checkSize(FILE_ENUM file);
 
-    void getFullFirmwareName(char* fullName, char* fileName) ;
-    int strlen(const char *string);
     const char* getFileName(FILE_ENUM file);
-
     bool isFirmwareFile(char *name);
+
+    int dx7Init();
+    int dx7ReadNextFileName(char *name);
+    bool isDX7SysexFile(char *name, int size);
+
+    const char* getFullName(const char* pathName, const char* fileName) ;
+    int strlen(const char *string);
+
+    bool dx7BankInitialized;
+    char dx7BankName[NUMBEROFDX7BANKS][13];
+    int dx7NumberOfBanks;
+    char fullName[40];
+
+
 };
 
 #endif /*__USBKEY_H__*/

@@ -61,7 +61,7 @@ public:
     }
 
     void updateAllModulationIndexes() {
-    	int numberOfIMs = algoInformation[(int)(params.engine1.algo)].mix;
+    	int numberOfIMs = algoInformation[(int)(params.engine1.algo)].im;
     	modulationIndex1 = params.engineIm1.modulationIndex1 + matrix.getDestination(INDEX_MODULATION1);
         modulationIndex1 = (modulationIndex1 < 0.0f) ? 0.0f : modulationIndex1;
         modulationIndex2 = params.engineIm1.modulationIndex2 + matrix.getDestination(INDEX_MODULATION2);
@@ -88,7 +88,9 @@ public:
     }
 
     void updateAllMixOscsAndPans() {
-        mix1 = params.engineMix1.mixOsc1 + matrix.getDestination(MIX_OSC1) + matrix.getDestination(ALL_MIX);
+    	int numberOfMixes = algoInformation[(int)(params.engine1.algo)].mix;
+
+    	mix1 = params.engineMix1.mixOsc1 + matrix.getDestination(MIX_OSC1) + matrix.getDestination(ALL_MIX);
         mix1 = (mix1 < 0) ? 0 : (mix1 >1.0f ? 1.0f : mix1);
 
         float pan1 = params.engineMix1.panOsc1 + matrix.getDestination(PAN_OSC1) + matrix.getDestination(ALL_PAN) + 1;
@@ -114,7 +116,7 @@ public:
         }
 
         // A bit lighter for algo with 1 or 2 mix...
-        if (algoInformation[(int)(params.engine1.algo)].mix <=2) {
+        if (numberOfMixes <=2) {
         	return;
         }
 
@@ -143,7 +145,7 @@ public:
 
 
         // A bit lighter for algo with 5 or 6 mix...
-        if (algoInformation[(int)(params.engine1.algo)].mix <=4) {
+        if (numberOfMixes <=4) {
         	return;
         }
 

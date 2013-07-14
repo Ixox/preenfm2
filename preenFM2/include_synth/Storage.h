@@ -38,6 +38,9 @@ enum FILE_ENUM {
 #define ALIGNED_PATCH_ZERO ALIGNED_PATCH_SIZE-PFM_PATCH_SIZE
 #define ALIGNED_COMBO_SIZE ALIGNED_PATCH_SIZE*4+13
 
+#define DX7_PACKED_PATCH_SIZED 128
+#define DX7_UNPACKED_PATCH_SIZED 155
+
 
 class Storage {
 public:
@@ -56,14 +59,22 @@ public:
     void loadConfig(char* midiConfig);
     void saveConfig(const char* midiConfig);
 
+
+    virtual const char* getDx7BankName(int bankNumber) = 0;
+    uint8_t* dx7LoadPatch(const char *bankName, int patchNumber);
+    const char* dx7ReadPresetName(const char *bankName, int patchNumber);
+
     // Virtual
     virtual void init(uint8_t*timbre1, uint8_t*timbre2, uint8_t*timbre3, uint8_t*timbre4);
 
 
 private:
     // Pure Virtual
+    virtual const char* getDX7BankFullName(const char* bankName) = 0;
+    void dx7patchUnpack(uint8_t *packed_patch, uint8_t *unpacked_patch);
     virtual int save(FILE_ENUM file,int seek, void* bytes, int size) = 0;
     virtual int load(FILE_ENUM file, int seek, void* bytes, int size) = 0;
+    virtual int load(const char* fileName, int seek, void* bytes, int size) = 0;
     virtual int remove(FILE_ENUM file) = 0;
     // checkSize must return -1 if file does not exist
     virtual int checkSize(FILE_ENUM file) = 0;

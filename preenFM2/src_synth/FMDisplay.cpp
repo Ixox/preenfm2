@@ -267,8 +267,8 @@ void FMDisplay::refreshAllScreenByStep() {
 		lcd->setCursor(0,1);
 		lcd->print(allParameterRows.row[row]->rowName);
 		if (row> ROW_ENGINE_LAST) {
-            lcd->print(' ');
-            lcd->print(getRowNumberRelative(row));
+			lcd->print(' ');
+			lcd->print(getRowNumberToDiplay(row));
 		}
         break;
     }
@@ -448,6 +448,12 @@ void FMDisplay::newMenuState(FullState* fullState) {
             fullState->menuPosition[3] = 12;
             fullState->menuPosition[4] = 16;
 			break;
+		case MENU_LOAD_DX7_SELECT_BANK:
+			lcd->setCursor(1, menuRow-1);
+			lcd->print(fullState->menuSelect);
+			lcd->print(" - ");
+			lcd->print(storage->getDx7BankName(fullState->menuSelect));
+			break;
 		case MENU_SAVE_ENTER_NAME:
 			// -2 because must erase preset name....
 			lcd->setCursor(6, menuRow-2);
@@ -527,16 +533,23 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
 		lcd->print(">");
 		break;
 	case MENU_LOAD_USER_SELECT_PRESET:
-	case MENU_LOAD_INTERNAL:
+	case MENU_LOAD_DX7_SELECT_PRESET:
 		eraseRow(menuRow-1);
 		lcd->setCursor(2, menuRow-1);
 		lcd->print(fullState->menuSelect + 1);
 		lcd->print(" - ");
-		if (fullState->bankNumber == 4) {
-            lcd->print(storage->readComboName(fullState->menuSelect));
-		} else {
+		if (fullState->bankNumber != 4 || fullState->currentMenuItem->menuState == MENU_LOAD_DX7_SELECT_PRESET) {
             lcd->print(this->synthState->params->presetName);
+		} else {
+            lcd->print(storage->readComboName(fullState->menuSelect));
 		}
+		break;
+	case MENU_LOAD_DX7_SELECT_BANK:
+		eraseRow(menuRow-1);
+		lcd->setCursor(2, menuRow-1);
+		lcd->print(fullState->menuSelect + 1);
+		lcd->print(" - ");
+		lcd->print(fullState->dx7BankName);
 		break;
 	case MENU_DONE:
 		lcd->clear();

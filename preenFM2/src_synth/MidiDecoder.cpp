@@ -144,8 +144,7 @@ void MidiDecoder::newByte(unsigned char byte) {
             } else if (currentEventState.index == 0) {
 
                 currentEventState.index = 1;
-                // Only do something for non commercial sysex
-                // We assume it's for us !
+                // Do something for non commercial sysex We assume it's for us !
                 if (byte == 0x7d) {
                     // System exclusive
                     // Allow patch if real time allowed OR if currenly waiting for sysex
@@ -290,8 +289,8 @@ void MidiDecoder::midiEventReceived(MidiEvent midiEvent) {
     case MIDI_PITCH_BEND:
         for (int tk = 0; tk< NUMBER_OF_TIMBRES; tk++ ) {
             if (((timbreBitField >> tk) & 0x1) == 0) continue;
-            this->synth->getTimbre(tk)->getMatrix()->setSource(MATRIX_SOURCE_PITCHBEND,
-                    (int) ((((int) midiEvent.value[1] << 7) + (int) midiEvent.value[0]- 8192) >> 6));
+            int pb = ((int) midiEvent.value[1] << 7) + (int) midiEvent.value[0] - 8192;
+            this->synth->getTimbre(tk)->getMatrix()->setSource(MATRIX_SOURCE_PITCHBEND, (float)pb * .00012207031250000000f  );
         }
         break;
     case MIDI_PROGRAM_CHANGE:

@@ -54,9 +54,10 @@ enum MenuState {
     MENU_LOAD,
     MENU_SAVE_SELECT_USER_BANK,
     MENU_SAVE_SELECT_PRESET,
-    MENU_LOAD_INTERNAL,
     MENU_LOAD_USER_SELECT_BANK,
     MENU_LOAD_USER_SELECT_PRESET,
+    MENU_LOAD_DX7_SELECT_BANK,
+    MENU_LOAD_DX7_SELECT_PRESET,
     MENU_SAVE,
     MENU_SAVE_ENTER_NAME,
     MENU_MIDI_SYSEX_DUMP,
@@ -101,7 +102,9 @@ struct FullState {
     int menuSelect;
     unsigned char previousMenuSelect;
     unsigned char bankNumber;
+    unsigned char dx7BankNumber;
     unsigned char presetNumber;
+    unsigned char dx7PresetNumber;
     unsigned char internalPresetNumber;
     const MenuItem* currentMenuItem;
     char name[13];
@@ -110,6 +113,7 @@ struct FullState {
     unsigned char firstMenu;
     unsigned char  menuPosition[5];
     char  midiConfigValue[MIDICONFIG_SIZE];
+    const char  *dx7BankName;
 };
 
 struct MidiConfig {

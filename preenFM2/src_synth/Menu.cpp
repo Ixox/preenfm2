@@ -26,7 +26,6 @@ const char* yesNo [] = { "No", "Yes" };
 const char* midiReceives[] = { "None", "CC", "NRPN", "CC & NRPN" };
 const char* midiSends [] = { "None", "CC", "NRPN" };
 const char* bootOptions [] = { "Default", "Bank1", "Bank2", "Bank3", "Bank4", "Combo","Internal" };
-const char* synthMode [] = { "Single", "Combo" };
 const char* encoderType [] = { "12", "24" };
 
 const struct MidiConfig midiConfig[]  = {
@@ -86,31 +85,6 @@ const struct MidiConfig midiConfig[]  = {
                 bootOptions
         },
         {
-                "ECC channel: ",
-                17,
-                eccChannels
-        },
-        {
-                "ECC 1: ",
-                127,
-                0
-        },
-        {
-                "ECC 2: ",
-                127,
-                0
-        },
-        {
-                "ECC 3: ",
-                127,
-                0
-        },
-        {
-                "ECC 4: ",
-                127,
-                0
-        },
-        {
                 "Rot. Enc.: ",
                 2,
                 encoderType
@@ -118,7 +92,7 @@ const struct MidiConfig midiConfig[]  = {
 
 };
 
-const struct MenuItem allMenus[] __attribute__ ((section (".USER_FLASH"))) = {
+const struct MenuItem allMenus[]  = {
         {
                 MAIN_MENU,
                 "",
@@ -132,7 +106,7 @@ const struct MenuItem allMenus[] __attribute__ ((section (".USER_FLASH"))) = {
                 "Load",
                 true,
                 3,
-                {MENU_LOAD_USER_SELECT_BANK, MENU_LOAD_INTERNAL, MENU_MIDI_SYSEX_GET}
+                {MENU_LOAD_USER_SELECT_BANK, MENU_LOAD_DX7_SELECT_BANK, MENU_MIDI_SYSEX_GET}
         },
         {
                 MENU_LOAD_USER_SELECT_BANK,
@@ -142,17 +116,24 @@ const struct MenuItem allMenus[] __attribute__ ((section (".USER_FLASH"))) = {
                 {MENU_LOAD_USER_SELECT_PRESET}
         },
         {
-                MENU_LOAD_INTERNAL,
-                "Internal",
+        		MENU_LOAD_DX7_SELECT_BANK,
+                "DX7",
                 false,
-                INTERNAL_LAST_BANK,
-                {MENU_DONE}
+                300,
+                {MENU_LOAD_DX7_SELECT_PRESET}
         },
         {
                 MENU_LOAD_USER_SELECT_PRESET,
                 "",
                 false,
                 128,
+                {MENU_DONE}
+        },
+        {
+        		MENU_LOAD_DX7_SELECT_PRESET,
+                """",
+                false,
+                32,
                 {MENU_DONE}
         },
         {
