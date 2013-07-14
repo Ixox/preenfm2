@@ -335,9 +335,8 @@ void Hexter::setIM(struct OneSynthParams *params, int im, uint8_t *patch, int op
 	im--;
 	op--;
 	uint8_t *eb_op = patch + ((5 - op) * 21);
-	float level = (float)limit(eb_op[16], 0, 99);
-	((float*)&params->engineIm1.modulationIndex1)[im]  =  level * level * level * level / 100000000.0f;
-	((float*)&params->engineIm1.modulationIndex1)[im]  *= level * level * level * 6.0f / 1000000.0f;
+
+	((float*)&params->engineIm1.modulationIndex1)[im] = getPreenFMIM(limit(eb_op[16], 0, 99));
 }
 
 void Hexter::setMix(struct OneSynthParams *params, int im, uint8_t *patch, int op) {
@@ -347,18 +346,41 @@ void Hexter::setMix(struct OneSynthParams *params, int im, uint8_t *patch, int o
 	((float*)&params->engineMix1.mixOsc1)[im * 2]  = (float)(limit(eb_op[16], 0, 99) + 1.0) / 100.0f;
 }
 
+float Hexter::getPreenFMIM(int lvl) {
+	if (lvl>100)  {
+		lvl = 100;
+	}
+	if (lvl < 50) {
+		return .0f + lvl * .006;
+	} else if (lvl < 60) {
+		return .3f + (lvl - 50) *  .02;
+	} else if (lvl < 70) {
+		return .5f + (lvl - 60) *  .07;
+	} else if (lvl < 80) {
+		return 1.2f + (lvl - 70) *  .1;
+	} else if (lvl < 85) {
+		return 2.2f + (lvl - 80) *  .2;
+	} else if (lvl < 90) {
+		return 3.2f + (lvl - 85) *  .3;
+	} else  {
+		return 4.7f + (lvl - 90) *  .4;
+	}
+}
+
 /*
  * dx7_voice_set_data
  */
 void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 {
-    struct EnvelopeParams* envParams[] = { &params->env1, &params->env2, &params->env3, &params->env4, &params->env5, &params->env6};
+    struct EnvelopeParamsA* envParamsA[] = { &params->env1a, &params->env2a, &params->env3a, &params->env4a, &params->env5a, &params->env6a};
+    struct EnvelopeParamsB* envParamsB[] = { &params->env1b, &params->env2b, &params->env3b, &params->env4b, &params->env5b, &params->env6b};
     struct OscillatorParams* oscParams[] = { &params->osc1, &params->osc2, &params->osc3, &params->osc4, &params->osc5, &params->osc6};
 
 	for (int i = 0; i < 6; i++) {
 		uint8_t *eb_op = patch + ((5 - i) * 21);
 		struct OscillatorParams* oscParam = oscParams[i];
-		struct EnvelopeParams* envParam = envParams[i];
+		struct EnvelopeParamsA* envA = envParamsA[i];
+		struct EnvelopeParamsB* envB = envParamsB[i];
 
 		oscParam->shape = OSC_SHAPE_SIN;
 
@@ -377,11 +399,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 			oscParam->frequencyMul *= 1.0f + (float)limit(eb_op[19], 0, 99) / 100.0f;
 		} else {
 			float freq = exp(M_LN10 * ((double)(eb_op[18] & 3) + (double)eb_op[19] / 100.0f));
-			if (freq < 40) {
-				oscParam->frequencyMul  = 0.4;
-			} else {
-				oscParam->frequencyMul = freq / 1000;
-			}
+			oscParam->frequencyMul = freq / 1000.0f;
 		}
 
 
@@ -401,37 +419,29 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 //			voice->op[i].eg.base_rate[j]  = limit(eb_op[j], 0, 99);
 //			voice->op[i].eg.base_level[j] = limit(eb_op[4 + j], 0, 99);
 		// Use base_rate[0]
-		envParam->attack = dx7_voice_eg_rate_rise_duration[limit(eb_op[0], 0, 99)];
 
 
-		// If level 2 is small then use rate 1 as decay
-		if ( (eb_op[5] < 50) || (eb_op[1] > eb_op[2] && eb_op[4] < eb_op[5])) {
-			envParam->decay = dx7_voice_eg_rate_decay_duration[limit(eb_op[1], 0, 99)];
-			envParam->sustain = dx7_voice_eg_rate_decay_percent[limit(eb_op[5], 0, 99)];
-		} else {
-			envParam->decay = dx7_voice_eg_rate_decay_duration[limit(eb_op[2], 0, 99)] / 2.0f;
-			envParam->sustain = dx7_voice_eg_rate_decay_percent[limit(eb_op[6], 0, 99)];
+		envA->attackTime = dx7_voice_eg_rate_rise_duration[limit(eb_op[0], 0, 99) + 4];
+		envA->decayTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[1], 0, 99) + 9];
+		envB->sustainTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[2], 0, 99) + 9];
+		envB->releaseTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[3], 0, 99) + 9];
+
+		if (envA->attackTime > 4.0) {
+			envA->attackTime = 4.0;
+		}
+		if (envA->decayTime > 8.0) {
+			envA->decayTime = 8.0;
+		}
+		if (envB->sustainTime > 8.0) {
+			envB->sustainTime = 8.0;
+		}
+		if (envB->releaseTime > 8.0) {
+			envB->releaseTime = 8.0;
 		}
 
-		// Use base_rate[3]
-		// If base_level[2] = 0 use base_rate[2]
-		if (eb_op[6] > 0) {
-			int release = (dx7_voice_eg_rate_decay_duration[limit(eb_op[3], 0, 99)] + .02f) * 50.0f;
-			envParam->release = release  / 50.0f;
-		} else {
-			int release = (dx7_voice_eg_rate_decay_duration[limit(eb_op[2], 0, 99)] + .02f) * 50.0f;
-			envParam->release = release  / 50.0f;
-		}
-
-		if (envParam->attack > 2.0) {
-			envParam->attack = 2.0;
-		}
-		if (envParam->decay > 4.0) {
-			envParam->decay = 4.0;
-		}
-		if (envParam->release > 4.0) {
-			envParam->release = 4.0;
-		}
+		envA->attackLevel = dx7_voice_eg_rate_rise_percent[ limit(eb_op[4], 0, 99)];
+		envA->decayLevel = dx7_voice_eg_rate_decay_percent[limit(eb_op[5], 0, 99)];
+		envB->sustainLevel = dx7_voice_eg_rate_decay_percent[limit(eb_op[6], 0, 99)];
 
 
 		//		}
@@ -460,7 +470,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setIM(params, 4, patch, 6);
 		setMix(params, 1, patch, 1);
 		setMix(params, 2, patch, 3);
-		if (fb >=4) {
+		if (fb > 4) {
 			if (algo == 1) {
 				params->osc6.shape = OSC_SHAPE_SAW;;
 			} else {
@@ -477,7 +487,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setIM(params, 4, patch, 6);
 		setMix(params, 1, patch, 1);
 		setMix(params, 2, patch, 4);
-		if (fb >=4) {
+		if (fb > 4) {
 			if (algo == 3) {
 				params->osc6.shape = OSC_SHAPE_SAW;;
 			} else {
@@ -496,7 +506,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setMix(params, 1, patch, 1);
 		setMix(params, 2, patch, 3);
 		setMix(params, 3, patch, 5);
-		if (fb >=4) {
+		if (fb > 4) {
 			if (algo == 5) {
 				params->osc6.shape = OSC_SHAPE_SAW;;
 			} else {
@@ -514,7 +524,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setIM(params, 5, patch, 6);
 
 		setMix(params, 1, patch, 1);
-		if (fb >=4) {
+		if (fb > 4) {
 			if (algo == 16) {
 				params->osc6.shape = OSC_SHAPE_SAW;;
 			} else {
@@ -532,7 +542,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setIM(params, 4, patch, 6);
 		setMix(params, 1, patch, 1);
 		setMix(params, 2, patch, 3);
-		if (fb >=4) {
+		if (fb > 4) {
 			if (algo == 14) {
 				params->osc6.shape = OSC_SHAPE_SAW;;
 			} else {
@@ -551,7 +561,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setIM(params, 4, patch, 6);
 		setMix(params, 1, patch, 1);
 		setMix(params, 2, patch, 3);
-		if (fb >=4) {
+		if (fb > 4) {
 			if (algo == 7) {
 				params->osc6.shape = OSC_SHAPE_SAW;;
 			} else if (algo == 8) {
@@ -572,7 +582,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setMix(params, 2, patch, 2);
 		setMix(params, 3, patch, 4);
 		setMix(params, 4, patch, 5);
-		if (fb >=4) {
+		if (fb > 4) {
 			params->osc3.shape = OSC_SHAPE_SAW;;
 		}
 		break;
@@ -586,7 +596,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setMix(params, 2, patch, 3);
 		setMix(params, 3, patch, 4);
 		setMix(params, 4, patch, 5);
-		if (fb >=4) {
+		if (fb > 4) {
 			params->osc6.shape = OSC_SHAPE_SAW;;
 		}
 		break;
@@ -600,7 +610,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setMix(params, 2, patch, 2);
 		setMix(params, 3, patch, 4);
 		setMix(params, 4, patch, 5);
-		if (fb >=4) {
+		if (fb > 4) {
 			params->osc6.shape = OSC_SHAPE_SAW;;
 		}
 		break;
@@ -612,7 +622,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setMix(params, 4, patch, 4);
 		setMix(params, 5, patch, 5);
 		setMix(params, 6, patch, 6);
-		if (fb >=4) {
+		if (fb > 4) {
 			params->osc6.shape = OSC_SHAPE_SAW;;
 		}
 		break;
@@ -673,7 +683,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 
 	// Matrix use LFO 1 (o all frequency
 	params->matrixRowState1.source = MATRIX_SOURCE_LFO1;
-	params->matrixRowState1.mul = dx7_voice_pms_to_semitones[ (int)patch[139] & 0x07] / 20.0f;
+	params->matrixRowState1.mul =  (float)patch[139] / 120.0f;
 	params->matrixRowState1.destination = ALL_OSC_FREQ;
 
 	params->matrixRowState2.source = MATRIX_SOURCE_LFO2;

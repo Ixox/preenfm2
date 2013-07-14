@@ -111,19 +111,30 @@ struct ParameterRowDisplay oscParameterRow = {
         {
                 { OSC_SHAPE_SIN, OSC_SHAPE_LAST -1, OSC_SHAPE_LAST, DISPLAY_TYPE_STRINGS, oscShapeNames, nullNamesOrder, nullNamesOrder},
                 { OSC_FT_KEYBOARD, OSC_FT_FIXE, 2, DISPLAY_TYPE_STRINGS, oscTypeNames, nullNamesOrder, nullNamesOrder},
-                { 0, 8, 193, DISPLAY_TYPE_FLOAT ,  nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 193, DISPLAY_TYPE_FLOAT ,  nullNames, nullNamesOrder, nullNamesOrder },
                 { -1, 1, 201, DISPLAY_TYPE_FLOAT,  nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
-struct ParameterRowDisplay envParameterRow = {
+struct ParameterRowDisplay envParameterRow1 = {
         "Enveloppe",
-        { "Attk", "Deca", "Sust", "Rele" },
+        { "Attk", "lvl ", "Deca", "lvl " },
         {
-                { 0, 2, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
+                { 0, 8, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
+        }
+};
+
+struct ParameterRowDisplay envParameterRow2 = {
+        "Enveloppe",
+        { "Sust", "lvl ", "Rele", "    " },
+        {
+                { 0, 8, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 8, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -219,12 +230,18 @@ struct AllParameterRowsDisplay allParameterRows = {
                 &oscParameterRow,
                 &oscParameterRow,
                 &oscParameterRow,
-                &envParameterRow,
-                &envParameterRow,
-                &envParameterRow,
-                &envParameterRow,
-                &envParameterRow,
-                &envParameterRow,
+                &envParameterRow1,
+                &envParameterRow2,
+                &envParameterRow1,
+                &envParameterRow2,
+                &envParameterRow1,
+                &envParameterRow2,
+                &envParameterRow1,
+                &envParameterRow2,
+                &envParameterRow1,
+                &envParameterRow2,
+                &envParameterRow1,
+                &envParameterRow2,
                 &matrixParameterRow,
                 &matrixParameterRow,
                 &matrixParameterRow,
@@ -620,7 +637,7 @@ void SynthState::changeSynthModeRow(int button, int step) {
 			operatorRow = currentRow - ROW_OSC_FIRST;
 			break;
 		case BUTTON_ENV:
-			lastBecauseOfAlgo = ROW_ENV_FIRST + algoInformation[(int)params->engine1.algo].osc - 1;
+			lastBecauseOfAlgo = ROW_ENV_FIRST - 1 + algoInformation[(int)params->engine1.algo].osc  * 2;
 			if (currentRow<ROW_ENV_FIRST || currentRow>lastBecauseOfAlgo) {
 				currentRow = ROW_ENV_FIRST + operatorRow;
 			} else {

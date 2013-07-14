@@ -54,6 +54,7 @@ protected:
 	int limit(int x, int min, int max);
 	void setIM(struct OneSynthParams *params, int im, uint8_t *patch, int op);
 	void setMix(struct OneSynthParams *params, int im, uint8_t *patch, int op);
+	float getPreenFMIM(int lvl);
 	void voiceSetData(struct OneSynthParams *params, uint8_t *voice);
 	int  bulkDumpChecksum(uint8_t *data, int length);
 	void voiceCopyName(char *name, uint8_t *patch);

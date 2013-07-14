@@ -37,12 +37,24 @@ const struct OneSynthParams presets[]  = {
                 { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 6, 0} ,
                 { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 2.5, 0} ,
                 // Enveloppe
-                { 0,0,1,2.56} ,
-                { .5,.5,1,4} ,
-                { .1,.5,.6,4} ,
-                { .1,.1,.56,2.66} ,
-                { 0,.6,0,0.6} ,
-                { .1,.5,.6,.3} ,
+                { 0, 1, 0, 1 },
+                { 0, 1, 2.56 , 0},
+
+                { .5, 1, .1, .8 },
+                { 0, .8, 4, 0},
+
+                { .1, 1, .5, .6 },
+                { 0, .6, 4, 0},
+
+                { .1, 1, .1, .56 },
+                { .1, 1, .1, .56 },
+
+                { 0, 1, .6, 0},
+                { 0, 0, 0.66, 0},
+
+                { .1, 1, .5, .6},
+                { 0, .5, 0.3, 0},
+
                 // Modulation matrix
                 { MATRIX_SOURCE_LFO1, 1, PAN_OSC2, 0} ,
                 { MATRIX_SOURCE_LFOSEQ1, 0, MAIN_GATE, 0} ,
@@ -85,12 +97,24 @@ const struct OneSynthParams presets[]  = {
                 { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 6, 0} ,
                 { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 2.5, 0} ,
                 // Enveloppe
-                { 0,0,1,2.56} ,
-                { .5,.5,1,4} ,
-                { .1,.5,.6,4} ,
-                { .1,.1,.56,2.66} ,
-                { 0,.6,0,0.6} ,
-                { .1,.5,.6,.3} ,
+                { 0, 1, 0, 1 },
+                { 0, 1, 2.56 , 0},
+
+                { .5, 1, .1, .8 },
+                { 0, .8, 4, 0},
+
+                { .1, 1, .5, .6 },
+                { 0, .6, 4, 0},
+
+                { .1, 1, .1, .56 },
+                { .1, 1, .1, .56 },
+
+                { 0, 1, .6, 0},
+                { 0, 0, 0.66, 0},
+
+                { .1, 1, .5, .6},
+                { 0, .5, 0.3, 0},
+
                 // Modulation matrix
                 { MATRIX_SOURCE_LFO1, 1, PAN_OSC2, 0} ,
                 { MATRIX_SOURCE_LFOSEQ1, 0, MAIN_GATE, 0} ,
@@ -133,12 +157,24 @@ const struct OneSynthParams presets[]  = {
                 { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 6, 0} ,
                 { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 2.5, 0} ,
                 // Enveloppe
-                { 0,0,1,2.56} ,
-                { .5,.5,1,4} ,
-                { .1,.5,.6,4} ,
-                { .1,.1,.56,2.66} ,
-                { 0,.6,0,0.6} ,
-                { .1,.5,.6,.3} ,
+                { 0, 1, 0, 1 },
+                { 0, 1, 2.56 , 0},
+
+                { .5, 1, .1, .8 },
+                { 0, .8, 4, 0},
+
+                { .1, 1, .5, .6 },
+                { 0, .6, 4, 0},
+
+                { .1, 1, .1, .56 },
+                { .1, 1, .1, .56 },
+
+                { 0, 1, .6, 0},
+                { 0, 0, 0.66, 0},
+
+                { .1, 1, .5, .6},
+                { 0, .5, 0.3, 0},
+
                 // Modulation matrix
                 { MATRIX_SOURCE_LFO1, 1, PAN_OSC2, 0} ,
                 { MATRIX_SOURCE_LFOSEQ1, 0, MAIN_GATE, 0} ,
@@ -181,12 +217,24 @@ const struct OneSynthParams presets[]  = {
                 { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 6, 0} ,
                 { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 2.5, 0} ,
                 // Enveloppe
-                { 0,0,1,2.56} ,
-                { .5,.5,1,4} ,
-                { .1,.5,.6,4} ,
-                { .1,.1,.56,2.66} ,
-                { 0,.6,0,0.6} ,
-                { .1,.5,.6,.3} ,
+                { 0, 1, 0, 1 },
+                { 0, 1, 2.56 , 0},
+
+                { .5, 1, .1, .8 },
+                { 0, .8, 4, 0},
+
+                { .1, 1, .5, .6 },
+                { 0, .6, 4, 0},
+
+                { .1, 1, .1, .56 },
+                { .1, 1, .1, .56 },
+
+                { 0, 1, .6, 0},
+                { 0, 0, 0.66, 0},
+
+                { .1, 1, .5, .6},
+                { 0, .5, 0.3, 0},
+
                 // Modulation matrix
                 { MATRIX_SOURCE_LFO1, 1, PAN_OSC2, 0} ,
                 { MATRIX_SOURCE_LFOSEQ1, 0, MAIN_GATE, 0} ,
@@ -227,6 +275,12 @@ const struct OneSynthParams presets[]  = {
                 { 0,0,0,0} ,
                 { 0,0,0,0} ,
 
+                { 0,0,0,0} ,
+                { 0,0,0,0} ,
+                { 0,0,0,0} ,
+                { 0,0,0,0} ,
+                { 0,0,0,0} ,
+                { 0,0,0,0} ,
                 { 0,0,0,0} ,
                 { 0,0,0,0} ,
                 { 0,0,0,0} ,

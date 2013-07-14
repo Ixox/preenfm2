@@ -400,7 +400,7 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
         case CC_ENV5_ATTACK:
         case CC_ENV6_ATTACK:
             //            cc.value[1] = newValue * 50.0f + .1f;
-            this->synth->setNewValueFromMidi(timbre, ROW_ENV1  + midiEvent.value[0] - CC_ENV1_ATTACK  , ENCODER_ENV_A,
+            this->synth->setNewValueFromMidi(timbre, ROW_ENV1a  + midiEvent.value[0] - CC_ENV1_ATTACK  , ENCODER_ENV_A,
                     (float)midiEvent.value[1] * .02f);
             break;
         case CC_ENV1_RELEASE:
@@ -410,7 +410,7 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
         case CC_ENV5_RELEASE:
         case CC_ENV6_RELEASE:
             //            cc.value[1] = newValue * 25.0f + .1f;
-            this->synth->setNewValueFromMidi(timbre, ROW_ENV1  + midiEvent.value[0] - CC_ENV1_RELEASE, ENCODER_ENV_R,
+            this->synth->setNewValueFromMidi(timbre, ROW_ENV1b  + midiEvent.value[0] - CC_ENV1_RELEASE, ENCODER_ENV_R,
                     (float)midiEvent.value[1] * .04f);
             break;
         case CC_MATRIXROW1_MUL:

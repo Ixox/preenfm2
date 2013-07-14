@@ -22,20 +22,22 @@ float Env::incTabAtt[201];
 float Env::incTabRel[201];
 int Env::initTab = 0;
 
-void Env::init(Matrix* matrix, struct EnvelopeParams *envParams, DestinationEnum da) {
+void Env::init(Matrix* matrix, struct EnvelopeParamsA *envParamsA, struct EnvelopeParamsB *envParamsB, DestinationEnum da) {
     this->destAttack = da;
     this->matrix = matrix;
-	this->envParams = envParams;
+	this->envParamsA = envParamsA;
+	this->envParamsB = envParamsB;
 
-    reloadADSR(0);
-    reloadADSR(1);
-    reloadADSR(2);
-    reloadADSR(3);
+	// Init All ADSR
+	for (int k=0; k<4; k++) {
+		reloadADSR(k);
+		reloadADSR(k + 4);
+	}
     if (initTab == 0) {
         initTab = 1;
         for (float k=0; k<201; k+=1) {
-            incTabAtt[(int)k] = BLOCK_SIZE / PREENFM_FREQUENCY / (k / 100.0f + .0005f);
-            incTabRel[(int)k] = BLOCK_SIZE / PREENFM_FREQUENCY / (k / 50.0f + .0005f);
+            incTabAtt[(int)k] = BLOCK_SIZE / PREENFM_FREQUENCY / (k / 50.0f + .0005f);
+            incTabRel[(int)k] = BLOCK_SIZE / PREENFM_FREQUENCY / (k / 25.0f + .0005f);
         }
     }
 }

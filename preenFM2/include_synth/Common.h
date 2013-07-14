@@ -80,6 +80,20 @@ struct EngineMix3 {
     float panOsc6;
 };
 
+struct EnvelopeParamsA {
+    float attackTime;
+    float attackLevel;
+    float decayTime;
+    float decayLevel;
+};
+
+struct EnvelopeParamsB {
+    float sustainTime;
+    float sustainLevel;
+    float releaseTime;
+    float notUSed;
+};
+
 struct EnvelopeParams {
     float attack;
     float decay;
@@ -141,12 +155,18 @@ struct OneSynthParams {
     struct OscillatorParams osc4;
     struct OscillatorParams osc5;
     struct OscillatorParams osc6;
-    struct EnvelopeParams env1;
-    struct EnvelopeParams env2;
-    struct EnvelopeParams env3;
-    struct EnvelopeParams env4;
-    struct EnvelopeParams env5;
-    struct EnvelopeParams env6;
+    struct EnvelopeParamsA env1a;
+    struct EnvelopeParamsB env1b;
+    struct EnvelopeParamsA env2a;
+    struct EnvelopeParamsB env2b;
+    struct EnvelopeParamsA env3a;
+    struct EnvelopeParamsB env3b;
+    struct EnvelopeParamsA env4a;
+    struct EnvelopeParamsB env4b;
+    struct EnvelopeParamsA env5a;
+    struct EnvelopeParamsB env5b;
+    struct EnvelopeParamsA env6a;
+    struct EnvelopeParamsB env6b;
     struct MatrixRowParams matrixRowState1;
     struct MatrixRowParams matrixRowState2;
     struct MatrixRowParams matrixRowState3;

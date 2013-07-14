@@ -194,13 +194,19 @@ enum {
 
 enum {
     ROW_ENV_FIRST = ROW_OSC_LAST+1,
-    ROW_ENV1 = ROW_ENV_FIRST,
-    ROW_ENV2 ,
-    ROW_ENV3 ,
-    ROW_ENV4 ,
-    ROW_ENV5 ,
-    ROW_ENV6 ,
-    ROW_ENV_LAST = ROW_ENV6
+    ROW_ENV1a = ROW_ENV_FIRST,
+    ROW_ENV1b,
+    ROW_ENV2a ,
+    ROW_ENV2b ,
+    ROW_ENV3a ,
+    ROW_ENV3b ,
+    ROW_ENV4a ,
+    ROW_ENV4b ,
+    ROW_ENV5a ,
+    ROW_ENV5b ,
+    ROW_ENV6a ,
+    ROW_ENV6b ,
+    ROW_ENV_LAST = ROW_ENV6b
 };
 
 enum {

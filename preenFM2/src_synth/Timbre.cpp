@@ -55,7 +55,8 @@ Timbre::~Timbre() {
 }
 
 void Timbre::init() {
-    struct EnvelopeParams* envParams[] = { &params.env1, &params.env2, &params.env3, &params.env4, &params.env5, &params.env6};
+    struct EnvelopeParamsA* envParamsA[] = { &params.env1a, &params.env2a, &params.env3a, &params.env4a, &params.env5a, &params.env6a};
+    struct EnvelopeParamsB* envParamsB[] = { &params.env1b, &params.env2b, &params.env3b, &params.env4b, &params.env5b, &params.env6b};
     struct OscillatorParams* oscParams[] = { &params.osc1, &params.osc2, &params.osc3, &params.osc4, &params.osc5, &params.osc6};
     struct LfoParams* lfoParams[] = { &params.lfoOsc1, &params.lfoOsc2, &params.lfoOsc3};
     struct StepSequencerParams* stepseqparams[] = { &params.lfoSeq1, &params.lfoSeq2};
@@ -64,7 +65,7 @@ void Timbre::init() {
     matrix.init(&params.matrixRowState1);
 
     for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
-        env[k]->init(&matrix, envParams[k], (DestinationEnum)(ENV1_ATTACK + k));
+        env[k]->init(&matrix, envParamsA[k],  envParamsB[k], (DestinationEnum)(ENV1_ATTACK + k));
         osc[k]->init(&matrix, oscParams[k], (DestinationEnum)(OSC1_FREQ + k));
     }
     // OSC
@@ -148,6 +149,7 @@ void Timbre::afterNewParamsLoad() {
     for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
         for (int j=0; j<NUMBER_OF_ENCODERS; j++) {
         	this->env[k]->reloadADSR(j);
+        	this->env[k]->reloadADSR(j+4);
         }
     }
     for (int k=0; k<NUMBER_OF_LFO; k++) {

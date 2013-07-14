@@ -343,23 +343,41 @@ void Synth::newParamValue(int timbre, SynthParamType type, int currentRow, int e
         }
     } else if (type == SYNTH_PARAM_TYPE_ENV) {
         switch (currentRow) {
-        case ROW_ENV1:
+        case ROW_ENV1a:
             timbres[timbre].env1.reloadADSR(encoder);
             break;
-        case ROW_ENV2:
+        case ROW_ENV1b:
+            timbres[timbre].env1.reloadADSR(encoder + 4);
+            break;
+        case ROW_ENV2a:
             timbres[timbre].env2.reloadADSR(encoder);
             break;
-        case ROW_ENV3:
+        case ROW_ENV2b:
+            timbres[timbre].env2.reloadADSR(encoder + 4);
+            break;
+        case ROW_ENV3a:
             timbres[timbre].env3.reloadADSR(encoder);
             break;
-        case ROW_ENV4:
+        case ROW_ENV3b:
+            timbres[timbre].env3.reloadADSR(encoder + 4);
+            break;
+        case ROW_ENV4a:
             timbres[timbre].env4.reloadADSR(encoder);
             break;
-        case ROW_ENV5:
+        case ROW_ENV4b:
+            timbres[timbre].env4.reloadADSR(encoder + 4);
+            break;
+        case ROW_ENV5a:
             timbres[timbre].env5.reloadADSR(encoder);
             break;
-        case ROW_ENV6:
+       case ROW_ENV5b:
+    	    timbres[timbre].env5.reloadADSR(encoder + 4);
+            break;
+        case ROW_ENV6a:
             timbres[timbre].env6.reloadADSR(encoder);
+            break;
+        case ROW_ENV6b:
+            timbres[timbre].env6.reloadADSR(encoder + 4);
             break;
         }
     } else if (type == SYNTH_PARAM_TYPE_MATRIX && encoder == ENCODER_MATRIX_DEST) {

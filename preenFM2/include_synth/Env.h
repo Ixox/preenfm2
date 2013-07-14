@@ -27,6 +27,7 @@ enum EnvState {
     ENV_STATE_ON_A = 0,
     ENV_STATE_ON_D,
     ENV_STATE_ON_S,
+    ENV_STATE_ON_REAL_S,
     ENV_STATE_ON_R,
     ENV_STATE_DEAD,
     ENV_STATE_ON_QUICK_R,
@@ -55,14 +56,15 @@ public:
         stateTarget[ENV_STATE_ON_QUICK_R] = 0.0f;
         stateTarget[ENV_STATE_DEAD] = 0.0f;
 
-        stateInc[ENV_STATE_ON_S] = 0.0f;
         stateInc[ENV_STATE_DEAD] = 0.0f;
+        stateInc[ENV_STATE_ON_REAL_S] = 0.0f;
         // quick release : 2 steps = 64 samples...
         stateInc[ENV_STATE_ON_QUICK_R] = 0.5f;
 
         nextState[ENV_STATE_ON_A] = ENV_STATE_ON_D;
         nextState[ENV_STATE_ON_D] = ENV_STATE_ON_S;
-        nextState[ENV_STATE_ON_S] = ENV_STATE_ON_S;
+        nextState[ENV_STATE_ON_S] = ENV_STATE_ON_REAL_S;
+        nextState[ENV_STATE_ON_REAL_S] = ENV_STATE_ON_REAL_S;
         nextState[ENV_STATE_ON_R] = ENV_STATE_DEAD;
         nextState[ENV_STATE_ON_QUICK_R] = ENV_STATE_DEAD;
     }
@@ -70,24 +72,36 @@ public:
     virtual ~Env(void) {
     }
 
-    void init(Matrix* matrix, struct EnvelopeParams *envParams, DestinationEnum da);
+    void init(Matrix* matrix, struct EnvelopeParamsA *envParamsA, struct EnvelopeParamsB *envParamsB, DestinationEnum da);
 
     void reloadADSR(int encoder) {
+    	// 0 Attack time
+    	// 1 Attack rate
+    	// 2 Decay time
+    	// 3 Decay rate
+    	// 4 Sustain time
+    	// 5 Sustain rate
+    	// 6 Release time
+    	// 7 Release rate
         switch (encoder) {
         case 0:
-            // Not sure it's necessary... recalculated in noteOn....
-            // stateInc[ENV_STATE_ON_A] = incTabAtt[(int)(envParams->attack * 100)];
-            break;
         case 1:
-            stateInc[ENV_STATE_ON_D] = incTabRel[(int)(envParams->decay * 50)];
+        	stateTarget[ENV_STATE_ON_A] =  envParamsA->attackLevel;
+        	stateInc[ENV_STATE_ON_A] = incTabAtt[(int)(envParamsA->attackTime * 50)];
             break;
         case 2:
-            stateTarget[ENV_STATE_ON_D] =  envParams->sustain;
-            stateTarget[ENV_STATE_ON_S] =  envParams->sustain;
-            break;
         case 3:
+        	stateTarget[ENV_STATE_ON_D] =  envParamsA->decayLevel;
+        	stateInc[ENV_STATE_ON_D] = incTabRel[(int)(envParamsA->decayTime * 25)];
+            break;
+        case 4:
+        case 5:
+        	stateTarget[ENV_STATE_ON_S] =  envParamsB->sustainLevel;
+        	stateInc[ENV_STATE_ON_S] = incTabRel[(int)(envParamsB->sustainTime * 25)];
+        	break;
+        case 6:
             // Not sure it's necessary... reaclculated in noteOn....
-            stateInc[ENV_STATE_ON_R] = incTabRel[(int)(envParams->release * 50)];
+            stateInc[ENV_STATE_ON_R] = incTabRel[(int)(envParamsB->releaseTime * 25)];
             break;
         }
     }
@@ -103,31 +117,33 @@ public:
     }
 
     inline float getNextAmp(struct EnvData* env) {
-        env->currentPhase += stateInc[env->envState];
+		env->currentPhase += stateInc[env->envState];
 
-        if (env->currentPhase  >= 1.0f) {
-            env->currentValue = env->nextStateValue;
-            // Next state
-            env->envState = nextState[env->envState];
-            newState(env);
-        } else if (stateInc[env->envState] > 0) {
-            env->currentValue = env->previousStateValue * (1- env->currentPhase) + env->nextStateValue * env->currentPhase;
-        }
+		if (env->currentPhase  >= 1.0f) {
+			// Next state
+			env->currentValue = env->nextStateValue;
+			env->envState = nextState[env->envState];
+			newState(env);
+		} else if (stateInc[env->envState] > 0) {
+			env->currentValue = env->previousStateValue * (1- env->currentPhase) + env->nextStateValue * env->currentPhase;
+		}
         return env->currentValue;
       }
 
     void noteOn(struct EnvData* env) {
-        float attack = envParams->attack + this->matrix->getDestination(destAttack) + this->matrix->getDestination(ALL_ENV_ATTACK);
+
+    	float attack = envParamsA->attackTime + this->matrix->getDestination(destAttack) + this->matrix->getDestination(ALL_ENV_ATTACK);
         if (attack > 2.0f) {
             attack = 2.0f;
         } else if (attack < 0.0f) {
             attack = 0.0f;
         }
-        stateInc[ENV_STATE_ON_A] = incTabAtt[(int)(attack * 100)];
+        stateInc[ENV_STATE_ON_A] = incTabAtt[(int)(attack * 50)];
 
-        float release = envParams->release; // + this->matrix->getDestination(ALL_ENV_RELEASE);
+        // TODO !!!!
+        float release = envParamsB->releaseTime; // + this->matrix->getDestination(ALL_ENV_RELEASE);
 
-        stateInc[ENV_STATE_ON_R] = incTabRel[(int)(release * 50)];
+        stateInc[ENV_STATE_ON_R] = incTabRel[(int)(release * 25)];
 
         env->currentValue = 0;
         env->envState = ENV_STATE_ON_A;
@@ -157,7 +173,8 @@ private:
 
     int nextState[ENV_NUMBER_OF_STATES];
 
-    EnvelopeParams* envParams;
+    EnvelopeParamsA* envParamsA;
+    EnvelopeParamsB* envParamsB;
     Matrix* matrix;
     DestinationEnum destAttack;
 
