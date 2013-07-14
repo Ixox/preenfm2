@@ -32,7 +32,7 @@ struct AlgoInformation  algoInformation[17] = {
         { 6, 4, 2},   // ALG12
         { 6, 5, 1},   // ALG13
         { 6, 0, 6},  // ALG14
-        { 6, 5, 1},   // ALG15
+        { 6, 4, 2},   // ALG15
         { 6, 4, 4},   // ALG16
         { 6, 4, 2}   // ALG17
 };

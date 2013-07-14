@@ -1012,7 +1012,7 @@ void Voice::nextBlock() {
          }
          break;
         case ALG15:
-            /* DX7 Algo 7
+            /* DX7 Algo 7, 8, 8
 
                               .---.
                               | 6 |

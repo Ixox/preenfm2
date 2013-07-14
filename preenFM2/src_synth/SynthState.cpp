@@ -151,7 +151,7 @@ struct ParameterRowDisplay lfoEnv2ParameterRow = {
 };
 
 const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "env2", "seq1", "seq2",
-        "PitB", "AftT", "ModW", "Velo", "Key", "CC1 ", "CC2 ", "CC3 ", "CC4 "} ;
+        "PitB", "AftT", "ModW", "Velo", "Key"} ;
 
 const char* matrixDestNames [] = {
         "None", "Gate", "IM1 ", "IM2 ", "IM3 ", "IM4 ",
@@ -276,11 +276,6 @@ SynthState::SynthState() {
     fullState.midiConfigValue[MIDICONFIG_BOOT_START] = 0;
     fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] = 60;
     fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY] = 120;
-    fullState.midiConfigValue[MIDICONFIG_ECHANNEL] = 0;
-    fullState.midiConfigValue[MIDICONFIG_ECC1] = 115;
-    fullState.midiConfigValue[MIDICONFIG_ECC2] = 116;
-    fullState.midiConfigValue[MIDICONFIG_ECC3] = 117;
-    fullState.midiConfigValue[MIDICONFIG_ECC4] = 118;
     fullState.midiConfigValue[MIDICONFIG_ENCODER] = 0;
     fullState.firstMenu = 0;
 

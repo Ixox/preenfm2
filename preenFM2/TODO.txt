@@ -4,7 +4,6 @@ TODO (temporary list, grow over time) :
 . !!! USB Midi : SYSEX, after touch, program change
 . Must not be able to sysex combo bank
 . 'Panic!' to add...
-. Remove CC from matrix...
 . Add mix4/pan4 mix5.... pan6 to matrix (??)
 . env all release as target.
 . ADD DX7 algo for compatibility...
@@ -20,6 +19,7 @@ OK A TESTER
 
 
 DONE:
+. Clean old CC from matrix...
 . Rename LFO on LCD
 . Pitch bend 1 modwheel to adjust (too strong).
 . DX7 sysex can be read directly from USBKey thought the menu (300 banks * 32 patch max)

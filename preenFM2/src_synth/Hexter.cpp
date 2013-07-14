@@ -414,8 +414,14 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		}
 
 		// Use base_rate[3]
-		int release = (dx7_voice_eg_rate_decay_duration[limit(eb_op[3], 0, 99)] + .02f) * 50.0f;
-		envParam->release = release  / 50.0f;
+		// If base_level[2] = 0 use base_rate[2]
+		if (eb_op[6] > 0) {
+			int release = (dx7_voice_eg_rate_decay_duration[limit(eb_op[3], 0, 99)] + .02f) * 50.0f;
+			envParam->release = release  / 50.0f;
+		} else {
+			int release = (dx7_voice_eg_rate_decay_duration[limit(eb_op[2], 0, 99)] + .02f) * 50.0f;
+			envParam->release = release  / 50.0f;
+		}
 
 		if (envParam->attack > 2.0) {
 			envParam->attack = 2.0;
