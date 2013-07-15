@@ -18,7 +18,6 @@
 #include "Osc.h"
 
 float silence[1]  __attribute__ ((section(".ccmnoload")));
-float realSquare[2] = { 1, -1};
 float noise[32] __attribute__ ((section(".ccmnoload")));
 
 #include "../waveforms/waves.c"
@@ -30,59 +29,75 @@ struct WaveTable waveTables[NUMBER_OF_WAVETABLES] __attribute__ ((section(".ccm"
 		{
 				sinTable,
 				0x7ff,
-				1,0
+				1.0f,
+				0.0f,
+				0.0f
 		},
 		//		OSC_SHAPE_SAW,
 		{
 				sawTable,
 				0x7ff,
-				1,0
+				1.0f,
+				0.0f,
+				0.0f
 		},
 		//		OSC_SHAPE_SQUARE,
 		{
 				squareTable,
 				0x7ff,
-				1,0
+				1.0f,
+				0.0f,
+				0.0f
 		},
 		//		OSC_SHAPE_SIN_SQUARE,
 		{
 				sinSquareTable,
 				0x3ff,
-				1,0
+				1.0f,
+				0.0f,
+				0.0f
 		},
 		//		OSC_SHAPE_SIN_ZERO,
 		{
 				sinOrZeroTable,
 				0x3ff,
-				1,0
+				1.0f,
+				0.0f,
+				0.0f
 		},
 		//		OSC_SHAPE_SIN_POS,
 		{
 				sinPosTable,
 				0x3ff,
-				1,0
+				1.0f,
+				0.0f,
+				0.0f
 		},
 		//		OSC_SHAPE_RAND,
 		{
 				noise,
 				0x1f,
-				0,1 //
+				0.0f,
+				1.0f,
+				0.0f
 		},
 		//	OSC_SHAPE_OFF,
 		{
 				silence,
-				0x7ff, // any value works
-				0,0
+				0x00, // Must be 0 to reset index when switching from an other shape.
+				0.0f,
+				0.0f,
+				0.0f
 		}
 };
 
 
 void Osc::init(Matrix* matrix, struct OscillatorParams *oscParams, DestinationEnum df) {
+	silence[0] = 0;
+
 	this->destFreq = df;
-
 	this->matrix = matrix;
-
-	oscillator = oscParams;
+	this->oscillator = oscParams;
 
 	if (waveTables[0].precomputedValue <= 0) {
 		for (int k=0; k<NUMBER_OF_WAVETABLES; k++) {
@@ -95,10 +110,10 @@ void Osc::newNote(struct OscState* oscState, int note) {
 	oscState->index = 1; // << number;
 	switch ((int)oscillator->frequencyType) {
 	case OSC_FT_KEYBOARD:
-		oscState->mainFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .1f);
+		oscState->mainFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .01f);
 		break;
 	case OSC_FT_FIXE:
-		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f * (1.0f + oscillator->detune * .1f);
+		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f * (1.0f + oscillator->detune * .01f);
 		break;
 	}
 	oscState->frequency = oscState->mainFrequency;
@@ -108,10 +123,10 @@ void Osc::newNote(struct OscState* oscState, int note) {
 void Osc::glideToNote(struct OscState* oscState, int note) {
 	switch ((int)oscillator->frequencyType) {
 	case OSC_FT_KEYBOARD:
-		oscState->nextFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .1f);
+		oscState->nextFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .01f);
 		break;
 	case OSC_FT_FIXE:
-		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f * (1.0f + oscillator->detune * .1f);
+		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f * (1.0f + oscillator->detune * .01f);
 		break;
 	}
 	oscState->fromFrequency = oscState->mainFrequency;

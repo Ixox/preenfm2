@@ -321,7 +321,7 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
         */
         break;
     case CC_MODWHEEL:
-        this->synth->getTimbre(timbre)->getMatrix()->setSource(MATRIX_SOURCE_MODWHEEL, midiEvent.value[1]);
+        this->synth->getTimbre(timbre)->getMatrix()->setSource(MATRIX_SOURCE_MODWHEEL, INV127*midiEvent.value[1]);
         break;
     case CC_ALL_NOTES_OFF:
         this->synth->allNoteOff();

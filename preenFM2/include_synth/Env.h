@@ -51,8 +51,6 @@ class Env
 {
 public:
     Env() {
-        stateTarget[ENV_STATE_ON_A] = 1.0f;
-        stateTarget[ENV_STATE_ON_R] = 0.0f;
         stateTarget[ENV_STATE_ON_QUICK_R] = 0.0f;
         stateTarget[ENV_STATE_DEAD] = 0.0f;
 
@@ -100,7 +98,8 @@ public:
         	stateInc[ENV_STATE_ON_S] = incTabRel[(int)(envParamsB->sustainTime * 25)];
         	break;
         case 6:
-            // Not sure it's necessary... reaclculated in noteOn....
+        	stateTarget[ENV_STATE_ON_R] =  envParamsB->releaseLevel;
+            // Not sure it's necessary... recalculated in noteOn....
             stateInc[ENV_STATE_ON_R] = incTabRel[(int)(envParamsB->releaseTime * 25)];
             break;
         }
@@ -133,16 +132,16 @@ public:
     void noteOn(struct EnvData* env) {
 
     	float attack = envParamsA->attackTime + this->matrix->getDestination(destAttack) + this->matrix->getDestination(ALL_ENV_ATTACK);
-        if (attack > 2.0f) {
-            attack = 2.0f;
-        } else if (attack < 0.0f) {
+    	if (attack < 0.0f) {
             attack = 0.0f;
         }
         stateInc[ENV_STATE_ON_A] = incTabAtt[(int)(attack * 50)];
 
-        // TODO !!!!
-        float release = envParamsB->releaseTime; // + this->matrix->getDestination(ALL_ENV_RELEASE);
 
+        float release = envParamsB->releaseTime + this->matrix->getDestination(ALL_ENV_RELEASE);
+    	if (release < 0.0f) {
+    		release = 0.0f;
+        }
         stateInc[ENV_STATE_ON_R] = incTabRel[(int)(release * 25)];
 
         env->currentValue = 0;

@@ -62,18 +62,18 @@ public:
 
     void updateAllModulationIndexes() {
     	int numberOfIMs = algoInformation[(int)(params.engine1.algo)].im;
-    	modulationIndex1 = params.engineIm1.modulationIndex1 + matrix.getDestination(INDEX_MODULATION1);
+    	modulationIndex1 = params.engineIm1.modulationIndex1 + matrix.getDestination(INDEX_MODULATION1) + matrix.getDestination(INDEX_ALL_MODULATION);
         modulationIndex1 = (modulationIndex1 < 0.0f) ? 0.0f : modulationIndex1;
-        modulationIndex2 = params.engineIm1.modulationIndex2 + matrix.getDestination(INDEX_MODULATION2);
+        modulationIndex2 = params.engineIm1.modulationIndex2 + matrix.getDestination(INDEX_MODULATION2) + matrix.getDestination(INDEX_ALL_MODULATION);
         modulationIndex2 = (modulationIndex2 < 0.0f) ? 0.0f : modulationIndex2;
 
         if (numberOfIMs <= 2) {
         	return;
         }
 
-        modulationIndex3 = params.engineIm1.modulationIndex3 + matrix.getDestination(INDEX_MODULATION3);
+        modulationIndex3 = params.engineIm1.modulationIndex3 + matrix.getDestination(INDEX_MODULATION3) + matrix.getDestination(INDEX_ALL_MODULATION);
         modulationIndex3 = (modulationIndex3 < 0.0f) ? 0.0f : modulationIndex3;
-        modulationIndex4 = params.engineIm1.modulationIndex4 + matrix.getDestination(INDEX_MODULATION4);
+        modulationIndex4 = params.engineIm1.modulationIndex4 + matrix.getDestination(INDEX_MODULATION4) + matrix.getDestination(INDEX_ALL_MODULATION);
         modulationIndex4 = (modulationIndex4 < 0.0f) ? 0.0f : modulationIndex4;
 
         if (numberOfIMs < 4) {
@@ -81,9 +81,9 @@ public:
         }
 
         modulationIndex5 = params.engineIm2.modulationIndex5 ;
-        modulationIndex5 = (modulationIndex5 < 0.0f) ? 0.0f : modulationIndex5;
+        modulationIndex5 = (modulationIndex5 < 0.0f) ? 0.0f : modulationIndex5  + matrix.getDestination(INDEX_ALL_MODULATION);
         modulationIndex6 = params.engineIm2.modulationIndex6 ;
-        modulationIndex6 = (modulationIndex6 < 0.0f) ? 0.0f : modulationIndex6;
+        modulationIndex6 = (modulationIndex6 < 0.0f) ? 0.0f : modulationIndex6  + matrix.getDestination(INDEX_ALL_MODULATION);
 
     }
 

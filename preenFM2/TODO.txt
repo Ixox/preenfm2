@@ -4,10 +4,14 @@ TODO (temporary list, grow over time) :
 . !!! USB Midi : SYSEX, after touch, program change
 . Must not be able to sysex combo bank
 . 'Panic!' to add...
-. Add mix4/pan4 mix5.... pan6 to matrix (??)
-. env all release as target.
 . ADD DX7 algo for compatibility...
-. audio glich when changing patch while playing.
+. audio glich when changing patch while playing and start again plaing (seems to be linked with voice).
+. Release LFO ENV1 Broken - LCD - show up at 1.00
+. Use empty PFM patch before applying DX7 parameters.
+. Use back+turn to fine adjust (Remove the Modulation special case)
+. use menu+turn to reset to default
+. Chose combo and preset bank by name ('_' for read only bank).
+. Modify button : Osc->Operator# , Env : Osc, EnvA, EnvB ?
 
 TO check hardware :
 . volume Pot make noise
@@ -19,6 +23,9 @@ OK A TESTER
 
 
 DONE:
+. BUG when one of the OSC is OFF
+. env all release as target.
+. Add mix4/pan4 to matrix. No 5 and 6.
 . Clean old CC from matrix...
 . Rename LFO on LCD
 . Pitch bend 1 modwheel to adjust (too strong).

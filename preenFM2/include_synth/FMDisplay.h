@@ -60,7 +60,7 @@ public:
 		} else if (row <= ROW_OSC_LAST) {
             return row - ROW_OSC_FIRST +1;
         } else if (row <= ROW_ENV_LAST) {
-            return row - ROW_ENV_FIRST +1;
+            return ((row - ROW_ENV_FIRST) >> 1) + 1;
         } else if (row <= ROW_MATRIX_LAST) {
             return row - ROW_MATRIX_FIRST +1;
         } else if (row <= ROW_LFOOSC3) {

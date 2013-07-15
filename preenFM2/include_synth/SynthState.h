@@ -464,7 +464,7 @@ public:
 	char stepSelect[2];
 
 private:
-	char engineRow, operatorRow, matrixRow, lfoRow;
+	char engineRow, operatorRow, envelopeRow, matrixRow, lfoRow;
 	char currentRow;
 	bool isPlayingNote ;
 	char playingNote;

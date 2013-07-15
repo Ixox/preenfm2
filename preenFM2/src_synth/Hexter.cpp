@@ -376,6 +376,15 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
     struct EnvelopeParamsB* envParamsB[] = { &params->env1b, &params->env2b, &params->env3b, &params->env4b, &params->env5b, &params->env6b};
     struct OscillatorParams* oscParams[] = { &params->osc1, &params->osc2, &params->osc3, &params->osc4, &params->osc5, &params->osc6};
 
+    int transpose = limit(patch[144], 0, 48) - 24;
+    float transposeMultiply = 1.0f;
+    if (transpose < -6) {
+        transposeMultiply = .5f;
+    } else if (transpose < -18) {
+        transposeMultiply = .25f;
+    }
+
+
 	for (int i = 0; i < 6; i++) {
 		uint8_t *eb_op = patch + ((5 - i) * 21);
 		struct OscillatorParams* oscParam = oscParams[i];
@@ -401,6 +410,9 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 			float freq = exp(M_LN10 * ((double)(eb_op[18] & 3) + (double)eb_op[19] / 100.0f));
 			oscParam->frequencyMul = freq / 1000.0f;
 		}
+
+		// transpose ?
+		oscParam->frequencyMul *= transposeMultiply;
 
 
 		// voice->op[i].detune        = limit(eb_op[20], 0, 14);
@@ -640,7 +652,6 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 
 
 
-	//	voice->transpose = limit(edit_buffer[144], 0, 48);
 
 //
 
@@ -681,6 +692,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 	}
 */
 
+
 	// Matrix use LFO 1 (o all frequency
 	params->matrixRowState1.source = MATRIX_SOURCE_LFO1;
 	params->matrixRowState1.mul =  (float)patch[139] / 120.0f;
@@ -690,17 +702,24 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 	params->matrixRowState2.mul = dx7_voice_amd_to_ol_adjustment[(patch[140])] / 100.0f;
 	params->matrixRowState2.destination = ALL_MIX;
 
+	params->matrixRowState3.mul = 0.0f;
+	params->matrixRowState4.mul = 0.0f;
+	params->matrixRowState5.mul = 0.0f;
+	params->matrixRowState6.mul = 0.0f;
+	params->matrixRowState7.mul = 0.0f;
+	params->matrixRowState8.mul = 0.0f;
+	params->matrixRowState9.mul = 0.0f;
 
 	params->matrixRowState10.source = MATRIX_SOURCE_AFTERTOUCH;
 	params->matrixRowState10.mul = 2.0f;
 	params->matrixRowState10.destination = INDEX_MODULATION2;
 
 	params->matrixRowState11.source = MATRIX_SOURCE_MODWHEEL;
-	params->matrixRowState11.mul = 2.0f;
+	params->matrixRowState11.mul = 4.0f;
 	params->matrixRowState11.destination = INDEX_MODULATION1;
 
 	params->matrixRowState12.source = MATRIX_SOURCE_PITCHBEND;
-	params->matrixRowState12.mul = 1.0f;
+	params->matrixRowState12.mul = 2.0f;
 	params->matrixRowState12.destination = ALL_OSC_FREQ;
 }
 

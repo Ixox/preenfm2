@@ -118,7 +118,7 @@ struct ParameterRowDisplay oscParameterRow = {
 
 struct ParameterRowDisplay envParameterRow1 = {
         "Enveloppe",
-        { "Attk", "lvl ", "Deca", "lvl " },
+        { "Attk", "lv  ", "Deca", "lv " },
         {
                 { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
@@ -129,7 +129,7 @@ struct ParameterRowDisplay envParameterRow1 = {
 
 struct ParameterRowDisplay envParameterRow2 = {
         "Enveloppe",
-        { "Sust", "lvl ", "Rele", "    " },
+        { "Sust", "lv  ", "Rele", "lv  " },
         {
                 { 0, 8, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
@@ -162,15 +162,15 @@ struct ParameterRowDisplay lfoEnv2ParameterRow = {
 };
 
 const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "env2", "seq1", "seq2",
-        "PitB", "AftT", "ModW", "Velo", "Key"} ;
+		"ModW", "PitB", "AftT",  "Velo", "Key"} ;
 
 const char* matrixDestNames [] = {
-        "None", "Gate", "IM1 ", "IM2 ", "IM3 ", "IM4 ",
-        "o1Fq", "o2Fq", "o3Fq", "o4Fq", "o5Fq", "o6Fq", "o*Fq",
-        "l1Fq", "l2Fq", "l3Fq", "e2si", "s1ga", "s2ga",
+        "None", "Gate", "IM1 ", "IM2 ", "IM3 ", "IM4 ", "IM* ",
         "Mix1", "Pan1", "Mix2", "Pan2", "Mix3", "Pan3", "Mix3", "Pan3", "Mix*", "Pan*",
-        "Env1", "Env2", "Env3", "Env4", "Env5", "Env6", "Env*",
-	    "mx01", "mx02", "mx03", "mx04", "mx05", "mx06", "mx07", "mx08", "mx09", "mx10", "mx11", "mx12"
+        "o1Fq", "o2Fq", "o3Fq", "o4Fq", "o5Fq", "o6Fq", "o*Fq",
+        "Att1", "Att2", "Att3", "Att4", "Att5", "Att6", "Att*", "Rel*",
+	    "mx01", "mx02", "mx03", "mx04",
+        "l1Fq", "l2Fq", "l3Fq", "e2si", "s1ga", "s2ga"
 	   } ;
 
 
@@ -347,22 +347,25 @@ void SynthState::encoderTurnedForStepSequencer(int row, int encoder, int ticks) 
 	}
 }
 
+
+
+
 void SynthState::encoderTurnedWhileButtonPressed(int encoder, int ticks, int button) {
     int oldCurrentRow = currentRow;
 
     if (fullState.synthMode == SYNTH_MODE_EDIT)  {
-        switch (button) {
-        case BUTTON_SYNTH:
-        case BUTTON_OSC:
-        case BUTTON_ENV:
-        case BUTTON_MATRIX:
-        case BUTTON_LFO:
-        	changeSynthModeRow(button , ticks>0 ? 1 : -1);
-            break;
-        case BUTTON_BACK:
-        	// NOTE !!!!
-        	break;
-        }
+    	switch (button) {
+    	case BUTTON_SYNTH:
+    	case BUTTON_OSC:
+    	case BUTTON_ENV:
+    	case BUTTON_MATRIX:
+    	case BUTTON_LFO:
+    		changeSynthModeRow(button , ticks>0 ? 1 : -1);
+    		break;
+    	case BUTTON_BACK:
+    		// NOTE !!!!
+    		break;
+    	}
     }
     if (oldCurrentRow != currentRow) {
         propagateNewCurrentRow(currentRow);
@@ -475,7 +478,7 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                     fullState.name[fullState.menuSelect] = 53;
                 }
                 propagateNewMenuSelect();
-            } else if (fullState.currentMenuItem->maxValue == 128) {
+            } else if (fullState.currentMenuItem->maxValue >= 128) {
                 if (ticks>0) {
                     fullState.menuSelect = fullState.menuSelect + 5;
                 } else if (ticks<0) {
@@ -492,7 +495,7 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                     fullState.name[fullState.menuSelect] = 26;
                 }
                 propagateNewMenuSelect();
-            } else if (fullState.currentMenuItem->maxValue == 128) {
+            } else if (fullState.currentMenuItem->maxValue >= 128) {
                 if (ticks>0) {
                     fullState.menuSelect = fullState.menuSelect + 10;
                 } else if (ticks<0) {
@@ -519,7 +522,7 @@ void SynthState::encoderTurned(int encoder, int ticks) {
             	}
                 propagateNewMenuSelect();
                 propagateNewMidiConfig(fullState.menuSelect, fullState.midiConfigValue[fullState.menuSelect]);
-            } else if (fullState.currentMenuItem->maxValue == 128) {
+            } else if (fullState.currentMenuItem->maxValue >= 128) {
                 if (ticks>0) {
                     fullState.menuSelect = fullState.menuSelect + 25;
                 } else if (ticks<0) {
@@ -628,6 +631,7 @@ void SynthState::changeSynthModeRow(int button, int step) {
 				currentRow = ROW_OSC_FIRST + operatorRow;
 			} else {
 				currentRow += step;
+				envelopeRow = (currentRow - ROW_OSC_FIRST)*2;
 			}
 			if (currentRow>lastBecauseOfAlgo) {
 				currentRow = ROW_OSC_FIRST;
@@ -639,16 +643,17 @@ void SynthState::changeSynthModeRow(int button, int step) {
 		case BUTTON_ENV:
 			lastBecauseOfAlgo = ROW_ENV_FIRST - 1 + algoInformation[(int)params->engine1.algo].osc  * 2;
 			if (currentRow<ROW_ENV_FIRST || currentRow>lastBecauseOfAlgo) {
-				currentRow = ROW_ENV_FIRST + operatorRow;
+				currentRow = ROW_ENV_FIRST + envelopeRow;
 			} else {
 				currentRow += step;
+				operatorRow = (currentRow - ROW_ENV_FIRST) >> 1;
 			}
 			if (currentRow>lastBecauseOfAlgo) {
 				currentRow = ROW_ENV_FIRST;
 			} else if (currentRow<ROW_ENV_FIRST) {
 				currentRow = lastBecauseOfAlgo;
 			}
-			operatorRow = currentRow - ROW_ENV_FIRST;
+			envelopeRow = currentRow - ROW_ENV_FIRST;
 		break;
 		case BUTTON_MATRIX:
 			if (currentRow<ROW_MATRIX_FIRST || currentRow>ROW_MATRIX_LAST) {

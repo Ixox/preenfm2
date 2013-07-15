@@ -91,7 +91,7 @@ struct EnvelopeParamsB {
     float sustainTime;
     float sustainLevel;
     float releaseTime;
-    float notUSed;
+    float releaseLevel;
 };
 
 struct EnvelopeParams {
@@ -200,9 +200,9 @@ enum SourceEnum {
     MATRIX_SOURCE_LFOENV2,
     MATRIX_SOURCE_LFOSEQ1,
     MATRIX_SOURCE_LFOSEQ2,
+    MATRIX_SOURCE_MODWHEEL,
     MATRIX_SOURCE_PITCHBEND,
     MATRIX_SOURCE_AFTERTOUCH,
-    MATRIX_SOURCE_MODWHEEL,
     MATRIX_SOURCE_VELOCITY,
     MATRIX_SOURCE_KEY,
     MATRIX_SOURCE_MAX
@@ -216,19 +216,7 @@ enum DestinationEnum {
     INDEX_MODULATION2,
     INDEX_MODULATION3,
     INDEX_MODULATION4,
-    OSC1_FREQ,
-    OSC2_FREQ,
-    OSC3_FREQ,
-    OSC4_FREQ,
-    OSC5_FREQ,
-    OSC6_FREQ,
-    ALL_OSC_FREQ,
-    LFO1_FREQ,
-    LFO2_FREQ,
-    LFO3_FREQ,
-    LFOENV2_SILENCE,
-    LFOSEQ1_GATE,
-    LFOSEQ2_GATE,
+    INDEX_ALL_MODULATION,
     MIX_OSC1,
     PAN_OSC1,
     MIX_OSC2,
@@ -239,6 +227,13 @@ enum DestinationEnum {
     PAN_OSC4,
     ALL_MIX,
     ALL_PAN,
+    OSC1_FREQ,
+    OSC2_FREQ,
+    OSC3_FREQ,
+    OSC4_FREQ,
+    OSC5_FREQ,
+    OSC6_FREQ,
+    ALL_OSC_FREQ,
     ENV1_ATTACK,
     ENV2_ATTACK,
     ENV3_ATTACK,
@@ -246,18 +241,17 @@ enum DestinationEnum {
     ENV5_ATTACK,
     ENV6_ATTACK,
     ALL_ENV_ATTACK,
+    ALL_ENV_RELEASE,
     MTX1_MUL,
     MTX2_MUL,
     MTX3_MUL,
     MTX4_MUL,
-    MTX5_MUL,
-    MTX6_MUL,
-    MTX7_MUL,
-    MTX8_MUL,
-    MTX9_MUL,
-    MTX10_MUL,
-    MTX11_MUL,
-    MTX12_MUL,
+    LFO1_FREQ,
+    LFO2_FREQ,
+    LFO3_FREQ,
+    LFOENV2_SILENCE,
+    LFOSEQ1_GATE,
+    LFOSEQ2_GATE,
     DESTINATION_MAX
 };
 

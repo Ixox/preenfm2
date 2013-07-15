@@ -303,11 +303,14 @@ void FMDisplay::refreshAllScreenByStep() {
 
 void FMDisplay::displayPreset() {
     FullState* fullState = &this->synthState->fullState;
-    lcd->setCursor(16, 0);
-    lcd->print("    ");
+    // XH why this erase ?
+    //    lcd->setCursor(16, 0);
+    //    lcd->print("    ");
     lcd->setCursor(0, 0);
+
+    lcd->print('T');
     lcd->print((char)('0'+currentTimbre +1));
-    lcd->print((char)0);
+    lcd->print(' ');
     lcd->print(this->synthState->params->presetName);
     if (presetModifed[currentTimbre]) {
         lcd->print('*');
