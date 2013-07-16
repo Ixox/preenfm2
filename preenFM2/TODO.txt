@@ -11,6 +11,8 @@ TODO (temporary list, grow over time) :
 . Use back+turn to fine adjust (Remove the Modulation special case)
 . use menu+turn to reset to default
 . Chose combo and preset bank by name ('_' for read only bank).
+
+No sure : 
 . Modify button : Osc->Operator# , Env : Osc, EnvA, EnvB ?
 
 TO check hardware :
@@ -23,6 +25,8 @@ OK A TESTER
 
 
 DONE:
+. Bug env release when release level > 0
+. Enveloppe expenential
 . BUG when one of the OSC is OFF
 . env all release as target.
 . Add mix4/pan4 to matrix. No 5 and 6.

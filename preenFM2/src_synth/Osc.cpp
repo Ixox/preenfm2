@@ -110,10 +110,10 @@ void Osc::newNote(struct OscState* oscState, int note) {
 	oscState->index = 1; // << number;
 	switch ((int)oscillator->frequencyType) {
 	case OSC_FT_KEYBOARD:
-		oscState->mainFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .01f);
+		oscState->mainFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .05f);
 		break;
 	case OSC_FT_FIXE:
-		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f * (1.0f + oscillator->detune * .01f);
+		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f * (1.0f + oscillator->detune * .05f);
 		break;
 	}
 	oscState->frequency = oscState->mainFrequency;
@@ -123,10 +123,10 @@ void Osc::newNote(struct OscState* oscState, int note) {
 void Osc::glideToNote(struct OscState* oscState, int note) {
 	switch ((int)oscillator->frequencyType) {
 	case OSC_FT_KEYBOARD:
-		oscState->nextFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .01f);
+		oscState->nextFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .05f);
 		break;
 	case OSC_FT_FIXE:
-		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f * (1.0f + oscillator->detune * .01f);
+		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f * (1.0f + oscillator->detune * .05f);
 		break;
 	}
 	oscState->fromFrequency = oscState->mainFrequency;

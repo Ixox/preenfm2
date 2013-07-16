@@ -546,6 +546,10 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
 		} else {
             lcd->print(storage->readComboName(fullState->menuSelect));
 		}
+		// TO REMOVE
+		lcd->setCursor(17,0);
+		lcd->print((int)this->synthState->params->engine1.algo + 1);
+		lcd->print(' ');
 		break;
 	case MENU_LOAD_DX7_SELECT_BANK:
 		eraseRow(menuRow-1);

@@ -58,6 +58,7 @@ protected:
 	void voiceSetData(struct OneSynthParams *params, uint8_t *voice);
 	int  bulkDumpChecksum(uint8_t *data, int length);
 	void voiceCopyName(char *name, uint8_t *patch);
+	int abs(int value);
 
 	char patchName[11];
     uint8_t unpackedData[DX7_VOICE_SIZE_UNPACKED];

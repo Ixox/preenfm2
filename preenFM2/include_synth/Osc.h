@@ -27,6 +27,7 @@ extern float sinTable[];
 struct OscState {
     float index;
     float frequency;
+    float phase;
     float mainFrequencyPlusMatrix;
     float mainFrequency;
     float fromFrequency;
@@ -69,13 +70,35 @@ public:
         int indexInteger = oscState->index;
         // keep decimal part;
         oscState->index -= indexInteger;
-
+        // Put it back inside the table
         indexInteger &= waveTable->max;
+        // Readjust the floating pont inside the table
         oscState->index += indexInteger;
 
         return waveTable->table[indexInteger];
     }
 
+    inline float getNextSampleMP(struct OscState *oscState)  {
+        struct WaveTable* waveTable = &waveTables[(int) oscillator->shape];
+
+        oscState->index +=  oscState->frequency * waveTable->precomputedValue + waveTable->floatToAdd;
+
+        int phase = oscState->phase * waveTable->max * .14;
+
+        // convert to int;
+        int indexInteger = oscState->index;
+        // keep decimal part;
+        oscState->index -= indexInteger;
+        // Put it back inside the table
+        indexInteger &= waveTable->max;
+        // Readjust the floating pont inside the table
+        oscState->index += indexInteger;
+
+        phase += indexInteger;
+        phase &=  waveTable->max;
+
+        return waveTable->table[phase];
+    }
 
    	float* getNextBlock(struct OscState *oscState)  {
         int shape = (int) oscillator->shape;

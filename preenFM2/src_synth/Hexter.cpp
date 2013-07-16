@@ -26,6 +26,8 @@
 #include "Hexter.h"
 #include "SynthState.h"
 
+
+
 float dx7_voice_eg_rate_rise_duration[128] = {  /* generated from my f04new */
 
      39.638000,  37.013000,  34.388000,  31.763000,  27.210500,
@@ -350,6 +352,8 @@ float Hexter::getPreenFMIM(int lvl) {
 	if (lvl>100)  {
 		lvl = 100;
 	}
+
+//	return lvl / 100.0f * 1.4;
 	if (lvl < 50) {
 		return .0f + lvl * .006;
 	} else if (lvl < 60) {
@@ -358,15 +362,17 @@ float Hexter::getPreenFMIM(int lvl) {
 		return .5f + (lvl - 60) *  .07;
 	} else if (lvl < 80) {
 		return 1.2f + (lvl - 70) *  .1;
-	} else if (lvl < 85) {
-		return 2.2f + (lvl - 80) *  .2;
 	} else if (lvl < 90) {
-		return 3.2f + (lvl - 85) *  .3;
+		return 2.2f + (lvl - 85) *  .15;
 	} else  {
-		return 4.7f + (lvl - 90) *  .4;
+		return 3.7 + (lvl - 90) *  .2;
 	}
 }
 
+
+int Hexter::abs(int value) {
+	return value < 0 ? -value : value;
+}
 /*
  * dx7_voice_set_data
  */
@@ -396,6 +402,9 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		// voice->op[i].osc_mode      = eb_op[17] & 0x01;
 		oscParam->frequencyType = eb_op[17] & 0x01;
 
+		// voice->op[i].detune        = limit(eb_op[20], 0, 14);
+		oscParam->detune = ((float)limit(eb_op[20], 0, 14) - 7.0f) / 100.0f / 2.0f;
+
 		// Keyboard
 		if ((eb_op[17] & 0x01) == 0) {
 			// voice->op[i].coarse        = eb_op[18] & 0x1f;
@@ -409,14 +418,19 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		} else {
 			float freq = exp(M_LN10 * ((double)(eb_op[18] & 3) + (double)eb_op[19] / 100.0f));
 			oscParam->frequencyMul = freq / 1000.0f;
+
+			if (oscParam->frequencyMul < 40) {
+				// Low frequency does not work at all with PreenFM
+				oscParam->frequencyType = 0;
+				oscParam->frequencyMul = 1.0f;
+				oscParam->detune = 0.0;
+			}
 		}
 
 		// transpose ?
 		oscParam->frequencyMul *= transposeMultiply;
 
 
-		// voice->op[i].detune        = limit(eb_op[20], 0, 14);
-		oscParam->detune = ((float)limit(eb_op[20], 0, 14) - 7.0f) / 100.0f / 2.0f;
 
 //		voice->op[i].level_scaling_bkpoint = limit(eb_op[ 8], 0, 99);
 //		voice->op[i].level_scaling_l_depth = limit(eb_op[ 9], 0, 99);
@@ -432,11 +446,14 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 //			voice->op[i].eg.base_level[j] = limit(eb_op[4 + j], 0, 99);
 		// Use base_rate[0]
 
-
-		envA->attackTime = dx7_voice_eg_rate_rise_duration[limit(eb_op[0], 0, 99) + 4];
-		envA->decayTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[1], 0, 99) + 9];
-		envB->sustainTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[2], 0, 99) + 9];
-		envB->releaseTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[3], 0, 99) + 9];
+		envA->attackTime = dx7_voice_eg_rate_rise_duration[limit(eb_op[0], 0, 99)] / 4.0f;
+		// Compensation ?
+//		if (eb_op[4] > 31) {
+//			envA->attackTime *= .7;
+//		}
+		envA->decayTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[1], 0, 99)] / 4.0f;
+		envB->sustainTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[2], 0, 99)] / 4.0f;
+		envB->releaseTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[3], 0, 99)] / 4.0f;
 
 		if (envA->attackTime > 4.0) {
 			envA->attackTime = 4.0;
@@ -702,6 +719,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 	params->matrixRowState2.mul = dx7_voice_amd_to_ol_adjustment[(patch[140])] / 100.0f;
 	params->matrixRowState2.destination = ALL_MIX;
 
+	params->matrixRowState2.mul = 0.0f;
 	params->matrixRowState3.mul = 0.0f;
 	params->matrixRowState4.mul = 0.0f;
 	params->matrixRowState5.mul = 0.0f;
