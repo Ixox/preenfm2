@@ -107,7 +107,7 @@ void Osc::init(Matrix* matrix, struct OscillatorParams *oscParams, DestinationEn
 }
 
 void Osc::newNote(struct OscState* oscState, int note) {
-	oscState->index = waveTables[(int) oscillator->shape].max * .5f;
+	oscState->index = waveTables[(int) oscillator->shape].max * .25f;
 	switch ((int)oscillator->frequencyType) {
 	case OSC_FT_KEYBOARD:
 		oscState->mainFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .05f);
