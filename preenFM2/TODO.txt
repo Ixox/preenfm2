@@ -6,7 +6,6 @@ TODO (temporary list, grow over time) :
 . 'Panic!' to add...
 . ADD DX7 algo for compatibility...
 . audio glich when changing patch while playing and start again plaing (seems to be linked with voice).
-. Release LFO ENV1 Broken - LCD - show up at 1.00
 . Use empty PFM patch before applying DX7 parameters.
 . Use back+turn to fine adjust (Remove the Modulation special case)
 . use menu+turn to reset to default
@@ -25,6 +24,8 @@ OK A TESTER
 
 
 DONE:
+. Release LFO ENV1 Broken - LCD - show up at 1.00
+. '*' appear on the last letter of the preset name...
 . Bug env release when release level > 0
 . Enveloppe expenential
 . BUG when one of the OSC is OFF

@@ -141,13 +141,13 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
         printValueWithSpace(newValue);
         break;
     case DISPLAY_TYPE_INT_OR_NONE:
-    	if (newValue == 1.0) {
+    	if (newFloatValue != 4.0f) {
+            lcd->setCursor(encoder*5 - 1, 3);
+            printFloatWithSpace(newFloatValue);
+    	} else {
             lcd->setCursor(encoder*5, 3);
     		lcd->print("None");
-    		break;
     	}
-        lcd->setCursor(encoder*5 - 1, 3);
-        printFloatWithSpace(newFloatValue);
         break;
     case DISPLAY_TYPE_FLOAT:
         lcd->setCursor(encoder*5 - 1, 3);
@@ -160,18 +160,22 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
 		break;
 	case DISPLAY_TYPE_OSC_FREQUENCY:
 	{
-		// Hack... to deal with the special case of the fixe frequency.....
+		// Hack... to deal with the special case of the fixed frequency.....
 		int oRow = row - ROW_OSC_FIRST;
 		OscillatorParams* oParam = (OscillatorParams*)&this->synthState->params->osc1;
 		OscFrequencyType ft = (OscFrequencyType)oParam[oRow].frequencyType;
 
 		if (ft == OSC_FT_FIXE) {
-	        lcd->setCursor(encoder*5, 3);
 			lcd->setCursor(10, 3);
-			newValue = oParam[oRow].frequencyMul + oParam[oRow].detune;
+			newValue = oParam[oRow].frequencyMul * 1000.0 +  oParam[oRow].detune * 100;
+			if (newValue < 1) {
+				newValue = 1;
+			}
+			printValueWithSpace(newValue);
+		} else {
+	        lcd->setCursor(encoder*5 - 1, 3);
+			printFloatWithSpace(newFloatValue);
 		}
-        lcd->setCursor(encoder*5 - 1, 3);
-		printFloatWithSpace(newFloatValue);
 		break;
 	}
 	case DISPLAY_TYPE_NONE:
@@ -389,9 +393,16 @@ void FMDisplay::newParamValue(int timbre, SynthParamType type, int currentRow, i
 		}
 
 		// If we change frequency type of OScillator rows, it's a bit special too....
-		if (SynthState::getListenerType(currentRow)==SYNTH_PARAM_TYPE_OSC && encoder == ENCODER_OSC_FTYPE) {
-			refreshStatus = 4;
-			return;
+		if (SynthState::getListenerType(currentRow)==SYNTH_PARAM_TYPE_OSC) {
+			if (encoder == ENCODER_OSC_FTYPE) {
+				if (newValue == OSC_FT_FIXE) {
+					lcd->setCursor(ENCODER_OSC_FREQ * 5 + 1, 3);
+					lcd->print("        ");
+				}
+
+				refreshStatus = 4;
+				return;
+			}
 		}
 
 		updateEncoderValue(currentRow, encoder, param, newValue);

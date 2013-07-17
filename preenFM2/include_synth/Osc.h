@@ -78,6 +78,24 @@ public:
         return waveTable->table[indexInteger];
     }
 
+    inline float getNextSampleHQ(struct OscState *oscState)  {
+        struct WaveTable* waveTable = &waveTables[(int) oscillator->shape];
+
+        oscState->index +=  oscState->frequency * waveTable->precomputedValue + waveTable->floatToAdd;
+
+        // convert to int;
+        int indexInteger = oscState->index;
+        // keep decimal part;
+        oscState->index -= indexInteger;
+        float fp = oscState->index;
+        // Put it back inside the table
+        indexInteger &= waveTable->max;
+        // Readjust the floating pont inside the table
+        oscState->index += indexInteger;
+
+        return waveTable->table[indexInteger]* (1-fp) + waveTable->table[indexInteger+1] * fp;
+    }
+
     inline float getNextSampleMP(struct OscState *oscState)  {
         struct WaveTable* waveTable = &waveTables[(int) oscillator->shape];
 
@@ -142,6 +160,50 @@ public:
     	return oscValues;
     };
 
+   	float* getNextBlockHQ(struct OscState *oscState)  {
+        int shape = (int) oscillator->shape;
+   		int max = waveTables[shape].max;
+   		float *wave = waveTables[shape].table;
+   		float freq = oscState->frequency * waveTables[shape].precomputedValue + waveTables[shape].floatToAdd;
+   		float fIndex = oscState->index;
+   		int iIndex;
+   		float fp;
+   		for (int k=0; k<32; ) {
+            fIndex +=  freq;
+            iIndex = fIndex;
+            fIndex -= iIndex;
+            fp = fIndex;
+            iIndex &=  max;
+            fIndex += iIndex;
+            oscValues[k++] = wave[iIndex] * (1-fp) + wave[iIndex]* fp;
+
+            fIndex +=  freq;
+            iIndex = fIndex;
+            fIndex -= iIndex;
+            fp = fIndex;
+            iIndex &=  max;
+            fIndex += iIndex;
+            oscValues[k++] = wave[iIndex] * (1-fp) + wave[iIndex]* fp;
+
+            fIndex +=  freq;
+            iIndex = fIndex;
+            fIndex -= iIndex;
+            fp = fIndex;
+            iIndex &=  max;
+            fIndex += iIndex;
+            oscValues[k++] = wave[iIndex] * (1-fp) + wave[iIndex]* fp;
+
+            fIndex +=  freq;
+            iIndex = fIndex;
+            fIndex -= iIndex;
+            fp = fIndex;
+            iIndex &=  max;
+            fIndex += iIndex;
+            oscValues[k++] = wave[iIndex] * (1-fp) + wave[iIndex]* fp;
+   		}
+    	oscState->index = fIndex;
+    	return oscValues;
+    };
 
 private:
     DestinationEnum destFreq;

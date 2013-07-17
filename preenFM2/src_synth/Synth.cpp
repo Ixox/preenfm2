@@ -462,8 +462,6 @@ void Synth::rebuidVoiceTimbre() {
     // update globel number of Voices
     this->numberOfVoices = voices;
     this->numberOfVoiceInverse =  131071.0f / this->numberOfVoices;
-
-
 }
 
 void Synth::refreshNumberOfOsc() {

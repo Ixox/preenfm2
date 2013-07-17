@@ -84,7 +84,7 @@ public:
             if (this->synthState->fullState.synthMode == SYNTH_MODE_EDIT) {
                 presetModifed[timbre] = true;
             	int length = getLength(this->synthState->params->presetName);
-                lcd->setCursor(2 + length,0);
+                lcd->setCursor(3 + length,0);
                 lcd->print('*');
             }
         }

@@ -210,9 +210,9 @@ public:
         }
     	// The lower we are the shorter the release is...
     	if (env->currentValue > stateTarget[ENV_STATE_ON_R]) {
-    		release *= (env->currentValue -  stateTarget[ENV_STATE_ON_R]);
+    		release *= (1.0f + (env->currentValue -  stateTarget[ENV_STATE_ON_R])) / 2.0f;
     	} else {
-    		release *= (stateTarget[ENV_STATE_ON_R] - env->currentValue);
+    		release *= (1.0f + (stateTarget[ENV_STATE_ON_R] - env->currentValue)) / 2.0f;
     	}
         stateInc[ENV_STATE_ON_R] = incTabRel[(int)(release * 25)];
 

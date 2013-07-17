@@ -153,7 +153,9 @@ void Timbre::afterNewParamsLoad() {
         }
     }
     for (int k=0; k<NUMBER_OF_LFO; k++) {
-    	this->lfo[k]->valueChanged(-1);
+        for (int j=0; j<NUMBER_OF_ENCODERS; j++) {
+        	this->lfo[k]->valueChanged(j);
+        }
     }
 }
 

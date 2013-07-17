@@ -30,7 +30,8 @@ const char* allChars  = "_ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 
 
 const char* nullNames []= {};
 const unsigned char* nullNamesOrder = NULL;
-const char* algoNames [] = { "alg1", "alg2", "alg3", "alg4", "alg5", "alg6", "alg7", "alg8", "alg9", "al10", "al11", "al12", "al13", "al14", "al15", "al16", "al17"  };
+const char* algoNames [] = { "alg1", "alg2", "alg3", "alg4", "alg5", "alg6", "alg7", "alg8", "alg9", "al10",
+		"al11", "al12", "al13", "al14", "al15", "al16", "al17", "al18", "al19"  };
 struct ParameterRowDisplay engine1ParameterRow  = {
         "Engine" ,
         { "Algo", "Velo", "Voic", "Glid" },
@@ -111,8 +112,8 @@ struct ParameterRowDisplay oscParameterRow = {
         {
                 { OSC_SHAPE_SIN, OSC_SHAPE_LAST -1, OSC_SHAPE_LAST, DISPLAY_TYPE_STRINGS, oscShapeNames, nullNamesOrder, nullNamesOrder},
                 { OSC_FT_KEYBOARD, OSC_FT_FIXE, 2, DISPLAY_TYPE_STRINGS, oscTypeNames, nullNamesOrder, nullNamesOrder},
-                { 0, 16, 193, DISPLAY_TYPE_FLOAT ,  nullNames, nullNamesOrder, nullNamesOrder },
-                { -1, 1, 201, DISPLAY_TYPE_FLOAT,  nullNames, nullNamesOrder, nullNamesOrder }
+                { 0, 16, 193, DISPLAY_TYPE_OSC_FREQUENCY ,  nullNames, nullNamesOrder, nullNamesOrder },
+                { -1, 1, 201, DISPLAY_TYPE_OSC_FREQUENCY,  nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -162,7 +163,7 @@ struct ParameterRowDisplay lfoEnv2ParameterRow = {
 };
 
 const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "env2", "seq1", "seq2",
-		"ModW", "PitB", "AftT",  "Velo", "Key"} ;
+		"ModW", "PitB", "AftT",  "Velo", "Key " } ;
 
 const char* matrixDestNames [] = {
         "None", "Gate", "IM1 ", "IM2 ", "IM3 ", "IM4 ", "IM* ",

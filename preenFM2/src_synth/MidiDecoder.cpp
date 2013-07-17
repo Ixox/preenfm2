@@ -263,7 +263,7 @@ void MidiDecoder::midiEventReceived(MidiEvent midiEvent) {
             for (int tk = 0; tk< NUMBER_OF_TIMBRES; tk++ ) {
                 if (((timbreBitField >> tk) & 0x1) == 0) continue;
                 this->synth->noteOn(tk, midiEvent.value[0], midiEvent.value[1]);
-                this->synth->getTimbre(tk)->getMatrix()->setSource(MATRIX_SOURCE_KEY, INV127*(127.0f-midiEvent.value[0]));
+                this->synth->getTimbre(tk)->getMatrix()->setSource(MATRIX_SOURCE_KEY, INV127*midiEvent.value[0]);
                 this->synth->getTimbre(tk)->getMatrix()->setSource(MATRIX_SOURCE_VELOCITY, INV127*midiEvent.value[1]);
                 visualInfo->noteOn(tk, true);
             }

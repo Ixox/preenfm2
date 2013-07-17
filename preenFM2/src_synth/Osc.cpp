@@ -107,13 +107,16 @@ void Osc::init(Matrix* matrix, struct OscillatorParams *oscParams, DestinationEn
 }
 
 void Osc::newNote(struct OscState* oscState, int note) {
-	oscState->index = 1; // << number;
+	oscState->index = waveTables[(int) oscillator->shape].max * .5f;
 	switch ((int)oscillator->frequencyType) {
 	case OSC_FT_KEYBOARD:
 		oscState->mainFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .05f);
 		break;
 	case OSC_FT_FIXE:
-		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f * (1.0f + oscillator->detune * .05f);
+		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f + oscillator->detune * 100.0f;
+		if (oscState->mainFrequency < 1.0f) {
+			oscState->mainFrequency = 1.0f;
+		}
 		break;
 	}
 	oscState->frequency = oscState->mainFrequency;
@@ -126,7 +129,10 @@ void Osc::glideToNote(struct OscState* oscState, int note) {
 		oscState->nextFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .05f);
 		break;
 	case OSC_FT_FIXE:
-		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f * (1.0f + oscillator->detune * .05f);
+		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f + oscillator->detune * 100.0f;
+		if (oscState->mainFrequency < 1.0f) {
+			oscState->mainFrequency = 1.0f;
+		}
 		break;
 	}
 	oscState->fromFrequency = oscState->mainFrequency;

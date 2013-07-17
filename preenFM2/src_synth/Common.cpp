@@ -17,7 +17,7 @@
 
 #include "Common.h"
 
-struct AlgoInformation  algoInformation[17] = {
+struct AlgoInformation  algoInformation[] = {
         { 3, 3, 1}, // ALGO1
         { 3, 2, 2}, // ALGO2
         { 4, 4, 1}, // ALGO3
@@ -34,6 +34,8 @@ struct AlgoInformation  algoInformation[17] = {
         { 6, 0, 6},  // ALG14
         { 6, 4, 2},   // ALG15
         { 6, 4, 4},   // ALG16
-        { 6, 4, 2}   // ALG17
+        { 6, 4, 2},   // ALG17
+        { 6, 4, 2},   // ALG18
+        { 6, 4, 2},   // ALG19
 };
 
