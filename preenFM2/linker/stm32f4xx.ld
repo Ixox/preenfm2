@@ -1,7 +1,7 @@
 /* Memory Spaces Definitions */
 MEMORY
 {
-  RAM (xrw) :    ORIGIN = 0x20004000, LENGTH = 112K
+  RAM (xrw) :    ORIGIN = 0x20006000, LENGTH = 108K 
   CCMRAM (xrw) : ORIGIN = 0x10000000, LENGTH = 64K
   FLASH (rx) :   ORIGIN = 0x08040000, LENGTH = 768K
 }  
