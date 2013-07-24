@@ -205,22 +205,8 @@ void Storage::saveConfig(const char* midiConfig) {
 // NEW mechanism ===
 
 uint8_t* Storage::dx7LoadPatch(const struct DX7Bank* bank, int patchNumber) {
-	uint8_t first6Bytes[6];
 	const char* fullBankName = getDX7BankFullName(bank->name);
-    int result = load(fullBankName, 0,  (void*)first6Bytes, 6);
-    if (result > 0) {
-    	return (uint8_t*)0;
-    }
-    // TODO : TO MOVE in bank init !!!
-	if (first6Bytes[0] != 0xf0
-    		|| first6Bytes[1] != 0x43
-    		|| first6Bytes[2] > 0x0f
-    		|| first6Bytes[3] != 0x09
-    		|| first6Bytes[5] != 0x00) {
-    	return (uint8_t*)0;
-    }
-
-    result = load(fullBankName, patchNumber * DX7_PACKED_PATCH_SIZED + 6,  (void*)dx7PackedPatch, DX7_PACKED_PATCH_SIZED);
+    int result = load(fullBankName, patchNumber * DX7_PACKED_PATCH_SIZED + 6,  (void*)dx7PackedPatch, DX7_PACKED_PATCH_SIZED);
     if (result >0) {
     	return (uint8_t*)0;
     }
@@ -240,8 +226,8 @@ void Storage::loadPreenFMPatch(const struct PreenFMBank* bank, int patchNumber, 
            ((uint8_t*)params)[k] = ((uint8_t*)&reachableParam)[k];
         }
     }
-
 }
+
 const char* Storage::loadPreenFMPatchName(const struct PreenFMBank* bank, int patchNumber) {
 	const char* fullBankName = getPreenFMFullName(bank->name);
     int result = load(fullBankName, ALIGNED_PATCH_SIZE * patchNumber + PFM_PATCH_SIZE - 16,  (void*)presetName, 12);

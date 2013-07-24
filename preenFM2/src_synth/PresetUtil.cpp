@@ -404,18 +404,17 @@ void PresetUtil::sendCurrentPatchToSysex() {
 
 
 void PresetUtil::sendBankToSysex(int bankNumber) {
-
-
     unsigned char newPatch[] = { 0xf0, 0x7d, SYSEX_BYTE_BANK };
     for (int k = 0; k <= 2; k++) {
         sendSysexByte(newPatch[k]);
     }
+    const struct PreenFMBank* bank = storage->getPreenFMBank(bankNumber);
 
     for (int preset = 0; preset < 128; preset++) {
         lcd.setCursor(3,2);
         lcd.print(preset);
         lcd.print(" / 128");
-        storage->loadPatch(bankNumber, preset, &oneSynthParamsTmp);
+        storage->loadPreenFMPatch(bank, preset, &oneSynthParamsTmp);
         PresetUtil::convertSynthStateToCharArray(&oneSynthParamsTmp, sysexTmpMem);
         PresetUtil::sendParamsToSysex(sysexTmpMem);
     }

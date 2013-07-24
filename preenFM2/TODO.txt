@@ -1,15 +1,13 @@
 TODO (temporary list, grow over time) : 
 . Play note in combo (spec)
-. Freeze when no file on USB
 . !!! USB Midi : SYSEX, after touch, program change
-. Must not be able to sysex combo bank
 . 'Panic!' to add...
 . ADD DX7 algo for compatibility...
 . audio glich when changing patch while playing and start again plaing (seems to be linked with voice).
 . Use empty PFM patch before applying DX7 parameters.
 . Use back+turn to fine adjust (Remove the Modulation special case)
 . use menu+turn to reset to default
-. '_' for read only bank).
+. SYSEX : use new bank selection
 
 
 No sure : 
@@ -19,12 +17,14 @@ TO check hardware :
 . volume Pot make noise
 
 
-OK A TESTER  
+OK to test  
+. Freeze when no file on USB
 . env attack as target...
-. Fine tune to hard !
+. Fine tune too hard !
 
 
 DONE:
+. '_' for read only bank).
 . Chose combo and preset bank by name
 . Release LFO ENV1 Broken - LCD - show up at 1.00
 . '*' appear on the last letter of the preset name...

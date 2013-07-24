@@ -321,7 +321,7 @@ int USBH_USR_MSC_Application(void) {
         for (int k=0; k<13; k++) {
             ((char*)commandParams.commandParam1)[k] = fileinfo.fname[k];
         }
-        (*((DWORD*)commandParams.commandParam2)) = fileinfo.fsize;
+        *((unsigned long*)commandParams.commandParam2) = fileinfo.fsize;
         commandParams.commandResult = COMMAND_SUCCESS;
         commandParams.commandState = COMMAND_NONE;
         break;

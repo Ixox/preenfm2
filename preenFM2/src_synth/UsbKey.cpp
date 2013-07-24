@@ -37,17 +37,21 @@ void UsbKey::init(uint8_t*timbre1, uint8_t*timbre2, uint8_t*timbre3, uint8_t*tim
     for (int k=0; k< NUMBEROFDX7BANKS; k++) {
     	dx7Bank[k].name[0] = '\0';
     	dx7Bank[k].name[12] = '\0';
+    	dx7Bank[k].fileType = FILE_EMPTY;
     }
-
+    for (int k=0; k<32; k++) {
+    	preenFMBank[k].fileType = FILE_EMPTY;
+    	preenFMCombo[k].fileType = FILE_EMPTY;
+    }
     char empty[] = "<Empty>\0";
     for (int k=0; k< 8; k++) {
     	errorDX7Bank.name[k] = empty[k];
     	errorPreenFMBank.name[k] = empty[k];
     	errorPreenFMCombo.name[k] = empty[k];
     }
-    errorPreenFMBank.isReadOnly = true;
-    errorPreenFMCombo.isReadOnly = true;
-
+    errorPreenFMBank.fileType = FILE_EMPTY;
+    errorPreenFMCombo.fileType = FILE_EMPTY;
+    errorDX7Bank.fileType = FILE_EMPTY;
 }
 
 void UsbKey::usbProcess() {
@@ -156,14 +160,10 @@ bool UsbKey::isFirmwareFile(char *name)  {
 }
 
 bool UsbKey::isDX7SysexFile(char *name, int size)  {
-	// Extension is .syx so size must be at least 5
-//	if (strlen(name) < 5) {
-//		return false;
-//	}
 	// DX7 Dump sysex size is 4104
-//	if (size != 4104) {
-//		return false;
-//	}
+	if (size != 4104) {
+		return false;
+	}
 
 	int pointPos = -1;
     for (int k=1; k<9 && pointPos == -1; k++) {
@@ -175,6 +175,22 @@ bool UsbKey::isDX7SysexFile(char *name, int size)  {
     if (name[pointPos+1] != 's' && name[pointPos+1] != 'S') return false;
     if (name[pointPos+2] != 'y' && name[pointPos+2] != 'Y') return false;
     if (name[pointPos+3] != 'x' && name[pointPos+3] != 'X') return false;
+
+    /* Slow down too much.. not worth it...
+	uint8_t first6Bytes[6];
+	const char* fullBankName = getDX7BankFullName(name);
+    int result = load(fullBankName, 0,  (void*)first6Bytes, 6);
+    if (result > 0) {
+    	return false;
+    }
+	if (first6Bytes[0] != 0xf0
+    		|| first6Bytes[1] != 0x43
+    		|| first6Bytes[2] > 0x0f
+    		|| first6Bytes[3] != 0x09
+    		|| first6Bytes[5] != 0x00) {
+    	return false;
+	}
+*/
 
     return true;
 }
@@ -199,14 +215,15 @@ int UsbKey::dx7Init() {
 }
 
 
-int UsbKey::dx7ReadNextFileName(const struct DX7Bank* bank) {
-	int size;
+int UsbKey::dx7ReadNextFileName(struct DX7Bank* bank) {
+	unsigned long size;
     do {
         commandParams.commandState = COMMAND_NEXT_FILE_NAME;
         commandParams.commandParam1 = (void*)bank->name;
-        commandParams.commandParam2 = (void*)size;
+        commandParams.commandParam2 = (void*)&size;
         usbProcess();
     }  while (commandParams.commandResult == COMMAND_SUCCESS && !isDX7SysexFile((char*)bank->name, size));
+	bank->fileType = FILE_OK;
     return commandParams.commandResult;
 }
 
@@ -252,21 +269,25 @@ int UsbKey::preenFMBankInit() {
 
 
 int UsbKey::preenFMBankReadNextFileName(struct PreenFMBank* bank) {
-	int size;
+	unsigned long size;
     do {
         commandParams.commandState = COMMAND_NEXT_FILE_NAME;
         commandParams.commandParam1 = (void*)bank->name;
-        commandParams.commandParam2 = (void*)size;
+        commandParams.commandParam2 = (void*)&size;
         usbProcess();
     }  while (commandParams.commandResult == COMMAND_SUCCESS && !isPreenFMBankFile((char*)bank->name, size));
     if (bank->name[0] == '_') {
-    	bank->isReadOnly = true;
+    	bank->fileType = FILE_READ_ONLY;
+    } else {
+    	bank->fileType = FILE_OK;
     }
     return commandParams.commandResult;
 }
 
 bool UsbKey::isPreenFMBankFile(char *name, int size)  {
-
+	if (size != 131072) {
+		return false;
+	}
 	int pointPos = -1;
     for (int k=1; k<9 && pointPos == -1; k++) {
         if (name[k] == '.') {
@@ -313,20 +334,26 @@ int UsbKey::preenFMComboInit() {
 
 
 int UsbKey::preenFMComboReadNextFileName(struct PreenFMCombo* combo) {
-	int size;
+	unsigned long size;
     do {
         commandParams.commandState = COMMAND_NEXT_FILE_NAME;
         commandParams.commandParam1 = (void*)combo->name;
-        commandParams.commandParam2 = (void*)size;
+        commandParams.commandParam2 = (void*)&size;
         usbProcess();
     }  while (commandParams.commandResult == COMMAND_SUCCESS && !isPreenFMComboFile((char*)combo->name, size));
     if (combo->name[0] == '_') {
-    	combo->isReadOnly = true;
+    	combo->fileType = FILE_READ_ONLY;
+    } else {
+    	combo->fileType = FILE_OK;
     }
     return commandParams.commandResult;
 }
 
 bool UsbKey::isPreenFMComboFile(char *name, int size)  {
+	if (size != 525536) {
+		return false;
+	}
+
 	int pointPos = -1;
     for (int k=1; k<9 && pointPos == -1; k++) {
         if (name[k] == '.') {

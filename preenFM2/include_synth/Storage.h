@@ -34,18 +34,20 @@ enum FILE_ENUM {
 };
 
 
+
 struct DX7Bank {
 	char name[13];
+	FileType fileType;
 };
 
 struct PreenFMBank {
 	char name[13];
-	bool isReadOnly;
+	FileType fileType;
 };
 
 struct PreenFMCombo {
 	char name[13];
-	bool isReadOnly;
+	FileType fileType;
 };
 
 #define PFM_PATCH_SIZE sizeof(struct OneSynthParams)

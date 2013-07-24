@@ -76,7 +76,7 @@ private:
     bool isFirmwareFile(char *name);
 
     int dx7Init();
-    int dx7ReadNextFileName(const struct DX7Bank* bank);
+    int dx7ReadNextFileName(struct DX7Bank* bank);
     bool isDX7SysexFile(char *name, int size);
 
     int preenFMBankInit();

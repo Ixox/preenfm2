@@ -447,8 +447,7 @@ void BootLoader::USART_Config() {
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No;
-	USART_InitStructure.USART_HardwareFlowControl =
-			USART_HardwareFlowControl_None;
+	USART_InitStructure.USART_HardwareFlowControl =USART_HardwareFlowControl_None;
 	USART_InitStructure.USART_Mode = USART_Mode_Rx; // | USART_Mode_Tx;
 	USART_Init(USART3, &USART_InitStructure);
 
@@ -476,7 +475,7 @@ void jumpToDfuLoader() {
 
 int main(void) {
 	LiquidCrystal lcd;
-    BootLoader bootLoader(&lcd);
+	BootLoader bootLoader(&lcd);
     Encoders encoders;
 
     encoders.insertListener(&bootLoader);
@@ -537,6 +536,10 @@ int main(void) {
         // Stack can be on RAM or CCRAM
         if (((*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFC0000) == 0x20000000
 		|| ((*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFE0000) == 0x10000000) {
+            lcd.begin(20,4);
+            lcd.clear();
+            lcd.setCursor(1, 0);
+            lcd.print("Bootloader OK");
             /* Jump to user application */
             JumpAddress = *(__IO uint32_t*) (APPLICATION_ADDRESS + 4);
             Jump_To_Application = (pFunction) JumpAddress;

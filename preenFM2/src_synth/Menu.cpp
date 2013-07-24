@@ -25,7 +25,7 @@ const char* eccChannels [] = { "None", "1", "2", "3", "4", "5", "6", "7", "8", "
 const char* yesNo [] = { "No", "Yes" };
 const char* midiReceives[] = { "None", "CC", "NRPN", "CC & NRPN" };
 const char* midiSends [] = { "None", "CC", "NRPN" };
-const char* bootOptions [] = { "Default", "Bank1", "Bank2", "Bank3", "Bank4", "Combo", "Internal" };
+const char* bootOptions [] = { "Default", "Bank", "Combo", "DX7" };
 const char* encoderType [] = { "12", "24" };
 
 const struct MidiConfig midiConfig[]  = {
@@ -81,7 +81,7 @@ const struct MidiConfig midiConfig[]  = {
         },
         {
                 "Boot: ",
-                7,
+                4,
                 bootOptions
         },
         {
@@ -163,7 +163,7 @@ const struct MenuItem allMenus[]  = {
                 "Save",
                 true,
                 4,
-                {MENU_SAVE_SELECT_BANK, MENU_SAVE_SELECT_COMBO, MENU_DEFAULT_COMBO, MENU_MIDI_SYSEX_DUMP }
+                {MENU_SAVE_SELECT_BANK, MENU_SAVE_SELECT_COMBO, MENU_DEFAULT_COMBO, MENU_SAVE_SYSEX }
         },
         {
                 MENU_SAVE_SELECT_BANK,
@@ -230,11 +230,11 @@ const struct MenuItem allMenus[]  = {
         },
         // === SYSEX
         {
-                MENU_MIDI_SYSEX_DUMP,
+                MENU_SAVE_SYSEX,
                 "SyX",
                 true,
                 2,
-                {MENU_MIDI_PATCH_DUMP, MENU_MIDI_BANK_SELECT_DUMP}
+                {MENU_SAVE_SYSEX_PATCH, MENU_SAVE_SYSEX_BANK}
         },
         {
                 MENU_MIDI_PATCH_GET,
@@ -244,14 +244,14 @@ const struct MenuItem allMenus[]  = {
                 {MENU_DONE}
         },
         {
-                MENU_MIDI_BANK_SELECT_DUMP,
+                MENU_SAVE_SYSEX_BANK,
                 "Bank",
                 false,
-                5,
+                32,
                 {MENU_DONE}
         },
         {
-                MENU_MIDI_PATCH_DUMP,
+                MENU_SAVE_SYSEX_PATCH,
                 "Patch",
                 false,
                 0,
@@ -314,14 +314,14 @@ const struct MenuItem allMenus[]  = {
 
         // ==================== SAVE BANK
         {
-                MENU_SAVE_BANK,
+                MENU_SAVE_NEW_SYSEX_BANK,
                 "",
                 false,
                 4,
-                {MENU_SAVE_BANK_CONFIRM}
+                {MENU_SAVE_NEW_SYSEX_BANK_CONFIRM}
         },
         {
-                MENU_SAVE_BANK_CONFIRM,
+                MENU_SAVE_NEW_SYSEX_BANK_CONFIRM,
                 "",
                 false,
                 0,

@@ -28,11 +28,20 @@
 #define PREENFM_FREQUENCY_DIV_2 PREENFM_FREQUENCY/2.0f
 #define NUMBER_OF_WAVETABLES 8
 
+
+typedef enum {
+    FILE_OK = 0,
+    FILE_READ_ONLY,
+    FILE_EMPTY
+} FileType;
+
 struct AlgoInformation {
     unsigned char osc;
     unsigned char im;
     unsigned char mix;
 };
+
+
 
 extern const struct OneSynthParams presets[];
 extern const char* allChars;
