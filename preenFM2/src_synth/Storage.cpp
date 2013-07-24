@@ -202,14 +202,16 @@ void Storage::saveConfig(const char* midiConfig) {
     save(PROPERTIES, 0,  reachableProperties, MIDICONFIG_SIZE);
 }
 
+// NEW mechanism ===
 
-uint8_t* Storage::dx7LoadPatch(const char *bankName, int patchNumber) {
+uint8_t* Storage::dx7LoadPatch(const struct DX7Bank* bank, int patchNumber) {
 	uint8_t first6Bytes[6];
-	const char* fullBankName = getDX7BankFullName(bankName);
+	const char* fullBankName = getDX7BankFullName(bank->name);
     int result = load(fullBankName, 0,  (void*)first6Bytes, 6);
     if (result > 0) {
     	return (uint8_t*)0;
     }
+    // TODO : TO MOVE in bank init !!!
 	if (first6Bytes[0] != 0xf0
     		|| first6Bytes[1] != 0x43
     		|| first6Bytes[2] > 0x0f
@@ -225,12 +227,74 @@ uint8_t* Storage::dx7LoadPatch(const char *bankName, int patchNumber) {
     return dx7PackedPatch;
 }
 
-const char* Storage::dx7ReadPresetName(const char *bankName, int patchNumber) {
-    int result = load(getDX7BankFullName(bankName), DX7_PACKED_PATCH_SIZED * patchNumber + 118 + 6,  (void*)presetName, 10);
-    if (result > 0) {
-    	presetName[0] = '#';
-        presetName[1] = 0;
+
+
+void Storage::loadPreenFMPatch(const struct PreenFMBank* bank, int patchNumber, struct OneSynthParams *params) {
+	const char* fullBankName = getPreenFMFullName(bank->name);
+
+    // Don't load in params directly because params is in CCM memory
+    int result = load(fullBankName, patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableParam, PFM_PATCH_SIZE);
+
+    if (result == 0) {
+        for (int k=0; k<PFM_PATCH_SIZE; k++) {
+           ((uint8_t*)params)[k] = ((uint8_t*)&reachableParam)[k];
+        }
     }
-    presetName[10] = 0;
+
+}
+const char* Storage::loadPreenFMPatchName(const struct PreenFMBank* bank, int patchNumber) {
+	const char* fullBankName = getPreenFMFullName(bank->name);
+    int result = load(fullBankName, ALIGNED_PATCH_SIZE * patchNumber + PFM_PATCH_SIZE - 16,  (void*)presetName, 12);
+    presetName[12] = 0;
     return presetName;
 }
+
+void Storage::savePreenFMPatch(const struct PreenFMBank* bank, int patchNumber, struct OneSynthParams *params) {
+	const char* fullBankName = getPreenFMFullName(bank->name);
+
+    char zeros[ALIGNED_PATCH_ZERO];
+    for (int k=0; k<ALIGNED_PATCH_ZERO;k++) {
+        zeros[k] = 0;
+    }
+    for (int k=0; k<PFM_PATCH_SIZE; k++) {
+        ((uint8_t*)&reachableParam)[k] = ((uint8_t*)params)[k];
+    }
+
+    // Save patch
+    save(fullBankName, patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableParam, PFM_PATCH_SIZE);
+
+    // Add zeros
+    save(fullBankName, patchNumber * ALIGNED_PATCH_SIZE  + PFM_PATCH_SIZE,  (void*)zeros, ALIGNED_PATCH_ZERO);
+}
+
+void Storage::loadPreenFMCombo(const struct PreenFMCombo* combo, int comboNumber) {
+	const char* fullBankName = getPreenFMFullName(combo->name);
+    for (int timbre = 0; timbre < 4; timbre++)  {
+        int result = load(fullBankName,  (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre ,  (void*)&reachableParam, PFM_PATCH_SIZE);
+
+        if (result == 0) {
+            for (int k=0; k<PFM_PATCH_SIZE; k++) {
+               this->timbre[timbre][k] = ((uint8_t*)&reachableParam)[k];
+            }
+        }
+    }
+}
+const char* Storage::loadPreenFMComboName(const struct PreenFMCombo* combo, int comboNumber) {
+	const char* fullBankName = getPreenFMFullName(combo->name);
+    int result = load(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber ,  (void*)presetName, 12);
+    presetName[12] = 0;
+    return presetName;
+}
+
+void Storage::savePreenFMCombo(const struct PreenFMCombo* combo, int comboNumber, char* comboName) {
+	const char* fullBankName = getPreenFMFullName(combo->name);
+    save(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber ,  (void*)comboName, 12);
+
+    for (int timbre = 0; timbre < 4; timbre++)  {
+        for (int k=0; k<PFM_PATCH_SIZE; k++) {
+            ((uint8_t*)&reachableParam)[k] = this->timbre[timbre][k];
+        }
+        save(COMBO_BANK, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableParam, PFM_PATCH_SIZE);
+    }
+}
+

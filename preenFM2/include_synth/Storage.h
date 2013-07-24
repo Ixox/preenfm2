@@ -33,6 +33,21 @@ enum FILE_ENUM {
     FIRMWARE
 };
 
+
+struct DX7Bank {
+	char name[13];
+};
+
+struct PreenFMBank {
+	char name[13];
+	bool isReadOnly;
+};
+
+struct PreenFMCombo {
+	char name[13];
+	bool isReadOnly;
+};
+
 #define PFM_PATCH_SIZE sizeof(struct OneSynthParams)
 #define ALIGNED_PATCH_SIZE 1024
 #define ALIGNED_PATCH_ZERO ALIGNED_PATCH_SIZE-PFM_PATCH_SIZE
@@ -60,9 +75,18 @@ public:
     void saveConfig(const char* midiConfig);
 
 
-    virtual const char* getDx7BankName(int bankNumber) = 0;
-    uint8_t* dx7LoadPatch(const char *bankName, int patchNumber);
-    const char* dx7ReadPresetName(const char *bankName, int patchNumber);
+    virtual const struct DX7Bank* getDx7Bank(int bankNumber) = 0;
+    uint8_t* dx7LoadPatch(const struct DX7Bank* bank, int patchNumber);
+
+    virtual const struct PreenFMBank* getPreenFMBank(int bankNumber) = 0;
+    void loadPreenFMPatch(const struct PreenFMBank* bank, int patchNumber, struct OneSynthParams *params);
+    const char* loadPreenFMPatchName(const struct PreenFMBank* bank, int patchNumber);
+    void savePreenFMPatch(const struct PreenFMBank* bank, int patchNumber, struct OneSynthParams *params);
+
+    virtual const struct PreenFMCombo* getPreenFMCombo(int comboNumber) = 0;
+    void loadPreenFMCombo(const struct PreenFMCombo* combo, int comboNumber);
+    const char* loadPreenFMComboName(const struct PreenFMCombo* combo, int comboNumber);
+    void savePreenFMCombo(const struct PreenFMCombo* combo, int comboNumber, char* comboName);
 
     // Virtual
     virtual void init(uint8_t*timbre1, uint8_t*timbre2, uint8_t*timbre3, uint8_t*timbre4);
@@ -71,8 +95,10 @@ public:
 private:
     // Pure Virtual
     virtual const char* getDX7BankFullName(const char* bankName) = 0;
+    virtual const char* getPreenFMFullName(const char* bankName) = 0;
     void dx7patchUnpack(uint8_t *packed_patch, uint8_t *unpacked_patch);
     virtual int save(FILE_ENUM file,int seek, void* bytes, int size) = 0;
+    virtual int save(const char* fileName, int seek, void* bytes, int size) = 0;
     virtual int load(FILE_ENUM file, int seek, void* bytes, int size) = 0;
     virtual int load(const char* fileName, int seek, void* bytes, int size) = 0;
     virtual int remove(FILE_ENUM file) = 0;

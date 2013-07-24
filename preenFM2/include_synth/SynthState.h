@@ -466,6 +466,7 @@ public:
 	char stepSelect[2];
 
 private:
+	bool isEnterNameState(int currentItme);
 	char engineRow, operatorRow, envelopeRow, matrixRow, lfoRow;
 	char currentRow;
 	bool isPlayingNote ;

@@ -21,8 +21,6 @@
 #include "LiquidCrystal.h"
 extern LiquidCrystal lcd;
 
-
-
 extern USB_OTG_CORE_HANDLE          usbOTGHost;
 extern USBH_HOST                    usbHost;
 
@@ -37,9 +35,19 @@ void UsbKey::init(uint8_t*timbre1, uint8_t*timbre2, uint8_t*timbre3, uint8_t*tim
     dx7NumberOfBanks = 0;
     dx7BankInitialized = false;
     for (int k=0; k< NUMBEROFDX7BANKS; k++) {
-    	dx7BankName[k][0] = '\0';
-    	dx7BankName[k][12] = '\0';
+    	dx7Bank[k].name[0] = '\0';
+    	dx7Bank[k].name[12] = '\0';
     }
+
+    char empty[] = "<Empty>\0";
+    for (int k=0; k< 8; k++) {
+    	errorDX7Bank.name[k] = empty[k];
+    	errorPreenFMBank.name[k] = empty[k];
+    	errorPreenFMCombo.name[k] = empty[k];
+    }
+    errorPreenFMBank.isReadOnly = true;
+    errorPreenFMCombo.isReadOnly = true;
+
 }
 
 void UsbKey::usbProcess() {
@@ -73,6 +81,24 @@ const char* UsbKey::getFileName(FILE_ENUM file) {
 }
 
 
+
+
+
+int UsbKey::load(FILE_ENUM file, int seek, void* bytes, int size) {
+    return load(getFileName(file), seek, bytes, size);
+}
+
+int UsbKey::load(const char* fileName, int seek, void* bytes, int size) {
+    commandParams.commandState = COMMAND_LOAD;
+    commandParams.commandFileName = fileName;
+    commandParams.commandParam1 = (void*)bytes;
+    commandParams.commandParamSize = size;
+    commandParams.commandSeek = seek;
+    usbProcess();
+    return commandParams.commandResult;
+}
+
+
 int UsbKey::save(FILE_ENUM file, int seek, void* bytes, int size) {
     commandParams.commandState = COMMAND_SAVE;
     commandParams.commandFileName = getFileName(file);
@@ -84,13 +110,8 @@ int UsbKey::save(FILE_ENUM file, int seek, void* bytes, int size) {
 }
 
 
-
-int UsbKey::load(FILE_ENUM file, int seek, void* bytes, int size) {
-    return load(getFileName(file), seek, bytes, size);
-}
-
-int UsbKey::load(const char* fileName, int seek, void* bytes, int size) {
-    commandParams.commandState = COMMAND_LOAD;
+int UsbKey::save(const char* fileName, int seek, void* bytes, int size) {
+    commandParams.commandState = COMMAND_SAVE;
     commandParams.commandFileName = fileName;
     commandParams.commandParam1 = (void*)bytes;
     commandParams.commandParamSize = size;
@@ -168,7 +189,7 @@ int UsbKey::dx7Init() {
     	return commandParams.commandResult;
     }
     for (int k=0; k<NUMBEROFDX7BANKS; k++) {
-    	res = dx7ReadNextFileName(dx7BankName[k]);
+    	res = dx7ReadNextFileName(&dx7Bank[k]);
     	if (res != COMMAND_SUCCESS) {
     		dx7NumberOfBanks = k - 1;
     		break;
@@ -178,26 +199,148 @@ int UsbKey::dx7Init() {
 }
 
 
-int UsbKey::dx7ReadNextFileName(char *name) {
+int UsbKey::dx7ReadNextFileName(const struct DX7Bank* bank) {
 	int size;
     do {
         commandParams.commandState = COMMAND_NEXT_FILE_NAME;
-        commandParams.commandParam1 = (void*)name;
+        commandParams.commandParam1 = (void*)bank->name;
         commandParams.commandParam2 = (void*)size;
         usbProcess();
-    }  while (commandParams.commandResult == COMMAND_SUCCESS && !isDX7SysexFile(name, size));
+    }  while (commandParams.commandResult == COMMAND_SUCCESS && !isDX7SysexFile((char*)bank->name, size));
     return commandParams.commandResult;
 }
 
-const char* UsbKey::getDx7BankName(int bankNumber) {
+const struct DX7Bank* UsbKey::getDx7Bank(int bankNumber) {
 	if (!dx7BankInitialized) {
 		dx7Init();
 	}
 	if (bankNumber < 0 || bankNumber > dx7NumberOfBanks) {
-		return "<Empty>";
+		return &errorDX7Bank;
 	}
-	return dx7BankName[bankNumber];
+	return &dx7Bank[bankNumber];
 }
+
+const struct PreenFMBank* UsbKey::getPreenFMBank(int bankNumber) {
+	if (!preenFMBankInitialized) {
+		preenFMBankInit();
+	}
+	if (bankNumber < 0 || bankNumber > preenFMNumberOfBanks) {
+		return &errorPreenFMBank;
+	}
+	return &preenFMBank[bankNumber];
+}
+
+
+int UsbKey::preenFMBankInit() {
+	int res;
+    commandParams.commandState = COMMAND_OPEN_DIR;
+    commandParams.commandFileName = PREENFM_DIR;
+    preenFMBankInitialized = true;
+    usbProcess();
+    if (commandParams.commandResult != COMMAND_SUCCESS) {
+    	return commandParams.commandResult;
+    }
+    for (int k=0; k<NUMBEROFPREENFMBANKS; k++) {
+    	res = preenFMBankReadNextFileName(&preenFMBank[k]);
+    	if (res != COMMAND_SUCCESS) {
+    		preenFMNumberOfBanks = k - 1;
+    		break;
+    	}
+    }
+    return res;
+}
+
+
+int UsbKey::preenFMBankReadNextFileName(struct PreenFMBank* bank) {
+	int size;
+    do {
+        commandParams.commandState = COMMAND_NEXT_FILE_NAME;
+        commandParams.commandParam1 = (void*)bank->name;
+        commandParams.commandParam2 = (void*)size;
+        usbProcess();
+    }  while (commandParams.commandResult == COMMAND_SUCCESS && !isPreenFMBankFile((char*)bank->name, size));
+    if (bank->name[0] == '_') {
+    	bank->isReadOnly = true;
+    }
+    return commandParams.commandResult;
+}
+
+bool UsbKey::isPreenFMBankFile(char *name, int size)  {
+
+	int pointPos = -1;
+    for (int k=1; k<9 && pointPos == -1; k++) {
+        if (name[k] == '.') {
+            pointPos = k;
+        }
+    }
+    if (pointPos == -1) return false;
+    if (name[pointPos+1] != 'b' && name[pointPos+1] != 'B') return false;
+    if (name[pointPos+2] != 'n' && name[pointPos+2] != 'N') return false;
+    if (name[pointPos+3] != 'k' && name[pointPos+3] != 'K') return false;
+
+    return true;
+}
+
+const struct PreenFMCombo* UsbKey::getPreenFMCombo(int comboNumber) {
+	if (!preenFMComboInitialized) {
+		preenFMComboInit();
+	}
+	if (comboNumber < 0 || comboNumber > preenFMNumberOfCombos) {
+		return &errorPreenFMCombo;
+	}
+	return &preenFMCombo[comboNumber];
+}
+
+
+int UsbKey::preenFMComboInit() {
+	int res;
+    commandParams.commandState = COMMAND_OPEN_DIR;
+    commandParams.commandFileName = PREENFM_DIR;
+    preenFMComboInitialized = true;
+    usbProcess();
+    if (commandParams.commandResult != COMMAND_SUCCESS) {
+    	return commandParams.commandResult;
+    }
+    for (int k=0; k<NUMBEROFPREENFMCOMBOS; k++) {
+    	res = preenFMComboReadNextFileName(&preenFMCombo[k]);
+    	if (res != COMMAND_SUCCESS) {
+    		preenFMNumberOfCombos = k - 1;
+    		break;
+    	}
+    }
+    return res;
+}
+
+
+int UsbKey::preenFMComboReadNextFileName(struct PreenFMCombo* combo) {
+	int size;
+    do {
+        commandParams.commandState = COMMAND_NEXT_FILE_NAME;
+        commandParams.commandParam1 = (void*)combo->name;
+        commandParams.commandParam2 = (void*)size;
+        usbProcess();
+    }  while (commandParams.commandResult == COMMAND_SUCCESS && !isPreenFMComboFile((char*)combo->name, size));
+    if (combo->name[0] == '_') {
+    	combo->isReadOnly = true;
+    }
+    return commandParams.commandResult;
+}
+
+bool UsbKey::isPreenFMComboFile(char *name, int size)  {
+	int pointPos = -1;
+    for (int k=1; k<9 && pointPos == -1; k++) {
+        if (name[k] == '.') {
+            pointPos = k;
+        }
+    }
+    if (pointPos == -1) return false;
+    if (name[pointPos+1] != 'c' && name[pointPos+1] != 'C') return false;
+    if (name[pointPos+2] != 'm' && name[pointPos+2] != 'M') return false;
+    if (name[pointPos+3] != 'b' && name[pointPos+3] != 'B') return false;
+
+    return true;
+}
+
 
 int UsbKey::firmwareInit() {
     commandParams.commandState = COMMAND_OPEN_DIR;
@@ -222,10 +365,7 @@ int UsbKey::readNextFirmwareName(char *name, int *size) {
 int UsbKey::loadFirmwarePart(char *fileName, int seek, void* bytes, int size) {
     char fullName[32];
     commandParams.commandState = COMMAND_LOAD;
-
-
-    commandParams.commandFileName = getFullName(FIRMWARE_DIR, fileName);;
-
+    commandParams.commandFileName = getFullName(FIRMWARE_DIR, fileName);
     commandParams.commandParam1 = (void*)bytes;
     commandParams.commandParamSize = size;
     commandParams.commandSeek = seek;
@@ -257,4 +397,9 @@ const char* UsbKey::getFullName(const char* pathName, const char* fileName) {
 const char* UsbKey::getDX7BankFullName(const char* bankName) {
 	return getFullName(DX7_DIR, bankName);
 }
+
+const char* UsbKey::getPreenFMFullName(const char* bankName) {
+	return getFullName(PREENFM_DIR, bankName);
+}
+
 

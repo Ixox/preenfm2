@@ -451,8 +451,6 @@ void FMDisplay::newMenuState(FullState* fullState) {
 			lcd->setCursor(1, menuRow-2);
 			lcd->print("Store new bank in");
 			// Then what follow : no break
-		case MENU_LOAD_USER_SELECT_BANK:
-		case MENU_SAVE_SELECT_USER_BANK:
 		case MENU_MIDI_BANK_SELECT_DUMP:
 			lcd->setCursor(1, menuRow-1);
 			lcd->print("Bk1 Bk2 Bk3 Bk4 Cmb");
@@ -462,13 +460,46 @@ void FMDisplay::newMenuState(FullState* fullState) {
             fullState->menuPosition[3] = 12;
             fullState->menuPosition[4] = 16;
 			break;
-		case MENU_LOAD_DX7_SELECT_BANK:
+		case MENU_LOAD_SELECT_DX7_BANK:
 			lcd->setCursor(1, menuRow-1);
 			lcd->print(fullState->menuSelect);
 			lcd->print(" - ");
-			lcd->print(storage->getDx7BankName(fullState->menuSelect));
+			lcd->print(storage->getDx7Bank(fullState->menuSelect)->name);
 			break;
-		case MENU_SAVE_ENTER_NAME:
+		case MENU_SAVE_SELECT_BANK:
+			lcd->setCursor(1, menuRow-1);
+			lcd->print(fullState->menuSelect);
+			if (storage->getPreenFMBank(fullState->menuSelect)->isReadOnly) {
+				lcd->print(" * ");
+			} else {
+				lcd->print(" - ");
+			}
+			lcd->print(storage->getPreenFMBank(fullState->menuSelect)->name);
+			break;
+		case MENU_LOAD_SELECT_BANK:
+			lcd->setCursor(1, menuRow-1);
+			lcd->print(fullState->menuSelect);
+			lcd->print(" - ");
+			lcd->print(storage->getPreenFMBank(fullState->menuSelect)->name);
+			break;
+		case MENU_SAVE_SELECT_COMBO:
+			lcd->setCursor(1, menuRow-1);
+			lcd->print(fullState->menuSelect);
+			if (storage->getPreenFMCombo(fullState->menuSelect)->isReadOnly) {
+				lcd->print(" * ");
+			} else {
+				lcd->print(" - ");
+			}
+			lcd->print(storage->getPreenFMCombo(fullState->menuSelect)->name);
+			break;
+		case MENU_LOAD_SELECT_COMBO:
+			lcd->setCursor(1, menuRow-1);
+			lcd->print(fullState->menuSelect);
+			lcd->print(" - ");
+			lcd->print(storage->getPreenFMCombo(fullState->menuSelect)->name);
+			break;
+		case MENU_SAVE_ENTER_COMBO_NAME:
+		case MENU_SAVE_ENTER_PRESET_NAME:
 			// -2 because must erase preset name....
 			lcd->setCursor(6, menuRow-2);
 			for (int k=0;k<12; k++) {
@@ -533,8 +564,6 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
     case MENU_MIDI_SYS_EX:
 	case MENU_MIDI_BANK:
 	case MENU_MIDI_PATCH:
-	case MENU_LOAD_USER_SELECT_BANK:
-	case MENU_SAVE_SELECT_USER_BANK:
 	case MENU_MIDI_BANK_SELECT_DUMP:
 	case MENU_MIDI_SYSEX_DUMP:
 	case MENU_SAVE_BANK:
@@ -546,28 +575,67 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
 		lcd->setCursor(fullState->menuPosition[fullState->menuSelect], menuRow-1);
 		lcd->print(">");
 		break;
-	case MENU_LOAD_USER_SELECT_PRESET:
-	case MENU_LOAD_DX7_SELECT_PRESET:
+	case MENU_LOAD_SELECT_BANK_PRESET:
+	case MENU_LOAD_SELECT_DX7_PRESET:
 		eraseRow(menuRow-1);
 		lcd->setCursor(2, menuRow-1);
 		lcd->print(fullState->menuSelect + 1);
 		lcd->print(" - ");
-		if (fullState->bankNumber != 4 || fullState->currentMenuItem->menuState == MENU_LOAD_DX7_SELECT_PRESET) {
-            lcd->print(this->synthState->params->presetName);
-		} else {
-            lcd->print(storage->readComboName(fullState->menuSelect));
-		}
+		lcd->print(this->synthState->params->presetName);
 		// TO REMOVE
 		lcd->setCursor(17,0);
 		lcd->print((int)this->synthState->params->engine1.algo + 1);
 		lcd->print(' ');
 		break;
-	case MENU_LOAD_DX7_SELECT_BANK:
+	case MENU_LOAD_SELECT_COMBO_PRESET:
 		eraseRow(menuRow-1);
 		lcd->setCursor(2, menuRow-1);
 		lcd->print(fullState->menuSelect + 1);
 		lcd->print(" - ");
-		lcd->print(fullState->dx7BankName);
+		lcd->print(storage->readComboName(fullState->menuSelect));
+		break;
+	case MENU_LOAD_SELECT_DX7_BANK:
+		eraseRow(menuRow-1);
+		lcd->setCursor(2, menuRow-1);
+		lcd->print(fullState->menuSelect + 1);
+		lcd->print(" - ");
+		lcd->print(fullState->dx7Bank->name);
+		break;
+	case MENU_SAVE_SELECT_BANK:
+		eraseRow(menuRow-1);
+		lcd->setCursor(2, menuRow-1);
+		lcd->print(fullState->menuSelect + 1);
+		if (fullState->preenFMBank->isReadOnly) {
+			lcd->print(" * ");
+		} else {
+			lcd->print(" - ");
+		}
+		lcd->print(fullState->preenFMBank->name);
+		break;
+	case MENU_LOAD_SELECT_BANK:
+		eraseRow(menuRow-1);
+		lcd->setCursor(2, menuRow-1);
+		lcd->print(fullState->menuSelect + 1);
+		lcd->print(" - ");
+		lcd->print(fullState->preenFMBank->name);
+		break;
+	case MENU_SAVE_SELECT_COMBO:
+		eraseRow(menuRow-1);
+		lcd->setCursor(2, menuRow-1);
+		lcd->print(fullState->menuSelect + 1);
+		if (fullState->preenFMCombo->isReadOnly) {
+			lcd->print(" * ");
+		} else {
+			lcd->print(" - ");
+		}
+		lcd->print(fullState->preenFMCombo->name);
+		break;
+	case MENU_LOAD_SELECT_COMBO:
+		eraseRow(menuRow-1);
+		lcd->setCursor(2, menuRow-1);
+		lcd->print(fullState->menuSelect + 1);
+		lcd->print(" - ");
+		lcd->print(fullState->preenFMCombo->name);
 		break;
 	case MENU_DONE:
 		lcd->clear();
@@ -579,16 +647,23 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
 		lcd->setCursor(3,1);
 		lcd->print("In Progress...");
 		break;
-	case MENU_SAVE_SELECT_PRESET:
+	case MENU_SAVE_SELECT_BANK_PRESET:
 		eraseRow(menuRow-1);
 		lcd->setCursor(2, menuRow-1);
 		lcd->print(fullState->menuSelect + 1);
-        lcd->print(" - ");
-        if (fullState->bankNumber == 4) {
-            lcd->print(storage->readComboName(fullState->menuSelect));
-        } else {
-            lcd->print(storage->readPresetName(fullState->bankNumber, fullState->menuSelect));
-        }
+		lcd->print(" - ");
+        lcd->print(storage->loadPreenFMPatchName(fullState->preenFMBank, fullState->menuSelect));
+		break;
+	case MENU_SAVE_SELECT_COMBO_PRESET:
+		eraseRow(menuRow-1);
+		lcd->setCursor(2, menuRow-1);
+		lcd->print(fullState->menuSelect + 1);
+		if (fullState->preenFMCombo->isReadOnly) {
+			lcd->print(" * ");
+		} else {
+			lcd->print(" - ");
+		}
+        lcd->print(storage->loadPreenFMComboName(fullState->preenFMCombo, fullState->menuSelect));
 		break;
     case MENU_RENAME_PATCH:
         lcd->setCursor(6+fullState->menuSelect, menuRow-1);
@@ -596,7 +671,8 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
         lcd->setCursor(6+fullState->menuSelect, menuRow-1);
         lcd->cursor();
         break;
-	case MENU_SAVE_ENTER_NAME:
+	case MENU_SAVE_ENTER_PRESET_NAME:
+	case MENU_SAVE_ENTER_COMBO_NAME:
 		lcd->setCursor(6+fullState->menuSelect, menuRow-2);
 		lcd->print(allChars[(int)fullState->name[fullState->menuSelect]]);
 		lcd->setCursor(6+fullState->menuSelect, menuRow-2);

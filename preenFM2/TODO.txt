@@ -9,7 +9,8 @@ TODO (temporary list, grow over time) :
 . Use empty PFM patch before applying DX7 parameters.
 . Use back+turn to fine adjust (Remove the Modulation special case)
 . use menu+turn to reset to default
-. Chose combo and preset bank by name ('_' for read only bank).
+. '_' for read only bank).
+
 
 No sure : 
 . Modify button : Osc->Operator# , Env : Osc, EnvA, EnvB ?
@@ -24,6 +25,7 @@ OK A TESTER
 
 
 DONE:
+. Chose combo and preset bank by name
 . Release LFO ENV1 Broken - LCD - show up at 1.00
 . '*' appear on the last letter of the preset name...
 . Bug env release when release level > 0

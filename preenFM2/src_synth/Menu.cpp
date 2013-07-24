@@ -25,7 +25,7 @@ const char* eccChannels [] = { "None", "1", "2", "3", "4", "5", "6", "7", "8", "
 const char* yesNo [] = { "No", "Yes" };
 const char* midiReceives[] = { "None", "CC", "NRPN", "CC & NRPN" };
 const char* midiSends [] = { "None", "CC", "NRPN" };
-const char* bootOptions [] = { "Default", "Bank1", "Bank2", "Bank3", "Bank4", "Combo","Internal" };
+const char* bootOptions [] = { "Default", "Bank1", "Bank2", "Bank3", "Bank4", "Combo", "Internal" };
 const char* encoderType [] = { "12", "24" };
 
 const struct MidiConfig midiConfig[]  = {
@@ -105,40 +105,54 @@ const struct MenuItem allMenus[]  = {
                 MENU_LOAD,
                 "Load",
                 true,
-                3,
-                {MENU_LOAD_USER_SELECT_BANK, MENU_LOAD_DX7_SELECT_BANK, MENU_MIDI_SYSEX_GET}
+                4,
+                {MENU_LOAD_SELECT_BANK, MENU_LOAD_SELECT_COMBO, MENU_LOAD_SELECT_DX7_BANK, MENU_MIDI_SYSEX_GET}
         },
         {
-                MENU_LOAD_USER_SELECT_BANK,
-                "User",
+                MENU_LOAD_SELECT_BANK,
+                "Bank",
                 false,
-                5,
-                {MENU_LOAD_USER_SELECT_PRESET}
+                32,
+                {MENU_LOAD_SELECT_BANK_PRESET}
         },
         {
-        		MENU_LOAD_DX7_SELECT_BANK,
+                MENU_LOAD_SELECT_COMBO,
+                "Combo",
+                false,
+                32,
+                {MENU_LOAD_SELECT_COMBO_PRESET}
+        },
+        {
+        		MENU_LOAD_SELECT_DX7_BANK,
                 "DX7",
                 false,
                 300,
-                {MENU_LOAD_DX7_SELECT_PRESET}
+                {MENU_LOAD_SELECT_DX7_PRESET}
         },
         {
-                MENU_LOAD_USER_SELECT_PRESET,
+                MENU_LOAD_SELECT_BANK_PRESET,
                 "",
                 false,
                 128,
                 {MENU_DONE}
         },
         {
-        		MENU_LOAD_DX7_SELECT_PRESET,
-                """",
+                MENU_LOAD_SELECT_COMBO_PRESET,
+                "",
+                false,
+                128,
+                {MENU_DONE}
+        },
+        {
+        		MENU_LOAD_SELECT_DX7_PRESET,
+                "",
                 false,
                 32,
                 {MENU_DONE}
         },
         {
                 MENU_MIDI_SYSEX_GET,
-                "SysEx",
+                "SyX",
                 false,
                 0,
                 {MENU_DONE}
@@ -148,26 +162,40 @@ const struct MenuItem allMenus[]  = {
                 MENU_SAVE,
                 "Save",
                 true,
-                3,
-                {MENU_SAVE_SELECT_USER_BANK, MENU_DEFAULT_COMBO, MENU_MIDI_SYSEX_DUMP }
+                4,
+                {MENU_SAVE_SELECT_BANK, MENU_SAVE_SELECT_COMBO, MENU_DEFAULT_COMBO, MENU_MIDI_SYSEX_DUMP }
         },
         {
-                MENU_SAVE_SELECT_USER_BANK,
-                "User",
+                MENU_SAVE_SELECT_BANK,
+                "Bank",
                 false,
-                5,
-                {MENU_SAVE_SELECT_PRESET}
+                32,
+                {MENU_SAVE_SELECT_BANK_PRESET}
         },
         {
-                MENU_SAVE_SELECT_PRESET,
+                MENU_SAVE_SELECT_COMBO,
+                "Combo",
+                false,
+                32,
+                {MENU_SAVE_SELECT_COMBO_PRESET}
+        },
+        {
+                MENU_SAVE_SELECT_BANK_PRESET,
                 "",
                 false,
                 128,
-                {MENU_SAVE_ENTER_NAME}
+                {MENU_SAVE_ENTER_PRESET_NAME}
+        },
+        {
+                MENU_SAVE_SELECT_COMBO_PRESET,
+                "",
+                false,
+                128,
+                {MENU_SAVE_ENTER_COMBO_NAME}
         },
         {
                 MENU_DEFAULT_COMBO,
-                "Deflt",
+                "Defl",
                 true,
                 2,
                 {MENU_DEFAULT_COMBO_SAVE, MENU_DEFAULT_COMBO_RESET}
@@ -187,7 +215,14 @@ const struct MenuItem allMenus[]  = {
                 {MENU_DONE}
         },
         {
-                MENU_SAVE_ENTER_NAME,
+                MENU_SAVE_ENTER_PRESET_NAME,
+                "Enter name",
+                false,
+                12,
+                {MENU_DONE}
+        },
+        {
+                MENU_SAVE_ENTER_COMBO_NAME,
                 "Enter name",
                 false,
                 12,
@@ -196,7 +231,7 @@ const struct MenuItem allMenus[]  = {
         // === SYSEX
         {
                 MENU_MIDI_SYSEX_DUMP,
-                "SysEx",
+                "SyX",
                 true,
                 2,
                 {MENU_MIDI_PATCH_DUMP, MENU_MIDI_BANK_SELECT_DUMP}

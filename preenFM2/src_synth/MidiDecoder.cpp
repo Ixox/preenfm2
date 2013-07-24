@@ -296,7 +296,7 @@ void MidiDecoder::midiEventReceived(MidiEvent midiEvent) {
     case MIDI_PROGRAM_CHANGE:
         // Programm change
         this->synth->allSoundOff();
-        storage->loadPatch(this->synthState->fullState.bankNumber, midiEvent.value[0], this->synthState->params);
+        storage->loadPreenFMPatch(this->synthState->fullState.preenFMBank, midiEvent.value[0], this->synthState->params);
         this->synthState->propagateAfterNewParamsLoad();
         this->synthState->resetDisplay();
         break;
