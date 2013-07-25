@@ -19,6 +19,59 @@
 #include "SynthState.h"
 
 
+const struct OneSynthParams defaultPreset  = {
+        { ALGO7, 7, 3, 4} ,
+        { 0.0, 0.0, 0.0, 0.0} ,
+        { 0.0, 0.0, 0.0, 0.0} ,
+        { 1, 0, 1, 0} ,
+        { 1, 0, 1, 0} ,
+        { 1, 0, 1, 0} ,
+        // Oscillator
+        { OSC_SHAPE_SIN,  OSC_FT_KEYBOARD , 1.0, 0} ,
+        { OSC_SHAPE_SIN,  OSC_FT_KEYBOARD , 1.0, 0} ,
+        { OSC_SHAPE_SIN,  OSC_FT_KEYBOARD , 1.0, 0} ,
+        { OSC_SHAPE_SIN,  OSC_FT_KEYBOARD , 1.0, 0} ,
+        { OSC_SHAPE_SIN,  OSC_FT_KEYBOARD , 1.0, 0} ,
+        { OSC_SHAPE_SIN,  OSC_FT_KEYBOARD , 1.0, 0} ,
+        // Enveloppe
+        { 0, 1, 0.1, 1 },
+        { 0.1, 1, 1.0 , 0},
+        { 0, 1, 0.1, 1 },
+        { 0.1, 1, 1.0 , 0},
+        { 0, 1, 0.1, 1 },
+        { 0.1, 1, 1.0 , 0},
+        { 0, 1, 0.1, 1 },
+        { 0.1, 1, 1.0 , 0},
+        { 0, 1, 0.1, 1 },
+        { 0.1, 1, 1.0 , 0},
+        { 0, 1, 0.1, 1 },
+        { 0.1, 1, 1.0 , 0},
+        // Modulation matrix
+        { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION1, 0} ,
+        { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION1, 0} ,
+        { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION1, 0} ,
+        { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION1, 0} ,
+        { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION1, 0} ,
+        { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION1, 0} ,
+        { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION1, 0} ,
+        { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION1, 0} ,
+        { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION1, 0} ,
+        { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION1, 0} ,
+        { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION1, 0} ,
+        { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION1, 0} ,
+        // LFOs
+        { LFO_SIN, 2.0, 0, 0} ,
+        { LFO_SIN, 2.0, 0, 0} ,
+        { LFO_SIN, 2.0, 0, 0} ,
+        { .2, 0.2, .8, 1.0} ,
+        { 1, .2, .2, 1.0} ,
+        { 100, .8,  0, 0}  ,
+        { 100, .8, 0, 0},
+        {{ 0, 0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}} ,
+        {{ 0, 0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}} ,
+        "Default"
+};
+
 const struct OneSynthParams presets[]  = {
         {
                 // patch name : 'Preen 2.0'

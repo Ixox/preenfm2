@@ -44,6 +44,7 @@ struct AlgoInformation {
 
 
 extern const struct OneSynthParams presets[];
+extern const struct OneSynthParams defaultPreset;
 extern const char* allChars;
 extern struct AlgoInformation algoInformation[];
 

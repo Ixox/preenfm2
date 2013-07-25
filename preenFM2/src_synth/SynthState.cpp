@@ -47,10 +47,10 @@ struct ParameterRowDisplay engineIM1ParameterRow = {
         "Modulation" ,
         { "IM1 ", "IM2 ", "IM3 ", "IM4 "},
         {
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -58,10 +58,10 @@ struct ParameterRowDisplay engineIM2ParameterRow = {
         "Modulation" ,
         { "IM5 ", "IM6 ", "IM7 ", "IM8 "},
         {
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -121,9 +121,9 @@ struct ParameterRowDisplay envParameterRow1 = {
         "Enveloppe",
         { "Attk", "lv  ", "Deca", "lv " },
         {
-                { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { 0, 8, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
@@ -132,9 +132,9 @@ struct ParameterRowDisplay envParameterRow2 = {
         "Enveloppe",
         { "Sust", "lv  ", "Rele", "lv  " },
         {
-                { 0, 8, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { 0, 8, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
@@ -143,10 +143,10 @@ struct ParameterRowDisplay lfoEnvParameterRow = {
         "LFO Env",
         { "Attk", "Deca", "Sust", "Rele" },
         {
-                { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { 0, 4, 201, DISPLAY_TYPE_INT_OR_NONE, nullNames, nullNamesOrder, nullNamesOrder }
+                { 0, 16, 1601, DISPLAY_TYPE_INT_OR_NONE, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -155,9 +155,9 @@ struct ParameterRowDisplay lfoEnv2ParameterRow = {
         "LFO Env",
         { "Sile", "Attk", "Deca", "Loop" },
         {
-                { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { 0, 4, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { LFO_ENV2_NOLOOP, LFO_ENV2_LOOP_ATTACK, 3, DISPLAY_TYPE_STRINGS, lofEnv2Loop, nullNamesOrder, nullNamesOrder }
         }
 };
@@ -180,7 +180,7 @@ struct ParameterRowDisplay matrixParameterRow = {
         { "Srce", "Mult", "Dest", "    " },
         {
                 { MATRIX_SOURCE_NONE, MATRIX_SOURCE_MAX-1, MATRIX_SOURCE_MAX, DISPLAY_TYPE_STRINGS, matrixSourceNames, nullNamesOrder, nullNamesOrder},
-                { -10, 10, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { -10, 10, 2001, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { DESTINATION_NONE, DESTINATION_MAX-1, DESTINATION_MAX, DISPLAY_TYPE_STRINGS, matrixDestNames, nullNamesOrder, nullNamesOrder},
                 { 0, 0, 0, DISPLAY_TYPE_NONE, nullNames, nullNamesOrder, nullNamesOrder }
         }
@@ -366,8 +366,24 @@ void SynthState::encoderTurnedWhileButtonPressed(int encoder, int ticks, int but
     		changeSynthModeRow(button , ticks>0 ? 1 : -1);
     		break;
     	case BUTTON_BACK:
-    		// NOTE !!!!
+    		encoderTurned(encoder, ticks * 10);
     		break;
+    	case BUTTON_MENUSELECT:
+    	{
+    		if (currentRow == ROW_ENGINE_FIRST) {
+    			// Nothing if first engine row
+    			return;
+    		}
+            struct ParameterDisplay* param = &(allParameterRows.row[currentRow]->params[encoder]);
+    		const struct OneSynthParams* defaultParams = &defaultPreset;
+            int num = encoder + currentRow * NUMBER_OF_ENCODERS;
+            float &value = ((float*)params)[num];
+            float oldValue = value;
+            float newValue = ((float*)defaultParams)[num];
+            value = newValue;
+            propagateNewParamValue(currentTimbre, currentRow, encoder, param, oldValue, newValue);
+    		break;
+    	}
     	}
     }
     if (oldCurrentRow != currentRow) {
@@ -398,7 +414,8 @@ void SynthState::encoderTurned(int encoder, int ticks) {
 		}
 
 		if (param->valueNameOrder == NULL) {
-		    if (currentRow == ROW_MODULATION1 || currentRow == ROW_MODULATION2) {
+/*
+			if (currentRow == ROW_MODULATION1 || currentRow == ROW_MODULATION2) {
 		        // Specific rule for modulation
                 float &value = ((float*)params)[num];
                 oldValue = value;
@@ -424,6 +441,8 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                 }
                 value = newValue;
 		    } else {
+		    */
+			// Not string parameters
 		        // floating point test to be sure numberOfValues is diferent from 1.
 		        if (param->numberOfValues < 1.5) {
 		            return;
@@ -442,7 +461,7 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                     newValue = param->minValue;
                 }
                 value = newValue;
-		    }
+		    // }
         } else {
             float *value = &((float*)params)[num];
             int index;

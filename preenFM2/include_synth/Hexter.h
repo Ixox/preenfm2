@@ -45,8 +45,6 @@ class Hexter {
 public:
 	Hexter();
 	virtual ~Hexter() {}
-
-	void loadFriendlyHexterPatch(struct OneSynthParams *params, int n);
 	void loadHexterPatch(uint8_t* packedPatch, struct OneSynthParams *params);
 
 protected:
