@@ -76,6 +76,9 @@ public:
     void loadConfig(char* midiConfig);
     void saveConfig(const char* midiConfig);
 
+    void saveBank(const char* newBankName, const uint8_t* sysexTmpMem);
+    bool bankNameExist(const char* bankName);
+    int bankBaseLength(const char* bankName);
 
     virtual const struct DX7Bank* getDx7Bank(int bankNumber) = 0;
     uint8_t* dx7LoadPatch(const struct DX7Bank* bank, int patchNumber);
@@ -96,6 +99,7 @@ public:
 
 private:
     // Pure Virtual
+    virtual const struct PreenFMBank*  addEmptyBank(const char* newBankName) = 0;
     virtual const char* getDX7BankFullName(const char* bankName) = 0;
     virtual const char* getPreenFMFullName(const char* bankName) = 0;
     void dx7patchUnpack(uint8_t *packed_patch, uint8_t *unpacked_patch);

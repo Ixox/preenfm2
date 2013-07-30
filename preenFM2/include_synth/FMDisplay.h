@@ -97,6 +97,8 @@ public:
 	void menuBack(FullState* fullState);
 	void eraseRow(int row);
 	void newMidiConfig(int menuSelect, char newValue) {};
+	void displayBankSelect(int bankNumber, bool usable, const char* name);
+	void displayPatchSelect(int presetNumber, const char* name);
 
     void newParamValueFromExternal(int timbre, SynthParamType type, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue);
     void newParamValue(int timbre, SynthParamType type, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue);

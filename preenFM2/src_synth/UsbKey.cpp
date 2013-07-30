@@ -39,8 +39,10 @@ void UsbKey::init(uint8_t*timbre1, uint8_t*timbre2, uint8_t*timbre3, uint8_t*tim
     	dx7Bank[k].name[12] = '\0';
     	dx7Bank[k].fileType = FILE_EMPTY;
     }
-    for (int k=0; k<32; k++) {
+    for (int k=0; k<NUMBEROFPREENFMBANKS; k++) {
     	preenFMBank[k].fileType = FILE_EMPTY;
+    }
+    for (int k=0; k<NUMBEROFPREENFMCOMBOS; k++) {
     	preenFMCombo[k].fileType = FILE_EMPTY;
     }
     char empty[] = "<Empty>\0";
@@ -429,4 +431,17 @@ const char* UsbKey::getPreenFMFullName(const char* bankName) {
 	return getFullName(PREENFM_DIR, bankName);
 }
 
-
+const struct PreenFMBank* UsbKey::addEmptyBank(const char* newBankName) {
+	int k;
+	for (k=0; preenFMBank[k].fileType != FILE_EMPTY && k < NUMBEROFPREENFMBANKS; k++);
+	if (k == NUMBEROFPREENFMBANKS) {
+		// NO EMPTY BANK....
+		return NULL;
+	}
+	preenFMBank[k].fileType = FILE_OK;
+	for (int n = 0; n < 12 ; n++) {
+		preenFMBank[k].name[n] = newBankName[n];
+	}
+	preenFMBankInitialized = false;
+	return &preenFMBank[k];
+}

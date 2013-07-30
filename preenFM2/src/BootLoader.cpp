@@ -507,15 +507,15 @@ int main(void) {
             bootLoader.process();
             USB_OTG_BSP_uDelay(10000);
         }
-        /*
-    } else if (bootLoader.getButton() == 4) {
+/*
+    } else if (bootLoader.getButton() == 5) {
         // Button... flash new firmware
     	bootLoader.welcome();
     	lcd.setCursor(2,2);
     	lcd.print("!!Embedded DFU!!");
     	RCC_DeInit();
-        RCC_SYSCLKConfig(RCC_SYSCLKSource_HSI);
-    	SystemCoreClockUpdate();
+        //RCC_SYSCLKConfig(RCC_SYSCLKSource_HSI);
+    	//SystemCoreClockUpdate();
         uint32_t dfuAdress = (uint32_t)0x1FFF0004;
         pFunction Jump_To_EmbeddedLoader= (pFunction) dfuAdress;
         SysTick->CTRL = 0;
@@ -524,10 +524,7 @@ int main(void) {
         __set_PRIMASK(1);
         __set_MSP(0x20001000);
     	Jump_To_EmbeddedLoader();
-
-    	// App ready ?
-
-    	 */
+    	*/
     } else {
         // App ready ?
         pFunction Jump_To_Application;

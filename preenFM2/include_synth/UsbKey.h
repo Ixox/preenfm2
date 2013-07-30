@@ -40,9 +40,6 @@
 #define USB_PATCH_ZERO USB_PATCH_SIZE-PFM_PATCH_SIZE
 #define USB_COMBO_SIZE USB_PATCH_SIZE*4+13
 
-#define NUMBEROFDX7BANKS 300
-#define NUMBEROFPREENFMBANKS 32
-#define NUMBEROFPREENFMCOMBOS 32
 
 class UsbKey : public Storage {
 public:
@@ -62,6 +59,8 @@ public:
     int loadFirmwarePart(char *fileName, int seek, void* bytes, int size);
 
 private:
+    const struct PreenFMBank*  addEmptyBank(const char* newBankName);
+
     const char* getDX7BankFullName(const char* bankName);
     const char* getPreenFMFullName(const char* bankName);
     void usbProcess();

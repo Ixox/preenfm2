@@ -112,21 +112,21 @@ const struct MenuItem allMenus[]  = {
                 MENU_LOAD_SELECT_BANK,
                 "Bank",
                 false,
-                32,
+                NUMBEROFPREENFMBANKS,
                 {MENU_LOAD_SELECT_BANK_PRESET}
         },
         {
                 MENU_LOAD_SELECT_COMBO,
                 "Combo",
                 false,
-                32,
+                NUMBEROFPREENFMCOMBOS,
                 {MENU_LOAD_SELECT_COMBO_PRESET}
         },
         {
         		MENU_LOAD_SELECT_DX7_BANK,
                 "DX7",
                 false,
-                300,
+                NUMBEROFDX7BANKS,
                 {MENU_LOAD_SELECT_DX7_PRESET}
         },
         {
@@ -169,14 +169,14 @@ const struct MenuItem allMenus[]  = {
                 MENU_SAVE_SELECT_BANK,
                 "Bank",
                 false,
-                32,
+                NUMBEROFPREENFMBANKS,
                 {MENU_SAVE_SELECT_BANK_PRESET}
         },
         {
                 MENU_SAVE_SELECT_COMBO,
                 "Combo",
                 false,
-                32,
+                NUMBEROFPREENFMCOMBOS,
                 {MENU_SAVE_SELECT_COMBO_PRESET}
         },
         {
@@ -257,15 +257,21 @@ const struct MenuItem allMenus[]  = {
                 0,
                 {MENU_DONE}
         },
-
-
         // === DONE
         {
                 MENU_DONE,
-                "",
+                "Done",
                 false,
                 0,
                 {MENU_DONE}
+        },
+        // === CANCELED
+        {
+                MENU_CANCEL,
+                "Canceled",
+                false,
+                0,
+                {MENU_CANCEL}
         },
         // == In progress
         {
@@ -312,21 +318,21 @@ const struct MenuItem allMenus[]  = {
                 {MENU_DONE}
         },
 
-        // ==================== SAVE BANK
+        // ==================== SAVE NEW SYSEX BANK
         {
-                MENU_SAVE_NEW_SYSEX_BANK,
-                "",
+                MENU_SAVE_ENTER_NEW_SYSEX_BANK_NAME,
+                "New Bank Name?",
                 false,
-                4,
-                {MENU_SAVE_NEW_SYSEX_BANK_CONFIRM}
+                8,
+                {MENU_DONE}
         },
         {
-                MENU_SAVE_NEW_SYSEX_BANK_CONFIRM,
-                "",
-                false,
-                0,
-                {MENU_DONE}
-        }
+        		MENU_SAVE_SYSEX_BANK_CONFIRM_OVERRIDE,
+        		"Erase Existing Bank?",
+        		false,
+        		1,
+        		{MENU_DONE}
 
+        }
 };
 

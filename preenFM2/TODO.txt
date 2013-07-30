@@ -1,14 +1,13 @@
 TODO (temporary list, grow over time) : 
 . Play note in combo (spec)
-. !!! USB Midi : SYSEX, after touch, program change
-. 'Panic!' to add...
+. USB Midi : SYSEX, after touch, program change
 . ADD DX7 algo for compatibility...
 . audio glich when changing patch while playing and start again plaing (seems to be linked with voice).
-. SYSEX : use new bank selection
-
+. Add bankname in Bank SYSEX...
 
 No sure : 
 . Modify button : Osc->Operator# , Env : Osc, EnvA, EnvB ?
+. 'Panic!' to add... Voice = 0 enough ?
 
 TO check hardware :
 . volume Pot make noise
@@ -18,9 +17,13 @@ OK to test
 . Freeze when no file on USB
 . env attack as target...
 . Fine tune too hard !
+. Midi through
+. Fix NRPN and CC... with new scale...
 
 
 DONE:
+. SYSEX : use new bank selection.. Ask for name ?
+. But when push + turn back : row engine 1 : mix5... shows up.
 . Use empty PFM patch before applying DX7 parameters.
 . Use back+turn to fine adjust (Remove the Modulation special case)
 . use menu+turn to reset to default

@@ -38,8 +38,7 @@ extern const struct MidiConfig midiConfig[];
 SynthState * PresetUtil::synthState;
 Storage * PresetUtil::storage;
 
-#define PATCH_SIZE_PFM2 ((NUMBER_OF_ROWS)*4*2 + 16*2 + 13)
-// TODO NOLAD !!
+
 uint8_t sysexTmpMem[PATCH_SIZE_PFM2 * 128];
 struct OneSynthParams oneSynthParamsTmp;
 
@@ -420,6 +419,7 @@ void PresetUtil::sendBankToSysex(int bankNumber) {
     }
 
     sendSysexByte((unsigned char) 0xf7);
+    sendSysexFinished();
 }
 
 
@@ -747,7 +747,7 @@ void PresetUtil::convertSynthStateToCharArray(OneSynthParams* params, uint8_t* c
     }
 }
 
-void PresetUtil::convertCharArrayToSynthState(unsigned char* chars, OneSynthParams* params) {
+void PresetUtil::convertCharArrayToSynthState(const unsigned char* chars, OneSynthParams* params) {
     int indexSysex = 0;
     for (int row=0; row < NUMBER_OF_ROWS; row++) {
         for (int encoder = 0; encoder < NUMBER_OF_ENCODERS; encoder++) {

@@ -19,7 +19,10 @@
 #include <stdint.h>
 #include "Storage.h"
 #include "Menu.h"
+#include "PresetUtil.h"
 
+#include "LiquidCrystal.h"
+extern LiquidCrystal lcd;
 
 // Set param in mememory reachable with USB : static is OK
 struct OneSynthParams reachableParam;
@@ -282,5 +285,56 @@ void Storage::savePreenFMCombo(const struct PreenFMCombo* combo, int comboNumber
         }
         save(COMBO_BANK, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableParam, PFM_PATCH_SIZE);
     }
+}
+
+
+
+void Storage::saveBank(const char* newBankName, const uint8_t* sysexTmpMem) {
+	const struct PreenFMBank * newBank = addEmptyBank(newBankName);
+	if (newBank == 0) {
+		return;
+	}
+	for (int k=0; k<128; k++) {
+		PresetUtil::convertCharArrayToSynthState(sysexTmpMem + PATCH_SIZE_PFM2 * k, &oneSynthParamsTmp);
+		savePreenFMPatch(newBank, k, &oneSynthParamsTmp);
+	}
+}
+
+int Storage::bankBaseLength(const char* bankName) {
+	int k;
+	for (k=0; k<8 && bankName[k]!=0 && bankName[k]!='.'; k++);
+	return k;
+}
+
+bool Storage::bankNameExist(const char* bankName) {
+	int nameLength = bankBaseLength(bankName);
+	lcd.setRealTimeAction(true);
+	lcd.setCursor(10,0);
+	lcd.print(nameLength);
+	for (int b=0; getPreenFMBank(b)->fileType != FILE_EMPTY && b<NUMBEROFPREENFMBANKS; b++) {
+		const struct PreenFMBank* pfmb = getPreenFMBank(b);
+		if (nameLength != bankBaseLength(pfmb->name)) {
+			continue;
+		}
+		bool sameName = true;
+		for (int n=0; n < nameLength && sameName; n++) {
+			// Case insensitive...
+			char c1 = bankName[n];
+			char c2 = pfmb->name[n];
+			if (c1 >= 'a' && c1<='z') {
+				c1 = 'A' + c1 - 'a';
+			}
+			if (c2 >= 'a' && c2<='z') {
+				c2 = 'A' + c2 - 'a';
+			}
+			if (c1 != c2) {
+				sameName = false;
+			}
+		}
+		if (sameName) {
+			return true;
+		}
+	}
+	return false;
 }
 

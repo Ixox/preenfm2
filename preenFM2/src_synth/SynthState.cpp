@@ -112,8 +112,8 @@ struct ParameterRowDisplay oscParameterRow = {
         {
                 { OSC_SHAPE_SIN, OSC_SHAPE_LAST -1, OSC_SHAPE_LAST, DISPLAY_TYPE_STRINGS, oscShapeNames, nullNamesOrder, nullNamesOrder},
                 { OSC_FT_KEYBOARD, OSC_FT_FIXE, 2, DISPLAY_TYPE_STRINGS, oscTypeNames, nullNamesOrder, nullNamesOrder},
-                { 0, 16, 193, DISPLAY_TYPE_OSC_FREQUENCY ,  nullNames, nullNamesOrder, nullNamesOrder },
-                { -1, 1, 201, DISPLAY_TYPE_OSC_FREQUENCY,  nullNames, nullNamesOrder, nullNamesOrder }
+                { 0, 16, 193, DISPLAY_TYPE_FLOAT_OSC_FREQUENCY ,  nullNames, nullNamesOrder, nullNamesOrder },
+                { -1, 1, 201, DISPLAY_TYPE_FLOAT_OSC_FREQUENCY,  nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -196,7 +196,7 @@ struct ParameterRowDisplay lfoParameterRow = {
         { "Shap", "Freq", "Bias", "KSyn" },
         {
                 { LFO_SAW, LFO_TYPE_MAX-1, 1, DISPLAY_TYPE_STRINGS,  lfoShapeNames, nullNamesOrder, nullNamesOrder},
-                { 0, 24.9, 250,DISPLAY_TYPE_LFO_HZ, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 24.9, 250,DISPLAY_TYPE_FLOAT_LFO_FREQUENCY, nullNames, nullNamesOrder, nullNamesOrder },
                 { -1, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
         }
@@ -414,54 +414,25 @@ void SynthState::encoderTurned(int encoder, int ticks) {
 		}
 
 		if (param->valueNameOrder == NULL) {
-/*
-			if (currentRow == ROW_MODULATION1 || currentRow == ROW_MODULATION2) {
-		        // Specific rule for modulation
-                float &value = ((float*)params)[num];
-                oldValue = value;
-                if (value < 1.0f || (value == 1.0f && ticks < 0)) {
-                    int tickIndex = ((float)value / .02f) + .0005f + ticks;
-                    newValue = tickIndex * .02f;
-                    if (newValue > 1.0f) {
-                        newValue = 1.0;
-                    }
-                    if (newValue < 0.0) {
-                        newValue = 0.0;
-                    }
-                } else  {
-                    float inc = .1;
-                    int tickIndex = (value - 1.0f) / inc + .0005f + ticks;
-                    newValue = 1.0f + tickIndex * inc;
-                    if (newValue > param->maxValue) {
-                        newValue = param->maxValue;
-                    }
-                    if (newValue < 1.0f) {
-                        newValue = 1.0f;
-                    }
-                }
-                value = newValue;
-		    } else {
-		    */
 			// Not string parameters
-		        // floating point test to be sure numberOfValues is diferent from 1.
-		        if (param->numberOfValues < 1.5) {
-		            return;
-		        }
+			// floating point test to be sure numberOfValues is diferent from 1.
+			if (param->numberOfValues < 1.5) {
+				return;
+			}
 
-                float &value = ((float*)params)[num];
-                oldValue = value;
-                float inc = ((param->maxValue - param->minValue) / (param->numberOfValues - 1.0f));
-                int tickIndex = (value - param->minValue) / inc + .0005f+ ticks;
-                newValue = param->minValue + tickIndex * inc;
-                propagateNewParamCheck(encoder, oldValue, &newValue);
-                if (newValue > param->maxValue) {
-                    newValue = param->maxValue;
-                }
-                if (newValue < param->minValue) {
-                    newValue = param->minValue;
-                }
-                value = newValue;
-		    // }
+			float &value = ((float*)params)[num];
+			oldValue = value;
+			float inc = ((param->maxValue - param->minValue) / (param->numberOfValues - 1.0f));
+			int tickIndex = (value - param->minValue) / inc + .0005f+ ticks;
+			newValue = param->minValue + tickIndex * inc;
+			propagateNewParamCheck(encoder, oldValue, &newValue);
+			if (newValue > param->maxValue) {
+				newValue = param->maxValue;
+			}
+			if (newValue < param->minValue) {
+				newValue = param->minValue;
+			}
+			value = newValue;
         } else {
             float *value = &((float*)params)[num];
             int index;
@@ -669,12 +640,12 @@ void SynthState::changeSynthModeRow(int button, int step) {
 			} else {
 				do {
 					currentRow += step;
+					if (currentRow>ROW_ENGINE_LAST) {
+						currentRow = ROW_ENGINE_FIRST;
+					} else if (currentRow<ROW_ENGINE_FIRST) {
+						currentRow = ROW_ENGINE_LAST;
+					}
 				} while (!isCurrentRowAvailable());
-			}
-			if (currentRow>ROW_ENGINE_LAST) {
-				currentRow = ROW_ENGINE_FIRST;
-			} else if (currentRow<ROW_ENGINE_FIRST) {
-				currentRow = ROW_ENGINE_LAST;
 			}
 			engineRow = currentRow;
 		break;
@@ -738,7 +709,10 @@ void SynthState::changeSynthModeRow(int button, int step) {
 }
 
 bool SynthState::isEnterNameState(int currentItem) {
-	return currentItem == MENU_SAVE_ENTER_PRESET_NAME || currentItem == MENU_RENAME_PATCH || currentItem == MENU_SAVE_ENTER_COMBO_NAME;
+	return currentItem == MENU_SAVE_ENTER_PRESET_NAME
+			|| currentItem == MENU_RENAME_PATCH
+			|| currentItem == MENU_SAVE_ENTER_COMBO_NAME
+			|| currentItem == MENU_SAVE_ENTER_NEW_SYSEX_BANK_NAME;
 }
 
 void SynthState::buttonPressed(int button) {
@@ -888,9 +862,6 @@ const MenuItem* SynthState::afterButtonPressed() {
     // Previous state switch
 
     switch (fullState.currentMenuItem->menuState) {
-    case MENU_SAVE_NEW_SYSEX_BANK:
-        fullState.preenFMBankNumber = fullState.menuSelect;
-        break;
     case MAIN_MENU:
         fullState.firstMenu = fullState.menuSelect;
         break;
@@ -923,11 +894,6 @@ const MenuItem* SynthState::afterButtonPressed() {
     		return fullState.currentMenuItem;
     	}
     	fullState.dx7BankNumber = fullState.menuSelect;
-    	break;
-    case MENU_SAVE_NEW_SYSEX_BANK_CONFIRM:
-    	lcd.setRealTimeAction(true);
-        PresetUtil::copyBank(4, fullState.preenFMBankNumber);
-    	lcd.setRealTimeAction(false);
     	break;
     case MENU_LOAD_SELECT_BANK_PRESET:
         propagateBeforeNewParamsLoad();
@@ -1006,6 +972,45 @@ const MenuItem* SynthState::afterButtonPressed() {
         storage->savePreenFMCombo(fullState.preenFMCombo, fullState.preenFMComboNumber, comboName);
         break;
     }
+    case MENU_SAVE_ENTER_NEW_SYSEX_BANK_NAME:
+    {
+    	// Must save the bank here....
+        int length;
+        for (length=8; fullState.name[length-1] == 0; length--);
+        for (int k=0; k<length; k++) {
+        	newBankName[k] = allChars[(int)fullState.name[k]];
+        }
+        newBankName[length++] = '.';
+        newBankName[length++] = 'b';
+        newBankName[length++] = 'n';
+        newBankName[length++] = 'k';
+        newBankName[length] = '\0';
+        if (!storage->bankNameExist(newBankName)) {
+        	const MenuItem *cmi = fullState.currentMenuItem;
+        	// Update display while sending
+        	lcd.setRealTimeAction(true);
+        	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
+        	propagateNewMenuState();
+        	storage->saveBank(newBankName, sysexTmpMem);
+            fullState.currentMenuItem = cmi;
+        	lcd.setRealTimeAction(false);
+        } else {
+        	rMenuItem = MenuItemUtil::getMenuItem(MENU_SAVE_SYSEX_BANK_CONFIRM_OVERRIDE);
+        }
+        break;
+    }
+    case MENU_SAVE_SYSEX_BANK_CONFIRM_OVERRIDE:
+    {
+    	const MenuItem *cmi = fullState.currentMenuItem;
+    	// Update display while sending
+    	lcd.setRealTimeAction(true);
+    	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
+    	propagateNewMenuState();
+    	storage->saveBank(newBankName, sysexTmpMem);
+        fullState.currentMenuItem = cmi;
+    	lcd.setRealTimeAction(false);
+    	break;
+    }
     case MENU_SAVE_SYSEX_PATCH:
         PresetUtil::sendCurrentPatchToSysex();
         break;
@@ -1024,6 +1029,7 @@ const MenuItem* SynthState::afterButtonPressed() {
     	lcd.setRealTimeAction(false);
         break;
     }
+    case MENU_CANCEL:
     case MENU_DONE:
         fullState.synthMode = SYNTH_MODE_EDIT;
         break;
@@ -1164,27 +1170,51 @@ const MenuItem* SynthState::menuBack() {
         PresetUtil::copySynthParams((char*)&backupParams, (char*)params);
         propagateAfterNewParamsLoad();
         break;
-    case MENU_SAVE_NEW_SYSEX_BANK:
-    	// After back, bank should no be receivable anymore
-        fullState.synthMode = SYNTH_MODE_EDIT;
-    	return MenuItemUtil::getMenuItem(MENU_LOAD);
+    case MENU_SAVE_SYSEX_BANK_CONFIRM_OVERRIDE:
+    case MENU_SAVE_ENTER_NEW_SYSEX_BANK_NAME:
+    	// CANCEL OPERATION
+    	return MenuItemUtil::getMenuItem(MENU_CANCEL);
     	break;
     case MAIN_MENU:
         fullState.synthMode = SYNTH_MODE_EDIT;
         // put back old patch (has been overwritten if a new patch has been loaded)
         break;
     }
-
     rMenuItem = MenuItemUtil::getParentMenuItem(fullState.currentMenuItem->menuState);
     return rMenuItem;
 }
 
 
-void SynthState::newBankReady() {
+void SynthState::newSysexBankReady() {
 	fullState.synthMode = SYNTH_MODE_MENU;
 	fullState.menuSelect = 0;
-	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_SAVE_NEW_SYSEX_BANK);
-	propagateNewSynthMode();
+	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_SAVE_ENTER_NEW_SYSEX_BANK_NAME);
+
+	char newBankName[9];
+	int k = 0;
+	for (k=0; storage->getPreenFMBank(k)->fileType != FILE_EMPTY && k < NUMBEROFPREENFMBANKS; k++);
+	if (k == NUMBEROFPREENFMBANKS) {
+		// NO EMPTY BANK....
+		return;
+	}
+	k++;
+	newBankName[0] = 'B';
+	newBankName[1] = 'a';
+	newBankName[2] = 'n';
+	newBankName[3] = 'k';
+	newBankName[4] = '0' + k/10;
+	newBankName[5] = '0' + k - (k / 10) * 10;
+	newBankName[6] = '_';
+	newBankName[7] = '_';
+	for (int k=0; k<8; k++) {
+		for (int j=0; j<getLength(allChars); j++) {
+			if (newBankName[k] == allChars[j]) {
+				fullState.name[k] = j;
+			}
+		}
+	}
+
+	propagateNewMenuState();
 }
 
 
@@ -1208,12 +1238,14 @@ void SynthState::propagateNewTimbre(int timbre) {
 }
 
 void SynthState::tempoClick() {
-	if (fullState.synthMode == SYNTH_MODE_MENU && fullState.currentMenuItem->menuState == MENU_DONE) {
-		if (doneClick > 4) {
-		    fullState.synthMode = SYNTH_MODE_EDIT;
-		    propagateNewSynthMode();
+	if (fullState.synthMode == SYNTH_MODE_MENU) {
+		if (fullState.currentMenuItem->menuState == MENU_DONE || fullState.currentMenuItem->menuState == MENU_CANCEL) {
+			if (doneClick > 4) {
+				fullState.synthMode = SYNTH_MODE_EDIT;
+				propagateNewSynthMode();
+			}
+			doneClick ++;
 		}
-		doneClick ++;
 	} else {
 		doneClick = 0;
 	}
