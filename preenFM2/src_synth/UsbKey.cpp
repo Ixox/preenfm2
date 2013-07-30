@@ -445,3 +445,19 @@ const struct PreenFMBank* UsbKey::addEmptyBank(const char* newBankName) {
 	preenFMBankInitialized = false;
 	return &preenFMBank[k];
 }
+
+int UsbKey::renameBank(const struct PreenFMBank* bank, const char* newName) {
+	char fullNewBankName[40];
+	const char* fullNameTmp = getPreenFMFullName(newName);
+	// Don't want the logical drive (two first char)
+	for (int k=2; k<40; k++) {
+		fullNewBankName[k-2] = fullNameTmp[k];
+	}
+	commandParams.commandState = COMMAND_RENAME;
+	commandParams.commandFileName = getPreenFMFullName(bank->name);
+	commandParams.commandParam1 = (void*)fullNewBankName;
+	usbProcess();
+	lcd.setRealTimeAction(true);
+	preenFMBankInitialized = false;
+	return commandParams.commandResult;
+}

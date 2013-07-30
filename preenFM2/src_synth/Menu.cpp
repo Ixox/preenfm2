@@ -273,6 +273,14 @@ const struct MenuItem allMenus[]  = {
                 0,
                 {MENU_CANCEL}
         },
+        // === CANCELED
+        {
+                MENU_ERROR,
+                "Error",
+                false,
+                0,
+                {MENU_CANCEL}
+        },
         // == In progress
         {
                 MENU_IN_PROGRESS,
@@ -287,7 +295,7 @@ const struct MenuItem allMenus[]  = {
                 "Tools",
                 true,
                 3,
-                {MENU_CONFIG_SETTINGS, MENU_RENAME_PATCH, MENU_FORMAT_BANK}
+                {MENU_CONFIG_SETTINGS, MENU_RENAME, MENU_FORMAT_BANK}
         },
         {
                 MENU_CONFIG_SETTINGS,
@@ -311,10 +319,31 @@ const struct MenuItem allMenus[]  = {
                 {MENU_DONE}
         },
         {
+                MENU_RENAME,
+                "Rename",
+                true,
+                2,
+                {MENU_RENAME_PATCH, MENU_RENAME_SELECT_BANK}
+        },
+        {
                 MENU_RENAME_PATCH,
-                "Name",
+                "Patch",
                 false,
                 12,
+                {MENU_DONE}
+        },
+        {
+                MENU_RENAME_SELECT_BANK,
+                "Bank",
+                false,
+                32,
+                {MENU_RENAME_BANK}
+        },
+        {
+        		MENU_RENAME_BANK,
+                "",
+                false,
+                8,
                 {MENU_DONE}
         },
 

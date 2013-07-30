@@ -90,11 +90,11 @@ public:
         }
     }
 
-
+    int rowInc(MenuState menuState);
     void newSynthMode(FullState* fullState) ;
     void newMenuState(FullState* fullState) ;
     void newMenuSelect(FullState* fullState);
-	void menuBack(FullState* fullState);
+	void menuBack(enum MenuState oldMenutState, FullState* fullState);
 	void eraseRow(int row);
 	void newMidiConfig(int menuSelect, char newValue) {};
 	void displayBankSelect(int bankNumber, bool usable, const char* name);

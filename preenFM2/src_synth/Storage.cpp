@@ -21,9 +21,6 @@
 #include "Menu.h"
 #include "PresetUtil.h"
 
-#include "LiquidCrystal.h"
-extern LiquidCrystal lcd;
-
 // Set param in mememory reachable with USB : static is OK
 struct OneSynthParams reachableParam;
 uint8_t dx7PackedPatch[DX7_PACKED_PATCH_SIZED];
@@ -308,9 +305,6 @@ int Storage::bankBaseLength(const char* bankName) {
 
 bool Storage::bankNameExist(const char* bankName) {
 	int nameLength = bankBaseLength(bankName);
-	lcd.setRealTimeAction(true);
-	lcd.setCursor(10,0);
-	lcd.print(nameLength);
 	for (int b=0; getPreenFMBank(b)->fileType != FILE_EMPTY && b<NUMBEROFPREENFMBANKS; b++) {
 		const struct PreenFMBank* pfmb = getPreenFMBank(b);
 		if (nameLength != bankBaseLength(pfmb->name)) {

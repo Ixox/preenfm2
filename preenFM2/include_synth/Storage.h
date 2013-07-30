@@ -93,6 +93,8 @@ public:
     const char* loadPreenFMComboName(const struct PreenFMCombo* combo, int comboNumber);
     void savePreenFMCombo(const struct PreenFMCombo* combo, int comboNumber, char* comboName);
 
+    virtual int renameBank(const struct PreenFMBank* bank, const char* newName) = 0;
+
     // Virtual
     virtual void init(uint8_t*timbre1, uint8_t*timbre2, uint8_t*timbre3, uint8_t*timbre4);
 

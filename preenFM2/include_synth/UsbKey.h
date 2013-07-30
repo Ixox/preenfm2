@@ -58,6 +58,7 @@ public:
     int readNextFirmwareName(char *name, int*size);
     int loadFirmwarePart(char *fileName, int seek, void* bytes, int size);
 
+    int renameBank(const struct PreenFMBank* bank, const char* newName);
 private:
     const struct PreenFMBank*  addEmptyBank(const char* newBankName);
 

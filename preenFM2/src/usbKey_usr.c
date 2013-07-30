@@ -325,6 +325,14 @@ int USBH_USR_MSC_Application(void) {
         commandParams.commandResult = COMMAND_SUCCESS;
         commandParams.commandState = COMMAND_NONE;
         break;
+    case COMMAND_RENAME:
+        if (f_rename(commandParams.commandFileName, (const char*)commandParams.commandParam1) != FR_OK) {
+            commandParams.commandResult = COMMAND_FAILED;
+        } else {
+            commandParams.commandResult = COMMAND_SUCCESS;
+        }
+        commandParams.commandState = COMMAND_NONE;
+        break;
     case COMMAND_NONE:
         break;
     }

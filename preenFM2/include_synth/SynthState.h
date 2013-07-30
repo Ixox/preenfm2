@@ -313,9 +313,9 @@ public:
 		}
 	}
 
-	void propagateMenuBack() {
+	void propagateMenuBack(enum MenuState oldMenuState) {
 		for (SynthMenuListener* listener = firstMenuListener; listener !=0; listener = listener->nextListener) {
-			listener->menuBack(&fullState);
+			listener->menuBack(oldMenuState, &fullState);
 		}
 	}
 
@@ -435,8 +435,6 @@ private:
 
     Storage* storage;
     Hexter* hexter;
-    // Sysex bank name
-    char newBankName[13];
 };
 
 // Global structure used all over the code

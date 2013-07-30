@@ -72,6 +72,7 @@ enum MenuState {
     MENU_DONE,
     MENU_CANCEL,
     MENU_IN_PROGRESS,
+    MENU_ERROR,
     MENU_TOOLS,
     MENU_FORMAT_BANK,
     MENU_MIDI_SYSEX_GET,
@@ -80,9 +81,12 @@ enum MenuState {
     MENU_DEFAULT_COMBO,
     MENU_DEFAULT_COMBO_SAVE,
     MENU_DEFAULT_COMBO_RESET,
+    MENU_RENAME,
     MENU_RENAME_PATCH,
+    MENU_RENAME_SELECT_BANK,
+    MENU_RENAME_BANK,
     LAST_MENU
-};
+} ;
 
 
 
@@ -102,6 +106,7 @@ struct FullState {
     unsigned char previousMenuSelect;
     const MenuItem* currentMenuItem;
     char name[13];
+
     unsigned char loadWhat;
     unsigned char saveWhat;
     unsigned char firstMenu;
@@ -147,7 +152,7 @@ public:
 
     static const MenuItem* getParentMenuItem(MenuState ms) {
         // MENU_DONE exception -> return itself to block back button
-        if (ms == MENU_DONE || ms == MENU_CANCEL) {
+        if (ms == MENU_DONE || ms == MENU_CANCEL || ms == MENU_ERROR) {
             return getMenuItem(ms);
         }
         const MenuItem* item = &allMenus[0];

@@ -409,6 +409,23 @@ void PresetUtil::sendBankToSysex(int bankNumber) {
     }
     const struct PreenFMBank* bank = storage->getPreenFMBank(bankNumber);
 
+    // send bank Name
+    char bankNameToSend[8];
+    for (int k=0; k<8; k++) {
+    	bankNameToSend[k] = '\0';
+    }
+    const char* bankName = bank->name;
+    for (int k=0; k<8 && bankName[k] != '\0' && bankName[k] != '.'; k++) {
+		char c1 = bankName[k];
+		if (c1 >= 'a' && c1<='z') {
+			c1 = 'A' + c1 - 'a';
+		}
+		bankNameToSend[k] = c1;
+    }
+    for (int k=0; k<8; k++) {
+    	sendSysexByte(bankNameToSend[k]);
+    }
+
     for (int preset = 0; preset < 128; preset++) {
         lcd.setCursor(3,2);
         lcd.print(preset);
@@ -675,6 +692,10 @@ void PresetUtil::copySynthParams(char* source, char* dest) {
 int PresetUtil::readSysexBank() {
     int errorCode = 0;
 
+    for (int k=0; k<8; k++) {
+    	sysexTmpMem[k] = getNextMidiByte();
+    }
+
     lcd.setCursor(1,3);
     lcd.print("Bank:");
 
@@ -682,7 +703,7 @@ int PresetUtil::readSysexBank() {
         lcd.setCursor(7,3);
         lcd.print(preset);
 
-        if ((errorCode = PresetUtil::readSysexPatch(sysexTmpMem + PATCH_SIZE_PFM2 * preset)) <0) {
+        if ((errorCode = PresetUtil::readSysexPatch(sysexTmpMem + 8 + PATCH_SIZE_PFM2 * preset)) <0) {
             lcd.setCursor(11,3);
             lcd.print("##");
             lcd.print(errorCode);
