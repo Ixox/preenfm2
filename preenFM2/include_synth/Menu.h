@@ -115,14 +115,14 @@ struct FullState {
 
     unsigned char preenFMBankNumber;
     unsigned char preenFMPresetNumber;
-    const struct PreenFMBank* preenFMBank;
+    const struct BankFile* preenFMBank;
     unsigned char preenFMComboNumber;
     unsigned char preenFMComboPresetNumber;
-    const struct PreenFMCombo* preenFMCombo;
+    const struct BankFile* preenFMCombo;
 
     short dx7BankNumber;
     unsigned char dx7PresetNumber;
-    const struct DX7Bank* dx7Bank;
+    const struct BankFile* dx7Bank;
 };
 
 struct MidiConfig {

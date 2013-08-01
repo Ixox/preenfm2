@@ -204,7 +204,7 @@ void Storage::saveConfig(const char* midiConfig) {
 
 // NEW mechanism ===
 
-uint8_t* Storage::dx7LoadPatch(const struct DX7Bank* bank, int patchNumber) {
+uint8_t* Storage::dx7LoadPatch(const struct BankFile* bank, int patchNumber) {
 	const char* fullBankName = getDX7BankFullName(bank->name);
     int result = load(fullBankName, patchNumber * DX7_PACKED_PATCH_SIZED + 6,  (void*)dx7PackedPatch, DX7_PACKED_PATCH_SIZED);
     if (result >0) {
@@ -215,7 +215,7 @@ uint8_t* Storage::dx7LoadPatch(const struct DX7Bank* bank, int patchNumber) {
 
 
 
-void Storage::loadPreenFMPatch(const struct PreenFMBank* bank, int patchNumber, struct OneSynthParams *params) {
+void Storage::loadPreenFMPatch(const struct BankFile* bank, int patchNumber, struct OneSynthParams *params) {
 	const char* fullBankName = getPreenFMFullName(bank->name);
 
     // Don't load in params directly because params is in CCM memory
@@ -228,14 +228,14 @@ void Storage::loadPreenFMPatch(const struct PreenFMBank* bank, int patchNumber, 
     }
 }
 
-const char* Storage::loadPreenFMPatchName(const struct PreenFMBank* bank, int patchNumber) {
+const char* Storage::loadPreenFMPatchName(const struct BankFile* bank, int patchNumber) {
 	const char* fullBankName = getPreenFMFullName(bank->name);
     int result = load(fullBankName, ALIGNED_PATCH_SIZE * patchNumber + PFM_PATCH_SIZE - 16,  (void*)presetName, 12);
     presetName[12] = 0;
     return presetName;
 }
 
-void Storage::savePreenFMPatch(const struct PreenFMBank* bank, int patchNumber, struct OneSynthParams *params) {
+void Storage::savePreenFMPatch(const struct BankFile* bank, int patchNumber, struct OneSynthParams *params) {
 	const char* fullBankName = getPreenFMFullName(bank->name);
 
     char zeros[ALIGNED_PATCH_ZERO];
@@ -253,7 +253,7 @@ void Storage::savePreenFMPatch(const struct PreenFMBank* bank, int patchNumber, 
     save(fullBankName, patchNumber * ALIGNED_PATCH_SIZE  + PFM_PATCH_SIZE,  (void*)zeros, ALIGNED_PATCH_ZERO);
 }
 
-void Storage::loadPreenFMCombo(const struct PreenFMCombo* combo, int comboNumber) {
+void Storage::loadPreenFMCombo(const struct BankFile* combo, int comboNumber) {
 	const char* fullBankName = getPreenFMFullName(combo->name);
     for (int timbre = 0; timbre < 4; timbre++)  {
         int result = load(fullBankName,  (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre ,  (void*)&reachableParam, PFM_PATCH_SIZE);
@@ -265,14 +265,14 @@ void Storage::loadPreenFMCombo(const struct PreenFMCombo* combo, int comboNumber
         }
     }
 }
-const char* Storage::loadPreenFMComboName(const struct PreenFMCombo* combo, int comboNumber) {
+const char* Storage::loadPreenFMComboName(const struct BankFile* combo, int comboNumber) {
 	const char* fullBankName = getPreenFMFullName(combo->name);
     int result = load(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber ,  (void*)presetName, 12);
     presetName[12] = 0;
     return presetName;
 }
 
-void Storage::savePreenFMCombo(const struct PreenFMCombo* combo, int comboNumber, char* comboName) {
+void Storage::savePreenFMCombo(const struct BankFile* combo, int comboNumber, char* comboName) {
 	const char* fullBankName = getPreenFMFullName(combo->name);
     save(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber ,  (void*)comboName, 12);
 
@@ -287,7 +287,7 @@ void Storage::savePreenFMCombo(const struct PreenFMCombo* combo, int comboNumber
 
 
 void Storage::saveBank(const char* newBankName, const uint8_t* sysexTmpMem) {
-	const struct PreenFMBank * newBank = addEmptyBank(newBankName);
+	const struct BankFile * newBank = addEmptyBank(newBankName);
 	if (newBank == 0) {
 		return;
 	}
@@ -306,7 +306,7 @@ int Storage::bankBaseLength(const char* bankName) {
 bool Storage::bankNameExist(const char* bankName) {
 	int nameLength = bankBaseLength(bankName);
 	for (int b=0; getPreenFMBank(b)->fileType != FILE_EMPTY && b<NUMBEROFPREENFMBANKS; b++) {
-		const struct PreenFMBank* pfmb = getPreenFMBank(b);
+		const struct BankFile* pfmb = getPreenFMBank(b);
 		if (nameLength != bankBaseLength(pfmb->name)) {
 			continue;
 		}

@@ -209,15 +209,16 @@ int UsbKey::dx7Init() {
     for (int k=0; k<NUMBEROFDX7BANKS; k++) {
     	res = dx7ReadNextFileName(&dx7Bank[k]);
     	if (res != COMMAND_SUCCESS) {
-    		dx7NumberOfBanks = k - 1;
+    		dx7NumberOfBanks = k ;
     		break;
     	}
     }
+	sortBankFile(dx7Bank, dx7NumberOfBanks);
     return res;
 }
 
 
-int UsbKey::dx7ReadNextFileName(struct DX7Bank* bank) {
+int UsbKey::dx7ReadNextFileName(struct BankFile* bank) {
 	unsigned long size;
     do {
         commandParams.commandState = COMMAND_NEXT_FILE_NAME;
@@ -229,21 +230,21 @@ int UsbKey::dx7ReadNextFileName(struct DX7Bank* bank) {
     return commandParams.commandResult;
 }
 
-const struct DX7Bank* UsbKey::getDx7Bank(int bankNumber) {
+const struct BankFile* UsbKey::getDx7Bank(int bankNumber) {
 	if (!dx7BankInitialized) {
 		dx7Init();
 	}
-	if (bankNumber < 0 || bankNumber > dx7NumberOfBanks) {
+	if (bankNumber < 0 || bankNumber >= dx7NumberOfBanks) {
 		return &errorDX7Bank;
 	}
 	return &dx7Bank[bankNumber];
 }
 
-const struct PreenFMBank* UsbKey::getPreenFMBank(int bankNumber) {
+const struct BankFile* UsbKey::getPreenFMBank(int bankNumber) {
 	if (!preenFMBankInitialized) {
 		preenFMBankInit();
 	}
-	if (bankNumber < 0 || bankNumber > preenFMNumberOfBanks) {
+	if (bankNumber < 0 || bankNumber >= preenFMNumberOfBanks) {
 		return &errorPreenFMBank;
 	}
 	return &preenFMBank[bankNumber];
@@ -262,15 +263,16 @@ int UsbKey::preenFMBankInit() {
     for (int k=0; k<NUMBEROFPREENFMBANKS; k++) {
     	res = preenFMBankReadNextFileName(&preenFMBank[k]);
     	if (res != COMMAND_SUCCESS) {
-    		preenFMNumberOfBanks = k - 1;
+    		preenFMNumberOfBanks = k;
     		break;
     	}
     }
+	sortBankFile(preenFMBank, preenFMNumberOfBanks);
     return res;
 }
 
 
-int UsbKey::preenFMBankReadNextFileName(struct PreenFMBank* bank) {
+int UsbKey::preenFMBankReadNextFileName(struct BankFile* bank) {
 	unsigned long size;
     do {
         commandParams.commandState = COMMAND_NEXT_FILE_NAME;
@@ -304,11 +306,11 @@ bool UsbKey::isPreenFMBankFile(char *name, int size)  {
     return true;
 }
 
-const struct PreenFMCombo* UsbKey::getPreenFMCombo(int comboNumber) {
+const struct BankFile* UsbKey::getPreenFMCombo(int comboNumber) {
 	if (!preenFMComboInitialized) {
 		preenFMComboInit();
 	}
-	if (comboNumber < 0 || comboNumber > preenFMNumberOfCombos) {
+	if (comboNumber < 0 || comboNumber >= preenFMNumberOfCombos) {
 		return &errorPreenFMCombo;
 	}
 	return &preenFMCombo[comboNumber];
@@ -327,15 +329,16 @@ int UsbKey::preenFMComboInit() {
     for (int k=0; k<NUMBEROFPREENFMCOMBOS; k++) {
     	res = preenFMComboReadNextFileName(&preenFMCombo[k]);
     	if (res != COMMAND_SUCCESS) {
-    		preenFMNumberOfCombos = k - 1;
+    		preenFMNumberOfCombos = k;
     		break;
     	}
     }
+	sortBankFile(preenFMCombo, preenFMNumberOfCombos);
     return res;
 }
 
 
-int UsbKey::preenFMComboReadNextFileName(struct PreenFMCombo* combo) {
+int UsbKey::preenFMComboReadNextFileName(struct BankFile* combo) {
 	unsigned long size;
     do {
         commandParams.commandState = COMMAND_NEXT_FILE_NAME;
@@ -431,7 +434,7 @@ const char* UsbKey::getPreenFMFullName(const char* bankName) {
 	return getFullName(PREENFM_DIR, bankName);
 }
 
-const struct PreenFMBank* UsbKey::addEmptyBank(const char* newBankName) {
+const struct BankFile* UsbKey::addEmptyBank(const char* newBankName) {
 	int k;
 	for (k=0; preenFMBank[k].fileType != FILE_EMPTY && k < NUMBEROFPREENFMBANKS; k++);
 	if (k == NUMBEROFPREENFMBANKS) {
@@ -446,7 +449,7 @@ const struct PreenFMBank* UsbKey::addEmptyBank(const char* newBankName) {
 	return &preenFMBank[k];
 }
 
-int UsbKey::renameBank(const struct PreenFMBank* bank, const char* newName) {
+int UsbKey::renameBank(const struct BankFile* bank, const char* newName) {
 	char fullNewBankName[40];
 	const char* fullNameTmp = getPreenFMFullName(newName);
 	// Don't want the logical drive (two first char)
@@ -460,4 +463,25 @@ int UsbKey::renameBank(const struct PreenFMBank* bank, const char* newName) {
 	lcd.setRealTimeAction(true);
 	preenFMBankInitialized = false;
 	return commandParams.commandResult;
+}
+
+void UsbKey::swapBankFile(struct BankFile* bankFiles, int i, int j) {
+	if (i == j) {
+		return;
+	}
+	struct BankFile tmp = bankFiles[i];
+	bankFiles[i] = bankFiles[j];
+	bankFiles[j] = tmp;
+}
+
+void UsbKey::sortBankFile(struct BankFile* bankFiles, int numberOfFiles) {
+	for (int i=0 ; i < numberOfFiles - 1; i++) {
+		int minBank = i;
+		for (int j = i + 1; j < numberOfFiles; j++) {
+			if (strcmp(bankFiles[minBank].name, bankFiles[j].name) > 0 ) {
+				minBank = j;
+			}
+		}
+		swapBankFile(bankFiles, i, minBank);
+	}
 }

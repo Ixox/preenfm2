@@ -342,7 +342,7 @@ enum DestinationEnum {
     DESTINATION_MAX
 };
 
-
+int strcmp(const char *s1, const char *s2);
 
 
 #endif /* COMMON_H_ */

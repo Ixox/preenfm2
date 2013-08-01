@@ -407,7 +407,7 @@ void PresetUtil::sendBankToSysex(int bankNumber) {
     for (int k = 0; k <= 2; k++) {
         sendSysexByte(newPatch[k]);
     }
-    const struct PreenFMBank* bank = storage->getPreenFMBank(bankNumber);
+    const struct BankFile* bank = storage->getPreenFMBank(bankNumber);
 
     // send bank Name
     char bankNameToSend[8];

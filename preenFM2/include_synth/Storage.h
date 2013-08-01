@@ -35,20 +35,11 @@ enum FILE_ENUM {
 
 
 
-struct DX7Bank {
+struct BankFile {
 	char name[13];
 	FileType fileType;
 };
 
-struct PreenFMBank {
-	char name[13];
-	FileType fileType;
-};
-
-struct PreenFMCombo {
-	char name[13];
-	FileType fileType;
-};
 
 #define PFM_PATCH_SIZE sizeof(struct OneSynthParams)
 #define ALIGNED_PATCH_SIZE 1024
@@ -80,20 +71,20 @@ public:
     bool bankNameExist(const char* bankName);
     int bankBaseLength(const char* bankName);
 
-    virtual const struct DX7Bank* getDx7Bank(int bankNumber) = 0;
-    uint8_t* dx7LoadPatch(const struct DX7Bank* bank, int patchNumber);
+    virtual const struct BankFile* getDx7Bank(int bankNumber) = 0;
+    uint8_t* dx7LoadPatch(const struct BankFile* bank, int patchNumber);
 
-    virtual const struct PreenFMBank* getPreenFMBank(int bankNumber) = 0;
-    void loadPreenFMPatch(const struct PreenFMBank* bank, int patchNumber, struct OneSynthParams *params);
-    const char* loadPreenFMPatchName(const struct PreenFMBank* bank, int patchNumber);
-    void savePreenFMPatch(const struct PreenFMBank* bank, int patchNumber, struct OneSynthParams *params);
+    virtual const struct BankFile* getPreenFMBank(int bankNumber) = 0;
+    void loadPreenFMPatch(const struct BankFile* bank, int patchNumber, struct OneSynthParams *params);
+    const char* loadPreenFMPatchName(const struct BankFile* bank, int patchNumber);
+    void savePreenFMPatch(const struct BankFile* bank, int patchNumber, struct OneSynthParams *params);
 
-    virtual const struct PreenFMCombo* getPreenFMCombo(int comboNumber) = 0;
-    void loadPreenFMCombo(const struct PreenFMCombo* combo, int comboNumber);
-    const char* loadPreenFMComboName(const struct PreenFMCombo* combo, int comboNumber);
-    void savePreenFMCombo(const struct PreenFMCombo* combo, int comboNumber, char* comboName);
+    virtual const struct BankFile* getPreenFMCombo(int comboNumber) = 0;
+    void loadPreenFMCombo(const struct BankFile* combo, int comboNumber);
+    const char* loadPreenFMComboName(const struct BankFile* combo, int comboNumber);
+    void savePreenFMCombo(const struct BankFile* combo, int comboNumber, char* comboName);
 
-    virtual int renameBank(const struct PreenFMBank* bank, const char* newName) = 0;
+    virtual int renameBank(const struct BankFile* bank, const char* newName) = 0;
 
     // Virtual
     virtual void init(uint8_t*timbre1, uint8_t*timbre2, uint8_t*timbre3, uint8_t*timbre4);
@@ -101,7 +92,7 @@ public:
 
 private:
     // Pure Virtual
-    virtual const struct PreenFMBank*  addEmptyBank(const char* newBankName) = 0;
+    virtual const struct BankFile*  addEmptyBank(const char* newBankName) = 0;
     virtual const char* getDX7BankFullName(const char* bankName) = 0;
     virtual const char* getPreenFMFullName(const char* bankName) = 0;
     void dx7patchUnpack(uint8_t *packed_patch, uint8_t *unpacked_patch);

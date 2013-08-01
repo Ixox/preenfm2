@@ -49,18 +49,23 @@ public:
     // not in storage.. specific to USB
     // Used by bootloader
 
-    const struct DX7Bank* getDx7Bank(int bankNumber);
-    const struct PreenFMBank* getPreenFMBank(int bankNumber);
-    const struct PreenFMCombo* getPreenFMCombo(int comboNumber);
+    const struct BankFile* getDx7Bank(int bankNumber);
+    const struct BankFile* getPreenFMBank(int bankNumber);
+    const struct BankFile* getPreenFMCombo(int comboNumber);
 
 
     int firmwareInit();
     int readNextFirmwareName(char *name, int*size);
     int loadFirmwarePart(char *fileName, int seek, void* bytes, int size);
 
-    int renameBank(const struct PreenFMBank* bank, const char* newName);
+    int renameBank(const struct BankFile* bank, const char* newName);
+
+
 private:
-    const struct PreenFMBank*  addEmptyBank(const char* newBankName);
+    void sortBankFile(struct BankFile* bankFiles, int numberOfFiles);
+	void swapBankFile(struct BankFile* bankFiles, int i, int j);
+
+	const struct BankFile*  addEmptyBank(const char* newBankName);
 
     const char* getDX7BankFullName(const char* bankName);
     const char* getPreenFMFullName(const char* bankName);
@@ -76,15 +81,15 @@ private:
     bool isFirmwareFile(char *name);
 
     int dx7Init();
-    int dx7ReadNextFileName(struct DX7Bank* bank);
+    int dx7ReadNextFileName(struct BankFile* bank);
     bool isDX7SysexFile(char *name, int size);
 
     int preenFMBankInit();
-    int preenFMBankReadNextFileName(struct PreenFMBank* bank);
+    int preenFMBankReadNextFileName(struct BankFile* bank);
     bool isPreenFMBankFile(char *name, int size);
 
     int preenFMComboInit();
-    int preenFMComboReadNextFileName(struct PreenFMCombo* combo);
+    int preenFMComboReadNextFileName(struct BankFile* combo);
     bool isPreenFMComboFile(char *name, int size);
 
 
@@ -92,20 +97,20 @@ private:
     int strlen(const char *string);
 
     bool dx7BankInitialized;
-    struct DX7Bank dx7Bank[NUMBEROFDX7BANKS];
+    struct BankFile dx7Bank[NUMBEROFDX7BANKS];
     int dx7NumberOfBanks;
 
     bool preenFMBankInitialized;
-    struct PreenFMBank preenFMBank[NUMBEROFPREENFMBANKS];
+    struct BankFile preenFMBank[NUMBEROFPREENFMBANKS];
     int preenFMNumberOfBanks;
 
     bool preenFMComboInitialized;
-    struct PreenFMCombo preenFMCombo[NUMBEROFPREENFMCOMBOS];
+    struct BankFile preenFMCombo[NUMBEROFPREENFMCOMBOS];
     int preenFMNumberOfCombos;
 
-    struct DX7Bank errorDX7Bank;
-    struct PreenFMBank errorPreenFMBank;
-    struct PreenFMCombo errorPreenFMCombo;
+    struct BankFile errorDX7Bank;
+    struct BankFile errorPreenFMBank;
+    struct BankFile errorPreenFMCombo;
 
     char fullName[40];
 };
