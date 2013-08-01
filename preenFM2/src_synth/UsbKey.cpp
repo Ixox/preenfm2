@@ -18,9 +18,6 @@
 #include "UsbKey.h"
 #include "usbKey_usr.h"
 
-#include "LiquidCrystal.h"
-extern LiquidCrystal lcd;
-
 extern USB_OTG_CORE_HANDLE          usbOTGHost;
 extern USBH_HOST                    usbHost;
 
@@ -460,7 +457,6 @@ int UsbKey::renameBank(const struct BankFile* bank, const char* newName) {
 	commandParams.commandFileName = getPreenFMFullName(bank->name);
 	commandParams.commandParam1 = (void*)fullNewBankName;
 	usbProcess();
-	lcd.setRealTimeAction(true);
 	preenFMBankInitialized = false;
 	return commandParams.commandResult;
 }
