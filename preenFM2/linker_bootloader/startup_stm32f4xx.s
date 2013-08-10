@@ -65,15 +65,11 @@ Reset_Handler:
   BX      R0
 
 BootloaderStart:
-
 /* Call the clock system intitialization function.*/
   bl  SystemInit
- ldr    r0, =main
-  bx    r0
   /* Copy the data segment initializers from flash to SRAM */
   movs  r1, #0
   b  LoopCopyDataInit
-
 
 CopyDataInit:
   ldr  r3, =_sidata
@@ -101,8 +97,7 @@ LoopFillZerobss:
 
 /* Call _start.*/
 CallStart:
-/*  ldr    r0, =_start */
-	ldr    r0, =main
+  ldr    r0, =_start
   bx    r0
 
 

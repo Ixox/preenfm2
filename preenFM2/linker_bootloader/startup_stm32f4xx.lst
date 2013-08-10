@@ -53,8 +53,8 @@ ARM GAS  linker_bootloader/startup_stm32f4xx.s 			page 1
   50              	
   51              	/* Do we asked to go to DFU mode */
   52              	/* Address for RAM signature - first adress of PreenFM RAM */
-  53 0000 1448     	  LDR     R0, =0x20005FF0
-  54 0002 1549     	  LDR     R1, =0x12344321
+  53 0000 1348     	  LDR     R0, =0x20005FF0
+  54 0002 1449     	  LDR     R1, =0x12344321
   55 0004 0268     	  LDR     R2, [R0, #0]
   56              	/* Invalidate */
   57 0006 0060     	  STR     R0, [R0, #0]
@@ -65,600 +65,595 @@ ARM GAS  linker_bootloader/startup_stm32f4xx.s 			page 1
   59 000a 40F00580 	  BNE     BootloaderStart
   60              	
   61              	/* Jump to Sysstem loader */
-  62 000e 1348     	  LDR     R0, =0x1FFF0000
+  62 000e 1248     	  LDR     R0, =0x1FFF0000
   63 0010 D0F800D0 	  LDR     SP,[R0, #0]
   64 0014 4068     	  LDR     R0,[R0, #4]
   65 0016 0047     	  BX      R0
   66              	
   67              	BootloaderStart:
-  68              	
-  69              	/* Call the clock system intitialization function.*/
-  70 0018 FFF7FEFF 	  bl  SystemInit
-  71 001c 1048     	 ldr    r0, =main
-  72 001e 0047     	  bx    r0
-  73              	  /* Copy the data segment initializers from flash to SRAM */
-  74 0020 0021     	  movs  r1, #0
-  75 0022 00F004B8 	  b  LoopCopyDataInit
-  76              	
-  77              	
-  78              	CopyDataInit:
-  79 0026 0F4B     	  ldr  r3, =_sidata
-  80 0028 5B58     	  ldr  r3, [r3, r1]
-  81 002a 4350     	  str  r3, [r0, r1]
-  82 002c 0431     	  adds  r1, r1, #4
-  83              	
-  84              	LoopCopyDataInit:
-  85 002e 0E48     	  ldr  r0, =_sdata
-  86 0030 0E4B     	  ldr  r3, =_edata
-  87 0032 4218     	  adds  r2, r0, r1
-  88 0034 9A42     	  cmp  r2, r3
-  89 0036 FFF4F6AF 	  bcc  CopyDataInit
-  90 003a 0D4A     	  ldr  r2, =_sbss
-  91 003c 00F003B8 	  b  LoopFillZerobss
-  92              	/* Zero fill the bss segment. */
-  93              	FillZerobss:
-  94 0040 0023     	  movs  r3, #0
-  95 0042 42F8043B 	  str  r3, [r2], #4
-  96              	
-  97              	LoopFillZerobss:
-  98 0046 0B4B     	  ldr  r3, = _ebss
-  99 0048 9A42     	  cmp  r2, r3
- 100 004a FFF4F9AF 	  bcc  FillZerobss
- 101              	
- 102              	/* Call _start.*/
- 103              	CallStart:
- 104              	/*  ldr    r0, =_start */
- 105 004e 0448     		ldr    r0, =main
- 106 0050 0047     	  bx    r0
- 107              	
+  68              	/* Call the clock system intitialization function.*/
+  69 0018 FFF7FEFF 	  bl  SystemInit
+  70              	  /* Copy the data segment initializers from flash to SRAM */
+  71 001c 0021     	  movs  r1, #0
+  72 001e 00F004B8 	  b  LoopCopyDataInit
+  73              	
+  74              	CopyDataInit:
+  75 0022 0E4B     	  ldr  r3, =_sidata
+  76 0024 5B58     	  ldr  r3, [r3, r1]
+  77 0026 4350     	  str  r3, [r0, r1]
+  78 0028 0431     	  adds  r1, r1, #4
+  79              	
+  80              	LoopCopyDataInit:
+  81 002a 0D48     	  ldr  r0, =_sdata
+  82 002c 0D4B     	  ldr  r3, =_edata
+  83 002e 4218     	  adds  r2, r0, r1
+  84 0030 9A42     	  cmp  r2, r3
+  85 0032 FFF4F6AF 	  bcc  CopyDataInit
+  86 0036 0C4A     	  ldr  r2, =_sbss
+  87 0038 00F003B8 	  b  LoopFillZerobss
+  88              	/* Zero fill the bss segment. */
+  89              	FillZerobss:
+  90 003c 0023     	  movs  r3, #0
+  91 003e 42F8043B 	  str  r3, [r2], #4
+  92              	
+  93              	LoopFillZerobss:
+  94 0042 0A4B     	  ldr  r3, = _ebss
+  95 0044 9A42     	  cmp  r2, r3
+  96 0046 FFF4F9AF 	  bcc  FillZerobss
+  97              	
+  98              	/* Call _start.*/
+  99              	CallStart:
+ 100 004a 0948     	  ldr    r0, =_start
+ 101 004c 0047     	  bx    r0
+ 102              	
+ 103              	
+ 104              	
+ 105              	
+ 106              	
+ 107              	.size  Reset_Handler, .-Reset_Handler
  108              	
- 109              	
- 110              	
- 111              	
- 112              	.size  Reset_Handler, .-Reset_Handler
- 113              	
- 114              	/**
+ 109              	/**
+ 110              	 * @brief  This is the code that gets called when the processor receives an
+ 111              	 *         unexpected interrupt.  This simply enters an infinite loop, preserving
+ 112              	 *         the system state for examination by a debugger.
+ 113              	 * @param  None
+ 114              	 * @retval None
 ARM GAS  linker_bootloader/startup_stm32f4xx.s 			page 3
 
 
- 115              	 * @brief  This is the code that gets called when the processor receives an
- 116              	 *         unexpected interrupt.  This simply enters an infinite loop, preserving
- 117              	 *         the system state for examination by a debugger.
- 118              	 * @param  None
- 119              	 * @retval None
- 120              	*/
- 121 0052 0000     	    .section  .text.Default_Handler,"ax",%progbits
- 122              	Default_Handler:
- 123              	Infinite_Loop:
- 124 0000 FFF7FEBF 	  b  Infinite_Loop
- 125              	  .size  Default_Handler, .-Default_Handler
- 126              	/******************************************************************************
- 127              	*
- 128              	* The minimal vector table for a Cortex M3. Note that the proper constructs
- 129              	* must be placed on this to ensure that it ends up at physical address
- 130              	* 0x0000.0000.
- 131              	*
- 132              	*******************************************************************************/
- 133              	   .section  .isr_vector,"a",%progbits
- 134              	  .type  g_pfnVectors, %object
- 135              	  .size  g_pfnVectors, .-g_pfnVectors
- 136              	
- 137              	
- 138              	g_pfnVectors:
- 139 0000 00000000 	  .word  __StackTop /* Use internal RAM for stack for calling SystemInit. */
- 140 0004 00000000 	  .word  Reset_Handler
- 141 0008 00000000 	  .word  NMI_Handler
- 142 000c 00000000 	  .word  HardFault_Handler
- 143 0010 00000000 	  .word  MemManage_Handler
- 144 0014 00000000 	  .word  BusFault_Handler
- 145 0018 00000000 	  .word  UsageFault_Handler
- 146 001c 00000000 	  .word  0
- 147 0020 00000000 	  .word  0
- 148 0024 00000000 	  .word  0
- 149 0028 00000000 	  .word  0
- 150 002c 00000000 	  .word  SVC_Handler
- 151 0030 00000000 	  .word  DebugMon_Handler
- 152 0034 00000000 	  .word  0
- 153 0038 00000000 	  .word  PendSV_Handler
- 154 003c 00000000 	  .word  SysTick_Handler
- 155              	
- 156              	  /* External Interrupts */
- 157 0040 00000000 	  .word     WWDG_IRQHandler                   /* Window WatchDog              */
- 158 0044 00000000 	  .word     PVD_IRQHandler                    /* PVD through EXTI Line detection */
- 159 0048 00000000 	  .word     TAMP_STAMP_IRQHandler             /* Tamper and TimeStamps through the EXTI line */
- 160 004c 00000000 	  .word     RTC_WKUP_IRQHandler               /* RTC Wakeup through the EXTI line */
- 161 0050 00000000 	  .word     FLASH_IRQHandler                  /* FLASH                        */
- 162 0054 00000000 	  .word     RCC_IRQHandler                    /* RCC                          */
- 163 0058 00000000 	  .word     EXTI0_IRQHandler                  /* EXTI Line0                   */
- 164 005c 00000000 	  .word     EXTI1_IRQHandler                  /* EXTI Line1                   */
- 165 0060 00000000 	  .word     EXTI2_IRQHandler                  /* EXTI Line2                   */
- 166 0064 00000000 	  .word     EXTI3_IRQHandler                  /* EXTI Line3                   */
- 167 0068 00000000 	  .word     EXTI4_IRQHandler                  /* EXTI Line4                   */
- 168 006c 00000000 	  .word     DMA1_Stream0_IRQHandler           /* DMA1 Stream 0                */
- 169 0070 00000000 	  .word     DMA1_Stream1_IRQHandler           /* DMA1 Stream 1                */
- 170 0074 00000000 	  .word     DMA1_Stream2_IRQHandler           /* DMA1 Stream 2                */
- 171 0078 00000000 	  .word     DMA1_Stream3_IRQHandler           /* DMA1 Stream 3                */
+ 115              	*/
+ 116 004e 0000     	    .section  .text.Default_Handler,"ax",%progbits
+ 117              	Default_Handler:
+ 118              	Infinite_Loop:
+ 119 0000 FFF7FEBF 	  b  Infinite_Loop
+ 120              	  .size  Default_Handler, .-Default_Handler
+ 121              	/******************************************************************************
+ 122              	*
+ 123              	* The minimal vector table for a Cortex M3. Note that the proper constructs
+ 124              	* must be placed on this to ensure that it ends up at physical address
+ 125              	* 0x0000.0000.
+ 126              	*
+ 127              	*******************************************************************************/
+ 128              	   .section  .isr_vector,"a",%progbits
+ 129              	  .type  g_pfnVectors, %object
+ 130              	  .size  g_pfnVectors, .-g_pfnVectors
+ 131              	
+ 132              	
+ 133              	g_pfnVectors:
+ 134 0000 00000000 	  .word  __StackTop /* Use internal RAM for stack for calling SystemInit. */
+ 135 0004 00000000 	  .word  Reset_Handler
+ 136 0008 00000000 	  .word  NMI_Handler
+ 137 000c 00000000 	  .word  HardFault_Handler
+ 138 0010 00000000 	  .word  MemManage_Handler
+ 139 0014 00000000 	  .word  BusFault_Handler
+ 140 0018 00000000 	  .word  UsageFault_Handler
+ 141 001c 00000000 	  .word  0
+ 142 0020 00000000 	  .word  0
+ 143 0024 00000000 	  .word  0
+ 144 0028 00000000 	  .word  0
+ 145 002c 00000000 	  .word  SVC_Handler
+ 146 0030 00000000 	  .word  DebugMon_Handler
+ 147 0034 00000000 	  .word  0
+ 148 0038 00000000 	  .word  PendSV_Handler
+ 149 003c 00000000 	  .word  SysTick_Handler
+ 150              	
+ 151              	  /* External Interrupts */
+ 152 0040 00000000 	  .word     WWDG_IRQHandler                   /* Window WatchDog              */
+ 153 0044 00000000 	  .word     PVD_IRQHandler                    /* PVD through EXTI Line detection */
+ 154 0048 00000000 	  .word     TAMP_STAMP_IRQHandler             /* Tamper and TimeStamps through the EXTI line */
+ 155 004c 00000000 	  .word     RTC_WKUP_IRQHandler               /* RTC Wakeup through the EXTI line */
+ 156 0050 00000000 	  .word     FLASH_IRQHandler                  /* FLASH                        */
+ 157 0054 00000000 	  .word     RCC_IRQHandler                    /* RCC                          */
+ 158 0058 00000000 	  .word     EXTI0_IRQHandler                  /* EXTI Line0                   */
+ 159 005c 00000000 	  .word     EXTI1_IRQHandler                  /* EXTI Line1                   */
+ 160 0060 00000000 	  .word     EXTI2_IRQHandler                  /* EXTI Line2                   */
+ 161 0064 00000000 	  .word     EXTI3_IRQHandler                  /* EXTI Line3                   */
+ 162 0068 00000000 	  .word     EXTI4_IRQHandler                  /* EXTI Line4                   */
+ 163 006c 00000000 	  .word     DMA1_Stream0_IRQHandler           /* DMA1 Stream 0                */
+ 164 0070 00000000 	  .word     DMA1_Stream1_IRQHandler           /* DMA1 Stream 1                */
+ 165 0074 00000000 	  .word     DMA1_Stream2_IRQHandler           /* DMA1 Stream 2                */
+ 166 0078 00000000 	  .word     DMA1_Stream3_IRQHandler           /* DMA1 Stream 3                */
+ 167 007c 00000000 	  .word     DMA1_Stream4_IRQHandler           /* DMA1 Stream 4                */
+ 168 0080 00000000 	  .word     DMA1_Stream5_IRQHandler           /* DMA1 Stream 5                */
+ 169 0084 00000000 	  .word     DMA1_Stream6_IRQHandler           /* DMA1 Stream 6                */
+ 170 0088 00000000 	  .word     ADC_IRQHandler                    /* ADC1, ADC2 and ADC3s         */
+ 171 008c 00000000 	  .word     CAN1_TX_IRQHandler                /* CAN1 TX                      */
 ARM GAS  linker_bootloader/startup_stm32f4xx.s 			page 4
 
 
- 172 007c 00000000 	  .word     DMA1_Stream4_IRQHandler           /* DMA1 Stream 4                */
- 173 0080 00000000 	  .word     DMA1_Stream5_IRQHandler           /* DMA1 Stream 5                */
- 174 0084 00000000 	  .word     DMA1_Stream6_IRQHandler           /* DMA1 Stream 6                */
- 175 0088 00000000 	  .word     ADC_IRQHandler                    /* ADC1, ADC2 and ADC3s         */
- 176 008c 00000000 	  .word     CAN1_TX_IRQHandler                /* CAN1 TX                      */
- 177 0090 00000000 	  .word     CAN1_RX0_IRQHandler               /* CAN1 RX0                     */
- 178 0094 00000000 	  .word     CAN1_RX1_IRQHandler               /* CAN1 RX1                     */
- 179 0098 00000000 	  .word     CAN1_SCE_IRQHandler               /* CAN1 SCE                     */
- 180 009c 00000000 	  .word     EXTI9_5_IRQHandler                /* External Line[9:5]s          */
- 181 00a0 00000000 	  .word     TIM1_BRK_TIM9_IRQHandler          /* TIM1 Break and TIM9          */
- 182 00a4 00000000 	  .word     TIM1_UP_TIM10_IRQHandler          /* TIM1 Update and TIM10        */
- 183 00a8 00000000 	  .word     TIM1_TRG_COM_TIM11_IRQHandler     /* TIM1 Trigger and Commutation and TIM11 */
- 184 00ac 00000000 	  .word     TIM1_CC_IRQHandler                /* TIM1 Capture Compare         */
- 185 00b0 00000000 	  .word     TIM2_IRQHandler                   /* TIM2                         */
- 186 00b4 00000000 	  .word     TIM3_IRQHandler                   /* TIM3                         */
- 187 00b8 00000000 	  .word     TIM4_IRQHandler                   /* TIM4                         */
- 188 00bc 00000000 	  .word     I2C1_EV_IRQHandler                /* I2C1 Event                   */
- 189 00c0 00000000 	  .word     I2C1_ER_IRQHandler                /* I2C1 Error                   */
- 190 00c4 00000000 	  .word     I2C2_EV_IRQHandler                /* I2C2 Event                   */
- 191 00c8 00000000 	  .word     I2C2_ER_IRQHandler                /* I2C2 Error                   */
- 192 00cc 00000000 	  .word     SPI1_IRQHandler                   /* SPI1                         */
- 193 00d0 00000000 	  .word     SPI2_IRQHandler                   /* SPI2                         */
- 194 00d4 00000000 	  .word     USART1_IRQHandler                 /* USART1                       */
- 195 00d8 00000000 	  .word     USART2_IRQHandler                 /* USART2                       */
- 196 00dc 00000000 	  .word     USART3_IRQHandler                 /* USART3                       */
- 197 00e0 00000000 	  .word     EXTI15_10_IRQHandler              /* External Line[15:10]s        */
- 198 00e4 00000000 	  .word     RTC_Alarm_IRQHandler              /* RTC Alarm (A and B) through EXTI Line */
- 199 00e8 00000000 	  .word     OTG_FS_WKUP_IRQHandler            /* USB OTG FS Wakeup through EXTI line */
- 200 00ec 00000000 	  .word     TIM8_BRK_TIM12_IRQHandler         /* TIM8 Break and TIM12         */
- 201 00f0 00000000 	  .word     TIM8_UP_TIM13_IRQHandler          /* TIM8 Update and TIM13        */
- 202 00f4 00000000 	  .word     TIM8_TRG_COM_TIM14_IRQHandler     /* TIM8 Trigger and Commutation and TIM14 */
- 203 00f8 00000000 	  .word     TIM8_CC_IRQHandler                /* TIM8 Capture Compare         */
- 204 00fc 00000000 	  .word     DMA1_Stream7_IRQHandler           /* DMA1 Stream7                 */
- 205 0100 00000000 	  .word     FSMC_IRQHandler                   /* FSMC                         */
- 206 0104 00000000 	  .word     SDIO_IRQHandler                   /* SDIO                         */
- 207 0108 00000000 	  .word     TIM5_IRQHandler                   /* TIM5                         */
- 208 010c 00000000 	  .word     SPI3_IRQHandler                   /* SPI3                         */
- 209 0110 00000000 	  .word     UART4_IRQHandler                  /* UART4                        */
- 210 0114 00000000 	  .word     UART5_IRQHandler                  /* UART5                        */
- 211 0118 00000000 	  .word     TIM6_DAC_IRQHandler               /* TIM6 and DAC1&2 underrun errors */
- 212 011c 00000000 	  .word     TIM7_IRQHandler                   /* TIM7                         */
- 213 0120 00000000 	  .word     DMA2_Stream0_IRQHandler           /* DMA2 Stream 0                */
- 214 0124 00000000 	  .word     DMA2_Stream1_IRQHandler           /* DMA2 Stream 1                */
- 215 0128 00000000 	  .word     DMA2_Stream2_IRQHandler           /* DMA2 Stream 2                */
- 216 012c 00000000 	  .word     DMA2_Stream3_IRQHandler           /* DMA2 Stream 3                */
- 217 0130 00000000 	  .word     DMA2_Stream4_IRQHandler           /* DMA2 Stream 4                */
- 218 0134 00000000 	  .word     ETH_IRQHandler                    /* Ethernet                     */
- 219 0138 00000000 	  .word     ETH_WKUP_IRQHandler               /* Ethernet Wakeup through EXTI line */
- 220 013c 00000000 	  .word     CAN2_TX_IRQHandler                /* CAN2 TX                      */
- 221 0140 00000000 	  .word     CAN2_RX0_IRQHandler               /* CAN2 RX0                     */
- 222 0144 00000000 	  .word     CAN2_RX1_IRQHandler               /* CAN2 RX1                     */
- 223 0148 00000000 	  .word     CAN2_SCE_IRQHandler               /* CAN2 SCE                     */
- 224 014c 00000000 	  .word     OTG_FS_IRQHandler                 /* USB OTG FS                   */
- 225 0150 00000000 	  .word     DMA2_Stream5_IRQHandler           /* DMA2 Stream 5                */
- 226 0154 00000000 	  .word     DMA2_Stream6_IRQHandler           /* DMA2 Stream 6                */
- 227 0158 00000000 	  .word     DMA2_Stream7_IRQHandler           /* DMA2 Stream 7                */
- 228 015c 00000000 	  .word     USART6_IRQHandler                 /* USART6                       */
+ 172 0090 00000000 	  .word     CAN1_RX0_IRQHandler               /* CAN1 RX0                     */
+ 173 0094 00000000 	  .word     CAN1_RX1_IRQHandler               /* CAN1 RX1                     */
+ 174 0098 00000000 	  .word     CAN1_SCE_IRQHandler               /* CAN1 SCE                     */
+ 175 009c 00000000 	  .word     EXTI9_5_IRQHandler                /* External Line[9:5]s          */
+ 176 00a0 00000000 	  .word     TIM1_BRK_TIM9_IRQHandler          /* TIM1 Break and TIM9          */
+ 177 00a4 00000000 	  .word     TIM1_UP_TIM10_IRQHandler          /* TIM1 Update and TIM10        */
+ 178 00a8 00000000 	  .word     TIM1_TRG_COM_TIM11_IRQHandler     /* TIM1 Trigger and Commutation and TIM11 */
+ 179 00ac 00000000 	  .word     TIM1_CC_IRQHandler                /* TIM1 Capture Compare         */
+ 180 00b0 00000000 	  .word     TIM2_IRQHandler                   /* TIM2                         */
+ 181 00b4 00000000 	  .word     TIM3_IRQHandler                   /* TIM3                         */
+ 182 00b8 00000000 	  .word     TIM4_IRQHandler                   /* TIM4                         */
+ 183 00bc 00000000 	  .word     I2C1_EV_IRQHandler                /* I2C1 Event                   */
+ 184 00c0 00000000 	  .word     I2C1_ER_IRQHandler                /* I2C1 Error                   */
+ 185 00c4 00000000 	  .word     I2C2_EV_IRQHandler                /* I2C2 Event                   */
+ 186 00c8 00000000 	  .word     I2C2_ER_IRQHandler                /* I2C2 Error                   */
+ 187 00cc 00000000 	  .word     SPI1_IRQHandler                   /* SPI1                         */
+ 188 00d0 00000000 	  .word     SPI2_IRQHandler                   /* SPI2                         */
+ 189 00d4 00000000 	  .word     USART1_IRQHandler                 /* USART1                       */
+ 190 00d8 00000000 	  .word     USART2_IRQHandler                 /* USART2                       */
+ 191 00dc 00000000 	  .word     USART3_IRQHandler                 /* USART3                       */
+ 192 00e0 00000000 	  .word     EXTI15_10_IRQHandler              /* External Line[15:10]s        */
+ 193 00e4 00000000 	  .word     RTC_Alarm_IRQHandler              /* RTC Alarm (A and B) through EXTI Line */
+ 194 00e8 00000000 	  .word     OTG_FS_WKUP_IRQHandler            /* USB OTG FS Wakeup through EXTI line */
+ 195 00ec 00000000 	  .word     TIM8_BRK_TIM12_IRQHandler         /* TIM8 Break and TIM12         */
+ 196 00f0 00000000 	  .word     TIM8_UP_TIM13_IRQHandler          /* TIM8 Update and TIM13        */
+ 197 00f4 00000000 	  .word     TIM8_TRG_COM_TIM14_IRQHandler     /* TIM8 Trigger and Commutation and TIM14 */
+ 198 00f8 00000000 	  .word     TIM8_CC_IRQHandler                /* TIM8 Capture Compare         */
+ 199 00fc 00000000 	  .word     DMA1_Stream7_IRQHandler           /* DMA1 Stream7                 */
+ 200 0100 00000000 	  .word     FSMC_IRQHandler                   /* FSMC                         */
+ 201 0104 00000000 	  .word     SDIO_IRQHandler                   /* SDIO                         */
+ 202 0108 00000000 	  .word     TIM5_IRQHandler                   /* TIM5                         */
+ 203 010c 00000000 	  .word     SPI3_IRQHandler                   /* SPI3                         */
+ 204 0110 00000000 	  .word     UART4_IRQHandler                  /* UART4                        */
+ 205 0114 00000000 	  .word     UART5_IRQHandler                  /* UART5                        */
+ 206 0118 00000000 	  .word     TIM6_DAC_IRQHandler               /* TIM6 and DAC1&2 underrun errors */
+ 207 011c 00000000 	  .word     TIM7_IRQHandler                   /* TIM7                         */
+ 208 0120 00000000 	  .word     DMA2_Stream0_IRQHandler           /* DMA2 Stream 0                */
+ 209 0124 00000000 	  .word     DMA2_Stream1_IRQHandler           /* DMA2 Stream 1                */
+ 210 0128 00000000 	  .word     DMA2_Stream2_IRQHandler           /* DMA2 Stream 2                */
+ 211 012c 00000000 	  .word     DMA2_Stream3_IRQHandler           /* DMA2 Stream 3                */
+ 212 0130 00000000 	  .word     DMA2_Stream4_IRQHandler           /* DMA2 Stream 4                */
+ 213 0134 00000000 	  .word     ETH_IRQHandler                    /* Ethernet                     */
+ 214 0138 00000000 	  .word     ETH_WKUP_IRQHandler               /* Ethernet Wakeup through EXTI line */
+ 215 013c 00000000 	  .word     CAN2_TX_IRQHandler                /* CAN2 TX                      */
+ 216 0140 00000000 	  .word     CAN2_RX0_IRQHandler               /* CAN2 RX0                     */
+ 217 0144 00000000 	  .word     CAN2_RX1_IRQHandler               /* CAN2 RX1                     */
+ 218 0148 00000000 	  .word     CAN2_SCE_IRQHandler               /* CAN2 SCE                     */
+ 219 014c 00000000 	  .word     OTG_FS_IRQHandler                 /* USB OTG FS                   */
+ 220 0150 00000000 	  .word     DMA2_Stream5_IRQHandler           /* DMA2 Stream 5                */
+ 221 0154 00000000 	  .word     DMA2_Stream6_IRQHandler           /* DMA2 Stream 6                */
+ 222 0158 00000000 	  .word     DMA2_Stream7_IRQHandler           /* DMA2 Stream 7                */
+ 223 015c 00000000 	  .word     USART6_IRQHandler                 /* USART6                       */
+ 224 0160 00000000 	  .word     I2C3_EV_IRQHandler                /* I2C3 event                   */
+ 225 0164 00000000 	  .word     I2C3_ER_IRQHandler                /* I2C3 error                   */
+ 226 0168 00000000 	  .word     OTG_HS_EP1_OUT_IRQHandler         /* USB OTG HS End Point 1 Out   */
+ 227 016c 00000000 	  .word     OTG_HS_EP1_IN_IRQHandler          /* USB OTG HS End Point 1 In    */
+ 228 0170 00000000 	  .word     OTG_HS_WKUP_IRQHandler            /* USB OTG HS Wakeup through EXTI */
 ARM GAS  linker_bootloader/startup_stm32f4xx.s 			page 5
 
 
- 229 0160 00000000 	  .word     I2C3_EV_IRQHandler                /* I2C3 event                   */
- 230 0164 00000000 	  .word     I2C3_ER_IRQHandler                /* I2C3 error                   */
- 231 0168 00000000 	  .word     OTG_HS_EP1_OUT_IRQHandler         /* USB OTG HS End Point 1 Out   */
- 232 016c 00000000 	  .word     OTG_HS_EP1_IN_IRQHandler          /* USB OTG HS End Point 1 In    */
- 233 0170 00000000 	  .word     OTG_HS_WKUP_IRQHandler            /* USB OTG HS Wakeup through EXTI */
- 234 0174 00000000 	  .word     OTG_HS_IRQHandler                 /* USB OTG HS                   */
- 235 0178 00000000 	  .word     DCMI_IRQHandler                   /* DCMI                         */
- 236 017c 00000000 	  .word     CRYP_IRQHandler                   /* CRYP crypto                  */
- 237 0180 00000000 	  .word     HASH_RNG_IRQHandler               /* Hash and Rng                 */
- 238 0184 00000000 	  .word     FPU_IRQHandler                    /* FPU                          */
- 239              	
- 240              	/*******************************************************************************
- 241              	*
- 242              	* Provide weak aliases for each Exception handler to the Default_Handler.
- 243              	* As they are weak aliases, any function with the same name will override
- 244              	* this definition.
- 245              	*
- 246              	*******************************************************************************/
- 247              	   .weak      NMI_Handler
- 248              	   .thumb_set NMI_Handler,Default_Handler
- 249              	
- 250              	   .weak      HardFault_Handler
- 251              	   .thumb_set HardFault_Handler,Default_Handler
- 252              	
- 253              	   .weak      MemManage_Handler
- 254              	   .thumb_set MemManage_Handler,Default_Handler
- 255              	
- 256              	   .weak      BusFault_Handler
- 257              	   .thumb_set BusFault_Handler,Default_Handler
- 258              	
- 259              	   .weak      UsageFault_Handler
- 260              	   .thumb_set UsageFault_Handler,Default_Handler
- 261              	
- 262              	   .weak      SVC_Handler
- 263              	   .thumb_set SVC_Handler,Default_Handler
- 264              	
- 265              	   .weak      DebugMon_Handler
- 266              	   .thumb_set DebugMon_Handler,Default_Handler
- 267              	
- 268              	   .weak      PendSV_Handler
- 269              	   .thumb_set PendSV_Handler,Default_Handler
- 270              	
- 271              	   .weak      SysTick_Handler
- 272              	   .thumb_set SysTick_Handler,Default_Handler
- 273              	
- 274              	   .weak      WWDG_IRQHandler
- 275              	   .thumb_set WWDG_IRQHandler,Default_Handler
- 276              	
- 277              	   .weak      PVD_IRQHandler
- 278              	   .thumb_set PVD_IRQHandler,Default_Handler
- 279              	
- 280              	   .weak      TAMP_STAMP_IRQHandler
- 281              	   .thumb_set TAMP_STAMP_IRQHandler,Default_Handler
- 282              	
- 283              	   .weak      RTC_WKUP_IRQHandler
- 284              	   .thumb_set RTC_WKUP_IRQHandler,Default_Handler
- 285              	
+ 229 0174 00000000 	  .word     OTG_HS_IRQHandler                 /* USB OTG HS                   */
+ 230 0178 00000000 	  .word     DCMI_IRQHandler                   /* DCMI                         */
+ 231 017c 00000000 	  .word     CRYP_IRQHandler                   /* CRYP crypto                  */
+ 232 0180 00000000 	  .word     HASH_RNG_IRQHandler               /* Hash and Rng                 */
+ 233 0184 00000000 	  .word     FPU_IRQHandler                    /* FPU                          */
+ 234              	
+ 235              	/*******************************************************************************
+ 236              	*
+ 237              	* Provide weak aliases for each Exception handler to the Default_Handler.
+ 238              	* As they are weak aliases, any function with the same name will override
+ 239              	* this definition.
+ 240              	*
+ 241              	*******************************************************************************/
+ 242              	   .weak      NMI_Handler
+ 243              	   .thumb_set NMI_Handler,Default_Handler
+ 244              	
+ 245              	   .weak      HardFault_Handler
+ 246              	   .thumb_set HardFault_Handler,Default_Handler
+ 247              	
+ 248              	   .weak      MemManage_Handler
+ 249              	   .thumb_set MemManage_Handler,Default_Handler
+ 250              	
+ 251              	   .weak      BusFault_Handler
+ 252              	   .thumb_set BusFault_Handler,Default_Handler
+ 253              	
+ 254              	   .weak      UsageFault_Handler
+ 255              	   .thumb_set UsageFault_Handler,Default_Handler
+ 256              	
+ 257              	   .weak      SVC_Handler
+ 258              	   .thumb_set SVC_Handler,Default_Handler
+ 259              	
+ 260              	   .weak      DebugMon_Handler
+ 261              	   .thumb_set DebugMon_Handler,Default_Handler
+ 262              	
+ 263              	   .weak      PendSV_Handler
+ 264              	   .thumb_set PendSV_Handler,Default_Handler
+ 265              	
+ 266              	   .weak      SysTick_Handler
+ 267              	   .thumb_set SysTick_Handler,Default_Handler
+ 268              	
+ 269              	   .weak      WWDG_IRQHandler
+ 270              	   .thumb_set WWDG_IRQHandler,Default_Handler
+ 271              	
+ 272              	   .weak      PVD_IRQHandler
+ 273              	   .thumb_set PVD_IRQHandler,Default_Handler
+ 274              	
+ 275              	   .weak      TAMP_STAMP_IRQHandler
+ 276              	   .thumb_set TAMP_STAMP_IRQHandler,Default_Handler
+ 277              	
+ 278              	   .weak      RTC_WKUP_IRQHandler
+ 279              	   .thumb_set RTC_WKUP_IRQHandler,Default_Handler
+ 280              	
+ 281              	   .weak      FLASH_IRQHandler
+ 282              	   .thumb_set FLASH_IRQHandler,Default_Handler
+ 283              	
+ 284              	   .weak      RCC_IRQHandler
+ 285              	   .thumb_set RCC_IRQHandler,Default_Handler
 ARM GAS  linker_bootloader/startup_stm32f4xx.s 			page 6
 
 
- 286              	   .weak      FLASH_IRQHandler
- 287              	   .thumb_set FLASH_IRQHandler,Default_Handler
- 288              	
- 289              	   .weak      RCC_IRQHandler
- 290              	   .thumb_set RCC_IRQHandler,Default_Handler
- 291              	
- 292              	   .weak      EXTI0_IRQHandler
- 293              	   .thumb_set EXTI0_IRQHandler,Default_Handler
- 294              	
- 295              	   .weak      EXTI1_IRQHandler
- 296              	   .thumb_set EXTI1_IRQHandler,Default_Handler
- 297              	
- 298              	   .weak      EXTI2_IRQHandler
- 299              	   .thumb_set EXTI2_IRQHandler,Default_Handler
- 300              	
- 301              	   .weak      EXTI3_IRQHandler
- 302              	   .thumb_set EXTI3_IRQHandler,Default_Handler
- 303              	
- 304              	   .weak      EXTI4_IRQHandler
- 305              	   .thumb_set EXTI4_IRQHandler,Default_Handler
- 306              	
- 307              	   .weak      DMA1_Stream0_IRQHandler
- 308              	   .thumb_set DMA1_Stream0_IRQHandler,Default_Handler
- 309              	
- 310              	   .weak      DMA1_Stream1_IRQHandler
- 311              	   .thumb_set DMA1_Stream1_IRQHandler,Default_Handler
- 312              	
- 313              	   .weak      DMA1_Stream2_IRQHandler
- 314              	   .thumb_set DMA1_Stream2_IRQHandler,Default_Handler
- 315              	
- 316              	   .weak      DMA1_Stream3_IRQHandler
- 317              	   .thumb_set DMA1_Stream3_IRQHandler,Default_Handler
- 318              	
- 319              	   .weak      DMA1_Stream4_IRQHandler
- 320              	   .thumb_set DMA1_Stream4_IRQHandler,Default_Handler
- 321              	
- 322              	   .weak      DMA1_Stream5_IRQHandler
- 323              	   .thumb_set DMA1_Stream5_IRQHandler,Default_Handler
- 324              	
- 325              	   .weak      DMA1_Stream6_IRQHandler
- 326              	   .thumb_set DMA1_Stream6_IRQHandler,Default_Handler
- 327              	
- 328              	   .weak      ADC_IRQHandler
- 329              	   .thumb_set ADC_IRQHandler,Default_Handler
- 330              	
- 331              	   .weak      CAN1_TX_IRQHandler
- 332              	   .thumb_set CAN1_TX_IRQHandler,Default_Handler
- 333              	
- 334              	   .weak      CAN1_RX0_IRQHandler
- 335              	   .thumb_set CAN1_RX0_IRQHandler,Default_Handler
- 336              	
- 337              	   .weak      CAN1_RX1_IRQHandler
- 338              	   .thumb_set CAN1_RX1_IRQHandler,Default_Handler
- 339              	
- 340              	   .weak      CAN1_SCE_IRQHandler
- 341              	   .thumb_set CAN1_SCE_IRQHandler,Default_Handler
- 342              	
+ 286              	
+ 287              	   .weak      EXTI0_IRQHandler
+ 288              	   .thumb_set EXTI0_IRQHandler,Default_Handler
+ 289              	
+ 290              	   .weak      EXTI1_IRQHandler
+ 291              	   .thumb_set EXTI1_IRQHandler,Default_Handler
+ 292              	
+ 293              	   .weak      EXTI2_IRQHandler
+ 294              	   .thumb_set EXTI2_IRQHandler,Default_Handler
+ 295              	
+ 296              	   .weak      EXTI3_IRQHandler
+ 297              	   .thumb_set EXTI3_IRQHandler,Default_Handler
+ 298              	
+ 299              	   .weak      EXTI4_IRQHandler
+ 300              	   .thumb_set EXTI4_IRQHandler,Default_Handler
+ 301              	
+ 302              	   .weak      DMA1_Stream0_IRQHandler
+ 303              	   .thumb_set DMA1_Stream0_IRQHandler,Default_Handler
+ 304              	
+ 305              	   .weak      DMA1_Stream1_IRQHandler
+ 306              	   .thumb_set DMA1_Stream1_IRQHandler,Default_Handler
+ 307              	
+ 308              	   .weak      DMA1_Stream2_IRQHandler
+ 309              	   .thumb_set DMA1_Stream2_IRQHandler,Default_Handler
+ 310              	
+ 311              	   .weak      DMA1_Stream3_IRQHandler
+ 312              	   .thumb_set DMA1_Stream3_IRQHandler,Default_Handler
+ 313              	
+ 314              	   .weak      DMA1_Stream4_IRQHandler
+ 315              	   .thumb_set DMA1_Stream4_IRQHandler,Default_Handler
+ 316              	
+ 317              	   .weak      DMA1_Stream5_IRQHandler
+ 318              	   .thumb_set DMA1_Stream5_IRQHandler,Default_Handler
+ 319              	
+ 320              	   .weak      DMA1_Stream6_IRQHandler
+ 321              	   .thumb_set DMA1_Stream6_IRQHandler,Default_Handler
+ 322              	
+ 323              	   .weak      ADC_IRQHandler
+ 324              	   .thumb_set ADC_IRQHandler,Default_Handler
+ 325              	
+ 326              	   .weak      CAN1_TX_IRQHandler
+ 327              	   .thumb_set CAN1_TX_IRQHandler,Default_Handler
+ 328              	
+ 329              	   .weak      CAN1_RX0_IRQHandler
+ 330              	   .thumb_set CAN1_RX0_IRQHandler,Default_Handler
+ 331              	
+ 332              	   .weak      CAN1_RX1_IRQHandler
+ 333              	   .thumb_set CAN1_RX1_IRQHandler,Default_Handler
+ 334              	
+ 335              	   .weak      CAN1_SCE_IRQHandler
+ 336              	   .thumb_set CAN1_SCE_IRQHandler,Default_Handler
+ 337              	
+ 338              	   .weak      EXTI9_5_IRQHandler
+ 339              	   .thumb_set EXTI9_5_IRQHandler,Default_Handler
+ 340              	
+ 341              	   .weak      TIM1_BRK_TIM9_IRQHandler
+ 342              	   .thumb_set TIM1_BRK_TIM9_IRQHandler,Default_Handler
 ARM GAS  linker_bootloader/startup_stm32f4xx.s 			page 7
 
 
- 343              	   .weak      EXTI9_5_IRQHandler
- 344              	   .thumb_set EXTI9_5_IRQHandler,Default_Handler
- 345              	
- 346              	   .weak      TIM1_BRK_TIM9_IRQHandler
- 347              	   .thumb_set TIM1_BRK_TIM9_IRQHandler,Default_Handler
- 348              	
- 349              	   .weak      TIM1_UP_TIM10_IRQHandler
- 350              	   .thumb_set TIM1_UP_TIM10_IRQHandler,Default_Handler
- 351              	
- 352              	   .weak      TIM1_TRG_COM_TIM11_IRQHandler
- 353              	   .thumb_set TIM1_TRG_COM_TIM11_IRQHandler,Default_Handler
- 354              	
- 355              	   .weak      TIM1_CC_IRQHandler
- 356              	   .thumb_set TIM1_CC_IRQHandler,Default_Handler
- 357              	
- 358              	   .weak      TIM2_IRQHandler
- 359              	   .thumb_set TIM2_IRQHandler,Default_Handler
- 360              	
- 361              	   .weak      TIM3_IRQHandler
- 362              	   .thumb_set TIM3_IRQHandler,Default_Handler
- 363              	
- 364              	   .weak      TIM4_IRQHandler
- 365              	   .thumb_set TIM4_IRQHandler,Default_Handler
- 366              	
- 367              	   .weak      I2C1_EV_IRQHandler
- 368              	   .thumb_set I2C1_EV_IRQHandler,Default_Handler
- 369              	
- 370              	   .weak      I2C1_ER_IRQHandler
- 371              	   .thumb_set I2C1_ER_IRQHandler,Default_Handler
- 372              	
- 373              	   .weak      I2C2_EV_IRQHandler
- 374              	   .thumb_set I2C2_EV_IRQHandler,Default_Handler
- 375              	
- 376              	   .weak      I2C2_ER_IRQHandler
- 377              	   .thumb_set I2C2_ER_IRQHandler,Default_Handler
- 378              	
- 379              	   .weak      SPI1_IRQHandler
- 380              	   .thumb_set SPI1_IRQHandler,Default_Handler
- 381              	
- 382              	   .weak      SPI2_IRQHandler
- 383              	   .thumb_set SPI2_IRQHandler,Default_Handler
- 384              	
- 385              	   .weak      USART1_IRQHandler
- 386              	   .thumb_set USART1_IRQHandler,Default_Handler
- 387              	
- 388              	   .weak      USART2_IRQHandler
- 389              	   .thumb_set USART2_IRQHandler,Default_Handler
- 390              	
- 391              	   .weak      USART3_IRQHandler
- 392              	   .thumb_set USART3_IRQHandler,Default_Handler
- 393              	
- 394              	   .weak      EXTI15_10_IRQHandler
- 395              	   .thumb_set EXTI15_10_IRQHandler,Default_Handler
- 396              	
- 397              	   .weak      RTC_Alarm_IRQHandler
- 398              	   .thumb_set RTC_Alarm_IRQHandler,Default_Handler
- 399              	
+ 343              	
+ 344              	   .weak      TIM1_UP_TIM10_IRQHandler
+ 345              	   .thumb_set TIM1_UP_TIM10_IRQHandler,Default_Handler
+ 346              	
+ 347              	   .weak      TIM1_TRG_COM_TIM11_IRQHandler
+ 348              	   .thumb_set TIM1_TRG_COM_TIM11_IRQHandler,Default_Handler
+ 349              	
+ 350              	   .weak      TIM1_CC_IRQHandler
+ 351              	   .thumb_set TIM1_CC_IRQHandler,Default_Handler
+ 352              	
+ 353              	   .weak      TIM2_IRQHandler
+ 354              	   .thumb_set TIM2_IRQHandler,Default_Handler
+ 355              	
+ 356              	   .weak      TIM3_IRQHandler
+ 357              	   .thumb_set TIM3_IRQHandler,Default_Handler
+ 358              	
+ 359              	   .weak      TIM4_IRQHandler
+ 360              	   .thumb_set TIM4_IRQHandler,Default_Handler
+ 361              	
+ 362              	   .weak      I2C1_EV_IRQHandler
+ 363              	   .thumb_set I2C1_EV_IRQHandler,Default_Handler
+ 364              	
+ 365              	   .weak      I2C1_ER_IRQHandler
+ 366              	   .thumb_set I2C1_ER_IRQHandler,Default_Handler
+ 367              	
+ 368              	   .weak      I2C2_EV_IRQHandler
+ 369              	   .thumb_set I2C2_EV_IRQHandler,Default_Handler
+ 370              	
+ 371              	   .weak      I2C2_ER_IRQHandler
+ 372              	   .thumb_set I2C2_ER_IRQHandler,Default_Handler
+ 373              	
+ 374              	   .weak      SPI1_IRQHandler
+ 375              	   .thumb_set SPI1_IRQHandler,Default_Handler
+ 376              	
+ 377              	   .weak      SPI2_IRQHandler
+ 378              	   .thumb_set SPI2_IRQHandler,Default_Handler
+ 379              	
+ 380              	   .weak      USART1_IRQHandler
+ 381              	   .thumb_set USART1_IRQHandler,Default_Handler
+ 382              	
+ 383              	   .weak      USART2_IRQHandler
+ 384              	   .thumb_set USART2_IRQHandler,Default_Handler
+ 385              	
+ 386              	   .weak      USART3_IRQHandler
+ 387              	   .thumb_set USART3_IRQHandler,Default_Handler
+ 388              	
+ 389              	   .weak      EXTI15_10_IRQHandler
+ 390              	   .thumb_set EXTI15_10_IRQHandler,Default_Handler
+ 391              	
+ 392              	   .weak      RTC_Alarm_IRQHandler
+ 393              	   .thumb_set RTC_Alarm_IRQHandler,Default_Handler
+ 394              	
+ 395              	   .weak      OTG_FS_WKUP_IRQHandler
+ 396              	   .thumb_set OTG_FS_WKUP_IRQHandler,Default_Handler
+ 397              	
+ 398              	   .weak      TIM8_BRK_TIM12_IRQHandler
+ 399              	   .thumb_set TIM8_BRK_TIM12_IRQHandler,Default_Handler
 ARM GAS  linker_bootloader/startup_stm32f4xx.s 			page 8
 
 
- 400              	   .weak      OTG_FS_WKUP_IRQHandler
- 401              	   .thumb_set OTG_FS_WKUP_IRQHandler,Default_Handler
- 402              	
- 403              	   .weak      TIM8_BRK_TIM12_IRQHandler
- 404              	   .thumb_set TIM8_BRK_TIM12_IRQHandler,Default_Handler
- 405              	
- 406              	   .weak      TIM8_UP_TIM13_IRQHandler
- 407              	   .thumb_set TIM8_UP_TIM13_IRQHandler,Default_Handler
- 408              	
- 409              	   .weak      TIM8_TRG_COM_TIM14_IRQHandler
- 410              	   .thumb_set TIM8_TRG_COM_TIM14_IRQHandler,Default_Handler
- 411              	
- 412              	   .weak      TIM8_CC_IRQHandler
- 413              	   .thumb_set TIM8_CC_IRQHandler,Default_Handler
- 414              	
- 415              	   .weak      DMA1_Stream7_IRQHandler
- 416              	   .thumb_set DMA1_Stream7_IRQHandler,Default_Handler
- 417              	
- 418              	   .weak      FSMC_IRQHandler
- 419              	   .thumb_set FSMC_IRQHandler,Default_Handler
- 420              	
- 421              	   .weak      SDIO_IRQHandler
- 422              	   .thumb_set SDIO_IRQHandler,Default_Handler
- 423              	
- 424              	   .weak      TIM5_IRQHandler
- 425              	   .thumb_set TIM5_IRQHandler,Default_Handler
- 426              	
- 427              	   .weak      SPI3_IRQHandler
- 428              	   .thumb_set SPI3_IRQHandler,Default_Handler
- 429              	
- 430              	   .weak      UART4_IRQHandler
- 431              	   .thumb_set UART4_IRQHandler,Default_Handler
- 432              	
- 433              	   .weak      UART5_IRQHandler
- 434              	   .thumb_set UART5_IRQHandler,Default_Handler
- 435              	
- 436              	   .weak      TIM6_DAC_IRQHandler
- 437              	   .thumb_set TIM6_DAC_IRQHandler,Default_Handler
- 438              	
- 439              	   .weak      TIM7_IRQHandler
- 440              	   .thumb_set TIM7_IRQHandler,Default_Handler
- 441              	
- 442              	   .weak      DMA2_Stream0_IRQHandler
- 443              	   .thumb_set DMA2_Stream0_IRQHandler,Default_Handler
- 444              	
- 445              	   .weak      DMA2_Stream1_IRQHandler
- 446              	   .thumb_set DMA2_Stream1_IRQHandler,Default_Handler
- 447              	
- 448              	   .weak      DMA2_Stream2_IRQHandler
- 449              	   .thumb_set DMA2_Stream2_IRQHandler,Default_Handler
- 450              	
- 451              	   .weak      DMA2_Stream3_IRQHandler
- 452              	   .thumb_set DMA2_Stream3_IRQHandler,Default_Handler
- 453              	
- 454              	   .weak      DMA2_Stream4_IRQHandler
- 455              	   .thumb_set DMA2_Stream4_IRQHandler,Default_Handler
- 456              	
+ 400              	
+ 401              	   .weak      TIM8_UP_TIM13_IRQHandler
+ 402              	   .thumb_set TIM8_UP_TIM13_IRQHandler,Default_Handler
+ 403              	
+ 404              	   .weak      TIM8_TRG_COM_TIM14_IRQHandler
+ 405              	   .thumb_set TIM8_TRG_COM_TIM14_IRQHandler,Default_Handler
+ 406              	
+ 407              	   .weak      TIM8_CC_IRQHandler
+ 408              	   .thumb_set TIM8_CC_IRQHandler,Default_Handler
+ 409              	
+ 410              	   .weak      DMA1_Stream7_IRQHandler
+ 411              	   .thumb_set DMA1_Stream7_IRQHandler,Default_Handler
+ 412              	
+ 413              	   .weak      FSMC_IRQHandler
+ 414              	   .thumb_set FSMC_IRQHandler,Default_Handler
+ 415              	
+ 416              	   .weak      SDIO_IRQHandler
+ 417              	   .thumb_set SDIO_IRQHandler,Default_Handler
+ 418              	
+ 419              	   .weak      TIM5_IRQHandler
+ 420              	   .thumb_set TIM5_IRQHandler,Default_Handler
+ 421              	
+ 422              	   .weak      SPI3_IRQHandler
+ 423              	   .thumb_set SPI3_IRQHandler,Default_Handler
+ 424              	
+ 425              	   .weak      UART4_IRQHandler
+ 426              	   .thumb_set UART4_IRQHandler,Default_Handler
+ 427              	
+ 428              	   .weak      UART5_IRQHandler
+ 429              	   .thumb_set UART5_IRQHandler,Default_Handler
+ 430              	
+ 431              	   .weak      TIM6_DAC_IRQHandler
+ 432              	   .thumb_set TIM6_DAC_IRQHandler,Default_Handler
+ 433              	
+ 434              	   .weak      TIM7_IRQHandler
+ 435              	   .thumb_set TIM7_IRQHandler,Default_Handler
+ 436              	
+ 437              	   .weak      DMA2_Stream0_IRQHandler
+ 438              	   .thumb_set DMA2_Stream0_IRQHandler,Default_Handler
+ 439              	
+ 440              	   .weak      DMA2_Stream1_IRQHandler
+ 441              	   .thumb_set DMA2_Stream1_IRQHandler,Default_Handler
+ 442              	
+ 443              	   .weak      DMA2_Stream2_IRQHandler
+ 444              	   .thumb_set DMA2_Stream2_IRQHandler,Default_Handler
+ 445              	
+ 446              	   .weak      DMA2_Stream3_IRQHandler
+ 447              	   .thumb_set DMA2_Stream3_IRQHandler,Default_Handler
+ 448              	
+ 449              	   .weak      DMA2_Stream4_IRQHandler
+ 450              	   .thumb_set DMA2_Stream4_IRQHandler,Default_Handler
+ 451              	
+ 452              	   .weak      ETH_IRQHandler
+ 453              	   .thumb_set ETH_IRQHandler,Default_Handler
+ 454              	
+ 455              	   .weak      ETH_WKUP_IRQHandler
+ 456              	   .thumb_set ETH_WKUP_IRQHandler,Default_Handler
 ARM GAS  linker_bootloader/startup_stm32f4xx.s 			page 9
 
 
- 457              	   .weak      ETH_IRQHandler
- 458              	   .thumb_set ETH_IRQHandler,Default_Handler
- 459              	
- 460              	   .weak      ETH_WKUP_IRQHandler
- 461              	   .thumb_set ETH_WKUP_IRQHandler,Default_Handler
- 462              	
- 463              	   .weak      CAN2_TX_IRQHandler
- 464              	   .thumb_set CAN2_TX_IRQHandler,Default_Handler
- 465              	
- 466              	   .weak      CAN2_RX0_IRQHandler
- 467              	   .thumb_set CAN2_RX0_IRQHandler,Default_Handler
- 468              	
- 469              	   .weak      CAN2_RX1_IRQHandler
- 470              	   .thumb_set CAN2_RX1_IRQHandler,Default_Handler
- 471              	
- 472              	   .weak      CAN2_SCE_IRQHandler
- 473              	   .thumb_set CAN2_SCE_IRQHandler,Default_Handler
- 474              	
- 475              	   .weak      OTG_FS_IRQHandler
- 476              	   .thumb_set OTG_FS_IRQHandler,Default_Handler
- 477              	
- 478              	   .weak      DMA2_Stream5_IRQHandler
- 479              	   .thumb_set DMA2_Stream5_IRQHandler,Default_Handler
- 480              	
- 481              	   .weak      DMA2_Stream6_IRQHandler
- 482              	   .thumb_set DMA2_Stream6_IRQHandler,Default_Handler
- 483              	
- 484              	   .weak      DMA2_Stream7_IRQHandler
- 485              	   .thumb_set DMA2_Stream7_IRQHandler,Default_Handler
- 486              	
- 487              	   .weak      USART6_IRQHandler
- 488              	   .thumb_set USART6_IRQHandler,Default_Handler
- 489              	
- 490              	   .weak      I2C3_EV_IRQHandler
- 491              	   .thumb_set I2C3_EV_IRQHandler,Default_Handler
- 492              	
- 493              	   .weak      I2C3_ER_IRQHandler
- 494              	   .thumb_set I2C3_ER_IRQHandler,Default_Handler
- 495              	
- 496              	   .weak      OTG_HS_EP1_OUT_IRQHandler
- 497              	   .thumb_set OTG_HS_EP1_OUT_IRQHandler,Default_Handler
- 498              	
- 499              	   .weak      OTG_HS_EP1_IN_IRQHandler
- 500              	   .thumb_set OTG_HS_EP1_IN_IRQHandler,Default_Handler
- 501              	
- 502              	   .weak      OTG_HS_WKUP_IRQHandler
- 503              	   .thumb_set OTG_HS_WKUP_IRQHandler,Default_Handler
- 504              	
- 505              	   .weak      OTG_HS_IRQHandler
- 506              	   .thumb_set OTG_HS_IRQHandler,Default_Handler
- 507              	
- 508              	   .weak      DCMI_IRQHandler
- 509              	   .thumb_set DCMI_IRQHandler,Default_Handler
- 510              	
- 511              	   .weak      CRYP_IRQHandler
- 512              	   .thumb_set CRYP_IRQHandler,Default_Handler
- 513              	
+ 457              	
+ 458              	   .weak      CAN2_TX_IRQHandler
+ 459              	   .thumb_set CAN2_TX_IRQHandler,Default_Handler
+ 460              	
+ 461              	   .weak      CAN2_RX0_IRQHandler
+ 462              	   .thumb_set CAN2_RX0_IRQHandler,Default_Handler
+ 463              	
+ 464              	   .weak      CAN2_RX1_IRQHandler
+ 465              	   .thumb_set CAN2_RX1_IRQHandler,Default_Handler
+ 466              	
+ 467              	   .weak      CAN2_SCE_IRQHandler
+ 468              	   .thumb_set CAN2_SCE_IRQHandler,Default_Handler
+ 469              	
+ 470              	   .weak      OTG_FS_IRQHandler
+ 471              	   .thumb_set OTG_FS_IRQHandler,Default_Handler
+ 472              	
+ 473              	   .weak      DMA2_Stream5_IRQHandler
+ 474              	   .thumb_set DMA2_Stream5_IRQHandler,Default_Handler
+ 475              	
+ 476              	   .weak      DMA2_Stream6_IRQHandler
+ 477              	   .thumb_set DMA2_Stream6_IRQHandler,Default_Handler
+ 478              	
+ 479              	   .weak      DMA2_Stream7_IRQHandler
+ 480              	   .thumb_set DMA2_Stream7_IRQHandler,Default_Handler
+ 481              	
+ 482              	   .weak      USART6_IRQHandler
+ 483              	   .thumb_set USART6_IRQHandler,Default_Handler
+ 484              	
+ 485              	   .weak      I2C3_EV_IRQHandler
+ 486              	   .thumb_set I2C3_EV_IRQHandler,Default_Handler
+ 487              	
+ 488              	   .weak      I2C3_ER_IRQHandler
+ 489              	   .thumb_set I2C3_ER_IRQHandler,Default_Handler
+ 490              	
+ 491              	   .weak      OTG_HS_EP1_OUT_IRQHandler
+ 492              	   .thumb_set OTG_HS_EP1_OUT_IRQHandler,Default_Handler
+ 493              	
+ 494              	   .weak      OTG_HS_EP1_IN_IRQHandler
+ 495              	   .thumb_set OTG_HS_EP1_IN_IRQHandler,Default_Handler
+ 496              	
+ 497              	   .weak      OTG_HS_WKUP_IRQHandler
+ 498              	   .thumb_set OTG_HS_WKUP_IRQHandler,Default_Handler
+ 499              	
+ 500              	   .weak      OTG_HS_IRQHandler
+ 501              	   .thumb_set OTG_HS_IRQHandler,Default_Handler
+ 502              	
+ 503              	   .weak      DCMI_IRQHandler
+ 504              	   .thumb_set DCMI_IRQHandler,Default_Handler
+ 505              	
+ 506              	   .weak      CRYP_IRQHandler
+ 507              	   .thumb_set CRYP_IRQHandler,Default_Handler
+ 508              	
+ 509              	   .weak      HASH_RNG_IRQHandler
+ 510              	   .thumb_set HASH_RNG_IRQHandler,Default_Handler
+ 511              	
+ 512              	   .weak      FPU_IRQHandler
+ 513              	   .thumb_set FPU_IRQHandler,Default_Handler
 ARM GAS  linker_bootloader/startup_stm32f4xx.s 			page 10
 
 
- 514              	   .weak      HASH_RNG_IRQHandler
- 515              	   .thumb_set HASH_RNG_IRQHandler,Default_Handler
- 516              	
- 517              	   .weak      FPU_IRQHandler
- 518              	   .thumb_set FPU_IRQHandler,Default_Handler
- 519              	
- 520              	/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+ 514              	
+ 515              	/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 ARM GAS  linker_bootloader/startup_stm32f4xx.s 			page 11
 
 
 DEFINED SYMBOLS
-linker_bootloader/startup_stm32f4xx.s:138    .isr_vector:00000000 g_pfnVectors
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 Default_Handler
+linker_bootloader/startup_stm32f4xx.s:133    .isr_vector:00000000 g_pfnVectors
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 Default_Handler
 linker_bootloader/startup_stm32f4xx.s:49     .text.Reset_Handler:00000000 Reset_Handler
 linker_bootloader/startup_stm32f4xx.s:53     .text.Reset_Handler:00000000 $t
 linker_bootloader/startup_stm32f4xx.s:67     .text.Reset_Handler:00000018 BootloaderStart
-linker_bootloader/startup_stm32f4xx.s:84     .text.Reset_Handler:0000002e LoopCopyDataInit
-linker_bootloader/startup_stm32f4xx.s:78     .text.Reset_Handler:00000026 CopyDataInit
-linker_bootloader/startup_stm32f4xx.s:97     .text.Reset_Handler:00000046 LoopFillZerobss
-linker_bootloader/startup_stm32f4xx.s:93     .text.Reset_Handler:00000040 FillZerobss
-linker_bootloader/startup_stm32f4xx.s:103    .text.Reset_Handler:0000004e CallStart
-linker_bootloader/startup_stm32f4xx.s:123    .text.Default_Handler:00000000 Infinite_Loop
-linker_bootloader/startup_stm32f4xx.s:124    .text.Default_Handler:00000000 $t
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 NMI_Handler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 HardFault_Handler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 MemManage_Handler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 BusFault_Handler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 UsageFault_Handler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 SVC_Handler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DebugMon_Handler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 PendSV_Handler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 SysTick_Handler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 WWDG_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 PVD_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 TAMP_STAMP_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 RTC_WKUP_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 FLASH_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 RCC_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 EXTI0_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 EXTI1_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 EXTI2_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 EXTI3_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 EXTI4_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA1_Stream0_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA1_Stream1_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA1_Stream2_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA1_Stream3_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA1_Stream4_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA1_Stream5_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA1_Stream6_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 ADC_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 CAN1_TX_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 CAN1_RX0_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 CAN1_RX1_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 CAN1_SCE_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 EXTI9_5_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 TIM1_BRK_TIM9_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 TIM1_UP_TIM10_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 TIM1_TRG_COM_TIM11_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 TIM1_CC_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 TIM2_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 TIM3_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 TIM4_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 I2C1_EV_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 I2C1_ER_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 I2C2_EV_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 I2C2_ER_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:80     .text.Reset_Handler:0000002a LoopCopyDataInit
+linker_bootloader/startup_stm32f4xx.s:74     .text.Reset_Handler:00000022 CopyDataInit
+linker_bootloader/startup_stm32f4xx.s:93     .text.Reset_Handler:00000042 LoopFillZerobss
+linker_bootloader/startup_stm32f4xx.s:89     .text.Reset_Handler:0000003c FillZerobss
+linker_bootloader/startup_stm32f4xx.s:99     .text.Reset_Handler:0000004a CallStart
+linker_bootloader/startup_stm32f4xx.s:118    .text.Default_Handler:00000000 Infinite_Loop
+linker_bootloader/startup_stm32f4xx.s:119    .text.Default_Handler:00000000 $t
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 NMI_Handler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 HardFault_Handler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 MemManage_Handler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 BusFault_Handler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 UsageFault_Handler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 SVC_Handler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DebugMon_Handler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 PendSV_Handler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 SysTick_Handler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 WWDG_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 PVD_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 TAMP_STAMP_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 RTC_WKUP_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 FLASH_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 RCC_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 EXTI0_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 EXTI1_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 EXTI2_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 EXTI3_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 EXTI4_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA1_Stream0_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA1_Stream1_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA1_Stream2_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA1_Stream3_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA1_Stream4_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA1_Stream5_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA1_Stream6_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 ADC_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 CAN1_TX_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 CAN1_RX0_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 CAN1_RX1_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 CAN1_SCE_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 EXTI9_5_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 TIM1_BRK_TIM9_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 TIM1_UP_TIM10_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 TIM1_TRG_COM_TIM11_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 TIM1_CC_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 TIM2_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 TIM3_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 TIM4_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 I2C1_EV_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 I2C1_ER_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 I2C2_EV_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 I2C2_ER_IRQHandler
 ARM GAS  linker_bootloader/startup_stm32f4xx.s 			page 12
 
 
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 SPI1_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 SPI2_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 USART1_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 USART2_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 USART3_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 EXTI15_10_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 RTC_Alarm_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 OTG_FS_WKUP_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 TIM8_BRK_TIM12_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 TIM8_UP_TIM13_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 TIM8_TRG_COM_TIM14_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 TIM8_CC_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA1_Stream7_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 FSMC_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 SDIO_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 TIM5_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 SPI3_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 UART4_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 UART5_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 TIM6_DAC_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 TIM7_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA2_Stream0_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA2_Stream1_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA2_Stream2_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA2_Stream3_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA2_Stream4_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 ETH_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 ETH_WKUP_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 CAN2_TX_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 CAN2_RX0_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 CAN2_RX1_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 CAN2_SCE_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 OTG_FS_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA2_Stream5_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA2_Stream6_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DMA2_Stream7_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 USART6_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 I2C3_EV_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 I2C3_ER_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 OTG_HS_EP1_OUT_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 OTG_HS_EP1_IN_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 OTG_HS_WKUP_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 OTG_HS_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 DCMI_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 CRYP_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 HASH_RNG_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:122    .text.Default_Handler:00000000 FPU_IRQHandler
-linker_bootloader/startup_stm32f4xx.s:121    .text.Reset_Handler:00000052 $d
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 SPI1_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 SPI2_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 USART1_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 USART2_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 USART3_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 EXTI15_10_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 RTC_Alarm_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 OTG_FS_WKUP_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 TIM8_BRK_TIM12_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 TIM8_UP_TIM13_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 TIM8_TRG_COM_TIM14_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 TIM8_CC_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA1_Stream7_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 FSMC_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 SDIO_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 TIM5_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 SPI3_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 UART4_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 UART5_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 TIM6_DAC_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 TIM7_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA2_Stream0_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA2_Stream1_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA2_Stream2_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA2_Stream3_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA2_Stream4_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 ETH_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 ETH_WKUP_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 CAN2_TX_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 CAN2_RX0_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 CAN2_RX1_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 CAN2_SCE_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 OTG_FS_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA2_Stream5_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA2_Stream6_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DMA2_Stream7_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 USART6_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 I2C3_EV_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 I2C3_ER_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 OTG_HS_EP1_OUT_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 OTG_HS_EP1_IN_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 OTG_HS_WKUP_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 OTG_HS_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 DCMI_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 CRYP_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 HASH_RNG_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:117    .text.Default_Handler:00000000 FPU_IRQHandler
+linker_bootloader/startup_stm32f4xx.s:116    .text.Reset_Handler:0000004e $d
 
 UNDEFINED SYMBOLS
 _sidata
@@ -667,7 +662,7 @@ _edata
 _sbss
 _ebss
 SystemInit
-main
+_start
 ARM GAS  linker_bootloader/startup_stm32f4xx.s 			page 13
 
 

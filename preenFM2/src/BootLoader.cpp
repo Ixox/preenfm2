@@ -215,7 +215,7 @@ void BootLoader::process() {
     	checkSum = 0;
 
         this->lcd->setCursor(0,1);
-        this->lcd->print("  Receiving sysex...");
+        this->lcd->print(" Receiving sysex...");
 
         for (int i=0; i<firmwareSize; i++) {
         	uint32_t newInt = sysexReadInt(i);
@@ -250,7 +250,7 @@ void BootLoader::process() {
         }
         this->lcd->clear();
         this->lcd->setCursor(0,1);
-        this->lcd->print("New firmware burned");
+        this->lcd->print("New firmware flashed");
 
         this->state = BL_FINISHED;
         break;
@@ -412,7 +412,7 @@ void BootLoader::welcome() {
     this->lcd->setCursor(1,0);
     this->lcd->print("PreenFM bootloader");
     this->lcd->setCursor(1,1);
-    this->lcd->print("      v1.00");
+    this->lcd->print("      v"PFM2_BOOTLOADER_VERSION);
 }
 
 
@@ -497,7 +497,7 @@ int main(void) {
             bootLoader.resetButtonPressed();
             encoders.checkStatus(0);
             bootLoader.process();
-            USB_OTG_BSP_uDelay(10000);
+            USB_OTG_BSP_uDelay(1000);
         }
     } else if (bootLoader.getButton() == 3) {
     	bootLoader.welcome();
@@ -508,13 +508,13 @@ int main(void) {
             bootLoader.resetButtonPressed();
             encoders.checkStatus(0);
             bootLoader.process();
-            USB_OTG_BSP_uDelay(10000);
+            USB_OTG_BSP_uDelay(1000);
         }
     } else if (bootLoader.getButton() == 4) {
         // Button... flash new firmware
     	bootLoader.welcome();
-    	lcd.setCursor(2,2);
-    	lcd.print("!!Embedded DFU!!");
+    	lcd.setCursor(1,2);
+    	lcd.print("!STM32F4 USB DFU!");
     	uint32_t magicRam = 0x20005FF0;
     	*(__IO uint32_t*)magicRam = 0x12344321;
         pFunction jumpToBootloader  = (pFunction)*(__IO uint32_t*) 0x08000004;

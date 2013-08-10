@@ -174,7 +174,10 @@
 
 /****************** USB OTG MODE CONFIGURATION ********************************/
 #define USE_HOST_MODE
+
+#ifndef BOOTLOADER
 #define USE_DEVICE_MODE
+#endif
 //#define USE_OTG_MODE
 
 

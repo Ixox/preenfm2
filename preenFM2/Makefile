@@ -1,18 +1,18 @@
-PFM2_VERSION_NUMBER=1.0
+PFM2_VERSION_NUMBER=1.00
+PFM2_BIN_NUMBER=$(subst .,,${PFM2_VERSION_NUMBER})
+PFM2_BOOTLOADER_VERSION_NUMBER=1.00
 PFM2_VERSION=\"${PFM2_VERSION_NUMBER}\"
+PFM2_BOOTLOADER_VERSION=\"${PFM2_BOOTLOADER_VERSION_NUMBER}\"
 
-TARGET_BOOTLOADER=build/pfm2_boot.hex
-EXECUTABLE_BOOTLOADER=build/pfm2_boot.elf
-BIN_BOOTLOADER=build/pfm2_boot.bin
-DFUBIN_BOOTLOADER=build/pfm2_boot.dfu
-SYMBOLS_BOOTLOADER=build/symbols_pfm2_boot.txt
+ELF_BOOTLOADER=build/p2_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.elf
+BIN_BOOTLOADER=build/p2_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.bin
+SYMBOLS_BOOTLOADER=build/symbols_p2_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.txt
 
-TARGET_FIRMWARE=build/pfm2_${PFM2_VERSION_NUMBER}.hex
-EXECUTABLE_FIRMWARE=build/pfm2_${PFM2_VERSION_NUMBER}.elf
-BIN_FIRMWARE=build/pfm2_${PFM2_VERSION_NUMBER}.bin
-DFUBIN_FIRMWARE=build/pfm2.dfu
-SYMBOLS_FIRMWARE=build/symbols_pfm2.txt
-EXECUTABLE_SYSEX=build/pfm2_${PFM2_VERSION_NUMBER}.syx
+ELF_FIRMWARE=build/p2_${PFM2_VERSION_NUMBER}.elf
+BIN_FIRMWARE=build/p2_${PFM2_BIN_NUMBER}.bin
+SYMBOLS_FIRMWARE=build/symbols_p2_${PFM2_VERSION_NUMBER}.txt
+
+BIN_SYSEX=build/p2_${PFM2_VERSION_NUMBER}.syx
 
 C      = arm-none-eabi-gcc 
 CC      = arm-none-eabi-c++ 
@@ -120,7 +120,7 @@ INCLUDESDIR = -I./include  -I./include_synth  -I./STM32F4xx_StdPeriph_Driver/inc
 SMALLBINOPTS = -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions  -Wl,--gc-sections  
 
 # 
-DEFINE = -DPFM2_VERSION=${PFM2_VERSION}
+DEFINE = -DPFM2_VERSION=${PFM2_VERSION} -DPFM2_BOOTLOADER_VERSION=${PFM2_BOOTLOADER_VERSION}
 CFLAGS  =  -Os $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
 CFLAGS_NOOPTIM  =   $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
 AFLAGS  = -ahls -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16    
@@ -140,10 +140,10 @@ OBJTMP_BOOTLOADER = $(addprefix $(OBJDIR),$(notdir $(SRC_BOOTLOADER:.c=.o)))
 OBJ_BOOTLOADER = $(OBJTMP_BOOTLOADER:.cpp=.o)
 
 
-all: $(TARGET_FIRMWARE) 
+all: $(BIN_FIRMWARE) 
 
 boot: CFLAGS += -DBOOTLOADER -Os 
-boot: $(TARGET_BOOTLOADER)
+boot: $(BIN_BOOTLOADER)
 
 install:all
 	st-flash write $(BIN_FIRMWARE) 0x08040000
@@ -160,32 +160,29 @@ installbootdfu:boot
 sysex : sysex/sysex.class
 	java -classpath sysex sysex $(BIN_FIRMWARE)
 
-amidi:
-    amidi -p hw:1,0,0 -s ./pfm2_1.0.syx
-
 sysex/sysex.class : sysex/sysex.java
 	javac sysex/sysex.java
 
-$(TARGET_FIRMWARE): $(EXECUTABLE_FIRMWARE)
-	$(CP) -O ihex $^ $@
+amidi:
+	amidi -p hw:3,0,0 -s $(BIN_SYSEX)
+
+$(BIN_FIRMWARE): $(ELF_FIRMWARE)
 	$(CP) -O binary $^ $(BIN_FIRMWARE)
 	ls -l $(BIN_FIRMWARE)
 	
-
-$(EXECUTABLE_FIRMWARE): $(OBJ_FIRMWARE) $(STARTUP)
+$(ELF_FIRMWARE): $(OBJ_FIRMWARE) $(STARTUP)
 	$(CC) $(LFLAGS) $^ -o $@
-	arm-none-eabi-nm -l -S -n $(EXECUTABLE_FIRMWARE) > $(SYMBOLS_FIRMWARE) 
-	arm-none-eabi-readelf -S $(EXECUTABLE_FIRMWARE)
+	arm-none-eabi-nm -l -S -n $(ELF_FIRMWARE) > $(SYMBOLS_FIRMWARE) 
+	arm-none-eabi-readelf -S $(ELF_FIRMWARE)
 
-$(TARGET_BOOTLOADER): $(EXECUTABLE_BOOTLOADER)
-	$(CP) -O ihex $^ $@
+$(BIN_BOOTLOADER): $(ELF_BOOTLOADER)
 	$(CP) -O binary $^ $(BIN_BOOTLOADER)
 	ls -l $(BIN_BOOTLOADER)
 
-$(EXECUTABLE_BOOTLOADER): $(OBJ_BOOTLOADER) $(STARTUP_BOOTLOADER)
+$(ELF_BOOTLOADER): $(OBJ_BOOTLOADER) $(STARTUP_BOOTLOADER)
 	$(CC) $(LFLAGS_BOOTLOADER) $^ -o $@
-	arm-none-eabi-nm -l -S -n $(EXECUTABLE_BOOTLOADER) > $(SYMBOLS_BOOTLOADER) 
-	arm-none-eabi-readelf -S $(EXECUTABLE_BOOTLOADER)
+	arm-none-eabi-nm -l -S -n $(ELF_BOOTLOADER) > $(SYMBOLS_BOOTLOADER) 
+	arm-none-eabi-readelf -S $(ELF_BOOTLOADER)
 
 
 $(STARTUP): linker/startup_stm32f4xx.s
