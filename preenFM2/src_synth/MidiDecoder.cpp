@@ -453,7 +453,6 @@ void MidiDecoder::decodeNrpn(int timbre) {
 
 
         if (row < NUMBER_OF_ROWS) {
-        	float value = value ;
             if (param->displayType == DISPLAY_TYPE_FLOAT || param->displayType == DISPLAY_TYPE_FLOAT_OSC_FREQUENCY || param->displayType == DISPLAY_TYPE_FLOAT_LFO_FREQUENCY) {
             	value = value * .01f + param->minValue;
             }
