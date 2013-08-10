@@ -146,8 +146,11 @@ SECTIONS
 	} > RAM
 	
 	/* Set stack top to end of RAM, and stack limit move down by
-	 * size of stack_dummy section */
-	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
+	 * size of stack_dummy section 
+	 * -16 for the magic ram number (boot to dfu mode).
+	 */
+	 
+	__StackTop = ORIGIN(RAM) + LENGTH(RAM) - 16;
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 	

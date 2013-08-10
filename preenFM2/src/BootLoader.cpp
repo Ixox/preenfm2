@@ -39,11 +39,14 @@ UsbKey             usbKey ;
 RingBuffer<uint8_t, 100> usartBuffer;
 
 
+
 extern "C" {
 // USART 3 IRQ
+
 void USART3_IRQHandler(void) {
 	usartBuffer.insert((char) USART3->DR);
 }
+
 }
 
 // Dummy function ... UsbKey was written for PreenFM
@@ -496,7 +499,7 @@ int main(void) {
             bootLoader.process();
             USB_OTG_BSP_uDelay(10000);
         }
-    } else if (bootLoader.getButton() == 4) {
+    } else if (bootLoader.getButton() == 3) {
     	bootLoader.welcome();
 
     	bootLoader.sysexMode();
@@ -507,24 +510,17 @@ int main(void) {
             bootLoader.process();
             USB_OTG_BSP_uDelay(10000);
         }
-/*
-    } else if (bootLoader.getButton() == 5) {
+    } else if (bootLoader.getButton() == 4) {
         // Button... flash new firmware
     	bootLoader.welcome();
     	lcd.setCursor(2,2);
     	lcd.print("!!Embedded DFU!!");
-    	RCC_DeInit();
-        //RCC_SYSCLKConfig(RCC_SYSCLKSource_HSI);
-    	//SystemCoreClockUpdate();
-        uint32_t dfuAdress = (uint32_t)0x1FFF0004;
-        pFunction Jump_To_EmbeddedLoader= (pFunction) dfuAdress;
-        SysTick->CTRL = 0;
-        SysTick->LOAD = 0;
-        SysTick->VAL = 0;
-        __set_PRIMASK(1);
-        __set_MSP(0x20001000);
-    	Jump_To_EmbeddedLoader();
-    	*/
+    	uint32_t magicRam = 0x20005FF0;
+    	*(__IO uint32_t*)magicRam = 0x12344321;
+        pFunction jumpToBootloader  = (pFunction)*(__IO uint32_t*) 0x08000004;
+        RCC_DeInit();
+		__set_MSP(*(__IO uint32_t*) 0x08000000);
+		jumpToBootloader();
     } else {
         // App ready ?
         pFunction Jump_To_Application;

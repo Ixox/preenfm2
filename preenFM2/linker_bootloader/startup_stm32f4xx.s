@@ -47,11 +47,33 @@ defined in linker script */
   .weak  Reset_Handler
   .type  Reset_Handler, %function
 Reset_Handler:
+
+/* Do we asked to go to DFU mode */
+/* Address for RAM signature - first adress of PreenFM RAM */
+  LDR     R0, =0x20005FF0
+  LDR     R1, =0x12344321
+  LDR     R2, [R0, #0]
+/* Invalidate */
+  STR     R0, [R0, #0]
+  CMP     R2, R1
+  BNE     BootloaderStart
+
+/* Jump to Sysstem loader */
+  LDR     R0, =0x1FFF0000
+  LDR     SP,[R0, #0]
+  LDR     R0,[R0, #4]
+  BX      R0
+
+BootloaderStart:
+
 /* Call the clock system intitialization function.*/
   bl  SystemInit
-/* Copy the data segment initializers from flash to SRAM */
+ ldr    r0, =main
+  bx    r0
+  /* Copy the data segment initializers from flash to SRAM */
   movs  r1, #0
   b  LoopCopyDataInit
+
 
 CopyDataInit:
   ldr  r3, =_sidata
@@ -78,8 +100,15 @@ LoopFillZerobss:
   bcc  FillZerobss
 
 /* Call _start.*/
-  ldr    r0, =_start
+CallStart:
+/*  ldr    r0, =_start */
+	ldr    r0, =main
   bx    r0
+
+
+
+
+
 .size  Reset_Handler, .-Reset_Handler
 
 /**

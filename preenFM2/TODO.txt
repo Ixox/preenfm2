@@ -3,7 +3,6 @@ TODO (temporary list, grow over time) :
 
 TO check hardware :
 . Low pass filter
-. New midi/USB cable
 
 Documentation : 
 . DOC !!!!
@@ -24,6 +23,8 @@ OK to test
 
 
 DONE:
+. Bootloader can now jump to STM32 ROM dfu loader
+. New midi/USB cable tested...
 . audio glich when changing patch while playing and start again plaing (seems to be linked with voice). Reset env*Mem in voice killNow().
 . ADD All DX7 algos for compatibility + Hexter coversion 
 . Fix NRPN and CC... with new scale...
