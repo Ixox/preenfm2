@@ -439,13 +439,9 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 //			voice->op[i].eg.base_level[j] = limit(eb_op[4 + j], 0, 99);
 		// Use base_rate[0]
 
-		envA->attackTime = dx7_voice_eg_rate_rise_duration[limit(eb_op[0], 0, 99)] / 4.0f;
-		// Compensation ?
-//		if (eb_op[4] > 31) {
-//			envA->attackTime *= .7;
-//		}
-		envA->decayTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[1], 0, 99)] / 4.0f * abs(eb_op[4] - eb_op[5]) / 99.0f;
-		envB->sustainTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[2], 0, 99)] / 4.0f  * abs(eb_op[6] - eb_op[5]) / 99.0f;
+		envA->attackTime = dx7_voice_eg_rate_rise_duration[limit(eb_op[0], 0, 99)] ;
+		envA->decayTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[1], 0, 99)]  / 4.0f * abs(eb_op[4] - eb_op[5]) / 99.0f;
+		envB->sustainTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[2], 0, 99)] / 4.0f * abs(eb_op[6] - eb_op[5]) / 99.0f;
 		envB->releaseTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[3], 0, 99)] / 4.0f;
 
 		if (envA->attackTime > 4.0) {
@@ -486,7 +482,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 	switch (algo) {
 	case 1:
 	case 2:
-		preenAlgo = ALG11;
+		preenAlgo = ALG10;
 		setIM(params, 1, patch, 2);
 		setIM(params, 2, patch, 4);
 		setIM(params, 3, patch, 5);
@@ -503,7 +499,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		break;
 	case 3:
 	case 4:
-		preenAlgo = ALG12;
+		preenAlgo = ALG11;
 		setIM(params, 1, patch, 2);
 		setIM(params, 2, patch, 3);
 		setIM(params, 3, patch, 5);
@@ -513,19 +509,16 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		if (fb > 4) {
 			if (algo == 3) {
 				params->osc6.shape = OSC_SHAPE_SAW;;
-			} else {
-				params->osc4.shape = OSC_SHAPE_SAW;;
 			}
 		}
 
 		break;
 	case 5:
 	case 6:
-		preenAlgo = ALGO7;
+		preenAlgo = ALG12;
 		setIM(params, 1, patch, 2);
 		setIM(params, 2, patch, 4);
 		setIM(params, 3, patch, 6);
-		params->engineIm1.modulationIndex4 = 0;
 		setMix(params, 1, patch, 1);
 		setMix(params, 2, patch, 3);
 		setMix(params, 3, patch, 5);
@@ -540,7 +533,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 	case 7:
 	case 8:
 	case 9:
-		preenAlgo = ALG15;
+		preenAlgo = ALG13;
 		setIM(params, 1, patch, 2);
 		setIM(params, 2, patch, 4);
 		setIM(params, 3, patch, 5);
@@ -560,6 +553,13 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		break;
 	case 10:
 	case 11:
+		preenAlgo = ALG14;
+		setIM(params, 1, patch, 2);
+		setIM(params, 2, patch, 3);
+		setIM(params, 3, patch, 5);
+		setIM(params, 4, patch, 6);
+		setMix(params, 1, patch, 1);
+		setMix(params, 2, patch, 4);
 		if (fb > 4) {
 			if (algo == 10) {
 				params->osc3.shape = OSC_SHAPE_SAW;;
@@ -571,6 +571,13 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 
 	case 12:
 	case 13:
+		preenAlgo = ALG15;
+		setIM(params, 1, patch, 2);
+		setIM(params, 2, patch, 4);
+		setIM(params, 3, patch, 5);
+		setIM(params, 4, patch, 6);
+		setMix(params, 1, patch, 1);
+		setMix(params, 2, patch, 3);
 		if (fb > 4) {
 			if (algo == 12) {
 				params->osc2.shape = OSC_SHAPE_SAW;;
@@ -581,7 +588,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		break;
 	case 14:
 	case 15:
-		preenAlgo = ALG17;
+		preenAlgo = ALG16;
 		setIM(params, 1, patch, 2);
 		setIM(params, 2, patch, 4);
 		setIM(params, 3, patch, 5);
@@ -599,7 +606,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		break;
 	case 16:
 	case 17:
-		preenAlgo = ALG13;
+		preenAlgo = ALG17;
 		setIM(params, 1, patch, 2);
 		setIM(params, 2, patch, 3);
 		setIM(params, 3, patch, 4);
@@ -617,12 +624,55 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		}
 
 		break;
+	case 18:
+		preenAlgo = ALG18;
+		setIM(params, 1, patch, 2);
+		setIM(params, 2, patch, 3);
+		setIM(params, 3, patch, 4);
+		setIM(params, 4, patch, 5);
+		setIM(params, 5, patch, 6);
+
+		setMix(params, 1, patch, 1);
+		if (fb > 4) {
+			params->osc3.shape = OSC_SHAPE_SAW;;
+		}
+
+		break;
+	case 19:
+		preenAlgo = ALG19;
+		setIM(params, 1, patch, 2);
+		setIM(params, 2, patch, 3);
+		setIM(params, 3, patch, 6);
+		setIM(params, 4, patch, 6);
+
+		setMix(params, 1, patch, 1);
+		setMix(params, 2, patch, 4);
+		setMix(params, 3, patch, 5);
+		if (fb > 4) {
+			params->osc6.shape = OSC_SHAPE_SAW;;
+		}
+
+		break;
+	case 20:
+		preenAlgo = ALG20;
+		setIM(params, 1, patch, 3);
+		setIM(params, 2, patch, 3);
+		setIM(params, 3, patch, 5);
+		setIM(params, 4, patch, 6);
+		setMix(params, 1, patch, 1);
+		setMix(params, 2, patch, 2);
+		setMix(params, 3, patch, 4);
+		if (fb > 4) {
+			params->osc3.shape = OSC_SHAPE_SAW;;
+		}
+		break;
 	case 21:
-		preenAlgo = ALG10;
+		preenAlgo = ALG21;
 		setIM(params, 1, patch, 3);
 		setIM(params, 2, patch, 3);
 		setIM(params, 3, patch, 6);
 		setIM(params, 4, patch, 6);
+
 		setMix(params, 1, patch, 1);
 		setMix(params, 2, patch, 2);
 		setMix(params, 3, patch, 4);
@@ -632,7 +682,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		}
 		break;
 	case 22:
-		preenAlgo = ALG16;
+		preenAlgo = ALG22;
 		setIM(params, 1, patch, 2);
 		setIM(params, 2, patch, 6);
 		setIM(params, 3, patch, 6);
@@ -646,7 +696,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		}
 		break;
 	case 23:
-		preenAlgo = ALG10;
+		preenAlgo = ALG21;
 		params->engineIm1.modulationIndex1 = 0;
 		setIM(params, 2, patch, 3);
 		setIM(params, 3, patch, 6);
@@ -659,6 +709,102 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 			params->osc6.shape = OSC_SHAPE_SAW;;
 		}
 		break;
+	case 24:
+	case 25:
+		preenAlgo = ALG23;
+		setIM(params, 1, patch, 6);
+		setIM(params, 2, patch, 6);
+		setIM(params, 3, patch, 6);
+
+		if (algo == 25) {
+			params->engineIm1.modulationIndex1 = 0;
+		}
+
+		setMix(params, 1, patch, 1);
+		setMix(params, 2, patch, 2);
+		setMix(params, 3, patch, 3);
+		setMix(params, 4, patch, 4);
+		setMix(params, 5, patch, 5);
+
+		if (fb > 4) {
+			params->osc6.shape = OSC_SHAPE_SAW;;
+		}
+		break;
+
+	case 26:
+	case 27:
+		preenAlgo = ALG20;
+		params->engineIm1.modulationIndex1 = 0;
+		setIM(params, 2, patch, 3);
+		setIM(params, 3, patch, 5);
+		setIM(params, 4, patch, 6);
+		setMix(params, 1, patch, 1);
+		setMix(params, 2, patch, 2);
+		setMix(params, 3, patch, 4);
+		if (fb > 4) {
+			if (algo == 26) {
+				params->osc6.shape = OSC_SHAPE_SAW;
+			} else {
+				params->osc3.shape = OSC_SHAPE_SAW;
+			}
+		}
+		break;
+	case 28:
+		preenAlgo = ALG24;
+		setIM(params, 1, patch, 2);
+		setIM(params, 2, patch, 4);
+		setIM(params, 3, patch, 5);
+		setMix(params, 1, patch, 1);
+		setMix(params, 2, patch, 3);
+		setMix(params, 3, patch, 6);
+		if (fb > 4) {
+			params->osc5.shape = OSC_SHAPE_SAW;
+		}
+		break;
+	case 29:
+		preenAlgo = ALG25;
+		setIM(params, 1, patch, 4);
+		setIM(params, 2, patch, 6);
+
+		setMix(params, 1, patch, 1);
+		setMix(params, 2, patch, 2);
+		setMix(params, 3, patch, 3);
+		setMix(params, 4, patch, 5);
+		if (fb > 4) {
+			params->osc6.shape = OSC_SHAPE_SAW;
+		}
+		break;
+	case 30:
+		preenAlgo = ALG26;
+		setIM(params, 1, patch, 4);
+		setIM(params, 2, patch, 5);
+
+		setMix(params, 1, patch, 1);
+		setMix(params, 2, patch, 2);
+		setMix(params, 3, patch, 3);
+		setMix(params, 4, patch, 6);
+		if (fb > 4) {
+			params->osc5.shape = OSC_SHAPE_SAW;
+		}
+		break;
+
+	case 31:
+		preenAlgo = ALG23;
+
+		params->engineIm1.modulationIndex1 = 0;
+		params->engineIm1.modulationIndex2 = 0;
+		setIM(params, 3, patch, 6);
+
+		setMix(params, 1, patch, 1);
+		setMix(params, 2, patch, 2);
+		setMix(params, 3, patch, 3);
+		setMix(params, 4, patch, 4);
+		setMix(params, 5, patch, 5);
+		if (fb > 4) {
+			params->osc6.shape = OSC_SHAPE_SAW;
+		}
+		break;
+
 	case 32:
 		preenAlgo = ALG14;
 		setMix(params, 1, patch, 1);
@@ -683,8 +829,8 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		voiceCopyName(params->presetName, patch);
 	}
 
-    int algoWithSensibleOp6[] = { ALG11, ALG12, ALG13, ALG15, ALG17, ALGO_END } ;
-    int algoWithSensibleOp5[] = {ALG11, ALG15, ALG17, ALGO_END } ;
+    int algoWithSensibleOp6[] = { ALG10, ALG11, ALG13, ALG16, ALG17, ALG18, ALGO_END } ;
+    int algoWithSensibleOp5[] = {ALG10, ALG16, ALG18, ALG24, ALGO_END } ;
 
 	for (int k=0; algoWithSensibleOp6[k] != ALGO_END; k++) {
 		if (preenAlgo == algoWithSensibleOp6[k]) {
@@ -705,6 +851,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 			params->osc5.shape = OSC_SHAPE_SIN;
 		}
 	}
+
 
 
 //
