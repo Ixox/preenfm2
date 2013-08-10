@@ -38,8 +38,7 @@ extern const struct MidiConfig midiConfig[];
 SynthState * PresetUtil::synthState;
 Storage * PresetUtil::storage;
 
-#define PATCH_SIZE_PFM2 ((NUMBER_OF_ROWS)*4*2 + 16*2 + 13)
-// TODO NOLAD !!
+
 uint8_t sysexTmpMem[PATCH_SIZE_PFM2 * 128];
 struct OneSynthParams oneSynthParamsTmp;
 
@@ -404,23 +403,40 @@ void PresetUtil::sendCurrentPatchToSysex() {
 
 
 void PresetUtil::sendBankToSysex(int bankNumber) {
-
-
     unsigned char newPatch[] = { 0xf0, 0x7d, SYSEX_BYTE_BANK };
     for (int k = 0; k <= 2; k++) {
         sendSysexByte(newPatch[k]);
+    }
+    const struct BankFile* bank = storage->getPreenFMBank(bankNumber);
+
+    // send bank Name
+    char bankNameToSend[8];
+    for (int k=0; k<8; k++) {
+    	bankNameToSend[k] = '\0';
+    }
+    const char* bankName = bank->name;
+    for (int k=0; k<8 && bankName[k] != '\0' && bankName[k] != '.'; k++) {
+		char c1 = bankName[k];
+		if (c1 >= 'a' && c1<='z') {
+			c1 = 'A' + c1 - 'a';
+		}
+		bankNameToSend[k] = c1;
+    }
+    for (int k=0; k<8; k++) {
+    	sendSysexByte(bankNameToSend[k]);
     }
 
     for (int preset = 0; preset < 128; preset++) {
         lcd.setCursor(3,2);
         lcd.print(preset);
         lcd.print(" / 128");
-        storage->loadPatch(bankNumber, preset, &oneSynthParamsTmp);
+        storage->loadPreenFMPatch(bank, preset, &oneSynthParamsTmp);
         PresetUtil::convertSynthStateToCharArray(&oneSynthParamsTmp, sysexTmpMem);
         PresetUtil::sendParamsToSysex(sysexTmpMem);
     }
 
     sendSysexByte((unsigned char) 0xf7);
+    sendSysexFinished();
 }
 
 
@@ -676,6 +692,10 @@ void PresetUtil::copySynthParams(char* source, char* dest) {
 int PresetUtil::readSysexBank() {
     int errorCode = 0;
 
+    for (int k=0; k<8; k++) {
+    	sysexTmpMem[k] = getNextMidiByte();
+    }
+
     lcd.setCursor(1,3);
     lcd.print("Bank:");
 
@@ -683,7 +703,7 @@ int PresetUtil::readSysexBank() {
         lcd.setCursor(7,3);
         lcd.print(preset);
 
-        if ((errorCode = PresetUtil::readSysexPatch(sysexTmpMem + PATCH_SIZE_PFM2 * preset)) <0) {
+        if ((errorCode = PresetUtil::readSysexPatch(sysexTmpMem + 8 + PATCH_SIZE_PFM2 * preset)) <0) {
             lcd.setCursor(11,3);
             lcd.print("##");
             lcd.print(errorCode);
@@ -748,7 +768,7 @@ void PresetUtil::convertSynthStateToCharArray(OneSynthParams* params, uint8_t* c
     }
 }
 
-void PresetUtil::convertCharArrayToSynthState(unsigned char* chars, OneSynthParams* params) {
+void PresetUtil::convertCharArrayToSynthState(const unsigned char* chars, OneSynthParams* params) {
     int indexSysex = 0;
     for (int row=0; row < NUMBER_OF_ROWS; row++) {
         for (int encoder = 0; encoder < NUMBER_OF_ENCODERS; encoder++) {

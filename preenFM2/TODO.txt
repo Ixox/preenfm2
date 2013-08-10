@@ -1,29 +1,36 @@
 TODO (temporary list, grow over time) : 
 . Play note in combo (spec)
-. Freeze when no file on USB
-. !!! USB Midi : SYSEX, after touch, program change
-. Must not be able to sysex combo bank
-. 'Panic!' to add...
+. USB Midi : SYSEX, after touch, program change
 . ADD DX7 algo for compatibility...
 . audio glich when changing patch while playing and start again plaing (seems to be linked with voice).
-. Use empty PFM patch before applying DX7 parameters.
-. Use back+turn to fine adjust (Remove the Modulation special case)
-. use menu+turn to reset to default
-. Chose combo and preset bank by name ('_' for read only bank).
 
 No sure : 
 . Modify button : Osc->Operator# , Env : Osc, EnvA, EnvB ?
+. 'Panic!' to add... Voice = 0 enough ?
 
 TO check hardware :
 . volume Pot make noise
 
 
-OK A TESTER  
+OK to test  
+. Freeze when no file on USB
 . env attack as target...
-. Fine tune to hard !
+. Fine tune too hard !
+. Midi through
+. Fix NRPN and CC... with new scale...
 
 
 DONE:
+. Sort Combo, banks and DX7Banks alphabeticaly.
+. Rename bank...
+. Add bankname in Bank SYSEX...
+. SYSEX : use new bank selection.. Ask for name ?
+. But when push + turn back : row engine 1 : mix5... shows up.
+. Use empty PFM patch before applying DX7 parameters.
+. Use back+turn to fine adjust (Remove the Modulation special case)
+. use menu+turn to reset to default
+. '_' for read only bank).
+. Chose combo and preset bank by name
 . Release LFO ENV1 Broken - LCD - show up at 1.00
 . '*' appear on the last letter of the preset name...
 . Bug env release when release level > 0
@@ -76,11 +83,12 @@ What's new PreenFM2 :
 . more voices, flexible allocation : 48 operators to spread in the the 4 timbres...
 . stereo : pan of carrier operators modifiable + targetable in the matrix
 . Midi through USB (DIN5 still available)
-. patches and banks storage on USB Key
+. patches and banks storage on USB Key. 
+. DX7 dump sysex file readable from USB Key (don't expect miracle but a great source of new sounds).
 . New LFO env (silence, attack, decay, loop) Silence time targetable in the matrix to make it change (saw that in the Mopho).
 . Enveloppe attack, decay, release in seconds.. comprehensive tweaking.
 . DAC 18 bits : 12 + 6 bits... 
-. sampling rate 40khz
+. sampling rate 38khz
 . Full floating point engine (32 bits)
 . Pins available for any future evolution (analog input, surface control expansion, mutable instrument SMR4 mkII...)
 . DC 2.1mm for 7.5V or 9V wall adapter

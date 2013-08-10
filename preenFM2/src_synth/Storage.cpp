@@ -19,7 +19,7 @@
 #include <stdint.h>
 #include "Storage.h"
 #include "Menu.h"
-
+#include "PresetUtil.h"
 
 // Set param in mememory reachable with USB : static is OK
 struct OneSynthParams reachableParam;
@@ -202,35 +202,133 @@ void Storage::saveConfig(const char* midiConfig) {
     save(PROPERTIES, 0,  reachableProperties, MIDICONFIG_SIZE);
 }
 
+// NEW mechanism ===
 
-uint8_t* Storage::dx7LoadPatch(const char *bankName, int patchNumber) {
-	uint8_t first6Bytes[6];
-	const char* fullBankName = getDX7BankFullName(bankName);
-    int result = load(fullBankName, 0,  (void*)first6Bytes, 6);
-    if (result > 0) {
-    	return (uint8_t*)0;
-    }
-	if (first6Bytes[0] != 0xf0
-    		|| first6Bytes[1] != 0x43
-    		|| first6Bytes[2] > 0x0f
-    		|| first6Bytes[3] != 0x09
-    		|| first6Bytes[5] != 0x00) {
-    	return (uint8_t*)0;
-    }
-
-    result = load(fullBankName, patchNumber * DX7_PACKED_PATCH_SIZED + 6,  (void*)dx7PackedPatch, DX7_PACKED_PATCH_SIZED);
+uint8_t* Storage::dx7LoadPatch(const struct BankFile* bank, int patchNumber) {
+	const char* fullBankName = getDX7BankFullName(bank->name);
+    int result = load(fullBankName, patchNumber * DX7_PACKED_PATCH_SIZED + 6,  (void*)dx7PackedPatch, DX7_PACKED_PATCH_SIZED);
     if (result >0) {
     	return (uint8_t*)0;
     }
     return dx7PackedPatch;
 }
 
-const char* Storage::dx7ReadPresetName(const char *bankName, int patchNumber) {
-    int result = load(getDX7BankFullName(bankName), DX7_PACKED_PATCH_SIZED * patchNumber + 118 + 6,  (void*)presetName, 10);
-    if (result > 0) {
-    	presetName[0] = '#';
-        presetName[1] = 0;
+
+
+void Storage::loadPreenFMPatch(const struct BankFile* bank, int patchNumber, struct OneSynthParams *params) {
+	const char* fullBankName = getPreenFMFullName(bank->name);
+
+    // Don't load in params directly because params is in CCM memory
+    int result = load(fullBankName, patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableParam, PFM_PATCH_SIZE);
+
+    if (result == 0) {
+        for (int k=0; k<PFM_PATCH_SIZE; k++) {
+           ((uint8_t*)params)[k] = ((uint8_t*)&reachableParam)[k];
+        }
     }
-    presetName[10] = 0;
+}
+
+const char* Storage::loadPreenFMPatchName(const struct BankFile* bank, int patchNumber) {
+	const char* fullBankName = getPreenFMFullName(bank->name);
+    int result = load(fullBankName, ALIGNED_PATCH_SIZE * patchNumber + PFM_PATCH_SIZE - 16,  (void*)presetName, 12);
+    presetName[12] = 0;
     return presetName;
 }
+
+void Storage::savePreenFMPatch(const struct BankFile* bank, int patchNumber, struct OneSynthParams *params) {
+	const char* fullBankName = getPreenFMFullName(bank->name);
+
+    char zeros[ALIGNED_PATCH_ZERO];
+    for (int k=0; k<ALIGNED_PATCH_ZERO;k++) {
+        zeros[k] = 0;
+    }
+    for (int k=0; k<PFM_PATCH_SIZE; k++) {
+        ((uint8_t*)&reachableParam)[k] = ((uint8_t*)params)[k];
+    }
+
+    // Save patch
+    save(fullBankName, patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableParam, PFM_PATCH_SIZE);
+
+    // Add zeros
+    save(fullBankName, patchNumber * ALIGNED_PATCH_SIZE  + PFM_PATCH_SIZE,  (void*)zeros, ALIGNED_PATCH_ZERO);
+}
+
+void Storage::loadPreenFMCombo(const struct BankFile* combo, int comboNumber) {
+	const char* fullBankName = getPreenFMFullName(combo->name);
+    for (int timbre = 0; timbre < 4; timbre++)  {
+        int result = load(fullBankName,  (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre ,  (void*)&reachableParam, PFM_PATCH_SIZE);
+
+        if (result == 0) {
+            for (int k=0; k<PFM_PATCH_SIZE; k++) {
+               this->timbre[timbre][k] = ((uint8_t*)&reachableParam)[k];
+            }
+        }
+    }
+}
+const char* Storage::loadPreenFMComboName(const struct BankFile* combo, int comboNumber) {
+	const char* fullBankName = getPreenFMFullName(combo->name);
+    int result = load(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber ,  (void*)presetName, 12);
+    presetName[12] = 0;
+    return presetName;
+}
+
+void Storage::savePreenFMCombo(const struct BankFile* combo, int comboNumber, char* comboName) {
+	const char* fullBankName = getPreenFMFullName(combo->name);
+    save(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber ,  (void*)comboName, 12);
+
+    for (int timbre = 0; timbre < 4; timbre++)  {
+        for (int k=0; k<PFM_PATCH_SIZE; k++) {
+            ((uint8_t*)&reachableParam)[k] = this->timbre[timbre][k];
+        }
+        save(COMBO_BANK, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableParam, PFM_PATCH_SIZE);
+    }
+}
+
+
+
+void Storage::saveBank(const char* newBankName, const uint8_t* sysexTmpMem) {
+	const struct BankFile * newBank = addEmptyBank(newBankName);
+	if (newBank == 0) {
+		return;
+	}
+	for (int k=0; k<128; k++) {
+		PresetUtil::convertCharArrayToSynthState(sysexTmpMem + PATCH_SIZE_PFM2 * k, &oneSynthParamsTmp);
+		savePreenFMPatch(newBank, k, &oneSynthParamsTmp);
+	}
+}
+
+int Storage::bankBaseLength(const char* bankName) {
+	int k;
+	for (k=0; k<8 && bankName[k]!=0 && bankName[k]!='.'; k++);
+	return k;
+}
+
+bool Storage::bankNameExist(const char* bankName) {
+	int nameLength = bankBaseLength(bankName);
+	for (int b=0; getPreenFMBank(b)->fileType != FILE_EMPTY && b<NUMBEROFPREENFMBANKS; b++) {
+		const struct BankFile* pfmb = getPreenFMBank(b);
+		if (nameLength != bankBaseLength(pfmb->name)) {
+			continue;
+		}
+		bool sameName = true;
+		for (int n=0; n < nameLength && sameName; n++) {
+			// Case insensitive...
+			char c1 = bankName[n];
+			char c2 = pfmb->name[n];
+			if (c1 >= 'a' && c1<='z') {
+				c1 = 'A' + c1 - 'a';
+			}
+			if (c2 >= 'a' && c2<='z') {
+				c2 = 'A' + c2 - 'a';
+			}
+			if (c1 != c2) {
+				sameName = false;
+			}
+		}
+		if (sameName) {
+			return true;
+		}
+	}
+	return false;
+}
+

@@ -47,10 +47,10 @@ struct ParameterRowDisplay engineIM1ParameterRow = {
         "Modulation" ,
         { "IM1 ", "IM2 ", "IM3 ", "IM4 "},
         {
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -58,10 +58,10 @@ struct ParameterRowDisplay engineIM2ParameterRow = {
         "Modulation" ,
         { "IM5 ", "IM6 ", "IM7 ", "IM8 "},
         {
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 16, 193, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -112,8 +112,8 @@ struct ParameterRowDisplay oscParameterRow = {
         {
                 { OSC_SHAPE_SIN, OSC_SHAPE_LAST -1, OSC_SHAPE_LAST, DISPLAY_TYPE_STRINGS, oscShapeNames, nullNamesOrder, nullNamesOrder},
                 { OSC_FT_KEYBOARD, OSC_FT_FIXE, 2, DISPLAY_TYPE_STRINGS, oscTypeNames, nullNamesOrder, nullNamesOrder},
-                { 0, 16, 193, DISPLAY_TYPE_OSC_FREQUENCY ,  nullNames, nullNamesOrder, nullNamesOrder },
-                { -1, 1, 201, DISPLAY_TYPE_OSC_FREQUENCY,  nullNames, nullNamesOrder, nullNamesOrder }
+                { 0, 16, 193, DISPLAY_TYPE_FLOAT_OSC_FREQUENCY ,  nullNames, nullNamesOrder, nullNamesOrder },
+                { -1, 1, 201, DISPLAY_TYPE_FLOAT_OSC_FREQUENCY,  nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -121,9 +121,9 @@ struct ParameterRowDisplay envParameterRow1 = {
         "Enveloppe",
         { "Attk", "lv  ", "Deca", "lv " },
         {
-                { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { 0, 8, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
@@ -132,9 +132,9 @@ struct ParameterRowDisplay envParameterRow2 = {
         "Enveloppe",
         { "Sust", "lv  ", "Rele", "lv  " },
         {
-                { 0, 8, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { 0, 8, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
@@ -143,10 +143,10 @@ struct ParameterRowDisplay lfoEnvParameterRow = {
         "LFO Env",
         { "Attk", "Deca", "Sust", "Rele" },
         {
-                { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { 0, 4, 201, DISPLAY_TYPE_INT_OR_NONE, nullNames, nullNamesOrder, nullNamesOrder }
+                { 0, 16, 1601, DISPLAY_TYPE_INT_OR_NONE, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -155,9 +155,9 @@ struct ParameterRowDisplay lfoEnv2ParameterRow = {
         "LFO Env",
         { "Sile", "Attk", "Deca", "Loop" },
         {
-                { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { 0, 4, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { LFO_ENV2_NOLOOP, LFO_ENV2_LOOP_ATTACK, 3, DISPLAY_TYPE_STRINGS, lofEnv2Loop, nullNamesOrder, nullNamesOrder }
         }
 };
@@ -180,7 +180,7 @@ struct ParameterRowDisplay matrixParameterRow = {
         { "Srce", "Mult", "Dest", "    " },
         {
                 { MATRIX_SOURCE_NONE, MATRIX_SOURCE_MAX-1, MATRIX_SOURCE_MAX, DISPLAY_TYPE_STRINGS, matrixSourceNames, nullNamesOrder, nullNamesOrder},
-                { -10, 10, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { -10, 10, 2001, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { DESTINATION_NONE, DESTINATION_MAX-1, DESTINATION_MAX, DISPLAY_TYPE_STRINGS, matrixDestNames, nullNamesOrder, nullNamesOrder},
                 { 0, 0, 0, DISPLAY_TYPE_NONE, nullNames, nullNamesOrder, nullNamesOrder }
         }
@@ -196,7 +196,7 @@ struct ParameterRowDisplay lfoParameterRow = {
         { "Shap", "Freq", "Bias", "KSyn" },
         {
                 { LFO_SAW, LFO_TYPE_MAX-1, 1, DISPLAY_TYPE_STRINGS,  lfoShapeNames, nullNamesOrder, nullNamesOrder},
-                { 0, 24.9, 250,DISPLAY_TYPE_LFO_HZ, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 24.9, 250,DISPLAY_TYPE_FLOAT_LFO_FREQUENCY, nullNames, nullNamesOrder, nullNamesOrder },
                 { -1, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
         }
@@ -277,9 +277,11 @@ SynthState::SynthState() {
 
     // First default preset
     fullState.synthMode = SYNTH_MODE_EDIT;
-    fullState.bankNumber = 0;
+    fullState.preenFMBankNumber = 0;
+    fullState.preenFMPresetNumber = 0;
+    fullState.preenFMComboNumber = 0;
+    fullState.preenFMComboPresetNumber = 0;
     fullState.dx7BankNumber = 0;
-    fullState.presetNumber = 0;
     fullState.dx7PresetNumber = 0;
     fullState.loadWhat = 0;
     fullState.saveWhat = 0;
@@ -364,8 +366,24 @@ void SynthState::encoderTurnedWhileButtonPressed(int encoder, int ticks, int but
     		changeSynthModeRow(button , ticks>0 ? 1 : -1);
     		break;
     	case BUTTON_BACK:
-    		// NOTE !!!!
+    		encoderTurned(encoder, ticks * 10);
     		break;
+    	case BUTTON_MENUSELECT:
+    	{
+    		if (currentRow == ROW_ENGINE_FIRST) {
+    			// Nothing if first engine row
+    			return;
+    		}
+            struct ParameterDisplay* param = &(allParameterRows.row[currentRow]->params[encoder]);
+    		const struct OneSynthParams* defaultParams = &defaultPreset;
+            int num = encoder + currentRow * NUMBER_OF_ENCODERS;
+            float &value = ((float*)params)[num];
+            float oldValue = value;
+            float newValue = ((float*)defaultParams)[num];
+            value = newValue;
+            propagateNewParamValue(currentTimbre, currentRow, encoder, param, oldValue, newValue);
+    		break;
+    	}
     	}
     }
     if (oldCurrentRow != currentRow) {
@@ -396,51 +414,25 @@ void SynthState::encoderTurned(int encoder, int ticks) {
 		}
 
 		if (param->valueNameOrder == NULL) {
-		    if (currentRow == ROW_MODULATION1 || currentRow == ROW_MODULATION2) {
-		        // Specific rule for modulation
-                float &value = ((float*)params)[num];
-                oldValue = value;
-                if (value < 1.0f || (value == 1.0f && ticks < 0)) {
-                    int tickIndex = ((float)value / .02f) + .0005f + ticks;
-                    newValue = tickIndex * .02f;
-                    if (newValue > 1.0f) {
-                        newValue = 1.0;
-                    }
-                    if (newValue < 0.0) {
-                        newValue = 0.0;
-                    }
-                } else  {
-                    float inc = .1;
-                    int tickIndex = (value - 1.0f) / inc + .0005f + ticks;
-                    newValue = 1.0f + tickIndex * inc;
-                    if (newValue > param->maxValue) {
-                        newValue = param->maxValue;
-                    }
-                    if (newValue < 1.0f) {
-                        newValue = 1.0f;
-                    }
-                }
-                value = newValue;
-		    } else {
-		        // floating point test to be sure numberOfValues is diferent from 1.
-		        if (param->numberOfValues < 1.5) {
-		            return;
-		        }
+			// Not string parameters
+			// floating point test to be sure numberOfValues is diferent from 1.
+			if (param->numberOfValues < 1.5) {
+				return;
+			}
 
-                float &value = ((float*)params)[num];
-                oldValue = value;
-                float inc = ((param->maxValue - param->minValue) / (param->numberOfValues - 1.0f));
-                int tickIndex = (value - param->minValue) / inc + .0005f+ ticks;
-                newValue = param->minValue + tickIndex * inc;
-                propagateNewParamCheck(encoder, oldValue, &newValue);
-                if (newValue > param->maxValue) {
-                    newValue = param->maxValue;
-                }
-                if (newValue < param->minValue) {
-                    newValue = param->minValue;
-                }
-                value = newValue;
-		    }
+			float &value = ((float*)params)[num];
+			oldValue = value;
+			float inc = ((param->maxValue - param->minValue) / (param->numberOfValues - 1.0f));
+			int tickIndex = (value - param->minValue) / inc + .0005f+ ticks;
+			newValue = param->minValue + tickIndex * inc;
+			propagateNewParamCheck(encoder, oldValue, &newValue);
+			if (newValue > param->maxValue) {
+				newValue = param->maxValue;
+			}
+			if (newValue < param->minValue) {
+				newValue = param->minValue;
+			}
+			value = newValue;
         } else {
             float *value = &((float*)params)[num];
             int index;
@@ -470,7 +462,7 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                 fullState.menuSelect = fullState.menuSelect - 1;
             }
         } else if (encoder==1) {
-            if (fullState.currentMenuItem->menuState == MENU_SAVE_ENTER_NAME || fullState.currentMenuItem->menuState == MENU_RENAME_PATCH) {
+            if (isEnterNameState(fullState.currentMenuItem->menuState)) {
                 fullState.name[fullState.menuSelect] = (fullState.name[fullState.menuSelect] + (ticks>0? 1: -1));
                 if (fullState.name[fullState.menuSelect]<28) {
                     fullState.name[fullState.menuSelect]=28;
@@ -485,9 +477,15 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                 } else if (ticks<0) {
                     fullState.menuSelect = fullState.menuSelect - 5;
                 }
+            } else {
+                if (ticks>0) {
+                    fullState.menuSelect = fullState.menuSelect + 1;
+                } else if (ticks<0) {
+                    fullState.menuSelect = fullState.menuSelect - 1;
+                }
             }
         } else if (encoder==2) {
-            if (fullState.currentMenuItem->menuState == MENU_SAVE_ENTER_NAME || fullState.currentMenuItem->menuState == MENU_RENAME_PATCH) {
+            if (isEnterNameState(fullState.currentMenuItem->menuState)) {
                 fullState.name[fullState.menuSelect] = (fullState.name[fullState.menuSelect] + (ticks>0? 1: -1));
                 if (fullState.name[fullState.menuSelect]<1) {
                     fullState.name[fullState.menuSelect]=1;
@@ -502,9 +500,15 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                 } else if (ticks<0) {
                     fullState.menuSelect = fullState.menuSelect - 10;
                 }
+            } else {
+                if (ticks>0) {
+                    fullState.menuSelect = fullState.menuSelect + 1;
+                } else if (ticks<0) {
+                    fullState.menuSelect = fullState.menuSelect - 1;
+                }
             }
         } else if (encoder==3) {
-            if (fullState.currentMenuItem->menuState == MENU_SAVE_ENTER_NAME || fullState.currentMenuItem->menuState == MENU_RENAME_PATCH) {
+            if (isEnterNameState(fullState.currentMenuItem->menuState)) {
                 fullState.name[fullState.menuSelect] = (fullState.name[fullState.menuSelect] + (ticks>0? 1: -1));
                 if (fullState.name[fullState.menuSelect]<0) {
                     fullState.name[fullState.menuSelect]=0;
@@ -529,6 +533,12 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                 } else if (ticks<0) {
                     fullState.menuSelect = fullState.menuSelect - 25;
                 }
+            } else {
+                if (ticks>0) {
+                    fullState.menuSelect = fullState.menuSelect + 1;
+                } else if (ticks<0) {
+                    fullState.menuSelect = fullState.menuSelect - 1;
+                }
             }
         }
 
@@ -541,26 +551,51 @@ void SynthState::encoderTurned(int encoder, int ticks) {
 
         if (fullState.menuSelect != oldMenuSelect) {
         	switch (fullState.currentMenuItem->menuState) {
-        	case MENU_LOAD_DX7_SELECT_BANK:
+        	case MENU_LOAD_SELECT_DX7_BANK:
         		// Did we really change DX7 bank?
-        		if (fullState.dx7BankName != storage->getDx7BankName(fullState.menuSelect)) {
-        			fullState.dx7BankName = storage->getDx7BankName(fullState.menuSelect);
+        		if (fullState.dx7Bank != storage->getDx7Bank(fullState.menuSelect)) {
+        			fullState.dx7Bank = storage->getDx7Bank(fullState.menuSelect);
         			fullState.dx7PresetNumber = 0;
         		}
         		break;
-        	case MENU_LOAD_DX7_SELECT_PRESET:
+        	case MENU_LOAD_SELECT_DX7_PRESET:
                 propagateBeforeNewParamsLoad();
-        		hexter->loadHexterPatch(storage->dx7LoadPatch(fullState.dx7BankName, fullState.menuSelect), params);
+        		hexter->loadHexterPatch(storage->dx7LoadPatch(fullState.dx7Bank, fullState.menuSelect), params);
                 propagateAfterNewParamsLoad();
                 fullState.dx7PresetNumber = fullState.menuSelect;
                 break;
-			case MENU_LOAD_USER_SELECT_PRESET:
-                if (fullState.bankNumber < 4) {
-                    propagateBeforeNewParamsLoad();
-                    storage->loadPatch(fullState.bankNumber, fullState.menuSelect, params);
-                    propagateAfterNewParamsLoad();
-                }
-                fullState.presetNumber = fullState.menuSelect;
+        	case MENU_LOAD_SELECT_BANK:
+        	case MENU_SAVE_SELECT_BANK:
+        		// Did we really change bank?
+        		if (fullState.preenFMBank != storage->getPreenFMBank(fullState.menuSelect)) {
+        			fullState.preenFMBank = storage->getPreenFMBank(fullState.menuSelect);
+        			fullState.preenFMPresetNumber = 0;
+        		}
+        		break;
+        	case MENU_RENAME_SELECT_BANK:
+        		// Did we really change bank?
+        		if (fullState.preenFMBank != storage->getPreenFMBank(fullState.menuSelect)) {
+        			fullState.preenFMBank = storage->getPreenFMBank(fullState.menuSelect);
+        		}
+        		break;
+        	case MENU_LOAD_SELECT_COMBO:
+        	case MENU_SAVE_SELECT_COMBO:
+        		// Did we really change bank?
+        		if (fullState.preenFMCombo != storage->getPreenFMCombo(fullState.menuSelect)) {
+        			fullState.preenFMCombo = storage->getPreenFMCombo(fullState.menuSelect);
+        			fullState.preenFMComboPresetNumber = 0;
+        		}
+        		break;
+			case MENU_LOAD_SELECT_BANK_PRESET:
+			case MENU_SAVE_SELECT_BANK_PRESET:
+				propagateBeforeNewParamsLoad();
+				storage->loadPreenFMPatch(fullState.preenFMBank, fullState.menuSelect, params);
+				propagateAfterNewParamsLoad();
+                fullState.preenFMPresetNumber = fullState.menuSelect;
+                break;
+			case MENU_LOAD_SELECT_COMBO_PRESET:
+			case MENU_SAVE_SELECT_COMBO_PRESET:
+                fullState.preenFMComboPresetNumber = fullState.menuSelect;
                 break;
             }
             propagateNewMenuSelect();
@@ -576,6 +611,30 @@ void SynthState::resetDisplay() {
     propagateNewSynthMode();
 }
 
+bool SynthState::isCurrentRowAvailable() {
+
+	if (algoInformation[(int)params->engine1.algo].mix <= 2) {
+		if (currentRow == ROW_OSC_MIX2 ) {
+			return false;
+		}
+	}
+	if (algoInformation[(int)params->engine1.algo].mix <= 4) {
+		if (currentRow == ROW_OSC_MIX3 ) {
+			return false;
+		}
+	}
+	if (algoInformation[(int)params->engine1.algo].im == 0) {
+		if (currentRow == ROW_MODULATION1 ) {
+			return false;
+		}
+	}
+	if (algoInformation[(int)params->engine1.algo].im <= 4) {
+		if (currentRow == ROW_MODULATION2 ) {
+			return false;
+		}
+	}
+	return true;
+}
 
 void SynthState::changeSynthModeRow(int button, int step) {
 	unsigned char lastBecauseOfAlgo;
@@ -585,44 +644,14 @@ void SynthState::changeSynthModeRow(int button, int step) {
 			if (currentRow<ROW_ENGINE_FIRST || currentRow>ROW_ENGINE_LAST) {
 				currentRow = engineRow;
 			} else {
-				currentRow += step;
-				if (algoInformation[(int)params->engine1.algo].mix <= 2) {
-					if (currentRow == ROW_OSC_MIX2 ) {
-						currentRow += step;
+				do {
+					currentRow += step;
+					if (currentRow>ROW_ENGINE_LAST) {
+						currentRow = ROW_ENGINE_FIRST;
+					} else if (currentRow<ROW_ENGINE_FIRST) {
+						currentRow = ROW_ENGINE_LAST;
 					}
-				}
-				if (algoInformation[(int)params->engine1.algo].mix <= 4) {
-					if (currentRow == ROW_OSC_MIX3 ) {
-						currentRow += step;
-					}
-				}
-				// Again so that it works in both direction
-				if (algoInformation[(int)params->engine1.algo].mix <= 2) {
-					if (currentRow == ROW_OSC_MIX2 ) {
-						currentRow += step;
-					}
-				}
-				if (algoInformation[(int)params->engine1.algo].im == 0) {
-					if (currentRow == ROW_MODULATION1 ) {
-						currentRow += step;
-					}
-				}
-				if (algoInformation[(int)params->engine1.algo].im <= 4) {
-					if (currentRow == ROW_MODULATION2 ) {
-						currentRow += step;
-					}
-				}
-				// Again so that it works in both direction
-				if (algoInformation[(int)params->engine1.algo].im == 0) {
-					if (currentRow == ROW_MODULATION1 ) {
-						currentRow += step;
-					}
-				}
-			}
-			if (currentRow>ROW_ENGINE_LAST) {
-				currentRow = ROW_ENGINE_FIRST;
-			} else if (currentRow<ROW_ENGINE_FIRST) {
-				currentRow = ROW_ENGINE_LAST;
+				} while (!isCurrentRowAvailable());
 			}
 			engineRow = currentRow;
 		break;
@@ -685,6 +714,14 @@ void SynthState::changeSynthModeRow(int button, int step) {
 	}
 }
 
+bool SynthState::isEnterNameState(int currentItem) {
+	return currentItem == MENU_SAVE_ENTER_PRESET_NAME
+			|| currentItem == MENU_RENAME_PATCH
+			|| currentItem == MENU_SAVE_ENTER_COMBO_NAME
+			|| currentItem == MENU_SAVE_ENTER_NEW_SYSEX_BANK_NAME
+			|| currentItem == MENU_RENAME_BANK;
+}
+
 void SynthState::buttonPressed(int button) {
     SynthEditMode oldSynthMode = fullState.synthMode;
     int oldCurrentRow = currentRow;
@@ -722,9 +759,12 @@ void SynthState::buttonPressed(int button) {
 			fullState.currentMenuItem = afterButtonPressed();
 			break;
 		case BUTTON_BACK:
+		{
+			enum MenuState oldState = fullState.currentMenuItem->menuState;
 			fullState.currentMenuItem = menuBack();
-			propagateMenuBack();
+			propagateMenuBack(oldState);
 			break;
+		}
 #ifdef DEBUG
 		case BUTTON_DUMP:
 		{
@@ -734,7 +774,7 @@ void SynthState::buttonPressed(int button) {
 #endif
 		case BUTTON_LFO:
 		{
-            if (fullState.currentMenuItem->menuState == MENU_SAVE_ENTER_NAME || fullState.currentMenuItem->menuState == MENU_RENAME_PATCH) {
+            if (isEnterNameState(fullState.currentMenuItem->menuState)) {
 				fullState.name[fullState.menuSelect] = 0;
 				propagateNewMenuSelect();
 			}
@@ -742,7 +782,7 @@ void SynthState::buttonPressed(int button) {
 		}
 		case BUTTON_MATRIX:
 		{
-            if (fullState.currentMenuItem->menuState == MENU_SAVE_ENTER_NAME || fullState.currentMenuItem->menuState == MENU_RENAME_PATCH) {
+            if (isEnterNameState(fullState.currentMenuItem->menuState)) {
 				fullState.name[fullState.menuSelect] = 27;
 				propagateNewMenuSelect();
 			}
@@ -750,7 +790,7 @@ void SynthState::buttonPressed(int button) {
 		}
 		case BUTTON_ENV:
 		{
-            if (fullState.currentMenuItem->menuState == MENU_SAVE_ENTER_NAME || fullState.currentMenuItem->menuState == MENU_RENAME_PATCH) {
+            if (isEnterNameState(fullState.currentMenuItem->menuState)) {
 				fullState.name[fullState.menuSelect] = 55;
 				propagateNewMenuSelect();
 			}
@@ -758,13 +798,12 @@ void SynthState::buttonPressed(int button) {
 		}
 		case BUTTON_OSC:
 		{
-            if (fullState.currentMenuItem->menuState == MENU_SAVE_ENTER_NAME || fullState.currentMenuItem->menuState == MENU_RENAME_PATCH) {
+            if (isEnterNameState(fullState.currentMenuItem->menuState)) {
 				fullState.name[fullState.menuSelect] = 66;
 				propagateNewMenuSelect();
 			}
 			break;
 		}
-		// MENU MODE
 		}
     }
 
@@ -780,33 +819,6 @@ void SynthState::buttonPressed(int button) {
     }
 }
 
-/*
-void SynthState::buttonPressed(int button) {
-    int oldCurrentRow = currentRow;
-
-    if (fullState.synthMode == SYNTH_MODE_EDIT)  {
-        switch (button) {
-        case BUTTON_SYNTH:
-        case BUTTON_OSC:
-        case BUTTON_ENV:
-        case BUTTON_MATRIX:
-        case BUTTON_LFO:
-        	changeSynthModeRow(button , -1);
-            break;
-        case BUTTON_BACK:
-        	if (this->isPlayingNote) {
-        		propagateNoteOn();
-        	} else {
-                propagateNoteOff();
-        	}
-        	break;
-        }
-    }
-    if (oldCurrentRow != currentRow) {
-        propagateNewCurrentRow(currentRow);
-    }
-}
-*/
 
 
 void SynthState::setNewStepValue(int timbre, int whichStepSeq, int step, int newValue) {
@@ -863,64 +875,83 @@ const MenuItem* SynthState::afterButtonPressed() {
     case MAIN_MENU:
         fullState.firstMenu = fullState.menuSelect;
         break;
-    case MENU_LOAD_USER_SELECT_BANK:
-    case MENU_SAVE_SELECT_USER_BANK:
-    case MENU_SAVE_BANK:
-        fullState.bankNumber = fullState.menuSelect;
+    case MENU_SAVE_SELECT_BANK:
+    	if (fullState.preenFMBank->fileType != FILE_OK) {
+    		return fullState.currentMenuItem;
+    	}
+        fullState.preenFMBankNumber = fullState.menuSelect;
         break;
-    case MENU_LOAD_DX7_SELECT_BANK:
+    case MENU_RENAME_SELECT_BANK:
+    case MENU_LOAD_SELECT_BANK:
+    	if (fullState.preenFMBank->fileType == FILE_EMPTY) {
+    		return fullState.currentMenuItem;
+    	}
+        fullState.preenFMBankNumber = fullState.menuSelect;
+        break;
+    case MENU_SAVE_SELECT_COMBO:
+    	if (fullState.preenFMCombo->fileType != FILE_OK) {
+    		return fullState.currentMenuItem;
+    	}
+        fullState.preenFMComboNumber = fullState.menuSelect;
+        break;
+    case MENU_LOAD_SELECT_COMBO:
+    	if (fullState.preenFMCombo->fileType == FILE_EMPTY) {
+    		return fullState.currentMenuItem;
+    	}
+        fullState.preenFMComboNumber = fullState.menuSelect;
+        break;
+    case MENU_LOAD_SELECT_DX7_BANK:
+    	if (fullState.dx7Bank->fileType != FILE_OK) {
+    		return fullState.currentMenuItem;
+    	}
     	fullState.dx7BankNumber = fullState.menuSelect;
     	break;
-    case MENU_SAVE_BANK_CONFIRM:
-    	lcd.setRealTimeAction(true);
-        PresetUtil::copyBank(4, fullState.bankNumber);
-    	lcd.setRealTimeAction(false);
-    	break;
-    case MENU_LOAD_USER_SELECT_PRESET:
+    case MENU_LOAD_SELECT_BANK_PRESET:
         propagateBeforeNewParamsLoad();
-        if (fullState.bankNumber == 4) {
-            storage->loadCombo(fullState.menuSelect);
-            // Update and clean all timbres
-            this->currentTimbre = 0;
-            propagateNewTimbre(currentTimbre);
-            PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
-            propagateAfterNewComboLoad();
-        } else {
-            storage->loadPatch(fullState.bankNumber, fullState.menuSelect, params);
-            PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
-            propagateAfterNewParamsLoad();
-        }
+        storage->loadPreenFMPatch(fullState.preenFMBank, fullState.menuSelect, params);
+        PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
+        propagateAfterNewParamsLoad();
         break;
-    case MENU_LOAD_DX7_SELECT_PRESET:
+    case MENU_LOAD_SELECT_COMBO_PRESET:
+        propagateBeforeNewParamsLoad();
+        storage->loadPreenFMCombo(fullState.preenFMCombo, fullState.menuSelect);
+        // Update and clean all timbres
+        this->currentTimbre = 0;
+        propagateNewTimbre(currentTimbre);
+        PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
+        propagateAfterNewComboLoad();
+        break;
+    case MENU_LOAD_SELECT_DX7_PRESET:
     	// propagateBeforeNewParamsLoad();
-		// hexter->loadHexterPatch(storage->dx7LoadPatch(fullState.dx7BankName, fullState.menuSelect), params);
+		// hexter->loadHexterPatch(storage->dx7LoadPatch(&fullState.dx7Bank, fullState.menuSelect), params);
 		PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
 		// propagateAfterNewParamsLoad();
         break;
-    case MENU_SAVE_SELECT_PRESET:
-        if (fullState.bankNumber == 4) {
-            const char* comboName = storage->readComboName(fullState.menuSelect);
-            for (int k=0; k<12 && comboName[k] != 0; k++) {
-                for (int j=0; j<getLength(allChars); j++) {
-                    if (comboName[k] == allChars[j]) {
-                        fullState.name[k] = j;
-                    }
-                }
-            }
-        } else {
-            for (int k=0; k<12; k++) {
-                fullState.name[k] = 0;
-            }
-            for (int k=0; k<12 && params->presetName[k] != 0; k++) {
-                for (int j=0; j<getLength(allChars); j++) {
-                    if (params->presetName[k] == allChars[j]) {
-                        fullState.name[k] = j;
-                    }
+    case MENU_SAVE_SELECT_BANK_PRESET:
+    	for (int k=0; k<12; k++) {
+    		fullState.name[k] = 0;
+    	}
+    	for (int k=0; k<12 && params->presetName[k] != 0; k++) {
+    		for (int j=0; j<getLength(allChars); j++) {
+    			if (params->presetName[k] == allChars[j]) {
+    				fullState.name[k] = j;
+    			}
+    		}
+    	}
+        fullState.preenFMBankNumber = fullState.menuSelect;
+        break;
+    case MENU_SAVE_SELECT_COMBO_PRESET:
+    {
+        const char* comboName = storage->readComboName(fullState.menuSelect);
+        for (int k=0; k<12 && comboName[k] != 0; k++) {
+            for (int j=0; j<getLength(allChars); j++) {
+                if (comboName[k] == allChars[j]) {
+                    fullState.name[k] = j;
                 }
             }
         }
-        fullState.presetNumber = fullState.menuSelect;
-        break;
+    	break;
+    }
     case MENU_RENAME_PATCH:
         int length;
         for (length=12; fullState.name[length-1] == 0; length--);
@@ -929,32 +960,92 @@ const MenuItem* SynthState::afterButtonPressed() {
         }
         params->presetName[length] = '\0';
         break;
-    case MENU_SAVE_ENTER_NAME:
+    case MENU_SAVE_ENTER_PRESET_NAME:
     {
         int length;
         for (length=12; fullState.name[length-1] == 0; length--);
-        if (fullState.bankNumber == 4) {
-            char comboName[12];
-            for (int k=0; k<length; k++) {
-                comboName[k] = allChars[(int)fullState.name[k]];
-            }
-            comboName[length] = '\0';
-            // TODO send REAL combo name
-            storage->saveCombo(fullState.presetNumber, comboName);
+        for (int k=0; k<length; k++) {
+        	params->presetName[k] = allChars[(int)fullState.name[k]];
+        }
+        params->presetName[length] = '\0';
+        storage->savePreenFMPatch(fullState.preenFMBank, fullState.preenFMPresetNumber, params);
+        break;
+    }
+    case MENU_SAVE_ENTER_COMBO_NAME:
+    {
+        int length;
+        for (length=12; fullState.name[length-1] == 0; length--);
+        char comboName[12];
+        for (int k=0; k<length; k++) {
+        	comboName[k] = allChars[(int)fullState.name[k]];
+        }
+        comboName[length] = '\0';
+        storage->savePreenFMCombo(fullState.preenFMCombo, fullState.preenFMComboNumber, comboName);
+        break;
+    }
+    case MENU_SAVE_ENTER_NEW_SYSEX_BANK_NAME:
+    {
+    	// Must save the bank here....
+        int length;
+        for (length=8; fullState.name[length-1] == 0; length--);
+        for (int k=0; k<length; k++) {
+        	fullState.name[k] = allChars[(int)fullState.name[k]];
+        }
+        fullState.name[length++] = '.';
+        fullState.name[length++] = 'b';
+        fullState.name[length++] = 'n';
+        fullState.name[length++] = 'k';
+        fullState.name[length] = '\0';
+        if (!storage->bankNameExist(fullState.name)) {
+        	const MenuItem *cmi = fullState.currentMenuItem;
+        	// Update display while sending
+        	lcd.setRealTimeAction(true);
+        	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
+        	propagateNewMenuState();
+        	storage->saveBank(fullState.name, sysexTmpMem + 8);
+            fullState.currentMenuItem = cmi;
+        	lcd.setRealTimeAction(false);
         } else {
-            for (int k=0; k<length; k++) {
-                params->presetName[k] = allChars[(int)fullState.name[k]];
-            }
-            params->presetName[length] = '\0';
-            storage->savePatch(fullState.bankNumber, fullState.presetNumber, params);
+        	rMenuItem = MenuItemUtil::getMenuItem(MENU_SAVE_SYSEX_BANK_CONFIRM_OVERRIDE);
         }
         break;
     }
-    case MENU_MIDI_PATCH_DUMP:
+    case MENU_SAVE_SYSEX_BANK_CONFIRM_OVERRIDE:
+    {
+    	const MenuItem *cmi = fullState.currentMenuItem;
+    	// Update display while sending
+    	lcd.setRealTimeAction(true);
+    	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
+    	propagateNewMenuState();
+    	storage->saveBank(fullState.name, sysexTmpMem + 8);
+        fullState.currentMenuItem = cmi;
+    	lcd.setRealTimeAction(false);
+    	break;
+    }
+    case MENU_SAVE_SYSEX_PATCH:
         PresetUtil::sendCurrentPatchToSysex();
         break;
-    case MENU_MIDI_BANK_SELECT_DUMP:
+    case MENU_RENAME_BANK:
     {
+    	int k;
+    	for (k=0; k<8 && fullState.name[k]!=0; k++) {
+        	fullState.name[k] =  allChars[fullState.name[k]];
+    	}
+    	fullState.name[k++] = '.';
+    	fullState.name[k++] = 'b';
+    	fullState.name[k++] = 'n';
+    	fullState.name[k++] = 'k';
+    	fullState.name[k++] = '\0';
+    	if (storage->renameBank(fullState.preenFMBank, fullState.name) > 0) {
+        	rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
+    	}
+    	break;
+    }
+    case MENU_SAVE_SYSEX_BANK:
+    {
+		if (storage->getPreenFMBank(fullState.menuSelect)->fileType == FILE_EMPTY) {
+    		return fullState.currentMenuItem;
+		}
     	const MenuItem *cmi = fullState.currentMenuItem;
     	// Update display while sending
     	lcd.setRealTimeAction(true);
@@ -965,7 +1056,9 @@ const MenuItem* SynthState::afterButtonPressed() {
     	lcd.setRealTimeAction(false);
         break;
     }
+    case MENU_CANCEL:
     case MENU_DONE:
+    case MENU_ERROR:
         fullState.synthMode = SYNTH_MODE_EDIT;
         break;
     case MENU_FORMAT_BANK:
@@ -1004,6 +1097,19 @@ const MenuItem* SynthState::afterButtonPressed() {
     // Next state switch
 
     switch (rMenuItem->menuState) {
+    case MENU_RENAME_BANK:
+        for (int k=0; k<8; k++) {
+        	fullState.name[k] = 0;
+        }
+        for (int k=0; k<8 && fullState.preenFMBank->name[k]!='.'; k++) {
+            for (int j=0; j<getLength(allChars); j++) {
+                if (fullState.preenFMBank->name[k] == allChars[j]) {
+                	fullState.name[k] = j;
+                }
+            }
+        }
+        fullState.menuSelect = 0;
+    	break;
     case MENU_RENAME_PATCH:
         for (int k=0; k<12; k++) {
             fullState.name[k] = 0;
@@ -1017,25 +1123,26 @@ const MenuItem* SynthState::afterButtonPressed() {
         }
         fullState.menuSelect = 0;
         break;
-    case MENU_SAVE_SELECT_PRESET:
-        fullState.menuSelect = fullState.presetNumber;
+    case MENU_SAVE_SELECT_BANK_PRESET:
+        fullState.menuSelect = fullState.preenFMPresetNumber;
         break;
-    case MENU_LOAD_USER_SELECT_PRESET:
-        if (fullState.bankNumber < 4) {
-            propagateBeforeNewParamsLoad();
-            storage->loadPatch(fullState.bankNumber, fullState.presetNumber, params);
-            propagateAfterNewParamsLoad();
-        }
-        fullState.menuSelect = fullState.presetNumber;
+    case MENU_SAVE_SELECT_COMBO_PRESET:
+        fullState.menuSelect = fullState.preenFMComboPresetNumber;
         break;
-    case MENU_LOAD_DX7_SELECT_PRESET:
+    case MENU_LOAD_SELECT_BANK_PRESET:
 		propagateBeforeNewParamsLoad();
-		hexter->loadHexterPatch(storage->dx7LoadPatch(fullState.dx7BankName, fullState.dx7PresetNumber), params);
+		storage->loadPreenFMPatch(fullState.preenFMBank, fullState.preenFMPresetNumber, params);
+		propagateAfterNewParamsLoad();
+        fullState.menuSelect = fullState.preenFMPresetNumber;
+        break;
+    case MENU_LOAD_SELECT_COMBO_PRESET:
+        fullState.menuSelect = fullState.preenFMComboPresetNumber;
+        break;
+    case MENU_LOAD_SELECT_DX7_PRESET:
+		propagateBeforeNewParamsLoad();
+		hexter->loadHexterPatch(storage->dx7LoadPatch(fullState.dx7Bank, fullState.dx7PresetNumber), params);
 		propagateAfterNewParamsLoad();
         fullState.menuSelect = fullState.dx7PresetNumber;
-        break;
-    case MENU_SAVE_SELECT_USER_BANK:
-        fullState.menuSelect = fullState.bankNumber;
         break;
     case MENU_LOAD:
         fullState.menuSelect = fullState.loadWhat;
@@ -1043,12 +1150,20 @@ const MenuItem* SynthState::afterButtonPressed() {
     case MENU_SAVE:
         fullState.menuSelect = fullState.saveWhat;
         break;
-    case MENU_LOAD_USER_SELECT_BANK:
-        fullState.menuSelect = fullState.bankNumber;
+    case MENU_RENAME_SELECT_BANK:
+    case MENU_LOAD_SELECT_BANK:
+    case MENU_SAVE_SELECT_BANK:
+        fullState.menuSelect = fullState.preenFMBankNumber;
+        fullState.preenFMBank = storage->getPreenFMBank(fullState.menuSelect);
         break;
-    case MENU_LOAD_DX7_SELECT_BANK:
+    case MENU_LOAD_SELECT_COMBO:
+    case MENU_SAVE_SELECT_COMBO:
+        fullState.menuSelect = fullState.preenFMComboNumber;
+        fullState.preenFMCombo = storage->getPreenFMCombo(fullState.menuSelect);
+        break;
+    case MENU_LOAD_SELECT_DX7_BANK:
         fullState.menuSelect = fullState.dx7BankNumber;
-    	fullState.dx7BankName = storage->getDx7BankName(fullState.menuSelect);
+    	fullState.dx7Bank = storage->getDx7Bank(fullState.menuSelect);
     	break;
     default:
         fullState.menuSelect = 0;
@@ -1067,50 +1182,73 @@ const MenuItem* SynthState::menuBack() {
     fullState.menuSelect = MenuItemUtil::getParentMenuSelect(fullState.currentMenuItem->menuState);
 
     switch (fullState.currentMenuItem->menuState) {
-    case MENU_SAVE_ENTER_NAME:
-        fullState.menuSelect = fullState.presetNumber;
+    case MENU_SAVE_ENTER_PRESET_NAME:
+        fullState.menuSelect = fullState.preenFMPresetNumber;
         break;
-    case MENU_SAVE_SELECT_PRESET:
-        fullState.menuSelect = fullState.bankNumber;
+    case MENU_SAVE_ENTER_COMBO_NAME:
+        fullState.menuSelect = fullState.preenFMComboNumber;
         break;
-    case MENU_LOAD_USER_SELECT_PRESET:
-        fullState.menuSelect = fullState.bankNumber;
+    case MENU_RENAME_BANK:
+    case MENU_SAVE_SELECT_BANK_PRESET:
+        fullState.menuSelect = fullState.preenFMBankNumber;
+        break;
+    case MENU_SAVE_SELECT_COMBO_PRESET:
+        fullState.menuSelect = fullState.preenFMComboNumber;
+        break;
+    case MENU_LOAD_SELECT_BANK_PRESET:
+        fullState.menuSelect = fullState.preenFMBankNumber;
         propagateBeforeNewParamsLoad();
         PresetUtil::copySynthParams((char*)&backupParams, (char*)params);
         propagateAfterNewParamsLoad();
         break;
-    case MENU_LOAD_DX7_SELECT_PRESET:
+    case MENU_LOAD_SELECT_COMBO_PRESET:
+        fullState.menuSelect = fullState.preenFMComboNumber;
+        propagateBeforeNewParamsLoad();
+        PresetUtil::copySynthParams((char*)&backupParams, (char*)params);
+        propagateAfterNewParamsLoad();
+        break;
+    case MENU_LOAD_SELECT_DX7_PRESET:
         fullState.menuSelect = fullState.dx7BankNumber;
         propagateBeforeNewParamsLoad();
         PresetUtil::copySynthParams((char*)&backupParams, (char*)params);
         propagateAfterNewParamsLoad();
         break;
-    case MENU_SAVE_BANK:
-    	// After back, bank should no be receivable anymore
-        fullState.synthMode = SYNTH_MODE_EDIT;
-    	return MenuItemUtil::getMenuItem(MENU_LOAD);
+    case MENU_SAVE_SYSEX_BANK_CONFIRM_OVERRIDE:
+    case MENU_SAVE_ENTER_NEW_SYSEX_BANK_NAME:
+    	// CANCEL OPERATION
+    	return MenuItemUtil::getMenuItem(MENU_CANCEL);
     	break;
     case MAIN_MENU:
         fullState.synthMode = SYNTH_MODE_EDIT;
         // put back old patch (has been overwritten if a new patch has been loaded)
         break;
-    case MENU_LOAD_USER_SELECT_BANK:
-    case MENU_MIDI_PATCH:
-    case MENU_SAVE_SELECT_USER_BANK:
-    case MENU_MIDI_BANK:
-        break;
     }
-
     rMenuItem = MenuItemUtil::getParentMenuItem(fullState.currentMenuItem->menuState);
     return rMenuItem;
 }
 
 
-void SynthState::newBankReady() {
+void SynthState::newSysexBankReady() {
 	fullState.synthMode = SYNTH_MODE_MENU;
 	fullState.menuSelect = 0;
-	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_SAVE_BANK);
-	propagateNewSynthMode();
+	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_SAVE_ENTER_NEW_SYSEX_BANK_NAME);
+
+	int k = 0;
+	for (k=0; storage->getPreenFMBank(k)->fileType != FILE_EMPTY && k < NUMBEROFPREENFMBANKS; k++);
+	if (k == NUMBEROFPREENFMBANKS) {
+		// NO EMPTY BANK....
+		// TODO : ERROR TO WRITE
+		return;
+	}
+	for (int k=0; k<8; k++) {
+		for (int j=0; j<getLength(allChars); j++) {
+			if (sysexTmpMem[k] == allChars[j]) {
+				fullState.name[k] = j;
+			}
+		}
+	}
+
+	propagateNewMenuState();
 }
 
 
@@ -1134,12 +1272,16 @@ void SynthState::propagateNewTimbre(int timbre) {
 }
 
 void SynthState::tempoClick() {
-	if (fullState.synthMode == SYNTH_MODE_MENU && fullState.currentMenuItem->menuState == MENU_DONE) {
-		if (doneClick > 4) {
-		    fullState.synthMode = SYNTH_MODE_EDIT;
-		    propagateNewSynthMode();
+	if (fullState.synthMode == SYNTH_MODE_MENU) {
+		if (fullState.currentMenuItem->menuState == MENU_DONE
+				|| fullState.currentMenuItem->menuState == MENU_ERROR
+				|| fullState.currentMenuItem->menuState == MENU_CANCEL) {
+			if (doneClick > 4) {
+				fullState.synthMode = SYNTH_MODE_EDIT;
+				propagateNewSynthMode();
+			}
+			doneClick ++;
 		}
-		doneClick ++;
 	} else {
 		doneClick = 0;
 	}

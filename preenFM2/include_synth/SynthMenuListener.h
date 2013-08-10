@@ -26,7 +26,7 @@ class SynthMenuListener {
 public:
 
     virtual void newSynthMode(FullState* fullState) = 0;
-    virtual void menuBack(FullState* fullState) = 0;
+    virtual void menuBack(enum MenuState  oldMenuState, FullState* fullState) = 0;
     virtual void newMenuState(FullState* fullState) = 0;
     virtual void newMenuSelect(FullState* fullState) = 0;
 

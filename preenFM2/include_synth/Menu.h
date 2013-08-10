@@ -20,7 +20,7 @@
 #define MENU_H_
 
 #define INTERNAL_LAST_BANK 71
-
+#include "Storage.h"
 
 enum {
     MIDICONFIG_CHANNEL1 = 0,
@@ -47,38 +47,46 @@ enum SynthEditMode {
 enum MenuState {
     MAIN_MENU = 0,
     MENU_LOAD,
-    MENU_SAVE_SELECT_USER_BANK,
-    MENU_SAVE_SELECT_PRESET,
-    MENU_LOAD_USER_SELECT_BANK,
-    MENU_LOAD_USER_SELECT_PRESET,
-    MENU_LOAD_DX7_SELECT_BANK,
-    MENU_LOAD_DX7_SELECT_PRESET,
+    MENU_SAVE_SELECT_BANK,
+    MENU_SAVE_SELECT_BANK_PRESET,
+    MENU_SAVE_SELECT_COMBO,
+    MENU_SAVE_SELECT_COMBO_PRESET,
+    MENU_LOAD_SELECT_BANK,
+    MENU_LOAD_SELECT_BANK_PRESET,
+    MENU_LOAD_SELECT_DX7_BANK,
+    MENU_LOAD_SELECT_DX7_PRESET,
+    MENU_LOAD_SELECT_COMBO,
+    MENU_LOAD_SELECT_COMBO_PRESET,
     MENU_SAVE,
-    MENU_SAVE_ENTER_NAME,
-    MENU_MIDI_SYSEX_DUMP,
-    MENU_MIDI_SYS_EX,
-    MENU_MIDI_SYSEX_GET,
+    MENU_SAVE_ENTER_PRESET_NAME,
+    MENU_SAVE_ENTER_COMBO_NAME,
+    MENU_SAVE_SYSEX,
+    MENU_SAVE_SYSEX_PATCH,
+    MENU_SAVE_SYSEX_BANK,
     MENU_CONFIG_SETTINGS,
     MENU_CONFIG_SETTINGS_SAVE,
     MENU_MIDI_BANK,
     MENU_MIDI_BANK_GET,
-    MENU_MIDI_BANK_DUMP,
-    MENU_MIDI_BANK_SELECT_DUMP,
     MENU_MIDI_PATCH,
     MENU_MIDI_PATCH_GET,
-    MENU_MIDI_PATCH_DUMP,
     MENU_DONE,
+    MENU_CANCEL,
     MENU_IN_PROGRESS,
+    MENU_ERROR,
     MENU_TOOLS,
     MENU_FORMAT_BANK,
-    MENU_SAVE_BANK,
-    MENU_SAVE_BANK_CONFIRM,
+    MENU_MIDI_SYSEX_GET,
+    MENU_SAVE_ENTER_NEW_SYSEX_BANK_NAME,
+    MENU_SAVE_SYSEX_BANK_CONFIRM_OVERRIDE,
     MENU_DEFAULT_COMBO,
     MENU_DEFAULT_COMBO_SAVE,
     MENU_DEFAULT_COMBO_RESET,
+    MENU_RENAME,
     MENU_RENAME_PATCH,
+    MENU_RENAME_SELECT_BANK,
+    MENU_RENAME_BANK,
     LAST_MENU
-};
+} ;
 
 
 
@@ -96,19 +104,25 @@ struct FullState {
     SynthEditMode synthMode;
     int menuSelect;
     unsigned char previousMenuSelect;
-    unsigned char bankNumber;
-    unsigned char dx7BankNumber;
-    unsigned char presetNumber;
-    unsigned char dx7PresetNumber;
-    unsigned char internalPresetNumber;
     const MenuItem* currentMenuItem;
     char name[13];
+
     unsigned char loadWhat;
     unsigned char saveWhat;
     unsigned char firstMenu;
     unsigned char  menuPosition[5];
     char  midiConfigValue[MIDICONFIG_SIZE];
-    const char  *dx7BankName;
+
+    unsigned char preenFMBankNumber;
+    unsigned char preenFMPresetNumber;
+    const struct BankFile* preenFMBank;
+    unsigned char preenFMComboNumber;
+    unsigned char preenFMComboPresetNumber;
+    const struct BankFile* preenFMCombo;
+
+    short dx7BankNumber;
+    unsigned char dx7PresetNumber;
+    const struct BankFile* dx7Bank;
 };
 
 struct MidiConfig {
@@ -138,7 +152,7 @@ public:
 
     static const MenuItem* getParentMenuItem(MenuState ms) {
         // MENU_DONE exception -> return itself to block back button
-        if (ms == MENU_DONE) {
+        if (ms == MENU_DONE || ms == MENU_CANCEL || ms == MENU_ERROR) {
             return getMenuItem(ms);
         }
         const MenuItem* item = &allMenus[0];

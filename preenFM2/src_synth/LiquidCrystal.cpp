@@ -55,7 +55,6 @@ LiquidCrystal::LiquidCrystal() {
 	/* GPIOA clock enable */
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 
-
 	struct pin pins[6]  = {
 		{ GPIOA, GPIO_Pin_0 },
 		{ GPIOA, GPIO_Pin_1 },

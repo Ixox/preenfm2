@@ -115,12 +115,7 @@
 #include "stm32f4xx.h"
 
 
-/************************* Miscellaneous Configuration ************************/
 
-// XH : we have a bootloader of 256Kb so the vector table starts at 0x08040000
-/*!< Vector Table base offset field.
-                                   This value must be a multiple of 0x200. */
-#define VECT_TAB_OFFSET  0x40000
 
 /******************************************************************************/
 
@@ -184,6 +179,11 @@ void SystemInit(void)
 #ifdef BOOTLOADER
   SCB->VTOR = FLASH_BASE ;
 #else
+  // XH : we have a bootloader of 256Kb so the vector table starts at 0x08040000
+  /*!< Vector Table base offset field.
+	This value must be a multiple of 0x200. */
+#define VECT_TAB_OFFSET  0x40000
+
   SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
 #endif
 

@@ -33,13 +33,13 @@
 
 #define FIRMWARE_DIR             "0:/pfm2"
 #define DX7_DIR                  "0:/pfm2/dx7"
+#define PREENFM_DIR              "0:/pfm2"
 
 #define PFM_PATCH_SIZE sizeof(struct OneSynthParams)
 #define USB_PATCH_SIZE 1024
 #define USB_PATCH_ZERO USB_PATCH_SIZE-PFM_PATCH_SIZE
 #define USB_COMBO_SIZE USB_PATCH_SIZE*4+13
 
-#define NUMBEROFDX7BANKS 300
 
 class UsbKey : public Storage {
 public:
@@ -49,16 +49,29 @@ public:
     // not in storage.. specific to USB
     // Used by bootloader
 
-    const char* getDx7BankName(int bankNumber);
+    const struct BankFile* getDx7Bank(int bankNumber);
+    const struct BankFile* getPreenFMBank(int bankNumber);
+    const struct BankFile* getPreenFMCombo(int comboNumber);
+
 
     int firmwareInit();
     int readNextFirmwareName(char *name, int*size);
     int loadFirmwarePart(char *fileName, int seek, void* bytes, int size);
 
+    int renameBank(const struct BankFile* bank, const char* newName);
+
+
 private:
+    void sortBankFile(struct BankFile* bankFiles, int numberOfFiles);
+	void swapBankFile(struct BankFile* bankFiles, int i, int j);
+
+	const struct BankFile*  addEmptyBank(const char* newBankName);
+
     const char* getDX7BankFullName(const char* bankName);
+    const char* getPreenFMFullName(const char* bankName);
     void usbProcess();
     int save(FILE_ENUM file, int seek, void* bytes, int size);
+    int save(const char* fileName, int seek, void* bytes, int size);
     int load(FILE_ENUM file, int seek, void* bytes, int size);
     int load(const char* fileName, int seek, void* bytes, int size);
    	int remove(FILE_ENUM file);
@@ -68,18 +81,38 @@ private:
     bool isFirmwareFile(char *name);
 
     int dx7Init();
-    int dx7ReadNextFileName(char *name);
+    int dx7ReadNextFileName(struct BankFile* bank);
     bool isDX7SysexFile(char *name, int size);
+
+    int preenFMBankInit();
+    int preenFMBankReadNextFileName(struct BankFile* bank);
+    bool isPreenFMBankFile(char *name, int size);
+
+    int preenFMComboInit();
+    int preenFMComboReadNextFileName(struct BankFile* combo);
+    bool isPreenFMComboFile(char *name, int size);
+
 
     const char* getFullName(const char* pathName, const char* fileName) ;
     int strlen(const char *string);
 
     bool dx7BankInitialized;
-    char dx7BankName[NUMBEROFDX7BANKS][13];
+    struct BankFile dx7Bank[NUMBEROFDX7BANKS];
     int dx7NumberOfBanks;
+
+    bool preenFMBankInitialized;
+    struct BankFile preenFMBank[NUMBEROFPREENFMBANKS];
+    int preenFMNumberOfBanks;
+
+    bool preenFMComboInitialized;
+    struct BankFile preenFMCombo[NUMBEROFPREENFMCOMBOS];
+    int preenFMNumberOfCombos;
+
+    struct BankFile errorDX7Bank;
+    struct BankFile errorPreenFMBank;
+    struct BankFile errorPreenFMCombo;
+
     char fullName[40];
-
-
 };
 
 #endif /*__USBKEY_H__*/

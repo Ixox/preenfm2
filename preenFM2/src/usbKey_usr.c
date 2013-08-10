@@ -321,8 +321,16 @@ int USBH_USR_MSC_Application(void) {
         for (int k=0; k<13; k++) {
             ((char*)commandParams.commandParam1)[k] = fileinfo.fname[k];
         }
-        (*((DWORD*)commandParams.commandParam2)) = fileinfo.fsize;
+        *((unsigned long*)commandParams.commandParam2) = fileinfo.fsize;
         commandParams.commandResult = COMMAND_SUCCESS;
+        commandParams.commandState = COMMAND_NONE;
+        break;
+    case COMMAND_RENAME:
+        if (f_rename(commandParams.commandFileName, (const char*)commandParams.commandParam1) != FR_OK) {
+            commandParams.commandResult = COMMAND_FAILED;
+        } else {
+            commandParams.commandResult = COMMAND_SUCCESS;
+        }
         commandParams.commandState = COMMAND_NONE;
         break;
     case COMMAND_NONE:

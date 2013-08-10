@@ -39,3 +39,22 @@ struct AlgoInformation  algoInformation[] = {
         { 6, 4, 2},   // ALG19
 };
 
+
+int strcmp(const char *s1, const char *s2) {
+	while (*s1==*s2)
+	{
+		if(*s1=='\0')
+			return(0);
+		s1++;
+		s2++;
+	}
+	char rs1 = *s1;
+	char rs2 = *s2;
+	if (rs1 == '_') {
+		rs1 = 0;
+	}
+	if (rs2 == '_') {
+		rs2 = 0;
+	}
+	return(rs1-rs2);
+}

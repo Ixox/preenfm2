@@ -66,7 +66,7 @@ public:
 
 
     static void convertSynthStateToCharArray(OneSynthParams* params, unsigned char* chars);
-    static void convertCharArrayToSynthState(unsigned char* chars, OneSynthParams* params);
+    static void convertCharArrayToSynthState(const unsigned char* chars, OneSynthParams* params);
 
     static void sendNrpn(struct MidiEvent cc);
     static void sendCurrentPatchAsNrpns(int timbre);

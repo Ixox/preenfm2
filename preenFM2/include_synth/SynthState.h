@@ -58,6 +58,12 @@ enum {
 };
 
 enum {
+    ENCODER_ENGINE_IM5 = 0,
+    ENCODER_ENGINE_IM6,
+};
+
+
+enum {
     ENCODER_ENGINE_MIX1 = 0,
     ENCODER_ENGINE_PAN1,
     ENCODER_ENGINE_MIX2,
@@ -104,6 +110,14 @@ enum {
     ENCODER_LFO_BIAS,
     ENCODER_LFO_KSYNC
 };
+
+enum {
+    ENCODER_LFO_ENV2_SILENCE = 0,
+    ENCODER_LFO_ENV2_ATTACK,
+    ENCODER_LFO_ENV2_RELEASE,
+    ENCODER_LFO_ENV2_LOOP
+};
+
 
 enum {
     ENCODER_STEPSEQ_BPM = 0,
@@ -171,76 +185,6 @@ enum OscEnv2Loop {
     LFO_ENV2_LOOP_ATTACK
 };
 
-enum {
-    ROW_ENGINE_FIRST = 0,
-    ROW_ENGINE = ROW_ENGINE_FIRST,
-    ROW_MODULATION1 ,
-    ROW_MODULATION2 ,
-    ROW_OSC_MIX1,
-    ROW_OSC_MIX2,
-    ROW_OSC_MIX3,
-    ROW_ENGINE_LAST = ROW_OSC_MIX3
-};
-
-enum {
-    ROW_OSC_FIRST = ROW_ENGINE_LAST+1,
-    ROW_OSC1 = ROW_OSC_FIRST,
-    ROW_OSC2 ,
-    ROW_OSC3 ,
-    ROW_OSC4 ,
-    ROW_OSC5 ,
-    ROW_OSC6 ,
-    ROW_OSC_LAST = ROW_OSC6
-};
-
-
-enum {
-    ROW_ENV_FIRST = ROW_OSC_LAST+1,
-    ROW_ENV1a = ROW_ENV_FIRST,
-    ROW_ENV1b,
-    ROW_ENV2a ,
-    ROW_ENV2b ,
-    ROW_ENV3a ,
-    ROW_ENV3b ,
-    ROW_ENV4a ,
-    ROW_ENV4b ,
-    ROW_ENV5a ,
-    ROW_ENV5b ,
-    ROW_ENV6a ,
-    ROW_ENV6b ,
-    ROW_ENV_LAST = ROW_ENV6b
-};
-
-enum {
-    ROW_MATRIX_FIRST = ROW_ENV_LAST+1,
-    ROW_MATRIX1 = ROW_MATRIX_FIRST,
-    ROW_MATRIX2 ,
-    ROW_MATRIX3 ,
-    ROW_MATRIX4 ,
-    ROW_MATRIX5 ,
-    ROW_MATRIX6 ,
-    ROW_MATRIX7 ,
-    ROW_MATRIX8 ,
-    ROW_MATRIX9 ,
-    ROW_MATRIX10 ,
-    ROW_MATRIX11 ,
-    ROW_MATRIX12 ,
-    ROW_MATRIX_LAST = ROW_MATRIX12
-};
-
-enum {
-    ROW_LFO_FIRST = ROW_MATRIX_LAST+1,
-    ROW_LFOOSC1 = ROW_LFO_FIRST,
-    ROW_LFOOSC2 ,
-    ROW_LFOOSC3 ,
-    ROW_LFOENV1 ,
-    ROW_LFOENV2 ,
-    ROW_LFOSEQ1 ,
-    ROW_LFOSEQ2 ,
-    ROW_LFO_LAST = ROW_LFOSEQ2
-};
-
-#define NUMBER_OF_ROWS ROW_LFO_LAST+1
 
 
 // Display information
@@ -369,9 +313,9 @@ public:
 		}
 	}
 
-	void propagateMenuBack() {
+	void propagateMenuBack(enum MenuState oldMenuState) {
 		for (SynthMenuListener* listener = firstMenuListener; listener !=0; listener = listener->nextListener) {
-			listener->menuBack(&fullState);
+			listener->menuBack(oldMenuState, &fullState);
 		}
 	}
 
@@ -452,7 +396,7 @@ public:
 		return fullState.synthMode;
 	}
 
-    void newBankReady();
+    void newSysexBankReady();
 
     void tempoClick();
 
@@ -466,6 +410,8 @@ public:
 	char stepSelect[2];
 
 private:
+	bool isCurrentRowAvailable();
+	bool isEnterNameState(int currentItme);
 	char engineRow, operatorRow, envelopeRow, matrixRow, lfoRow;
 	char currentRow;
 	bool isPlayingNote ;

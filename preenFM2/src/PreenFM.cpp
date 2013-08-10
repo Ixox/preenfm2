@@ -265,19 +265,21 @@ void setup() {
         synthState.buttonPressed(BUTTON_MENUSELECT);
         // Load
         synthState.buttonPressed(BUTTON_MENUSELECT);
-        if (bootOption == 6) {
-            // Internal bank
+        if (bootOption == 1) {
+        	// Bank
+            synthState.buttonPressed(BUTTON_MENUSELECT);
+        } else if (bootOption == 2) {
+        	// Combo
             synthState.encoderTurned(0, 1);
             synthState.buttonPressed(BUTTON_MENUSELECT);
-        } else {
-            // User
-            synthState.buttonPressed(BUTTON_MENUSELECT);
-            // Bank
-            for (int k = 0; k < bootOption - 1; k++) {
-                synthState.encoderTurned(0, 1);
-            }
+        } else if (bootOption == 3) {
+        	// DX7
+            synthState.encoderTurned(0, 1);
+            synthState.encoderTurned(0, 1);
             synthState.buttonPressed(BUTTON_MENUSELECT);
         }
+        // First preset...
+        synthState.buttonPressed(BUTTON_MENUSELECT);
     }
 
 
