@@ -168,8 +168,8 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
 		if (ft == OSC_FT_FIXE) {
 			lcd->setCursor(10, 3);
 			newValue = oParam[oRow].frequencyMul * 1000.0 +  oParam[oRow].detune * 100;
-			if (newValue < 1) {
-				newValue = 1;
+			if (newValue < 0) {
+				newValue = 0;
 			}
 			printValueWithSpace(newValue);
 		} else {

@@ -114,8 +114,8 @@ void Osc::newNote(struct OscState* oscState, int note) {
 		break;
 	case OSC_FT_FIXE:
 		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f + oscillator->detune * 100.0f;
-		if (oscState->mainFrequency < 1.0f) {
-			oscState->mainFrequency = 1.0f;
+		if (oscState->mainFrequency < 0.0f) {
+			oscState->mainFrequency = 0.0f;
 		}
 		break;
 	}
@@ -130,8 +130,8 @@ void Osc::glideToNote(struct OscState* oscState, int note) {
 		break;
 	case OSC_FT_FIXE:
 		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f + oscillator->detune * 100.0f;
-		if (oscState->mainFrequency < 1.0f) {
-			oscState->mainFrequency = 1.0f;
+		if (oscState->mainFrequency < 0.0f) {
+			oscState->mainFrequency = 0.0f;
 		}
 		break;
 	}
