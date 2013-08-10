@@ -211,7 +211,6 @@ static uint8_t usbd_midi_EP0_RxReady(void *pdev) {
 static uint8_t usbd_midi_DataIn(void *pdev, uint8_t epnum) {
     DCD_EP_Flush((USB_OTG_CORE_HANDLE *)pdev, 0x81);
     return USBD_OK;
-	return USBD_OK;
 }
 
 static uint8_t usbd_midi_DataOut(void *pdev, uint8_t epnum) {
@@ -236,21 +235,6 @@ static uint8_t usbd_midi_DataOut(void *pdev, uint8_t epnum) {
     case 0xF:
         usartBuffer.insert(midiBuff[1]);
         break;
-    }
-
-    switch (midiBuff[0] & 0xf) {
-    case 0x5:
-    case 0x6:
-    case 0x7:
-    	lcd.setCursor(10,0);
-    	lcd.print("END...");
-    	break;
-    case 0xF:
-    	lcd.setCursor(10,1);
-    	lcd.print("FFFFF");
-    	break;
-    default:
-    	break;
     }
 
 	// Prepare for next midi information
