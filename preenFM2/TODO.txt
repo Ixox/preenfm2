@@ -1,15 +1,21 @@
 TODO (temporary list, grow over time) : 
-. Play note in combo (spec)
 . USB Midi : SYSEX, after touch, program change
 . ADD DX7 algo for compatibility...
 . audio glich when changing patch while playing and start again plaing (seems to be linked with voice).
 
+TO check hardware :
+. Low pass filter
+. New midi/USB cable
+
+Documentation : 
+. DOC !!!!
+
+
 No sure : 
 . Modify button : Osc->Operator# , Env : Osc, EnvA, EnvB ?
 . 'Panic!' to add... Voice = 0 enough ?
+. Play note in combo (spec)
 
-TO check hardware :
-. volume Pot make noise
 
 
 OK to test  

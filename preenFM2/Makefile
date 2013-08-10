@@ -92,6 +92,7 @@ SRC_BOOTLOADER = BootLoader.cpp \
 	src_synth/UsbKey.cpp \
 	src_synth/Storage.cpp \
 	src_synth/LiquidCrystal.cpp \
+	src_synth/Common.cpp \
 	system_stm32f4xx.c \
 	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c \
 	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c \

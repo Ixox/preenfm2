@@ -21,7 +21,7 @@
 #include "Menu.h"
 #include "PresetUtil.h"
 
-// Set param in mememory reachable with USB : static is OK
+// Set param in memmory reachable with USB : static is OK
 struct OneSynthParams reachableParam;
 uint8_t dx7PackedPatch[DX7_PACKED_PATCH_SIZED];
 
@@ -287,6 +287,7 @@ void Storage::savePreenFMCombo(const struct BankFile* combo, int comboNumber, ch
 
 
 void Storage::saveBank(const char* newBankName, const uint8_t* sysexTmpMem) {
+#ifndef BOOTLOADER
 	const struct BankFile * newBank = addEmptyBank(newBankName);
 	if (newBank == 0) {
 		return;
@@ -295,6 +296,7 @@ void Storage::saveBank(const char* newBankName, const uint8_t* sysexTmpMem) {
 		PresetUtil::convertCharArrayToSynthState(sysexTmpMem + PATCH_SIZE_PFM2 * k, &oneSynthParamsTmp);
 		savePreenFMPatch(newBank, k, &oneSynthParamsTmp);
 	}
+#endif
 }
 
 int Storage::bankBaseLength(const char* bankName) {

@@ -393,7 +393,6 @@ void SynthState::encoderTurnedWhileButtonPressed(int encoder, int ticks, int but
 
 void SynthState::encoderTurned(int encoder, int ticks) {
     if (fullState.synthMode == SYNTH_MODE_EDIT) {
-        int num = encoder + currentRow * NUMBER_OF_ENCODERS;
 
         // Step sequencer special case
         if (currentRow >= ROW_LFOSEQ1) {
@@ -403,6 +402,7 @@ void SynthState::encoderTurned(int encoder, int ticks) {
     		}
     	};
 
+        int num = encoder + currentRow * NUMBER_OF_ENCODERS;
         struct ParameterDisplay* param = &(allParameterRows.row[currentRow]->params[encoder]);
         float newValue;
         float oldValue;
@@ -415,15 +415,19 @@ void SynthState::encoderTurned(int encoder, int ticks) {
 
 		if (param->valueNameOrder == NULL) {
 			// Not string parameters
+
 			// floating point test to be sure numberOfValues is diferent from 1.
+			// for voices when number of voices forced to 0
 			if (param->numberOfValues < 1.5) {
 				return;
 			}
 
+
 			float &value = ((float*)params)[num];
 			oldValue = value;
 			float inc = ((param->maxValue - param->minValue) / (param->numberOfValues - 1.0f));
-			int tickIndex = (value - param->minValue) / inc + .0005f+ ticks;
+
+			int tickIndex = (value - param->minValue) / inc + .0005f + ticks;
 			newValue = param->minValue + tickIndex * inc;
 			propagateNewParamCheck(encoder, oldValue, &newValue);
 			if (newValue > param->maxValue) {
