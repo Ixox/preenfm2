@@ -50,7 +50,7 @@ Reset_Handler:
 
 /* Do we asked to go to DFU mode */
 /* Address for RAM signature - first adress of PreenFM RAM */
-  LDR     R0, =0x20005FF0
+  LDR     R0, =0x2001BFF0
   LDR     R1, =0x12344321
   LDR     R2, [R0, #0]
 /* Invalidate */

@@ -515,7 +515,7 @@ int main(void) {
     	bootLoader.welcome();
     	lcd.setCursor(1,2);
     	lcd.print("!STM32F4 USB DFU!");
-    	uint32_t magicRam = 0x20005FF0;
+    	uint32_t magicRam = 0x2001BFF0;
     	*(__IO uint32_t*)magicRam = 0x12344321;
         pFunction jumpToBootloader  = (pFunction)*(__IO uint32_t*) 0x08000004;
         RCC_DeInit();

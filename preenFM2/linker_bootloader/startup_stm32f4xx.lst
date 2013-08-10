@@ -53,7 +53,7 @@ ARM GAS  linker_bootloader/startup_stm32f4xx.s 			page 1
   50              	
   51              	/* Do we asked to go to DFU mode */
   52              	/* Address for RAM signature - first adress of PreenFM RAM */
-  53 0000 1348     	  LDR     R0, =0x20005FF0
+  53 0000 1348     	  LDR     R0, =0x2001BFF0
   54 0002 1449     	  LDR     R1, =0x12344321
   55 0004 0268     	  LDR     R2, [R0, #0]
   56              	/* Invalidate */
