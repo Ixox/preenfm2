@@ -37,12 +37,12 @@ enum AllControlChange {
     CC_IM5,
     CC_IM6,
     CC_MIX1 = 22,
-    CC_MIX2,
-    CC_MIX3,
-    CC_MIX4,
     CC_PAN1,
+    CC_MIX2,
     CC_PAN2,
+    CC_MIX3,
     CC_PAN3,
+    CC_MIX4,
     CC_PAN4,
     CC_MATRIXROW1_MUL,
     CC_MATRIXROW2_MUL,
@@ -122,7 +122,8 @@ private:
     VisualInfo *visualInfo;
     Storage* storage;
     RingBuffer<MidiEvent, 64> midiToSend;
-    MidiEvent toSend ;
+    struct MidiEvent toSend ;
+    struct MidiEvent lastSentCC;
     struct Nrpn currentNrpn[NUMBER_OF_TIMBRES];
     unsigned char runningStatus;
 
@@ -132,7 +133,6 @@ private:
     int songPosition;
 
     // Old ECC values
-    unsigned char previousECC[NUMBER_OF_ECC];
     uint8_t usbBuf[4];
 };
 

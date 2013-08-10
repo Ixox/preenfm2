@@ -301,6 +301,7 @@ void MidiDecoder::midiEventReceived(MidiEvent midiEvent) {
     }
 }
 
+int cccpt = 0;
 void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
     int receives = this->synthState->fullState.midiConfigValue[MIDICONFIG_RECEIVES] ;
 
@@ -341,22 +342,22 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
             break;
         case CC_MIX1:
         case CC_MIX2:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX1, ENCODER_ENGINE_MIX1 + (midiEvent.value[0] - CC_MIX1) * 2,
+            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX1, ENCODER_ENGINE_MIX1 + (midiEvent.value[0] - CC_MIX1),
                     (float)midiEvent.value[1] * .01f);
             break;
         case CC_MIX3:
         case CC_MIX4:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX2, ENCODER_ENGINE_MIX3 + (midiEvent.value[0] - CC_MIX3) * 2,
+            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX2, ENCODER_ENGINE_MIX3 + (midiEvent.value[0] - CC_MIX3),
                     (float)midiEvent.value[1] * .01f);
             break;
         case CC_PAN1:
         case CC_PAN2:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX1, ENCODER_ENGINE_PAN1 + (midiEvent.value[0] - CC_PAN1) * 2,
+            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX1, ENCODER_ENGINE_PAN1 + (midiEvent.value[0] - CC_PAN1),
                     (float)midiEvent.value[1] * .02f - 1.0f);
             break;
         case CC_PAN3:
         case CC_PAN4:
-            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX2, ENCODER_ENGINE_PAN3 + (midiEvent.value[0] - CC_PAN3) * 2,
+            this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX2, ENCODER_ENGINE_PAN3 + (midiEvent.value[0] - CC_PAN3),
                     (float)midiEvent.value[1] * .02f - 1.0f);
             break;
         case CC_OSC1_FREQ:
@@ -366,7 +367,7 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
         case CC_OSC5_FREQ:
         case CC_OSC6_FREQ:
             this->synth->setNewValueFromMidi(timbre, ROW_OSC1 + midiEvent.value[0] - CC_OSC1_FREQ , ENCODER_OSC_FREQ,
-                    (float) midiEvent.value[1] * .833333333333333f);
+                    (float) midiEvent.value[1] * .0833333333333333f);
             break;
         case CC_MATRIXROW1_MUL:
         case CC_MATRIXROW2_MUL:
@@ -384,8 +385,8 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
                     (float) midiEvent.value[1] *.2f);
             break;
         case CC_LFO_ENV2_SILENCE:
-            this->synth->setNewValueFromMidi(timbre, ROW_LFOOSC1 + midiEvent.value[0] - CC_LFO1_FREQ, ENCODER_LFO_FREQ,
-                    (float) midiEvent.value[1] * .05f);
+            this->synth->setNewValueFromMidi(timbre, ROW_LFOENV2, ENCODER_LFO_ENV2_SILENCE,
+                    (float) midiEvent.value[1] * .125f);
             break;
         case CC_STEPSEQ5_GATE:
         case CC_STEPSEQ6_GATE:
@@ -551,31 +552,22 @@ void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
 
         switch (currentrow) {
         case ROW_MODULATION1:
-			// We only value multiple of 10...
-			if ((newValue * 10.0f) != (int)(newValue * 10.0f)) {
-				break;
-			}
-			cc.value[1] = newValue * .1f;
+
+			cc.value[1] = newValue * 10;
 			cc.value[0] = CC_IM1 + encoder;
 
             break;
         case ROW_MODULATION2:
-			if ((newValue * 10.0f) != (int)(newValue * 10.0f)) {
-				break;
-			}
-			cc.value[1] = newValue * .1f;
+        	cc.value[1] = newValue * 10;
 			cc.value[0] = CC_IM5 + encoder;
-            break;
+
+			break;
         case ROW_OSC_MIX1:
             cc.value[0] = CC_MIX1 + encoder;
             if ((encoder & 0x1) == 0) {
                 // mix
                 cc.value[1] = newValue * 100.0f + .1f;
             } else {
-                // pan
-            	if (newValue * 50.0f != (int)(newValue * 50.0f)) {
-            		break;
-            	}
                 cc.value[1] = (newValue + 1.0f ) * 50.0f + .1f;
             }
             break;
@@ -585,48 +577,31 @@ void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
                 // mix
                 cc.value[1] = newValue * 100.0f + .1f;
             } else {
-                // pan
-            	if (newValue * 50.0f != (int)(newValue * 50.0f)) {
-            		break;
-            	}
                 cc.value[1] = (newValue + 1.0f ) * 50.0f + .1f;
             }
             break;
         case ROW_OSC_FIRST ... ROW_OSC_LAST:
         if (encoder == ENCODER_OSC_FREQ) {
-        	// do net send freq > 10... so that we can keep the 12 divisions per octave
-        	if (newValue > 10.0f) {
-                break;
-            }
             cc.value[0] = CC_OSC1_FREQ + (currentrow - ROW_OSC_FIRST);
             cc.value[1] = newValue * 12.0f + .1f;
         }
         break;
         case ROW_MATRIX_FIRST ... ROW_MATRIX4:
         if (encoder == ENCODER_MATRIX_MUL) {
-            if (newValue * 5.0f != (int)(newValue * 5.0f)) {
-                break;
-            }
             cc.value[0] = CC_MATRIXROW1_MUL + currentrow - ROW_MATRIX_FIRST;
             cc.value[1] = newValue * 5.0f + 50.1f;
         }
         break;
         case ROW_LFO_FIRST ... ROW_LFOOSC3:
         if (encoder == ENCODER_LFO_FREQ) {
-            if (newValue * 5.0f != (int)(newValue * 5.0f)) {
-                break;
-            }
             cc.value[0] = CC_LFO1_FREQ + (currentrow - ROW_LFO_FIRST);
             cc.value[1] = newValue * 5.0f + .1f;
         }
         break;
         case ROW_LFOENV2:
         	if (encoder == ENCODER_LFO_ENV2_SILENCE) {
-        		if (newValue * 20.0f != (int)(newValue * 20.0f)) {
-        			break;
-        		}
                 cc.value[0] = CC_LFO_ENV2_SILENCE;
-                cc.value[1] = newValue * 20.0f + .1f;
+                cc.value[1] = newValue * 8.0f + .1f;
         	}
         	break;
         case ROW_LFOSEQ1 ... ROW_LFOSEQ2:
@@ -638,7 +613,15 @@ void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
         }
 
         if (cc.value[0] != 0) {
-            midiToSend.insert(cc);
+        	// CC limited to 127
+        	if (cc.value[1] > 127) {
+    			cc.value[1] = 127;
+            }
+
+        	if (lastSentCC.value[1] != cc.value[1] || lastSentCC.value[0] != cc.value[0] || lastSentCC.channel != cc.channel) {
+        		midiToSend.insert(cc);
+        		lastSentCC = cc;
+        	}
         }
     }
 }
