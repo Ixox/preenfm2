@@ -169,6 +169,13 @@ void Voice::noteOff() {
 void Voice::killNow() {
 	this->note = 0;
 	this->playing = false;
+    this->env1ValueMem = 0;
+    this->env2ValueMem = 0;
+    this->env3ValueMem = 0;
+    this->env4ValueMem = 0;
+    this->env5ValueMem = 0;
+    this->env6ValueMem = 0;
+
 }
 
 
@@ -808,7 +815,7 @@ void Voice::nextBlock() {
 				float freq2 = currentTimbre->osc2.getNextSample(&oscState2) * env2Value;
 				freq2 *=  oscState2.frequency;
 
-				oscState1.frequency =  freq2*currentTimbre->modulationIndex1 + oscState1.mainFrequencyPlusMatrix;
+				oscState1.frequency =  freq2 * currentTimbre->modulationIndex1 + oscState1.mainFrequencyPlusMatrix;
 				float car1 =  currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 * div2TimesVelocity;
 
 				float freq6 = osc6Values[k] * env6Value;

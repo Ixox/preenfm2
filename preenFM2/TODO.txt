@@ -1,6 +1,5 @@
 TODO (temporary list, grow over time) : 
 . USB Midi : SYSEX, after touch, program change
-. audio glich when changing patch while playing and start again plaing (seems to be linked with voice).
 
 TO check hardware :
 . Low pass filter
@@ -25,6 +24,7 @@ OK to test
 
 
 DONE:
+. audio glich when changing patch while playing and start again plaing (seems to be linked with voice). Reset env*Mem in voice killNow().
 . ADD All DX7 algos for compatibility + Hexter coversion 
 . Fix NRPN and CC... with new scale...
 . Sort Combo, banks and DX7Banks alphabeticaly.
