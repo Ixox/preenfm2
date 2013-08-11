@@ -113,8 +113,6 @@ public:
         return midiToSend.getCount()>0;
     }
 
-    RingBuffer<MidiEvent, 64> getMidiToSend() { return midiToSend; }
-
 private:
     struct MidiEventState currentEventState;
     struct MidiEvent currentEvent;
@@ -132,7 +130,7 @@ private:
     int midiClockCpt;
     int songPosition;
 
-    // Old ECC values
+    // usb midi data buffer
     uint8_t usbBuf[4];
 };
 

@@ -23,7 +23,8 @@
 #include "Storage.h"
 
 enum {
-    MIDICONFIG_CHANNEL1 = 0,
+    MIDICONFIG_USB = 0,
+    MIDICONFIG_CHANNEL1,
     MIDICONFIG_CHANNEL2,
     MIDICONFIG_CHANNEL3,
     MIDICONFIG_CHANNEL4,
@@ -42,6 +43,12 @@ enum {
 enum SynthEditMode {
     SYNTH_MODE_EDIT = 0,
     SYNTH_MODE_MENU
+};
+
+enum MidiConfigUSB {
+	USBMIDI_OFF = 0,
+	USBMIDI_IN,
+	USBMIDI_IN_AND_OUT
 };
 
 enum MenuState {

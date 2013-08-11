@@ -484,6 +484,12 @@ static uint32_t DCD_HandleInEP_ISR(USB_OTG_CORE_HANDLE *pdev)
         DCD_WriteEmptyTxFifo(pdev , epnum);
         
         CLEAR_IN_EP_INTR(epnum, emptyintr);
+
+        // PreenFM2 Hack
+        // If epnum is not control we want to notify that usb is ready
+        if (epnum != 0) {
+        	USBD_DCD_INT_fops->DataInStage(pdev , epnum);
+        }
       }
     }
     epnum++;
@@ -690,6 +696,12 @@ static uint32_t DCD_WriteEmptyTxFifo(USB_OTG_CORE_HANDLE *pdev, uint32_t epnum)
     ep->xfer_buff  += len;
     ep->xfer_count += len;
     
+    if( ep->xfer_count >= ep->xfer_len){
+      uint32_t fifoemptymsk = 1 << ep->num;
+      USB_OTG_MODIFY_REG32(&pdev->regs.DREGS->DIEPEMPMSK, fifoemptymsk, 0);
+      break;
+    }
+
     txstatus.d32 = USB_OTG_READ_REG32(&pdev->regs.INEP_REGS[epnum]->DTXFSTS);
   }
   

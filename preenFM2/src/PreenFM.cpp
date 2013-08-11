@@ -201,10 +201,6 @@ void setup() {
                  : "r0");
 
 
-    // Init core FS as a midiStreaming device
-#ifdef USE_USB_OTG_FS
-    USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &preenFMDescriptor, &midiCallback, &midiStreamingUsrCallback);
-#endif
 
     // ---------------------------------------
     // Dependencies Injection
@@ -244,6 +240,11 @@ void setup() {
     usbKey.loadConfig(synthState.fullState.midiConfigValue);
     if (usbKey.loadDefaultCombo()) {
     	synthState.propagateAfterNewComboLoad();
+    }
+
+    // Init core FS as a midiStreaming device
+    if (synthState.fullState.midiConfigValue[MIDICONFIG_USB] != USBMIDI_OFF) {
+    	USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &preenFMDescriptor, &midiCallback, &midiStreamingUsrCallback);
     }
 
     // launch the engine !!
@@ -322,7 +323,7 @@ void loop(void) {
 	}
 
 	// Comment following line for debug....
-	lcd.setRealTimeAction(false);
+	lcd.setRealTimeAction(true);
     if ((newMicros - encoderMicros) > 80) {
         fillSoundBuffer();
         encoders.checkStatus(synthState.fullState.midiConfigValue[MIDICONFIG_ENCODER]);

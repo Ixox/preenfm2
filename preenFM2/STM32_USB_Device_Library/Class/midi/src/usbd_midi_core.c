@@ -173,13 +173,13 @@ static uint8_t usbd_midi_Init(void *pdev, uint8_t cfgidx) {
 	/* Open EP IN */
 	DCD_EP_Open((USB_OTG_CORE_HANDLE *)pdev,
 			  0x81,
-			  0x40,
+			  128,
 			  0x02);
 
 	/* Open EP OUT */
 	DCD_EP_Open((USB_OTG_CORE_HANDLE *)pdev,
 			  0x1,
-			  0x40,
+			  128,
 			  0x02);
 
 	// Prepare for next midi information
@@ -187,7 +187,6 @@ static uint8_t usbd_midi_Init(void *pdev, uint8_t cfgidx) {
 			0x1,
 			(uint8_t*)midiBuff,
 			4);
-
 
 	return USBD_OK;
 }
@@ -207,9 +206,10 @@ static uint8_t usbd_midi_EP0_RxReady(void *pdev) {
 	return 0;
 }
 
-
+extern bool usbReady;
 static uint8_t usbd_midi_DataIn(void *pdev, uint8_t epnum) {
     DCD_EP_Flush((USB_OTG_CORE_HANDLE *)pdev, 0x81);
+    usbReady = true;
     return USBD_OK;
 }
 
@@ -220,13 +220,15 @@ static uint8_t usbd_midi_DataOut(void *pdev, uint8_t epnum) {
     case 0xb:
     case 0xe:
     case 0x3:
-    case 0x4:
-    case 0x7:
+// Sysex :
+//    case 0x4:
+//    case 0x7:
 	    usartBuffer.insert(midiBuff[1]);
 	    usartBuffer.insert(midiBuff[2]);
 	    usartBuffer.insert(midiBuff[3]);
 	    break;
-    case 0x6:
+// Sysex :
+//    case 0x6:
     case 0x2:
         usartBuffer.insert(midiBuff[1]);
         usartBuffer.insert(midiBuff[2]);

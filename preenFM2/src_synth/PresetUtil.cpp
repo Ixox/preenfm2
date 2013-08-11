@@ -311,7 +311,8 @@ void PresetUtil::sendSysexByte(uint8_t byte) {
 	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
 	    USART3->DR = (uint16_t)sysexBuffer[0];
 
-	    if (usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
+	    if (synthState->fullState.midiConfigValue[MIDICONFIG_USB] == USBMIDI_IN_AND_OUT
+	    		&& usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
 	        // usbBuf[0] = [number of cable on 4 bits] [event type on 4 bites]
 	    	// 0x4 SysEx starts or continues
 	        usbBuffer[0] = 0x00  | 0x4;
@@ -334,12 +335,19 @@ void PresetUtil::sendSysexByte(uint8_t byte) {
 }
 
 void PresetUtil::sendSysexFinished() {
+	bool usbMidi = false;
+
+	if (synthState->fullState.midiConfigValue[MIDICONFIG_USB] == USBMIDI_IN_AND_OUT
+    		&& usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
+    	usbMidi = true;
+    }
+
 	if (sysexIndex == 1) {
 
 	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
 	    USART3->DR = (uint16_t)sysexBuffer[0];
 
-	    if (usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
+	    if (usbMidi) {
 	    	// 0x5 SysEx ends with 1 byte
 	        usbBuffer[0] = 0x00  | 0x5;
 	        usbBuffer[1] = sysexBuffer[0];
@@ -354,7 +362,7 @@ void PresetUtil::sendSysexFinished() {
 		while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
 	    USART3->DR = (uint16_t)sysexBuffer[0];
 
-	    if (usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
+	    if (usbMidi) {
 	    	// 0x6 SysEx ends with 2 bytes
 	        usbBuffer[0] = 0x00  | 0x6;
 	        usbBuffer[1] = sysexBuffer[0];
@@ -371,7 +379,7 @@ void PresetUtil::sendSysexFinished() {
 		while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
 	    USART3->DR = (uint16_t)sysexBuffer[0];
 
-	    if (usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
+	    if (usbMidi) {
 	    	// 0x7 SysEx ends with 3 bytes
 	        usbBuffer[0] = 0x00  | 0x7;
 	        usbBuffer[1] = sysexBuffer[0];
@@ -569,6 +577,7 @@ int PresetUtil::readSysexPatch(unsigned char* params) {
 }
 
 void PresetUtil::resetConfigAndSaveToEEPROM() {
+    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_USB] = 0;
     PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL1] = 1;
     PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL2] = 2;
     PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL3] = 3;

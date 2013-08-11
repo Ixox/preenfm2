@@ -27,8 +27,14 @@ const char* midiReceives[] = { "None", "CC", "NRPN", "CC & NRPN" };
 const char* midiSends [] = { "None", "CC", "NRPN" };
 const char* bootOptions [] = { "Default", "Bank", "Combo", "DX7" };
 const char* encoderType [] = { "12", "24" };
+const char* usbMidi[] = { "Off", "In", "In/Out" };
 
 const struct MidiConfig midiConfig[]  = {
+		{
+				"Usb Midi: ",
+				3,
+				usbMidi
+		},
         {
                 "Midi ch. 1: ",
                 17,

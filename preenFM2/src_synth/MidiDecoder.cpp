@@ -26,6 +26,10 @@ extern USB_OTG_CORE_HANDLE          usbOTGDevice;
 #include "LiquidCrystal.h"
 extern LiquidCrystal lcd;
 
+
+bool usbReady;
+
+
 #define INV127 .00787401574803149606f
 
 #ifdef LCDDEBUG
@@ -64,6 +68,7 @@ MidiDecoder::MidiDecoder() {
     this->isSequencerPlaying = false;
     this->midiClockCpt = 0;
     this->runningStatus = 0;
+    usbReady = true;
 }
 
 MidiDecoder::~MidiDecoder() {
@@ -628,8 +633,19 @@ void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
 
 
 void MidiDecoder::sendMidiOut() {
+	bool usbMidiOut = false;
+	if (this->synthState->fullState.midiConfigValue[MIDICONFIG_USB] == USBMIDI_IN_AND_OUT) {
+		if (usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
+			if (!usbReady) {
+				return;
+			}
+			usbMidiOut = true;
+		}
+	}
 
     MidiEvent toSend = midiToSend.remove();
+
+
 
     switch (toSend.eventType) {
     case MIDI_NOTE_OFF:
@@ -641,13 +657,13 @@ void MidiDecoder::sendMidiOut() {
         USART3->DR = (uint16_t)toSend.eventType + toSend.channel;
 
         // Between the USART3 to save a couple of cycle
-        if (usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
+        if (usbMidiOut) {
             // usbBuf[0] = [number of cable on 4 bits] [event type on 4 bites]
             usbBuf[0] = 0x00  | (toSend.eventType >> 4);
             usbBuf[1] = toSend.eventType + toSend.channel;
             usbBuf[2] = toSend.value[0];
             usbBuf[3] = toSend.value[1];
-
+            usbReady = false;
             DCD_EP_Tx(&usbOTGDevice, 0x81, usbBuf, 4);
         }
 
@@ -671,6 +687,7 @@ void MidiDecoder::sendMidiOut() {
             usbBuf[2] = toSend.value[0];
             usbBuf[3] = 0;
 
+            usbReady = false;
             DCD_EP_Tx(&usbOTGDevice, 0x81, usbBuf, 4);
         }
 

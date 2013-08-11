@@ -286,7 +286,8 @@ SynthState::SynthState() {
     fullState.dx7PresetNumber = 0;
     fullState.loadWhat = 0;
     fullState.saveWhat = 0;
-    fullState.midiConfigValue[MIDICONFIG_CHANNEL1] = 1; // all
+    fullState.midiConfigValue[MIDICONFIG_USB] = 0;
+    fullState.midiConfigValue[MIDICONFIG_CHANNEL1] = 1;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL2] = 2;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL3] = 3;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL4] = 4;
