@@ -18,8 +18,7 @@
 #include "Env.h"
 
 // Standard 128kb memory
-float Env::incTabAtt[201];
-float Env::incTabRel[201];
+float Env::incTab[1601];
 int Env::initTab = 0;
 
 
@@ -43,18 +42,18 @@ void Env::init(Matrix* matrix, struct EnvelopeParamsA *envParamsA, struct Envelo
 	this->envParamsA = envParamsA;
 	this->envParamsB = envParamsB;
 
-	// Init All ADSR
+    if (initTab == 0) {
+        initTab = 1;
+        for (float k=0; k<1601; k += 1.0f) {
+            incTab[(int)(k + .005f)] = BLOCK_SIZE / PREENFM_FREQUENCY / (k / 100.0f);
+        }
+    }
+
+    // Init All ADSR
 	for (int k=0; k<4; k++) {
 		reloadADSR(k);
 		reloadADSR(k + 4);
 	}
-    if (initTab == 0) {
-        initTab = 1;
-        for (float k=0; k<201; k+=1) {
-            incTabAtt[(int)k] = BLOCK_SIZE / PREENFM_FREQUENCY / (k / 50.0f + .0005f);
-            incTabRel[(int)k] = BLOCK_SIZE / PREENFM_FREQUENCY / (k / 25.0f + .0005f);
-        }
-    }
 }
 
 

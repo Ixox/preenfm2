@@ -169,8 +169,9 @@ void Systick_disable() {
 	SysTick->CTRL  = 0;
 }
 
+
 void SysTick_Config(void) {
-	int numberOfTick = 168000000 / PREENFM_FREQUENCY / 4;
+	int numberOfTick = SystemCoreClock / PREENFM_FREQUENCY / 4;
 
 
 	if (SysTick_Config(numberOfTick)) {

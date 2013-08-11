@@ -83,7 +83,7 @@ public:
         tables[ENV_STATE_ON_R].table = envExponential;
         tables[ENV_STATE_ON_R].size = 63;
         tables[ENV_STATE_ON_QUICK_R].table = envLinear;
-        tables[ENV_STATE_ON_QUICK_R].size = 63;
+        tables[ENV_STATE_ON_QUICK_R].size = 1;
     }
 
     virtual ~Env(void) {
@@ -104,32 +104,33 @@ public:
         case 0:
         case 1:
         	stateTarget[ENV_STATE_ON_A] =  envParamsA->attackLevel;
-        	stateInc[ENV_STATE_ON_A] = incTabAtt[(int)(envParamsA->attackTime * 50)];
+            // Not necessary... recalculated in noteOn....
+        	// stateInc[ENV_STATE_ON_A] = incTab[(int)(envParamsA->attackTime * 100.0f)];
             break;
         case 2:
         case 3:
         	stateTarget[ENV_STATE_ON_D] =  envParamsA->decayLevel;
-        	stateInc[ENV_STATE_ON_D] = incTabRel[(int)(envParamsA->decayTime * 25)];
+        	stateInc[ENV_STATE_ON_D] = incTab[(int)(envParamsA->decayTime * 100.0f)];
             break;
         case 4:
         case 5:
         	stateTarget[ENV_STATE_ON_S] =  envParamsB->sustainLevel;
-        	stateInc[ENV_STATE_ON_S] = incTabRel[(int)(envParamsB->sustainTime * 25)];
+        	stateInc[ENV_STATE_ON_S] = incTab[(int)(envParamsB->sustainTime * 100.0f)];
         	break;
         case 6:
         case 7:
         	stateTarget[ENV_STATE_ON_R] =  envParamsB->releaseLevel;
-            // Not sure it's necessary... recalculated in noteOn....
-            stateInc[ENV_STATE_ON_R] = incTabRel[(int)(envParamsB->releaseTime * 25)];
+            // Not necessary... recalculated in noteOff....
+        	// stateInc[ENV_STATE_ON_R] = incTab[(int)(envParamsB->releaseTime * 100.0f)];
             break;
         }
     }
 
     void newState(struct EnvData* env) {
 
-        if (env->envState == ENV_STATE_DEAD) {
-            // env->currentValue = 0;
-        }
+//        if (env->envState == ENV_STATE_DEAD) {
+//            env->currentValue = 0;
+//        }
         env->previousStateValue = env->currentValue;
         env->nextStateValue = stateTarget[env->envState];
         env->currentPhase = 0;
@@ -181,7 +182,7 @@ public:
     	if (attack < 0.0f) {
             attack = 0.0f;
         }
-        stateInc[ENV_STATE_ON_A] = incTabAtt[(int)(attack * 50)];
+        stateInc[ENV_STATE_ON_A] = incTab[(int)(attack * 100.0f)];
 
 
         env->currentValue = 0;
@@ -214,7 +215,7 @@ public:
     	} else {
     		release *= (1.0f + (stateTarget[ENV_STATE_ON_R] - env->currentValue)) / 2.0f;
     	}
-        stateInc[ENV_STATE_ON_R] = incTabRel[(int)(release * 25)];
+        stateInc[ENV_STATE_ON_R] = incTab[(int)(release * 100.0f)];
 
     	env->envState = ENV_STATE_ON_R;
         newState(env);
@@ -239,7 +240,6 @@ private:
     DestinationEnum destAttack;
 
     static int initTab;
-    static float incTabAtt[201];
-    static float incTabRel[201];
+    static float incTab[1601];
 };
 

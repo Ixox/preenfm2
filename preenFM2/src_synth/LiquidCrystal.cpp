@@ -5,11 +5,11 @@
 // Delay micro seconds for STM32F4 at 168Mhz
 // Comes from libmaple...
 
-#define STM32_TICKS_PER_US          168
+#define STM32_TICKS_PER_US          192
 // #define STM32_TICKS_PER_US          200
 #define STM32_DELAY_US_MULT         (STM32_TICKS_PER_US/3)
 
-extern void USB_OTG_BSP_uDelay (const uint32_t usec) ;
+extern uint32_t SystemCoreClock;
 
 void delay_us(unsigned int usec) {
     uint32_t us = usec * STM32_DELAY_US_MULT;

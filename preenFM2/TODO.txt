@@ -1,7 +1,6 @@
 TODO (temporary list, grow over time) : 
 
 
-
 TO check hardware :
 . Low pass filter
 
@@ -24,6 +23,7 @@ OK to test
 
 
 DONE:
+. But when release > 8 secs
 . USB Midi : SYSEX, after touch, program change..
 . Bootloader can now jump to STM32 ROM dfu loader
 . New midi/USB cable tested...
