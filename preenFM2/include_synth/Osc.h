@@ -101,7 +101,7 @@ public:
 
         oscState->index +=  oscState->frequency * waveTable->precomputedValue + waveTable->floatToAdd;
 
-        int phase = oscState->phase * waveTable->max * .14;
+        int phase = oscState->phase * waveTable->max * .014;
 
         // convert to int;
         int indexInteger = oscState->index;

@@ -1,5 +1,6 @@
 TODO (temporary list, grow over time) : 
-. USB Midi : SYSEX, after touch, program change
+
+
 
 TO check hardware :
 . Low pass filter
@@ -23,6 +24,7 @@ OK to test
 
 
 DONE:
+. USB Midi : SYSEX, after touch, program change..
 . Bootloader can now jump to STM32 ROM dfu loader
 . New midi/USB cable tested...
 . audio glich when changing patch while playing and start again plaing (seems to be linked with voice). Reset env*Mem in voice killNow().

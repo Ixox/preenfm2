@@ -113,6 +113,9 @@ private:
 
     // glide phase increment
     static float glidePhaseInc[10];
+
+    // FM feedback...
+    float feedback;
 };
 
 #endif

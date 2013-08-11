@@ -944,7 +944,6 @@ const MenuItem* SynthState::afterButtonPressed() {
     			}
     		}
     	}
-        fullState.preenFMBankNumber = fullState.menuSelect;
         break;
     case MENU_SAVE_SELECT_COMBO_PRESET:
     {
