@@ -593,10 +593,10 @@ void SynthState::encoderTurned(int encoder, int ticks) {
         		}
         		break;
 			case MENU_LOAD_SELECT_BANK_PRESET:
-			case MENU_SAVE_SELECT_BANK_PRESET:
 				propagateBeforeNewParamsLoad();
 				storage->loadPreenFMPatch(fullState.preenFMBank, fullState.menuSelect, params);
 				propagateAfterNewParamsLoad();
+			case MENU_SAVE_SELECT_BANK_PRESET:
                 fullState.preenFMPresetNumber = fullState.menuSelect;
                 break;
 			case MENU_LOAD_SELECT_COMBO_PRESET:
