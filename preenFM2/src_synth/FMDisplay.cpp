@@ -38,7 +38,7 @@ void FMDisplay::init(LiquidCrystal* lcd, Storage* storage) {
 	    presetModifed[k] = false;
 	    noteOnCounter[k] = 0;
 	}
-	displaycounter = 0;
+	algoCounter = 0;
 	currentTimbre = 0;
 	lcd->clear();
 }
@@ -399,13 +399,16 @@ void FMDisplay::newParamValue(int timbre, SynthParamType type, int currentRow, i
 					lcd->setCursor(ENCODER_OSC_FREQ * 5 + 1, 3);
 					lcd->print("        ");
 				}
-
 				refreshStatus = 4;
 				return;
 			}
 		}
 
 		updateEncoderValue(currentRow, encoder, param, newValue);
+
+		if (currentRow == ROW_ENGINE && encoder == ENCODER_ENGINE_ALGO) {
+			displayAlgo(newValue);
+		}
 	}
 }
 
@@ -459,7 +462,6 @@ void FMDisplay::newMenuState(FullState* fullState) {
 
 	switch (fullState->currentMenuItem->menuState) {
 		case MENU_SAVE_ENTER_COMBO_NAME:
-			// -2 because must erase preset name....
 			lcd->setCursor(6, menuRow);
 			for (int k=0;k<12; k++) {
 				lcd->print(allChars[(int)fullState->name[k]]);
@@ -736,5 +738,178 @@ void FMDisplay::tempoClick() {
             }
         }
     }
+    if (algoCounter > 0) {
+    	algoCounter --;
+    	if (algoCounter == 0) {
+    		// call new timbre to refresh the whole page
+    		newTimbre(this->currentTimbre);
+    	}
+    }
 }
+
+void FMDisplay::displayAlgo(int algo) {
+	algoCounter = 4;
+
+	const char *da[4] = {NULL, NULL, NULL, NULL};
+	int x = 13;
+
+	switch (algo) {
+	case ALGO1:
+		da[1] = "  2-3  ";
+		da[2] = "  \\ /  ";
+		da[3] = "   1   ";
+		break;
+	case ALGO2:
+		da[1] = "   3   ";
+		da[2] = "  / \\  ";
+		da[3] = "  1 2  ";
+		break;
+	case ALGO3:
+		da[1] = " 2 3-4 ";
+		da[2] = "  \\|/  ";
+		da[3] = "   1   ";
+		break;
+	case ALGO4:
+		da[1] = "  3-4  ";
+		da[2] = "  |\\|";
+		da[3] = "  1 2  ";
+		break;
+	case ALGO5:
+		da[0] = "  3-4  ";
+		da[1] = "  \\ /  ";
+		da[2] = "   2  ";
+		da[3] = "   1   ";
+		break;
+	case ALGO6:
+		da[1] = "   4   ";
+		da[2] = "  /|\\  ";
+		da[3] = " 1 2 3 ";
+		break;
+	case ALGO7:
+		da[1] = " 2 4-6 ";
+		da[2] = " | | | ";
+		da[3] = " 1 3 5 ";
+		break;
+	case ALGO8:
+		da[1] = " 234  6";
+		da[2] = " \\|/  |";
+		da[3] = "  1   5";
+		break;
+	case ALGO9:
+		da[0] = "      6";
+		da[1] = " 2-3  5";
+		da[2] = " \\ /  |";
+		da[3] = "  1   4 ";
+		break;
+	case ALG10:
+		da[0] = "     6 ";
+		da[1] = "     5 ";
+		da[2] = "  2  4 ";
+		da[3] = "  1  3 ";
+		break;
+	case ALG11:
+		da[1] = "  3  6 ";
+		da[2] = "  2  5 ";
+		da[3] = "  1  4 ";
+		break;
+	case ALG12:
+		da[1] = " 2 4 6 ";
+		da[2] = " | | | ";
+		da[3] = " 1 3 5 ";
+		break;
+	case ALG13:
+		da[0] = "     6 ";
+		da[1] = " 2 4 5 ";
+		da[2] = " | |/  ";
+		da[3] = " 1 3   ";
+		break;
+	case ALG14:
+		da[0] = " 3     ";
+		da[1] = " 2 5 6 ";
+		da[2] = " | |/  ";
+		da[3] = " 1 4   ";
+		break;
+	case ALG15:
+		da[1] = "2 4 5 6";
+		da[2] = "|  \\|/ ";
+		da[3] = "1   3  ";
+		break;
+	case ALG16:
+		da[0] = "   5 6 ";
+		da[1] = "   |/  ";
+		da[2] = " 2 4   ";
+		da[3] = " 1 3   ";
+		break;
+	case ALG17:
+		da[0] = "   4 6 ";
+		da[1] = " 2 3 5 ";
+		da[2] = "  \\|/  ";
+		da[3] = "   1   ";
+		break;
+	case ALG18:
+		da[0] = "    5-6";
+		da[1] = "2 3 4  ";
+		da[2] = " \\|/   ";
+		da[3] = "  1    ";
+		break;
+	case ALG19:
+		da[0] = "3      ";
+		da[1] = "2   6  ";
+		da[2] = "|  / \\ ";
+		da[3] = "1  4 5 ";
+		break;
+	case ALG20:
+		da[1] = " 3  5 6";
+		da[2] = "/ \\ \\ /";
+		da[3] = "1 2  4 ";
+		break;
+	case ALG21:
+		da[1] = " 3   6 ";
+		da[2] = "/ \\ /\\ ";
+		da[3] = "1 2 4 5";
+		break;
+	case ALG22:
+		da[1] = "2   6  ";
+		da[2] = "|  /|\\ ";
+		da[3] = "1 3 4 5";
+		break;
+ 	case ALG23:
+		da[1] = "     6 ";
+		da[2] = "    /|\\";
+		da[3] = "1 2 345";
+		break;
+	case ALG24:
+		da[0] = "   5   ";
+		da[1] = " 2 4   ";
+		da[2] = " | | | ";
+		da[3] = " 1 3 6 ";
+		break;
+	case ALG25:
+		da[1] = "    4 6";
+		da[2] = "    | |";
+		da[3] = "1 2 3 5";
+		break;
+	case ALG26:
+		da[1] = "    5  ";
+		da[1] = "    4  ";
+		da[2] = "    |  ";
+		da[3] = "1 2 3 6";
+		break;
+	case ALG27:
+		da[3] = "123456 ";
+		break;
+	}
+
+	for (int y=0; y<4; y++) {
+		lcd->setCursor(11,y);
+		lcd->print("| ");
+		if (da[y] == NULL) {
+			lcd->print("       ");
+		} else {
+			lcd->print(da[y]);
+		}
+	}
+}
+
+
 

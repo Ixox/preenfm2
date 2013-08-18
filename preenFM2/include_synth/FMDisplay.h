@@ -136,7 +136,7 @@ public:
     	this->refreshStatus = refreshStatus;
     }
 
-
+    void displayAlgo(int algo);
 private:
 	LiquidCrystal* lcd;
 	Storage* storage;
@@ -149,7 +149,7 @@ private:
 	int currentTimbre;
 	// Midi info
 	int noteOnCounter[4];
-	int displaycounter;
+	int algoCounter;
 };
 
 #endif /* FMDISPLAY_H_ */
