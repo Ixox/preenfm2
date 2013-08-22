@@ -109,7 +109,8 @@ bool FMDisplay::shouldThisValueShowUp(int row, int encoder) {
 }
 
 void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param, float newFloatValue) {
-    int newValue = (int)newFloatValue;
+
+	int newValue = (int)newFloatValue;
 
     if (!shouldThisValueShowUp(row, encoder)) {
         lcd->setCursor(encoder*5, 3);
@@ -307,12 +308,17 @@ void FMDisplay::refreshAllScreenByStep() {
 
 void FMDisplay::displayPreset() {
     FullState* fullState = &this->synthState->fullState;
-    // XH why this erase ?
-    //    lcd->setCursor(16, 0);
-    //    lcd->print("    ");
-    lcd->setCursor(0, 0);
 
-    lcd->print('T');
+    if (algoCounter > 0) {
+    	// algoCounter will (should) be updated after
+    	// so we don't erase useless part...
+		lcd->setCursor(11,0);
+		lcd->print("         ");
+		lcd->setCursor(11,1);
+		lcd->print("         ");
+    }
+    lcd->setCursor(0, 0);
+    lcd->print('I');
     lcd->print((char)('0'+currentTimbre +1));
     lcd->print(' ');
     lcd->print(this->synthState->params->presetName);
@@ -404,15 +410,23 @@ void FMDisplay::newParamValue(int timbre, SynthParamType type, int currentRow, i
 			}
 		}
 
-		updateEncoderValue(currentRow, encoder, param, newValue);
-
+		// display algo if algo channged else if algo shows erase it...
 		if (currentRow == ROW_ENGINE && encoder == ENCODER_ENGINE_ALGO) {
 			displayAlgo(newValue);
+		} else if (algoCounter > 0) {
+			algoCounter = 0;
+			newTimbre(this->currentTimbre);
 		}
+
+		updateEncoderValue(currentRow, encoder, param, newValue);
 	}
 }
 
 void FMDisplay::newcurrentRow(int timbre, int newcurrentRow) {
+	if (algoCounter > 0) {
+        displayPreset();
+		algoCounter = 0;
+	}
 	refreshStatus = 12;
 	this->displayedRow = newcurrentRow;
 }
@@ -433,6 +447,8 @@ void FMDisplay::newSynthMode(FullState* fullState)  {
 		menuRow = 0;
 		newMenuState(fullState);
 	}
+	// just in case...
+	algoCounter = 0;
 }
 
 int FMDisplay::rowInc(MenuState menuState) {
@@ -748,7 +764,7 @@ void FMDisplay::tempoClick() {
 }
 
 void FMDisplay::displayAlgo(int algo) {
-	algoCounter = 4;
+	algoCounter = 50;
 
 	const char *da[4] = {NULL, NULL, NULL, NULL};
 	int x = 13;
@@ -756,33 +772,33 @@ void FMDisplay::displayAlgo(int algo) {
 	switch (algo) {
 	case ALGO1:
 		da[1] = "  2-3  ";
-		da[2] = "  \\ /  ";
+		da[2] = "  \1 /  ";
 		da[3] = "   1   ";
 		break;
 	case ALGO2:
 		da[1] = "   3   ";
-		da[2] = "  / \\  ";
+		da[2] = "  / \1  ";
 		da[3] = "  1 2  ";
 		break;
 	case ALGO3:
 		da[1] = " 2 3-4 ";
-		da[2] = "  \\|/  ";
+		da[2] = "  \1|/  ";
 		da[3] = "   1   ";
 		break;
 	case ALGO4:
 		da[1] = "  3-4  ";
-		da[2] = "  |\\|";
+		da[2] = "  |\1|";
 		da[3] = "  1 2  ";
 		break;
 	case ALGO5:
 		da[0] = "  3-4  ";
-		da[1] = "  \\ /  ";
+		da[1] = "  \1 /  ";
 		da[2] = "   2  ";
 		da[3] = "   1   ";
 		break;
 	case ALGO6:
 		da[1] = "   4   ";
-		da[2] = "  /|\\  ";
+		da[2] = "  /|\1  ";
 		da[3] = " 1 2 3 ";
 		break;
 	case ALGO7:
@@ -792,14 +808,14 @@ void FMDisplay::displayAlgo(int algo) {
 		break;
 	case ALGO8:
 		da[1] = " 234  6";
-		da[2] = " \\|/  |";
+		da[2] = " \1|/  |";
 		da[3] = "  1   5";
 		break;
 	case ALGO9:
 		da[0] = "      6";
 		da[1] = " 2-3  5";
-		da[2] = " \\ /  |";
-		da[3] = "  1   4 ";
+		da[2] = " \1 /  |";
+		da[3] = "  1   4";
 		break;
 	case ALG10:
 		da[0] = "     6 ";
@@ -831,7 +847,7 @@ void FMDisplay::displayAlgo(int algo) {
 		break;
 	case ALG15:
 		da[1] = "2 4 5 6";
-		da[2] = "|  \\|/ ";
+		da[2] = "|  \1|/ ";
 		da[3] = "1   3  ";
 		break;
 	case ALG16:
@@ -843,39 +859,39 @@ void FMDisplay::displayAlgo(int algo) {
 	case ALG17:
 		da[0] = "   4 6 ";
 		da[1] = " 2 3 5 ";
-		da[2] = "  \\|/  ";
+		da[2] = "  \1|/  ";
 		da[3] = "   1   ";
 		break;
 	case ALG18:
 		da[0] = "    5-6";
 		da[1] = "2 3 4  ";
-		da[2] = " \\|/   ";
+		da[2] = " \1|/   ";
 		da[3] = "  1    ";
 		break;
 	case ALG19:
 		da[0] = "3      ";
 		da[1] = "2   6  ";
-		da[2] = "|  / \\ ";
+		da[2] = "|  / \1 ";
 		da[3] = "1  4 5 ";
 		break;
 	case ALG20:
 		da[1] = " 3  5 6";
-		da[2] = "/ \\ \\ /";
+		da[2] = "/ \1 \1 /";
 		da[3] = "1 2  4 ";
 		break;
 	case ALG21:
 		da[1] = " 3   6 ";
-		da[2] = "/ \\ /\\ ";
+		da[2] = "/ \1 / \1";
 		da[3] = "1 2 4 5";
 		break;
 	case ALG22:
 		da[1] = "2   6  ";
-		da[2] = "|  /|\\ ";
+		da[2] = "|  /|\1 ";
 		da[3] = "1 3 4 5";
 		break;
  	case ALG23:
 		da[1] = "     6 ";
-		da[2] = "    /|\\";
+		da[2] = "    /|\1";
 		da[3] = "1 2 345";
 		break;
 	case ALG24:

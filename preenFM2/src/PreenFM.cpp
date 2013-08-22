@@ -73,13 +73,13 @@ void setup() {
             0b00000
     };
 
-    unsigned char midiOut[8] = {
-            0b01100,
-            0b11110,
-            0b11110,
-            0b01100,
+    unsigned char backslash[8] = {
             0b00000,
-            0b00000,
+            0b10000,
+            0b01000,
+            0b00100,
+            0b00010,
+            0b00001,
             0b00000,
             0b00000
     };
@@ -167,7 +167,7 @@ void setup() {
 
     lcd.begin(20, 4);
     lcd.createChar(0, midiIn);
-    lcd.createChar(1, midiOut);
+    lcd.createChar(1, backslash);
     lcd.createChar(2, minusPoint);
     lcd.createChar(3, stepCursor);
     lcd.createChar(4, stepPos);
