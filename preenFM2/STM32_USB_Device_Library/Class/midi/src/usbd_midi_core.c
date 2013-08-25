@@ -37,7 +37,7 @@ USBD_Class_cb_TypeDef midiCallback = {
 };
 
 
-#define CLASS_SPECIFIC_DESC_SIZE                7+6+7+9+5+9+5
+#define CLASS_SPECIFIC_DESC_SIZE                7+6+9+9+5+9+5
 #define MIDI_CONFIG_DESC_SIZE 					9+9+9+9+CLASS_SPECIFIC_DESC_SIZE
 #define USB_CONFIGURATION_DESCRIPTOR_TYPE       0x02
 #define USB_INTERFACE_DESCRIPTOR_TYPE           0x04
@@ -117,14 +117,14 @@ static uint8_t usbd_audio_CfgDesc[MIDI_CONFIG_DESC_SIZE] =
 
 	// Table B4.4
 	// Midi Out Jack Descriptor (Embedded)
-	0x07,         /* length of descriptor in bytes */
+	0x09,         /* length of descriptor in bytes */
 	0x24,         /* descriptor type */
 	0x03,         /* MIDI_OUT_JACK descriptor */
 	0x01,         /* EMBEDDED bJackType */
 	0x02,         /* bJackID */
-	0x00,         /* No of input pins */
-//	0x01,
-//	0x01,
+	0x01,         /* No of input pins */
+	0x01,         /* ID of the Entity to which this Pin is connected. */
+	0x01,         /* Output Pin number of the Entity to which this Input Pin is connected. */
 	0X00,         /* iJack : UNUSED */
 
 
