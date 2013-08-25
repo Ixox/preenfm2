@@ -33,12 +33,15 @@ void LfoStepSeq::init(struct StepSequencerParams* stepSeqParam, struct StepSeque
 }
 
 void LfoStepSeq::midiClock(int songPosition, bool computeStep) {
+
+	ticks &= 0x7fff;
+
     switch ((int)seqParams->bpm)  {
 	case LFO_SEQ_MIDICLOCK_DIV_4:
 		// Midi Clock  / 4
 		if ((songPosition & 0x1)==0) {
 			if (computeStep) {
-                phaseStep = 0.5f / ticks;
+                phaseStep = 0.5f * invTab[ticks];
                 ticks = 0;
 			}
             phase = (float)(songPosition & 0x3f) * .25f;
@@ -47,7 +50,7 @@ void LfoStepSeq::midiClock(int songPosition, bool computeStep) {
 	case LFO_SEQ_MIDICLOCK_DIV_2:
 		if ((songPosition & 0x1)==0) {
 			if (computeStep) {
-                phaseStep = 1.0f / ticks;
+                phaseStep = 1.0f * invTab[ticks];
 				ticks = 0;
 			}
 			phase = (float)(songPosition & 0x1f) * .5f;
@@ -58,7 +61,7 @@ void LfoStepSeq::midiClock(int songPosition, bool computeStep) {
 			if (computeStep) {
 			    // We're called evey 2 ticks which is half a quarter
 			    // We want to move forward 4 beats per quarter so : 2 beats per half a quarter
-                phaseStep = 2.0f / ticks;
+                phaseStep = 2.0f * invTab[ticks];
 				ticks = 0;
 			}
 			phase = (songPosition & 0xF);
@@ -67,7 +70,7 @@ void LfoStepSeq::midiClock(int songPosition, bool computeStep) {
 	case LFO_SEQ_MIDICLOCK_TIME_2:
 		if ((songPosition & 0x1)==0) {
 			if (computeStep) {
-                phaseStep = 4.0f / ticks;
+                phaseStep = 4.0f * invTab[ticks];
 				ticks = 0;
 			}
 			phase = ((songPosition << 1) & 0xF);
@@ -76,7 +79,7 @@ void LfoStepSeq::midiClock(int songPosition, bool computeStep) {
 	case LFO_SEQ_MIDICLOCK_TIME_4:
 		if ((songPosition & 0x1)==0) {
 			if (computeStep) {
-                phaseStep = 8.0f / ticks;
+                phaseStep = 8.0f * invTab[ticks];
 				ticks = 0;
 			}
             phase = ((songPosition << 1) & 0xF);

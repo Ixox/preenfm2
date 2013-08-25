@@ -58,11 +58,13 @@ void LfoOsc::midiClock(int songPosition, bool computeStep) {
     }
     */
 
+	ticks &= 0x7fff;
+
     switch ((int)(lfo->freq * 10.0f + .05f)) {
     case LFO_MIDICLOCK_MC_DIV_16:
         if ((songPosition & 0x1)==0) {
             if (computeStep) {
-                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE / 32.0f / ticks;
+                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE / 32.0f * invTab[ticks];
                 ticks = 0;
             }
             phase = (songPosition & 0x3E) * 0.015625f;
@@ -71,7 +73,7 @@ void LfoOsc::midiClock(int songPosition, bool computeStep) {
     case LFO_MIDICLOCK_MC_DIV_8:
         if ((songPosition & 0x1)==0) {
             if (computeStep) {
-                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE / 16.0f / ticks;
+                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE / 16.0f * invTab[ticks];
                 ticks = 0;
             }
             phase = (songPosition & 0x1E) * 0.03125f ;
@@ -80,7 +82,7 @@ void LfoOsc::midiClock(int songPosition, bool computeStep) {
     case LFO_MIDICLOCK_MC_DIV_4:
         if ((songPosition & 0x1)==0) {
             if (computeStep) {
-                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE / 8.0f / ticks;
+                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE / 8.0f * invTab[ticks];
                 ticks = 0;
             }
             phase = (songPosition & 0xE) * 0.0625f;
@@ -89,7 +91,7 @@ void LfoOsc::midiClock(int songPosition, bool computeStep) {
     case LFO_MIDICLOCK_MC_DIV_2:
         if ((songPosition & 0x1)==0) {
             if (computeStep) {
-                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE / 4.0f / ticks;
+                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE / 4.0f * invTab[ticks];
                 ticks = 0;
             }
             // 0,2,4,6
@@ -100,7 +102,7 @@ void LfoOsc::midiClock(int songPosition, bool computeStep) {
         // Midi Clock
         if ((songPosition & 0x1) == 0) {
             if (computeStep) {
-                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE / 2.0f / ticks;
+                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE / 2.0f * invTab[ticks];
                 ticks = 0;
             }
             // 0 or 2 -> 0 ou .5
@@ -110,7 +112,7 @@ void LfoOsc::midiClock(int songPosition, bool computeStep) {
     case LFO_MIDICLOCK_MC_TIME_2:
         if ((songPosition & 0x1)==0) {
             if (computeStep) {
-                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE / ticks;
+                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE * invTab[ticks];
                 ticks = 0;
             }
             phase = 0;
@@ -119,7 +121,7 @@ void LfoOsc::midiClock(int songPosition, bool computeStep) {
     case LFO_MIDICLOCK_MC_TIME_3:
         if ((songPosition & 0x3)==0) {
             if (computeStep) {
-                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE / ticks * 3.0;
+                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE * invTab[ticks] * 3.0;
                 ticks = 0;
             }
             phase = 0;
@@ -128,7 +130,7 @@ void LfoOsc::midiClock(int songPosition, bool computeStep) {
     case LFO_MIDICLOCK_MC_TIME_4:
         if ((songPosition & 0x1)==0) {
             if (computeStep) {
-                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE / ticks * 2.0f;
+                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE * invTab[ticks] * 2.0f;
                 ticks = 0;
             }
             phase = 0;
@@ -137,7 +139,7 @@ void LfoOsc::midiClock(int songPosition, bool computeStep) {
     case LFO_MIDICLOCK_MC_TIME_8:
         if ((songPosition & 0x1)==0) {
             if (computeStep) {
-                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE / ticks * 4.0f;
+                currentFreq = PREENFM_FREQUENCY / BLOCK_SIZE * invTab[ticks] * 4.0f;
                 ticks = 0;
             }
             phase = 0;
@@ -145,7 +147,7 @@ void LfoOsc::midiClock(int songPosition, bool computeStep) {
         break;
     }
 
-
+/*
     if ((lfo->freq * 10.0f) >= LFO_MIDICLOCK_MC_DIV_16) {
 
         if ((songPosition & 0x1)==0) {
@@ -154,6 +156,7 @@ void LfoOsc::midiClock(int songPosition, bool computeStep) {
             lcd.print(' ');
         }
     }
+    */
 
 }
 

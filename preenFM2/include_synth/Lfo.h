@@ -52,6 +52,10 @@ protected:
 	int index;
 	// Midi Clock sync
 	int ticks;
+
+	// Precalcul 1/freq
+    static int initTab;
+    static float invTab[2048];
 };
 
 #endif /* LFO_H_ */

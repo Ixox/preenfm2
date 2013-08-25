@@ -17,6 +17,11 @@
 
 #include "Lfo.h"
 
+
+// Standard 128kb memory
+float Lfo::invTab[2048];
+int Lfo::initTab = 0;
+
 Lfo::Lfo() {
 }
 
@@ -25,4 +30,11 @@ void Lfo::init(Matrix *matrix, SourceEnum source, DestinationEnum dest) {
 	this->matrix = matrix;
 	this->source = source;
 	this->index = 0;
+
+    if (initTab == 0) {
+        initTab = 1;
+        for (float k=1; k<2048; k += 1.0f) {
+            invTab[(int)(k + .005f)] = 1 / k;
+        }
+    }
 }
