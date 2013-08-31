@@ -404,6 +404,10 @@ public:
 		return fullState.synthMode;
 	}
 
+    int getOperatorNumber() {
+    	return operatorNumber;
+    }
+
     void newSysexBankReady();
 
     void tempoClick();
@@ -411,6 +415,7 @@ public:
     void setParamsAndTimbre(struct OneSynthParams *newParams, int newCurrentTimbre);
 
     void resetDisplay();
+
     int currentTimbre;
     struct OneSynthParams *params;
     struct OneSynthParams backupParams;
@@ -418,9 +423,11 @@ public:
 	char stepSelect[2];
 
 private:
+	int getRowFromOperator();
 	bool isCurrentRowAvailable();
 	bool isEnterNameState(int currentItme);
-	char engineRow, operatorRow, envelopeRow, matrixRow, lfoRow;
+	char engineRow, oscillatorRow, envelopeRow, matrixRow, lfoRow;
+	char operatorNumber, operatorView;
 	char currentRow;
 	bool isPlayingNote ;
 	char playingNote;

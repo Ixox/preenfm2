@@ -119,7 +119,7 @@ struct ParameterRowDisplay oscParameterRow = {
 };
 
 struct ParameterRowDisplay envParameterRow1 = {
-        "Enveloppe",
+        "Env A",
         { "Attk", "lv  ", "Deca", "lv " },
         {
                 { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
@@ -130,7 +130,7 @@ struct ParameterRowDisplay envParameterRow1 = {
 };
 
 struct ParameterRowDisplay envParameterRow2 = {
-        "Enveloppe",
+        "Env B",
         { "Sust", "lv  ", "Rele", "lv  " },
         {
                 { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
@@ -272,9 +272,11 @@ struct AllParameterRowsDisplay allParameterRows = {
 SynthState::SynthState() {
     engineRow =  ROW_ENGINE;
     // operator works for both osc and env
-    operatorRow  = 0;
+    oscillatorRow  = 0;
     matrixRow = ROW_MATRIX1;
     lfoRow    = ROW_LFOOSC1;
+    operatorNumber = 0;
+    operatorView = 0;
 
     // First default preset
     fullState.synthMode = SYNTH_MODE_EDIT;
@@ -299,6 +301,7 @@ SynthState::SynthState() {
     fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] = 60;
     fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY] = 120;
     fullState.midiConfigValue[MIDICONFIG_ENCODER] = 0;
+    fullState.midiConfigValue[MIDICONFIG_OP_OPTION] = 0;
     fullState.firstMenu = 0;
 
     for (int k=0; k<12; k++) {
@@ -642,6 +645,21 @@ bool SynthState::isCurrentRowAvailable() {
 	return true;
 }
 
+int SynthState::getRowFromOperator() {
+	switch (operatorView) {
+	case 0:
+		return ROW_OSC_FIRST + operatorNumber;
+		break;
+	case 1:
+		return ROW_ENV_FIRST + operatorNumber * 2;
+		break;
+	case 2:
+		return ROW_ENV_FIRST + operatorNumber * 2 + 1;
+		break;
+	}
+}
+
+
 void SynthState::changeSynthModeRow(int button, int step) {
 	unsigned char lastBecauseOfAlgo;
 
@@ -662,34 +680,73 @@ void SynthState::changeSynthModeRow(int button, int step) {
 			engineRow = currentRow;
 		break;
 		case BUTTON_OSC:
-			lastBecauseOfAlgo = ROW_OSC_FIRST + algoInformation[(int)params->engine1.algo].osc - 1;
-			if (currentRow<ROW_OSC_FIRST || currentRow>lastBecauseOfAlgo) {
-				currentRow = ROW_OSC_FIRST + operatorRow;
-			} else {
-				currentRow += step;
-				envelopeRow = (currentRow - ROW_OSC_FIRST)*2;
-			}
-			if (currentRow>lastBecauseOfAlgo) {
-				currentRow = ROW_OSC_FIRST;
-			} else if (currentRow<ROW_OSC_FIRST) {
-				currentRow = lastBecauseOfAlgo;
-			}
-			operatorRow = currentRow - ROW_OSC_FIRST;
+	        if (this->fullState.midiConfigValue[MIDICONFIG_OP_OPTION] == 0) {
+	        	// New UI - operator number
+				lastBecauseOfAlgo = algoInformation[(int)params->engine1.algo].osc - 1;
+				if (currentRow < ROW_OSC_FIRST || currentRow > ROW_ENV_LAST) {
+					// Nothing to do.;.
+				} else {
+					operatorNumber += step;
+				}
+				if (operatorNumber > lastBecauseOfAlgo) {
+					operatorNumber = 0;
+				} else if (operatorNumber < 0) {
+					operatorNumber = lastBecauseOfAlgo;
+				}
+				currentRow = getRowFromOperator();
+	        } else {
+	        	// Old UI
+				lastBecauseOfAlgo = ROW_OSC_FIRST + algoInformation[(int)params->engine1.algo].osc - 1;
+				if (currentRow<ROW_OSC_FIRST || currentRow>lastBecauseOfAlgo) {
+					currentRow = ROW_OSC_FIRST + oscillatorRow;
+				} else {
+					currentRow += step;
+					envelopeRow = (currentRow - ROW_OSC_FIRST)*2;
+				}
+				if (currentRow>lastBecauseOfAlgo) {
+					currentRow = ROW_OSC_FIRST;
+				} else if (currentRow<ROW_OSC_FIRST) {
+					currentRow = lastBecauseOfAlgo;
+				}
+				oscillatorRow = currentRow - ROW_OSC_FIRST;
+	        }
 			break;
 		case BUTTON_ENV:
-			lastBecauseOfAlgo = ROW_ENV_FIRST - 1 + algoInformation[(int)params->engine1.algo].osc  * 2;
-			if (currentRow<ROW_ENV_FIRST || currentRow>lastBecauseOfAlgo) {
-				currentRow = ROW_ENV_FIRST + envelopeRow;
-			} else {
-				currentRow += step;
-				operatorRow = (currentRow - ROW_ENV_FIRST) >> 1;
-			}
-			if (currentRow>lastBecauseOfAlgo) {
-				currentRow = ROW_ENV_FIRST;
-			} else if (currentRow<ROW_ENV_FIRST) {
-				currentRow = lastBecauseOfAlgo;
-			}
-			envelopeRow = currentRow - ROW_ENV_FIRST;
+	        if (this->fullState.midiConfigValue[MIDICONFIG_OP_OPTION] == 0) {
+	        	// New UI - op / env1 / env2 for the current operator
+	        	// New UI - operator number
+				lastBecauseOfAlgo = algoInformation[(int)params->engine1.algo].osc - 1;
+				if (currentRow < ROW_OSC_FIRST || currentRow > ROW_ENV_LAST) {
+					// Nothing to do.;.
+				} else {
+					operatorView += step;
+					if (operatorView > 2) {
+						operatorView = 0;
+					} else if (operatorView < 0) {
+						operatorView = 2;
+					}
+				}
+				if (operatorNumber > lastBecauseOfAlgo) {
+					operatorNumber = 0;
+				} else if (operatorNumber < 0) {
+					operatorNumber = lastBecauseOfAlgo;
+				}
+				currentRow = getRowFromOperator();
+	        } else {
+				lastBecauseOfAlgo = ROW_ENV_FIRST - 1 + algoInformation[(int)params->engine1.algo].osc  * 2;
+				if (currentRow<ROW_ENV_FIRST || currentRow>lastBecauseOfAlgo) {
+					currentRow = ROW_ENV_FIRST + envelopeRow;
+				} else {
+					currentRow += step;
+					oscillatorRow = (currentRow - ROW_ENV_FIRST) >> 1;
+				}
+				if (currentRow>lastBecauseOfAlgo) {
+					currentRow = ROW_ENV_FIRST;
+				} else if (currentRow<ROW_ENV_FIRST) {
+					currentRow = lastBecauseOfAlgo;
+				}
+				envelopeRow = currentRow - ROW_ENV_FIRST;
+	        }
 		break;
 		case BUTTON_MATRIX:
 			if (currentRow<ROW_MATRIX_FIRST || currentRow>ROW_MATRIX_LAST) {

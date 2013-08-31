@@ -28,6 +28,7 @@ const char* midiSends [] = { "None", "CC", "NRPN" };
 const char* bootOptions [] = { "Default", "Bank", "Combo", "DX7" };
 const char* encoderType [] = { "12", "24" };
 const char* usbMidi[] = { "Off", "In", "In/Out" };
+const char* operatorButton[] = { "New", "Old" };
 
 const struct MidiConfig midiConfig[]  = {
 		{
@@ -76,6 +77,21 @@ const struct MidiConfig midiConfig[]  = {
                 yesNo
         },
         {
+                "Boot: ",
+                4,
+                bootOptions
+        },
+        {
+                "Op Buttons: ",
+                2,
+                operatorButton
+        },
+        {
+                "Rot. Enc.: ",
+                2,
+                encoderType
+        },
+        {
                 "Test Note: ",
                 127,
                 0
@@ -84,18 +100,7 @@ const struct MidiConfig midiConfig[]  = {
                 "Test Velocity: ",
                 127,
                 0
-        },
-        {
-                "Boot: ",
-                4,
-                bootOptions
-        },
-        {
-                "Rot. Enc.: ",
-                2,
-                encoderType
         }
-
 };
 
 const struct MenuItem allMenus[]  = {

@@ -269,12 +269,30 @@ void FMDisplay::refreshAllScreenByStep() {
     case 9:
     {
 		int row = this->synthState->getCurrentRow();
-		lcd->setCursor(0,1);
-		lcd->print(allParameterRows.row[row]->rowName);
-		if (row> ROW_ENGINE_LAST) {
-			lcd->print(' ');
-			lcd->print(getRowNumberToDiplay(row));
-		}
+        if (this->synthState->fullState.midiConfigValue[MIDICONFIG_OP_OPTION] == 0) {
+        	// New UI
+        	if (row >= ROW_OSC_FIRST && row <= ROW_ENV_LAST) {
+        		lcd->setCursor(0,1);
+        		lcd->print("Op");
+        		lcd->print(this->synthState->getOperatorNumber() + 1);
+        		lcd->print(" ");
+        		lcd->print(allParameterRows.row[row]->rowName);
+        	} else {
+        		lcd->setCursor(0,1);
+        		lcd->print(allParameterRows.row[row]->rowName);
+        		if (row> ROW_ENGINE_LAST) {
+        			lcd->print(' ');
+        			lcd->print(getRowNumberToDiplay(row));
+        		}
+        	}
+        } else {
+    		lcd->setCursor(0,1);
+    		lcd->print(allParameterRows.row[row]->rowName);
+    		if (row> ROW_ENGINE_LAST) {
+    			lcd->print(' ');
+    			lcd->print(getRowNumberToDiplay(row));
+    		}
+        }
         break;
     }
     case 5:
