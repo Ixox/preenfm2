@@ -2,30 +2,14 @@
 #include "LiquidCrystal.h"
 #include "stm32f4xx_rcc.h"
 
-// Delay micro seconds for STM32F4 at 168Mhz
-// Comes from libmaple...
 
 #define STM32_TICKS_PER_US          192
-// #define STM32_TICKS_PER_US          200
 #define STM32_DELAY_US_MULT         (STM32_TICKS_PER_US/3)
 
-extern uint32_t SystemCoreClock;
 
-void delay_us(unsigned int usec) {
-    uint32_t us = usec * STM32_DELAY_US_MULT;
-
-    /* fudge for function call overhead  */
-    //us--;
-    asm volatile("   mov r0, %[us]          \n\t"
-                 "1: subs r0, #1            \n\t"
-                 "   bhi 1b                 \n\t"
-                 :
-                 : [us] "r" (us)
-                 : "r0");
-}
 
 inline void delay_ms(unsigned int ms) {
-	delay_us(ms * 1000);
+	PreenFM2_uDelay(ms * 1000);
 }
 
 // When the display powers up, it is configured as follows:
@@ -385,17 +369,17 @@ void LiquidCrystal::pulseEnable(int delay) {
 	// _enable_pin should already be LOW (unless someone else messed
 	// with it), so don't sit around waiting for long.
 	RESET(_enable_pin);
-	delay_us(1);
+	PreenFM2_uDelay(1);
 
 	// Enable pulse must be > 450 ns.  Value chosen here according to
 	// the following threads:
 	// http://forums.leaflabs.com/topic.php?id=640
 	// http://forums.leaflabs.com/topic.php?id=512
 	SET(_enable_pin);
-	delay_us(1);
+	PreenFM2_uDelay(1);
 	RESET(_enable_pin);
 	// Commands needs > 37us to settle.
-	delay_us(delay);
+	PreenFM2_uDelay(delay);
 }
 
 void LiquidCrystal::write4bits(unsigned char value) {

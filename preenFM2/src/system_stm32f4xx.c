@@ -120,17 +120,32 @@
 /******************************************************************************/
 
 /************************* PLL Parameters *************************************/
+#ifndef OVERCLOCK
+
+/* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
+// PreenFM2 CERB40 Quartz frequency 12Mhz
+#define PLL_M      12
+#define PLL_N      336
+
+/* SYSCLK = PLL_VCO / PLL_P */
+#define PLL_P      2
+
+/* USB OTG FS, SDIO and RNG Clock =  PLL_VCO / PLLQ */
+#define PLL_Q      7
+
+#else
+
 /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
 #define PLL_M      12
-// #define PLL_N      336
 #define PLL_N      384
 
 /* SYSCLK = PLL_VCO / PLL_P */
 #define PLL_P      2
 
 /* USB OTG FS, SDIO and RNG Clock =  PLL_VCO / PLLQ */
-// #define PLL_Q      7
 #define PLL_Q      8
+
+#endif
 
 /******************************************************************************/
 
@@ -138,6 +153,19 @@
 uint32_t SystemCoreClock = HSE_VALUE / PLL_M * PLL_N / PLL_P;
 
 __I uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
+
+void PreenFM2_uDelay(unsigned int usec) {
+    uint32_t us = SystemCoreClock / 3000000 * usec;
+
+    /* fudge for function call overhead  */
+    //us--;
+    asm volatile("   mov r0, %[us]          \n\t"
+                 "1: subs r0, #1            \n\t"
+                 "   bhi 1b                 \n\t"
+                 :
+                 : [us] "r" (us)
+                 : "r0");
+}
 
 
 static void SetSysClock(void);

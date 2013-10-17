@@ -9,8 +9,11 @@ BIN_BOOTLOADER=build/p2_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.bin
 SYMBOLS_BOOTLOADER=build/symbols_p2_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.txt
 
 ELF_FIRMWARE=build/p2_${PFM2_VERSION_NUMBER}.elf
+ELF_FIRMWARE_O=build/p2_${PFM2_VERSION_NUMBER}o.elf
 BIN_FIRMWARE=build/p2_${PFM2_BIN_NUMBER}.bin
+BIN_FIRMWARE_O=build/p2_${PFM2_BIN_NUMBER}o.bin
 SYMBOLS_FIRMWARE=build/symbols_p2_${PFM2_VERSION_NUMBER}.txt
+SYMBOLS_FIRMWARE_O=build/symbols_p2_${PFM2_VERSION_NUMBER}o.txt
 
 BIN_SYSEX=build/p2_${PFM2_VERSION_NUMBER}.syx
 
@@ -140,16 +143,44 @@ OBJTMP_BOOTLOADER = $(addprefix $(OBJDIR),$(notdir $(SRC_BOOTLOADER:.c=.o)))
 OBJ_BOOTLOADER = $(OBJTMP_BOOTLOADER:.cpp=.o)
 
 
-all: $(BIN_FIRMWARE) 
+all: 
+	@echo "You must chose a target"
+	@echo "   clean : remove build directory"
+	@echo "   pfm : build pfm2 firmware"
+	@echo "   pfmo : build pfm2 overclocked firmware"
+	@echo "   boot : build pfm2 bootloader"
+	@echo "   install : flash firmware through the programming interface"
+	@echo "   installo : flash overclocked firmware through the programming interface"
+	@echo "   installdfu : flash firmware through DFU"
+	@echo "   installdfuo : flash overclocked firmware through DFU"
+	@echo "   installboot : flash bootloader"
+	@echo "   installbootdfu : flash bootloader through DFU"
+
+
+pfm: $(BIN_FIRMWARE) 
+
+pfmo: CFLAGS += -DOVERCLOCK
+pfmo: cleanoverclock $(BIN_FIRMWARE_O) 
+
+cleanoverclock:
+	-rm  build/PreenFM.o 
+	-rm  build/system_stm32f4xx.o
+
 
 boot: CFLAGS += -DBOOTLOADER -Os 
 boot: $(BIN_BOOTLOADER)
 
-install:all
+install: $(BIN_FIRMWARE)
 	st-flash write $(BIN_FIRMWARE) 0x08040000
 
-installdfu:all
+installo: $(BIN_FIRMWARE_O)
+	st-flash write $(BIN_FIRMWARE_O) 0x08040000
+
+installdfu: $(BIN_FIRMWARE)
 	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_FIRMWARE) -R -s 0x8040000
+
+installdfuo: $(BIN_FIRMWARE_O)
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_FIRMWARE_O) -R -s 0x8040000
 
 installboot:boot
 	st-flash write $(BIN_BOOTLOADER) 0x08000000
@@ -159,6 +190,7 @@ installbootdfu:boot
 
 sysex : sysex/sysex.class
 	java -classpath sysex sysex $(BIN_FIRMWARE)
+	java -classpath sysex sysex $(BIN_FIRMWARE_O)
 
 sysex/sysex.class : sysex/sysex.java
 	javac sysex/sysex.java
@@ -169,11 +201,23 @@ amidi:
 $(BIN_FIRMWARE): $(ELF_FIRMWARE)
 	$(CP) -O binary $^ $(BIN_FIRMWARE)
 	ls -l $(BIN_FIRMWARE)
+
+$(BIN_FIRMWARE_O): $(ELF_FIRMWARE_O)
+	$(CP) -O binary $^ $(BIN_FIRMWARE_O)
+	ls -l $(BIN_FIRMWARE_O)
 	
 $(ELF_FIRMWARE): $(OBJ_FIRMWARE) $(STARTUP)
 	$(CC) $(LFLAGS) $^ -o $@
 	arm-none-eabi-nm -l -S -n $(ELF_FIRMWARE) > $(SYMBOLS_FIRMWARE) 
 	arm-none-eabi-readelf -S $(ELF_FIRMWARE)
+
+$(ELF_FIRMWARE_O): $(OBJ_FIRMWARE) $(STARTUP)
+	$(CC) $(CFLAGS) -DOVERCLOCK src/PreenFM.cpp -o build/PreenFM.o
+	$(CC) $(CFLAGS) -DOVERCLOCK src/system_stm32f4xx.c -o build/system_stm32f4xx.o
+	$(CC) $(LFLAGS) $^ -o $@
+	arm-none-eabi-nm -l -S -n $(ELF_FIRMWARE_O) > $(SYMBOLS_FIRMWARE_O) 
+	arm-none-eabi-readelf -S $(ELF_FIRMWARE_O)
+
 
 $(BIN_BOOTLOADER): $(ELF_BOOTLOADER)
 	$(CP) -O binary $^ $(BIN_BOOTLOADER)
@@ -230,6 +274,6 @@ build/%.o: src_synth/%.cpp
 
 clean:
 	@ echo ".clean"
-	rm -rf *.lst build/*
+	rm -rf *.lst build/*.o
 
 

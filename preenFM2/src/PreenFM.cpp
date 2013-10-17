@@ -33,6 +33,11 @@
 
 #include "ff.h"
 
+#ifndef OVERCLOCK
+#define OVERCLOCK_STRING
+#else
+#define OVERCLOCK_STRING "o"
+#endif
 
 SynthState         synthState __attribute__ ((section(".ccmnoload")));
 Synth              synth __attribute__ ((section(".ccmnoload")));
@@ -183,7 +188,7 @@ void setup() {
 
 
     lcd.setCursor(0,1);
-    lcd.print("PreenFM2 v"PFM2_VERSION);
+    lcd.print("PreenFM2 v"PFM2_VERSION" "OVERCLOCK_STRING);
 	lcd.setCursor(5,2);
     lcd.print("By Xavier Hosxe");
 

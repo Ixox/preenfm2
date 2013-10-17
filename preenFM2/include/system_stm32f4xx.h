@@ -103,3 +103,9 @@ extern void SystemCoreClockUpdate(void);
   * @}
   */  
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
+
+ // PreenFM Utils
+
+ // uDelay must use SystemCoreClock
+ void PreenFM2_uDelay(unsigned int usec);

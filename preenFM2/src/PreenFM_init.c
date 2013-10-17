@@ -33,6 +33,7 @@ void strobePin(uint8_t count, uint32_t rate) {
 	}
 }
 
+
 /**
  * @brief  Configures the USART Peripheral.
  * @param  None
@@ -195,3 +196,7 @@ void RNG_Config(void)
   /* RNG Peripheral enable */
   RNG_Cmd(ENABLE);
 }
+
+
+
+

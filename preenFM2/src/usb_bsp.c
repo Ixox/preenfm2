@@ -203,38 +203,12 @@ void USB_OTG_BSP_TimeInit ( void )
   * @param  usec : Value of delay required in micro sec
   * @retval None
   */
-#define STM32_TICKS_PER_US          500
-#define STM32_DELAY_US_MULT         (STM32_TICKS_PER_US/3)
 
 void USB_OTG_BSP_uDelay (const uint32_t usec) {
-    uint32_t us = usec * STM32_DELAY_US_MULT;
-
-    /* fudge for function call overhead  */
-    //us--;
-    asm volatile("   mov r0, %[us]          \n\t"
-                 "1: subs r0, #1            \n\t"
-                 "   bhi 1b                 \n\t"
-                 :
-                 : [us] "r" (us)
-                 : "r0");
+	PreenFM2_uDelay(usec);
 }
 
 
-void USB_OTG_BSP_uDelay2 (const uint32_t usec)
-{
-
-  uint32_t count = 0;
-  const uint32_t utime = (168 * usec / 7);
-  do
-  {
-    if ( ++count > utime )
-    {
-      return ;
-    }
-  }
-  while (1);
-
-}
 
 
 /**
@@ -245,9 +219,7 @@ void USB_OTG_BSP_uDelay2 (const uint32_t usec)
   */
 void USB_OTG_BSP_mDelay (const uint32_t msec)
 {
-
-    USB_OTG_BSP_uDelay(msec * 1000);
-
+    PreenFM2_uDelay(msec * 1000);
 }
 
 
