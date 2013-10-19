@@ -155,20 +155,23 @@ all:
 	@echo "   installdfuo : flash overclocked firmware through DFU"
 	@echo "   installboot : flash bootloader"
 	@echo "   installbootdfu : flash bootloader through DFU"
+	@echo "   zip : create zip with all inside"
 
+zip: pfm2_$(PFM2_VERSION_NUMBER).zip
 
-pfm: $(BIN_FIRMWARE) 
+pfm2_$(PFM2_VERSION_NUMBER).zip : 
+	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_FIRMWARE)) -R -s 0x8040000" > build/install_firmware.cmd
+	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_FIRMWARE_O)) -R -s 0x8040000" > build/install_firmware_overclocked.cmd
+	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_BOOTLOADER)) -R -s 0x8000000" > build/install_bootloader.cmd
+	zip pfm2_$(PFM2_VERSION_NUMBER).zip build/*.bin build/*.syx build/*.cmd
+
+pfm: clean $(BIN_FIRMWARE) 
 
 pfmo: CFLAGS += -DOVERCLOCK
-pfmo: cleanoverclock $(BIN_FIRMWARE_O) 
-
-cleanoverclock:
-	-rm  build/PreenFM.o 
-	-rm  build/system_stm32f4xx.o
-
+pfmo: clean $(BIN_FIRMWARE_O) 
 
 boot: CFLAGS += -DBOOTLOADER -Os 
-boot: $(BIN_BOOTLOADER)
+boot: clean $(BIN_BOOTLOADER)
 
 install: $(BIN_FIRMWARE)
 	st-flash write $(BIN_FIRMWARE) 0x08040000
@@ -274,6 +277,10 @@ build/%.o: src_synth/%.cpp
 
 clean:
 	@ echo ".clean"
-	rm -rf *.lst build/*.o
+	rm -rf *.lst build/*.o pfm2_$(PFM2_VERSION_NUMBER).zip
 
+cleanall:
+	@ echo ".clean all"
+	rm -rf *.lst build	
+	mkdir build
 

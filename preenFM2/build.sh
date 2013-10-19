@@ -1,12 +1,15 @@
 #/bin/bash
 
+make cleanall
+make -j5 pfm
 make clean
-make pfm
+make -j5 pfmo
 make clean
-make pfmo
+make -j5 boot
 make clean
-make boot
-make clean
+make sysex
+make zip
+
 
 
 
