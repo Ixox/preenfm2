@@ -620,9 +620,9 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
 	case MENU_LOAD_SELECT_DX7_PRESET:
 		displayPatchSelect(fullState->menuSelect + 1, this->synthState->params->presetName);
 		// TO REMOVE
-		lcd->setCursor(17,0);
-		lcd->print((int)this->synthState->params->engine1.algo + 1);
-		lcd->print(' ');
+//		lcd->setCursor(17,0);
+//		lcd->print((int)this->synthState->params->engine1.algo + 1);
+//		lcd->print(' ');
 		break;
 	case MENU_LOAD_SELECT_COMBO_PRESET:
 		displayPatchSelect(fullState->menuSelect + 1, storage->readComboName(fullState->menuSelect));
