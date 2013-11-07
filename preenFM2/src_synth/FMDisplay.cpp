@@ -538,9 +538,9 @@ void FMDisplay::newMenuState(FullState* fullState) {
 			lcd->setCursor(0, 3);
 			lcd->print(fullState->currentMenuItem->name);
 			break;
-		case MENU_FORMAT_BANK:
+		case MENU_CREATE_BANK:
 			lcd->setCursor(1, menuRow);
-			lcd->print("Y to format:");
+			lcd->print("Y to create:");
 			fullState->menuSelect = 14;
 			lcd->setCursor(14, menuRow);
 			lcd->print(allChars[fullState->menuSelect]);
@@ -702,7 +702,7 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
 		lcd->setCursor(6+fullState->menuSelect, menuRow);
 		lcd->cursor();
 		break;
-	case MENU_FORMAT_BANK:
+	case MENU_CREATE_BANK:
 		lcd->setCursor(14, menuRow);
 		lcd->print(allChars[fullState->menuSelect]);
 		break;
@@ -789,7 +789,7 @@ void FMDisplay::displayAlgo(int algo) {
 
 	switch (algo) {
 	case ALGO1:
-		da[1] = "  2-3  ";
+		da[1] = "  2<3  ";
 		da[2] = "  \1 /  ";
 		da[3] = "   1   ";
 		break;
@@ -799,17 +799,17 @@ void FMDisplay::displayAlgo(int algo) {
 		da[3] = "  1 2  ";
 		break;
 	case ALGO3:
-		da[1] = " 2 3-4 ";
+		da[1] = " 2 3>4 ";
 		da[2] = "  \1|/  ";
 		da[3] = "   1   ";
 		break;
 	case ALGO4:
-		da[1] = "  3-4  ";
+		da[1] = "  3<4  ";
 		da[2] = "  |\1|";
 		da[3] = "  1 2  ";
 		break;
 	case ALGO5:
-		da[0] = "  3-4  ";
+		da[0] = "  3<4  ";
 		da[1] = "  \1 /  ";
 		da[2] = "   2  ";
 		da[3] = "   1   ";
@@ -820,8 +820,9 @@ void FMDisplay::displayAlgo(int algo) {
 		da[3] = " 1 2 3 ";
 		break;
 	case ALGO7:
-		da[1] = " 2 4-6 ";
-		da[2] = " | | | ";
+		da[0] = "   4   ";
+		da[1] = " 2 |\1  ";
+		da[2] = " | | 6 ";
 		da[3] = " 1 3 5 ";
 		break;
 	case ALGO8:
@@ -831,7 +832,7 @@ void FMDisplay::displayAlgo(int algo) {
 		break;
 	case ALGO9:
 		da[0] = "      6";
-		da[1] = " 2-3  5";
+		da[1] = " 2 3  5";
 		da[2] = " \1 /  |";
 		da[3] = "  1   4";
 		break;

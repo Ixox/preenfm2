@@ -306,7 +306,7 @@ const struct MenuItem allMenus[]  = {
                 "Tools",
                 true,
                 3,
-                {MENU_CONFIG_SETTINGS, MENU_RENAME, MENU_FORMAT_BANK}
+                {MENU_CONFIG_SETTINGS, MENU_RENAME, MENU_CREATE_BANK}
         },
         {
                 MENU_CONFIG_SETTINGS,
@@ -323,8 +323,8 @@ const struct MenuItem allMenus[]  = {
                 {MENU_DONE}
         },
         {
-                MENU_FORMAT_BANK,
-                "Format",
+                MENU_CREATE_BANK,
+                "NewBnk",
                 false,
                 27,
                 {MENU_DONE}

@@ -1123,14 +1123,16 @@ const MenuItem* SynthState::afterButtonPressed() {
     case MENU_ERROR:
         fullState.synthMode = SYNTH_MODE_EDIT;
         break;
-    case MENU_FORMAT_BANK:
+    case MENU_CREATE_BANK:
     	if (fullState.menuSelect == 25) {
         	const MenuItem *cmi = fullState.currentMenuItem;
         	// Update display while formating
+        	lcd.setRealTimeAction(true);
         	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
         	propagateNewMenuState();
             storage->createPatchBank();
-            storage->createComboBank();
+//            storage->createComboBank();
+        	lcd.setRealTimeAction(false);
             fullState.currentMenuItem = cmi;
     	} else {
     		return fullState.currentMenuItem;
