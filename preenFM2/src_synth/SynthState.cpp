@@ -595,6 +595,12 @@ void SynthState::encoderTurned(int encoder, int ticks) {
         			fullState.preenFMComboPresetNumber = 0;
         		}
         		break;
+        	case MENU_RENAME_SELECT_COMBO:
+        		// Did we really change combo?
+        		if (fullState.preenFMCombo != storage->getPreenFMCombo(fullState.menuSelect)) {
+        			fullState.preenFMCombo = storage->getPreenFMCombo(fullState.menuSelect);
+        		}
+        		break;
 			case MENU_LOAD_SELECT_BANK_PRESET:
 				propagateBeforeNewParamsLoad();
 				storage->loadPreenFMPatch(fullState.preenFMBank, fullState.menuSelect, params);
@@ -782,7 +788,10 @@ bool SynthState::isEnterNameState(int currentItem) {
 			|| currentItem == MENU_RENAME_PATCH
 			|| currentItem == MENU_SAVE_ENTER_COMBO_NAME
 			|| currentItem == MENU_SAVE_ENTER_NEW_SYSEX_BANK_NAME
-			|| currentItem == MENU_RENAME_BANK;
+			|| currentItem == MENU_RENAME_BANK
+			|| currentItem == MENU_RENAME_COMBO
+			|| currentItem == MENU_CREATE_BANK
+			|| currentItem == MENU_CREATE_COMBO;
 }
 
 void SynthState::buttonPressed(int button) {
@@ -924,6 +933,8 @@ void SynthState::setNewValue(int timbre, int row, int encoder, float newValue) {
 
 const MenuItem* SynthState::afterButtonPressed() {
     const MenuItem* rMenuItem = 0;
+    int length, k;
+    const MenuItem *cmi;
 
     if (fullState.currentMenuItem->hasSubMenu ) {
         rMenuItem = MenuItemUtil::getMenuItem(fullState.currentMenuItem->subMenu[fullState.menuSelect]);
@@ -957,6 +968,7 @@ const MenuItem* SynthState::afterButtonPressed() {
     	}
         fullState.preenFMComboNumber = fullState.menuSelect;
         break;
+    case MENU_RENAME_SELECT_COMBO:
     case MENU_LOAD_SELECT_COMBO:
     	if (fullState.preenFMCombo->fileType == FILE_EMPTY) {
     		return fullState.currentMenuItem;
@@ -1004,7 +1016,8 @@ const MenuItem* SynthState::afterButtonPressed() {
         break;
     case MENU_SAVE_SELECT_COMBO_PRESET:
     {
-        const char* comboName = storage->readComboName(fullState.menuSelect);
+        // const char* comboName = storage->readComboName(fullState.menuSelect);
+        const char* comboName = storage->loadPreenFMComboName(fullState.preenFMCombo, fullState.preenFMComboPresetNumber);
         for (int k=0; k<12 && comboName[k] != 0; k++) {
             for (int j=0; j<getLength(allChars); j++) {
                 if (comboName[k] == allChars[j]) {
@@ -1015,7 +1028,6 @@ const MenuItem* SynthState::afterButtonPressed() {
     	break;
     }
     case MENU_RENAME_PATCH:
-        int length;
         for (length=12; fullState.name[length-1] == 0; length--);
         for (int k=0; k<length; k++) {
             params->presetName[k] = allChars[(int)fullState.name[k]];
@@ -1023,8 +1035,6 @@ const MenuItem* SynthState::afterButtonPressed() {
         params->presetName[length] = '\0';
         break;
     case MENU_SAVE_ENTER_PRESET_NAME:
-    {
-        int length;
         for (length=12; fullState.name[length-1] == 0; length--);
         for (int k=0; k<length; k++) {
         	params->presetName[k] = allChars[(int)fullState.name[k]];
@@ -1032,23 +1042,17 @@ const MenuItem* SynthState::afterButtonPressed() {
         params->presetName[length] = '\0';
         storage->savePreenFMPatch(fullState.preenFMBank, fullState.preenFMPresetNumber, params);
         break;
-    }
     case MENU_SAVE_ENTER_COMBO_NAME:
-    {
-        int length;
         for (length=12; fullState.name[length-1] == 0; length--);
         char comboName[12];
         for (int k=0; k<length; k++) {
         	comboName[k] = allChars[(int)fullState.name[k]];
         }
         comboName[length] = '\0';
-        storage->savePreenFMCombo(fullState.preenFMCombo, fullState.preenFMComboNumber, comboName);
+        storage->savePreenFMCombo(fullState.preenFMCombo, fullState.preenFMComboPresetNumber, comboName);
         break;
-    }
     case MENU_SAVE_ENTER_NEW_SYSEX_BANK_NAME:
-    {
     	// Must save the bank here....
-        int length;
         for (length=8; fullState.name[length-1] == 0; length--);
         for (int k=0; k<length; k++) {
         	fullState.name[k] = allChars[(int)fullState.name[k]];
@@ -1059,7 +1063,7 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.name[length++] = 'k';
         fullState.name[length] = '\0';
         if (!storage->bankNameExist(fullState.name)) {
-        	const MenuItem *cmi = fullState.currentMenuItem;
+        	cmi = fullState.currentMenuItem;
         	// Update display while sending
         	lcd.setRealTimeAction(true);
         	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
@@ -1071,10 +1075,8 @@ const MenuItem* SynthState::afterButtonPressed() {
         	rMenuItem = MenuItemUtil::getMenuItem(MENU_SAVE_SYSEX_BANK_CONFIRM_OVERRIDE);
         }
         break;
-    }
     case MENU_SAVE_SYSEX_BANK_CONFIRM_OVERRIDE:
-    {
-    	const MenuItem *cmi = fullState.currentMenuItem;
+    	cmi = fullState.currentMenuItem;
     	// Update display while sending
     	lcd.setRealTimeAction(true);
     	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
@@ -1083,32 +1085,41 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.currentMenuItem = cmi;
     	lcd.setRealTimeAction(false);
     	break;
-    }
     case MENU_SAVE_SYSEX_PATCH:
         PresetUtil::sendCurrentPatchToSysex();
         break;
-    case MENU_RENAME_BANK:
-    {
-    	int k;
-    	for (k=0; k<8 && fullState.name[k]!=0; k++) {
-        	fullState.name[k] =  allChars[fullState.name[k]];
+    case MENU_RENAME_COMBO:
+    	for (length=0; length<8 && fullState.name[length]!=0; length++) {
+        	fullState.name[length] =  allChars[fullState.name[length]];
     	}
-    	fullState.name[k++] = '.';
-    	fullState.name[k++] = 'b';
-    	fullState.name[k++] = 'n';
-    	fullState.name[k++] = 'k';
-    	fullState.name[k++] = '\0';
+    	fullState.name[length++] = '.';
+    	fullState.name[length++] = 'c';
+    	fullState.name[length++] = 'm';
+    	fullState.name[length++] = 'b';
+    	fullState.name[length++] = '\0';
+    	if (storage->renameCombo(fullState.preenFMCombo, fullState.name) > 0) {
+        	rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
+    	}
+
+    	break;
+    case MENU_RENAME_BANK:
+    	for (length=0; length<8 && fullState.name[length]!=0; length++) {
+        	fullState.name[length] =  allChars[fullState.name[length]];
+    	}
+    	fullState.name[length++] = '.';
+    	fullState.name[length++] = 'b';
+    	fullState.name[length++] = 'n';
+    	fullState.name[length++] = 'k';
+    	fullState.name[length++] = '\0';
     	if (storage->renameBank(fullState.preenFMBank, fullState.name) > 0) {
         	rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
     	}
     	break;
-    }
     case MENU_SAVE_SYSEX_BANK:
-    {
 		if (storage->getPreenFMBank(fullState.menuSelect)->fileType == FILE_EMPTY) {
     		return fullState.currentMenuItem;
 		}
-    	const MenuItem *cmi = fullState.currentMenuItem;
+    	cmi = fullState.currentMenuItem;
     	// Update display while sending
     	lcd.setRealTimeAction(true);
     	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
@@ -1117,25 +1128,59 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.currentMenuItem = cmi;
     	lcd.setRealTimeAction(false);
         break;
-    }
     case MENU_CANCEL:
     case MENU_DONE:
     case MENU_ERROR:
         fullState.synthMode = SYNTH_MODE_EDIT;
         break;
     case MENU_CREATE_BANK:
-    	if (fullState.menuSelect == 25) {
-        	const MenuItem *cmi = fullState.currentMenuItem;
+    	// Must create the bank here....
+        for (length=8; fullState.name[length-1] == 0; length--);
+        for (int k=0; k<length; k++) {
+        	fullState.name[k] = allChars[(int)fullState.name[k]];
+        }
+        fullState.name[length++] = '.';
+        fullState.name[length++] = 'b';
+        fullState.name[length++] = 'n';
+        fullState.name[length++] = 'k';
+        fullState.name[length] = '\0';
+        if (!storage->bankNameExist(fullState.name)) {
+        	cmi = fullState.currentMenuItem;
         	// Update display while formating
         	lcd.setRealTimeAction(true);
         	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
         	propagateNewMenuState();
-            storage->createPatchBank();
-//            storage->createComboBank();
+        	storage->createPatchBank(fullState.name);
         	lcd.setRealTimeAction(false);
-            fullState.currentMenuItem = cmi;
+        	fullState.currentMenuItem = cmi;
+        } else {
+        	rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
+        }
+        break;
+    case MENU_CREATE_COMBO:
+
+    	// Must create the combo here....
+        for (length=8; fullState.name[length-1] == 0; length--);
+        for (int k=0; k<length; k++) {
+        	fullState.name[k] = allChars[(int)fullState.name[k]];
+        }
+        fullState.name[length++] = '.';
+        fullState.name[length++] = 'c';
+        fullState.name[length++] = 'm';
+        fullState.name[length++] = 'b';
+        fullState.name[length] = '\0';
+
+        if (!storage->comboNameExist(fullState.name)) {
+			cmi = fullState.currentMenuItem;
+			// Update display while formating
+			lcd.setRealTimeAction(true);
+			fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
+			propagateNewMenuState();
+			storage->createComboBank(fullState.name);
+			lcd.setRealTimeAction(false);
+			fullState.currentMenuItem = cmi;
     	} else {
-    		return fullState.currentMenuItem;
+        	rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
     	}
         break;
     case MENU_CONFIG_SETTINGS_SAVE:
@@ -1161,6 +1206,53 @@ const MenuItem* SynthState::afterButtonPressed() {
     // Next state switch
 
     switch (rMenuItem->menuState) {
+    case MENU_CREATE_COMBO:
+    {
+    	const char *bankName = "COMBO01";
+    	int length = 7;
+        for (int k=0; k<length ; k++) {
+            for (int j=0; j<getLength(allChars); j++) {
+                if (bankName[k] == allChars[j]) {
+                	fullState.name[k] = j;
+                }
+            }
+        }
+        for (int k=length; k<8; k++) {
+        	fullState.name[k] = 0;
+        }
+        fullState.menuSelect = 0;
+    	break;
+    }
+    case MENU_CREATE_BANK:
+    {
+    	const char *bankName = "BANK01";
+    	int length = 6;
+        for (int k=0; k<length ; k++) {
+            for (int j=0; j<getLength(allChars); j++) {
+                if (bankName[k] == allChars[j]) {
+                	fullState.name[k] = j;
+                }
+            }
+        }
+        for (int k=length; k<8; k++) {
+        	fullState.name[k] = 0;
+        }
+        fullState.menuSelect = 0;
+    	break;
+    }
+    case MENU_RENAME_COMBO:
+        for (int k=0; k<8; k++) {
+        	fullState.name[k] = 0;
+        }
+        for (int k=0; k<8 && fullState.preenFMCombo->name[k]!='.'; k++) {
+            for (int j=0; j<getLength(allChars); j++) {
+                if (fullState.preenFMCombo->name[k] == allChars[j]) {
+                	fullState.name[k] = j;
+                }
+            }
+        }
+        fullState.menuSelect = 0;
+    	break;
     case MENU_RENAME_BANK:
         for (int k=0; k<8; k++) {
         	fullState.name[k] = 0;
@@ -1220,6 +1312,7 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.menuSelect = fullState.preenFMBankNumber;
         fullState.preenFMBank = storage->getPreenFMBank(fullState.menuSelect);
         break;
+    case MENU_RENAME_SELECT_COMBO:
     case MENU_LOAD_SELECT_COMBO:
     case MENU_SAVE_SELECT_COMBO:
         fullState.menuSelect = fullState.preenFMComboNumber;
@@ -1256,6 +1349,7 @@ const MenuItem* SynthState::menuBack() {
     case MENU_SAVE_SELECT_BANK_PRESET:
         fullState.menuSelect = fullState.preenFMBankNumber;
         break;
+    case MENU_RENAME_COMBO:
     case MENU_SAVE_SELECT_COMBO_PRESET:
         fullState.menuSelect = fullState.preenFMComboNumber;
         break;

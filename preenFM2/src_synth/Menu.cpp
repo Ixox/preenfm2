@@ -306,7 +306,7 @@ const struct MenuItem allMenus[]  = {
                 "Tools",
                 true,
                 3,
-                {MENU_CONFIG_SETTINGS, MENU_RENAME, MENU_CREATE_BANK}
+                {MENU_CONFIG_SETTINGS, MENU_CREATE, MENU_RENAME}
         },
         {
                 MENU_CONFIG_SETTINGS,
@@ -323,18 +323,32 @@ const struct MenuItem allMenus[]  = {
                 {MENU_DONE}
         },
         {
-                MENU_CREATE_BANK,
-                "NewBnk",
+                MENU_CREATE,
+                "Create",
+                true,
+                2,
+                { MENU_CREATE_BANK, MENU_CREATE_COMBO }
+        },
+        {
+        		MENU_CREATE_BANK,
+                "Bank",
                 false,
-                27,
+                8,
+                {MENU_DONE}
+        },
+        {
+        		MENU_CREATE_COMBO,
+                "Combo",
+                false,
+                8,
                 {MENU_DONE}
         },
         {
                 MENU_RENAME,
                 "Rename",
                 true,
-                2,
-                {MENU_RENAME_PATCH, MENU_RENAME_SELECT_BANK}
+                3,
+                {MENU_RENAME_PATCH, MENU_RENAME_SELECT_BANK, MENU_RENAME_SELECT_COMBO}
         },
         {
                 MENU_RENAME_PATCH,
@@ -352,6 +366,20 @@ const struct MenuItem allMenus[]  = {
         },
         {
         		MENU_RENAME_BANK,
+                "",
+                false,
+                8,
+                {MENU_DONE}
+        },
+        {
+        		MENU_RENAME_SELECT_COMBO,
+                "Combo",
+                false,
+                8,
+                {MENU_RENAME_COMBO}
+        },
+        {
+        		MENU_RENAME_COMBO,
                 "",
                 false,
                 8,

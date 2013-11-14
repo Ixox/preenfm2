@@ -59,13 +59,16 @@ public:
     int loadFirmwarePart(char *fileName, int seek, void* bytes, int size);
 
     int renameBank(const struct BankFile* bank, const char* newName);
-
+    int renameCombo(const struct BankFile* bank, const char* newName);
 
 private:
+    int renameFile(const struct BankFile* bank, const char* newName);
+
     void sortBankFile(struct BankFile* bankFiles, int numberOfFiles);
 	void swapBankFile(struct BankFile* bankFiles, int i, int j);
 
 	const struct BankFile*  addEmptyBank(const char* newBankName);
+	const struct BankFile*  addEmptyCombo(const char* newBankName);
 
     const char* getDX7BankFullName(const char* bankName);
     const char* getPreenFMFullName(const char* bankName);

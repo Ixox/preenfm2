@@ -68,16 +68,6 @@ const char* UsbKey::getFileName(FILE_ENUM file) {
     switch (file) {
         case DEFAULT_COMBO:
             return DEFAULT_COMBO_NAME;
-        case PATCH_BANK1:
-            return PATCH_BANK1_NAME;
-        case PATCH_BANK2:
-            return PATCH_BANK2_NAME;
-        case PATCH_BANK3:
-            return PATCH_BANK3_NAME;
-        case PATCH_BANK4:
-            return PATCH_BANK4_NAME;
-        case COMBO_BANK:
-            return COMBO_BANK_NAME;
         case PROPERTIES:
             return PROPERTIES_NAME;
     }
@@ -446,7 +436,33 @@ const struct BankFile* UsbKey::addEmptyBank(const char* newBankName) {
 	return &preenFMBank[k];
 }
 
+const struct BankFile* UsbKey::addEmptyCombo(const char* newComboName) {
+	int k;
+	for (k=0; preenFMCombo[k].fileType != FILE_EMPTY && k < NUMBEROFPREENFMCOMBOS; k++);
+	if (k == NUMBEROFPREENFMCOMBOS) {
+		// NO EMPTY COMBO....
+		return NULL;
+	}
+	preenFMCombo[k].fileType = FILE_OK;
+	for (int n = 0; n < 12 ; n++) {
+		preenFMCombo[k].name[n] = newComboName[n];
+	}
+	preenFMComboInitialized = false;
+	return &preenFMCombo[k];
+}
+
+
 int UsbKey::renameBank(const struct BankFile* bank, const char* newName) {
+	preenFMBankInitialized = false;
+	return renameFile(bank, newName);
+}
+int UsbKey::renameCombo(const struct BankFile* bank, const char* newName) {
+	preenFMComboInitialized = false;
+	return renameFile(bank, newName);
+}
+
+
+int UsbKey::renameFile(const struct BankFile* bank, const char* newName) {
 	char fullNewBankName[40];
 	const char* fullNameTmp = getPreenFMFullName(newName);
 	// Don't want the logical drive (two first char)
@@ -457,7 +473,6 @@ int UsbKey::renameBank(const struct BankFile* bank, const char* newName) {
 	commandParams.commandFileName = getPreenFMFullName(bank->name);
 	commandParams.commandParam1 = (void*)fullNewBankName;
 	usbProcess();
-	preenFMBankInitialized = false;
 	return commandParams.commandResult;
 }
 

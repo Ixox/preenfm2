@@ -24,11 +24,6 @@
 
 enum FILE_ENUM {
     DEFAULT_COMBO = 0,
-    PATCH_BANK1,
-    PATCH_BANK2,
-    PATCH_BANK3,
-    PATCH_BANK4,
-    COMBO_BANK,
     PROPERTIES,
     FIRMWARE
 };
@@ -56,20 +51,15 @@ public:
     void saveDefaultCombo();
     bool loadDefaultCombo();
     void removeDefaultCombo();
-    void createPatchBank();
-    void createComboBank();
-    void loadPatch(int bankNumber, int patchNumber, struct OneSynthParams *params);
-    void loadCombo(int comboNumber);
-    void savePatch(int bankNumber, int patchNumber, struct OneSynthParams *params);
-    void saveCombo(int comboNumber, const char*comboName);
-    const char* readPresetName(int bankNumber, int patchNumber);
-    const char* readComboName(int comboNumber);
+    void createPatchBank(const char* name);
+    void createComboBank(const char* name);
     void loadConfig(char* midiConfig);
     void saveConfig(const char* midiConfig);
 
     void saveBank(const char* newBankName, const uint8_t* sysexTmpMem);
     bool bankNameExist(const char* bankName);
     int bankBaseLength(const char* bankName);
+    bool comboNameExist(const char* comboName);
 
     virtual const struct BankFile* getDx7Bank(int bankNumber) = 0;
     uint8_t* dx7LoadPatch(const struct BankFile* bank, int patchNumber);
@@ -85,6 +75,7 @@ public:
     void savePreenFMCombo(const struct BankFile* combo, int comboNumber, char* comboName);
 
     virtual int renameBank(const struct BankFile* bank, const char* newName) = 0;
+    virtual int renameCombo(const struct BankFile* bank, const char* newName) = 0;
 
     // Virtual
     virtual void init(uint8_t*timbre1, uint8_t*timbre2, uint8_t*timbre3, uint8_t*timbre4);
@@ -93,6 +84,7 @@ public:
 private:
     // Pure Virtual
     virtual const struct BankFile*  addEmptyBank(const char* newBankName) = 0;
+    virtual const struct BankFile*  addEmptyCombo(const char* newComboName) = 0;
     virtual const char* getDX7BankFullName(const char* bankName) = 0;
     virtual const char* getPreenFMFullName(const char* bankName) = 0;
     void dx7patchUnpack(uint8_t *packed_patch, uint8_t *unpacked_patch);

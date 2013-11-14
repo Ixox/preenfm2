@@ -84,74 +84,11 @@ bool Storage::loadDefaultCombo() {
     return true;
 }
 
-const char* Storage::readPresetName(int bankNumber, int patchNumber) {
-    int result = load((FILE_ENUM)(PATCH_BANK1 + bankNumber), ALIGNED_PATCH_SIZE * patchNumber + PFM_PATCH_SIZE - 16,  (void*)presetName, 12);
-    presetName[12] = 0;
-    return presetName;
-}
 
-const char* Storage::readComboName(int comboNumber) {
-    int result = load(COMBO_BANK, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber ,  (void*)presetName, 12);
-    presetName[12] = 0;
-    return presetName;
-}
-
-void Storage::loadPatch(int bankNumber, int patchNumber, struct OneSynthParams *params) {
-    // Don't load in params directly because params is in CCM memory
-    int result = load((FILE_ENUM)(PATCH_BANK1 + bankNumber), patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableParam, PFM_PATCH_SIZE);
-
-    if (result == 0) {
-        for (int k=0; k<PFM_PATCH_SIZE; k++) {
-           ((uint8_t*)params)[k] = ((uint8_t*)&reachableParam)[k];
-        }
-    }
-}
-
-void Storage::loadCombo(int comboNumber) {
-
-    for (int timbre = 0; timbre < 4; timbre++)  {
-        int result = load(COMBO_BANK,  (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre ,  (void*)&reachableParam, PFM_PATCH_SIZE);
-
-        if (result == 0) {
-            for (int k=0; k<PFM_PATCH_SIZE; k++) {
-               this->timbre[timbre][k] = ((uint8_t*)&reachableParam)[k];
-            }
-        }
-    }
-}
-
-void Storage::savePatch(int bankNumber, int patchNumber, struct OneSynthParams *params) {
-    char zeros[ALIGNED_PATCH_ZERO];
-
-    for (int k=0; k<ALIGNED_PATCH_ZERO;k++) {
-        zeros[k] = 0;
-    }
-
-    for (int k=0; k<PFM_PATCH_SIZE; k++) {
-        ((uint8_t*)&reachableParam)[k] = ((uint8_t*)params)[k];
-    }
-
-    // Save patch
-    save((FILE_ENUM)(PATCH_BANK1 + bankNumber), patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableParam, PFM_PATCH_SIZE);
-
-    // Add zeros
-    save((FILE_ENUM)(PATCH_BANK1 + bankNumber), patchNumber * ALIGNED_PATCH_SIZE  + PFM_PATCH_SIZE,  (void*)zeros, ALIGNED_PATCH_ZERO);
-}
-
-void Storage::saveCombo(int comboNumber, const char*comboName) {
-
-    save(COMBO_BANK, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber ,  (void*)comboName, 12);
-
-    for (int timbre = 0; timbre < 4; timbre++)  {
-        for (int k=0; k<PFM_PATCH_SIZE; k++) {
-            ((uint8_t*)&reachableParam)[k] = this->timbre[timbre][k];
-        }
-        save(COMBO_BANK, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableParam, PFM_PATCH_SIZE);
-    }
-}
-
-void Storage::createPatchBank() {
-	const struct BankFile * newBank = addEmptyBank("USER1.BNK");
+void Storage::createPatchBank(const char* name) {
+#ifndef BOOTLOADER
+	const struct BankFile * newBank = addEmptyBank(name);
+	const char* fullBankName = getPreenFMFullName(name);
 	if (newBank == 0) {
 		return;
 	}
@@ -164,28 +101,45 @@ void Storage::createPatchBank() {
         addNumber(reachableParam.presetName, 7, k + 1);
 		savePreenFMPatch(newBank, k, &reachableParam);
 	}
-#ifdef DONOTEXISTNEVER
-    for (int k=0; k<PFM_PATCH_SIZE; k++) {
-        ((uint8_t*)&reachableParam)[k] = ((uint8_t*)presets)[k];
-    }
-    // back up name
-    copy(reachableParam.presetName, "Preset 0\0\0\0\0\0", 12);
-    for (int patch = 0; patch < 128; patch++) {
-        addNumber(reachableParam.presetName, 7, patch + 1);
-        savePatch(0, patch, &reachableParam);
-    }
 #endif
 }
 
 
-void Storage::createComboBank() {
-    char comboName[12];
+void Storage::createComboBank(const char* name) {
+#ifndef BOOTLOADER
+	const struct BankFile * newBank = addEmptyCombo(name);
+	const char* fullBankName = getPreenFMFullName(name);
+
+	if (newBank == 0) {
+		return;
+	}
+    for (int k=0; k<PFM_PATCH_SIZE; k++) {
+        ((uint8_t*)&reachableParam)[k] = ((uint8_t*)presets)[k];
+    }
+	char comboName[12];
+    copy(comboName,  "Combo \0\0\0\0\0\0", 12);
+    copy(reachableParam.presetName, "Preset 0\0\0\0\0\0", 12);
+	for (int comboNumber=0; comboNumber<128; comboNumber++) {
+
+        addNumber(comboName, 6, comboNumber + 1);
+		save(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber , comboName, 12);
+
+        for (int timbre = 0; timbre < 4; timbre++)  {
+            addNumber(reachableParam.presetName, 7, timbre + 1);
+            save(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableParam, PFM_PATCH_SIZE);
+        }
+	}
+
+#endif
+#ifdef DONOTEXISTATALL
+	char comboName[12];
     copy(comboName,  "Combo \0\0\0\0\0\0", 12);
 
     for (int combo = 0; combo < 128; combo++) {
         addNumber(comboName, 6, combo + 1);
         saveCombo(combo, comboName);
     }
+#endif
 }
 
 void Storage::loadConfig(char* midiConfig) {
@@ -327,6 +281,35 @@ bool Storage::bankNameExist(const char* bankName) {
 			// Case insensitive...
 			char c1 = bankName[n];
 			char c2 = pfmb->name[n];
+			if (c1 >= 'a' && c1<='z') {
+				c1 = 'A' + c1 - 'a';
+			}
+			if (c2 >= 'a' && c2<='z') {
+				c2 = 'A' + c2 - 'a';
+			}
+			if (c1 != c2) {
+				sameName = false;
+			}
+		}
+		if (sameName) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Storage::comboNameExist(const char* comboName) {
+	int nameLength = bankBaseLength(comboName);
+	for (int b=0; getPreenFMCombo(b)->fileType != FILE_EMPTY && b<NUMBEROFPREENFMCOMBOS; b++) {
+		const struct BankFile* pfmc = getPreenFMCombo(b);
+		if (nameLength != bankBaseLength(pfmc->name)) {
+			continue;
+		}
+		bool sameName = true;
+		for (int n=0; n < nameLength && sameName; n++) {
+			// Case insensitive...
+			char c1 = comboName[n];
+			char c2 = pfmc->name[n];
 			if (c1 >= 'a' && c1<='z') {
 				c1 = 'A' + c1 - 'a';
 			}

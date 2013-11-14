@@ -76,7 +76,7 @@ const struct OneSynthParams presets[]  = {
         {
                 // patch name : 'Preen 2.0'
                 // Engine
-                { ALGO9, 7, 3, 4} ,
+                { ALGO9, 7, 2, 4} ,
                 { 1.5,1.9,1.8,0.7} ,
                 { 1, 0, 1, 0} ,
                 { 1, 0, 1, 0} ,

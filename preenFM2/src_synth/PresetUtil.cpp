@@ -796,20 +796,5 @@ void PresetUtil::convertCharArrayToSynthState(const unsigned char* chars, OneSyn
 }
 
 
-void PresetUtil::copyBank(int source, int dest) {
-	if (source == 4) {
-		lcd.setCursor(1,3);
-		lcd.print("Save:");
-		for (int preset=0; preset<128; preset++) {
-			lcd.setCursor(7,3);
-			lcd.print(preset);
-			PresetUtil::convertCharArrayToSynthState(sysexTmpMem + PATCH_SIZE_PFM2 * preset, &oneSynthParamsTmp);
-			storage->savePatch(dest, preset, &oneSynthParamsTmp);
-		}
-	}  else {
-		// CAN ONLY COPY FROM sysexTmpMem for the moment
-	}
-}
-
 
 

@@ -70,7 +70,6 @@ public:
 
     static void sendNrpn(struct MidiEvent cc);
     static void sendCurrentPatchAsNrpns(int timbre);
-    static void copyBank(int source, int dest);
 private:
     static SynthState * synthState;
     static Storage * storage;
