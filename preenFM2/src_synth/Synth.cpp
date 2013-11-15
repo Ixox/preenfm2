@@ -30,11 +30,12 @@ Synth::~Synth(void) {
 }
 
 void Synth::init() {
-
+	int numberOfVoices[]= { 5, 1, 1, 1};
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
         for (int k=0; k<sizeof(struct OneSynthParams)/sizeof(float); k++) {
-            ((float*)&timbres[t].params)[k] = ((float*)&presets[t])[k];
+            ((float*)&timbres[t].params)[k] = ((float*)&preenMainPreset)[k];
         }
+        timbres[t].params.engine1.numberOfVoice = numberOfVoices[t];
         timbres[t].init();
     }
 

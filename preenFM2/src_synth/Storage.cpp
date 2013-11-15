@@ -93,7 +93,7 @@ void Storage::createPatchBank(const char* name) {
 		return;
 	}
     for (int k=0; k<PFM_PATCH_SIZE; k++) {
-        ((uint8_t*)&reachableParam)[k] = ((uint8_t*)presets)[k];
+        ((uint8_t*)&reachableParam)[k] = ((uint8_t*)&preenMainPreset)[k];
     }
     // back up name
     copy(reachableParam.presetName, "Preset 0\0\0\0\0\0", 12);
@@ -114,7 +114,7 @@ void Storage::createComboBank(const char* name) {
 		return;
 	}
     for (int k=0; k<PFM_PATCH_SIZE; k++) {
-        ((uint8_t*)&reachableParam)[k] = ((uint8_t*)presets)[k];
+        ((uint8_t*)&reachableParam)[k] = ((uint8_t*)&preenMainPreset)[k];
     }
 	char comboName[12];
     copy(comboName,  "Combo \0\0\0\0\0\0", 12);

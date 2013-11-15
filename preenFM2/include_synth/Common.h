@@ -130,7 +130,7 @@ enum {
 
 #define PATCH_SIZE_PFM2 ((NUMBER_OF_ROWS)*4*2 + 16*2 + 13)
 
-extern const struct OneSynthParams presets[];
+extern const struct OneSynthParams preenMainPreset;
 extern const struct OneSynthParams defaultPreset;
 extern const char* allChars;
 extern struct AlgoInformation algoInformation[];

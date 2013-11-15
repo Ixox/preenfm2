@@ -1,4 +1,4 @@
-PFM2_VERSION_NUMBER=0.9b
+PFM2_VERSION_NUMBER=0.9c
 PFM2_BIN_NUMBER=$(subst .,,${PFM2_VERSION_NUMBER})
 PFM2_BOOTLOADER_VERSION_NUMBER=1.00
 PFM2_VERSION=\"${PFM2_VERSION_NUMBER}\"
@@ -191,6 +191,15 @@ installboot:boot
 installbootdfu:boot
 	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_BOOTLOADER) -R -s 0x8000000
 
+installall:
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_BOOTLOADER) -R -s 0x8000000
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_FIRMWARE) -R -s 0x8040000
+
+installallo:
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_BOOTLOADER) -R -s 0x8000000
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_FIRMWARE_O) -R -s 0x8040000
+
+
 sysex : sysex/sysex.class
 	java -classpath sysex sysex $(BIN_FIRMWARE)
 	java -classpath sysex sysex $(BIN_FIRMWARE_O)
@@ -277,10 +286,9 @@ build/%.o: src_synth/%.cpp
 
 clean:
 	@ echo ".clean"
-	rm -rf *.lst build/*.o pfm2_$(PFM2_VERSION_NUMBER).zip
+	rm -f *.lst build/*.o pfm2_$(PFM2_VERSION_NUMBER).zip
 
 cleanall:
 	@ echo ".clean all"
-	rm -rf *.lst build	
-	mkdir build
+	rm -rf *.lst build/*
 

@@ -72,297 +72,63 @@ const struct OneSynthParams defaultPreset  = {
         "Default"
 };
 
-const struct OneSynthParams presets[]  = {
-        {
-                // patch name : 'Preen 2.0'
-                // Engine
-                { ALGO9, 7, 2, 4} ,
-                { 1.5,1.9,1.8,0.7} ,
-                { 1, 0, 1, 0} ,
-                { 1, 0, 1, 0} ,
-                { 1, 0, 1, 0} ,
-                { 1, 0, 1, 0} ,
-                // Oscillator
-                { OSC_SHAPE_SAW,  OSC_FT_KEYBOARD , 1.0, 0} ,
-                { OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , .5, 0} ,
-                { OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , 2, 0} ,
-                { OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , 4, 0} ,
-                { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 6, 0} ,
-                { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 2.5, 0} ,
-                // Enveloppe
-                { 0, 1, 0, 1 },
-                { 0, 1, 2.56 , 0},
+const struct OneSynthParams preenMainPreset  = {
+		// patch name : 'Preen 2.0'
+		// Engine
+		{ ALGO9, 7, 2, 4} ,
+		{ 1.5,1.9,1.8,0.7} ,
+		{ 1, 0, 1, 0} ,
+		{ 1, 0, 1, 0} ,
+		{ 1, 0, 1, 0} ,
+		{ 1, 0, 1, 0} ,
+		// Oscillator
+		{ OSC_SHAPE_SAW,  OSC_FT_KEYBOARD , 1.0, 0} ,
+		{ OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , .5, 0} ,
+		{ OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , 2, 0} ,
+		{ OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , 4, 0} ,
+		{ OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 6, 0} ,
+		{ OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 2.5, 0} ,
+		// Enveloppe
+		{ 0, 1, 0, 1 },
+		{ 0, 1, 2.56 , 0},
 
-                { .5, 1, .1, .8 },
-                { 0, .8, 4, 0},
+		{ .5, 1, .1, .8 },
+		{ 0, .8, 4, 0},
 
-                { .1, 1, .5, .6 },
-                { 0, .6, 4, 0},
+		{ .1, 1, .5, .6 },
+		{ 0, .6, 4, 0},
 
-                { .1, 1, .1, .56 },
-                { .1, 1, .1, .56 },
+		{ .1, 1, .7, .56 },
+		{ .1, 1, 1.8, 0 },
 
-                { 0, 1, .6, 0},
-                { 0, 0, 0.66, 0},
+		{ 0, 1, .6, 0},
+		{ 0, 0, 0.66, 0},
 
-                { .1, 1, .5, .6},
-                { 0, .5, 0.3, 0},
+		{ .1, 1, .5, .6},
+		{ 0, .5, 0.3, 0},
 
-                // Modulation matrix
-                { MATRIX_SOURCE_LFO1, 1, PAN_OSC2, 0} ,
-                { MATRIX_SOURCE_LFOSEQ1, 0, MAIN_GATE, 0} ,
-                { MATRIX_SOURCE_VELOCITY, 0, INDEX_MODULATION2, 0} ,
-                { MATRIX_SOURCE_LFOENV1, 0, LFO1_FREQ, 0} ,
-                { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION2, 0} ,
-                { MATRIX_SOURCE_VELOCITY, 0, INDEX_MODULATION4, 0} ,
-                { MATRIX_SOURCE_MODWHEEL, 0, MTX4_MUL, 0} ,
-                { MATRIX_SOURCE_MODWHEEL, 0, INDEX_MODULATION1, 0} ,
-                { MATRIX_SOURCE_MODWHEEL, 0, INDEX_MODULATION2, 0} ,
-                { MATRIX_SOURCE_LFO2, 0, PAN_OSC2, 0} ,
-                { MATRIX_SOURCE_LFO3, 0, PAN_OSC1, 0} ,
-                { MATRIX_SOURCE_NONE, 0, DESTINATION_NONE, 0} ,
-                // LFOs
-                { LFO_SIN, 4.5, 0, 0} ,
-                { LFO_SIN, 4.8, 0, 1.0} ,
-                { LFO_SIN, 6.0, 0, 4.0} ,
-                { .2, 0, 1.0, 1.0} ,
-                { 1, .2, .2, 1.0} ,
-                { 110, .5,  0, 0}  ,
-                { 140, .6, 0, 0},
-                {{ 0,7,15,15,15,0,15,15,  0,15,15,15,0,15,15,15}} ,
-                {{ 15, 4, 2, 0, 15, 2, 0, 8, 15, 0, 12, 0, 8, 0, 15, 0}} ,
-                "Preen mk2"
-        } ,
-        {
-                // patch name : 'Preen 2.0'
-                // Engine
-                { ALGO1, 7, 2, 4} ,
-                { 1.5,1.9,1.8,0.7} ,
-                { 1, 0, 1, 0} ,
-                { 1, 0, 1, 0} ,
-                { 1, 0, 1, 0} ,
-                { 1, 0, 1, 0} ,
-                // Oscillator
-                { OSC_SHAPE_SAW,  OSC_FT_KEYBOARD , 1.0, 0} ,
-                { OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , .5, 0} ,
-                { OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , 2, 0} ,
-                { OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , 4, 0} ,
-                { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 6, 0} ,
-                { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 2.5, 0} ,
-                // Enveloppe
-                { 0, 1, 0, 1 },
-                { 0, 1, 2.56 , 0},
-
-                { .5, 1, .1, .8 },
-                { 0, .8, 4, 0},
-
-                { .1, 1, .5, .6 },
-                { 0, .6, 4, 0},
-
-                { .1, 1, .1, .56 },
-                { .1, 1, .1, .56 },
-
-                { 0, 1, .6, 0},
-                { 0, 0, 0.66, 0},
-
-                { .1, 1, .5, .6},
-                { 0, .5, 0.3, 0},
-
-                // Modulation matrix
-                { MATRIX_SOURCE_LFO1, 1, PAN_OSC2, 0} ,
-                { MATRIX_SOURCE_LFOSEQ1, 0, MAIN_GATE, 0} ,
-                { MATRIX_SOURCE_VELOCITY, 0, INDEX_MODULATION2, 0} ,
-                { MATRIX_SOURCE_LFOENV1, 0, LFO1_FREQ, 0} ,
-                { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION2, 0} ,
-                { MATRIX_SOURCE_VELOCITY, 0, INDEX_MODULATION4, 0} ,
-                { MATRIX_SOURCE_MODWHEEL, 0, MTX4_MUL, 0} ,
-                { MATRIX_SOURCE_MODWHEEL, 0, INDEX_MODULATION1, 0} ,
-                { MATRIX_SOURCE_MODWHEEL, 0, INDEX_MODULATION2, 0} ,
-                { MATRIX_SOURCE_LFO2, 0, PAN_OSC2, 0} ,
-                { MATRIX_SOURCE_LFO3, 0, PAN_OSC1, 0} ,
-                { MATRIX_SOURCE_NONE, 0, DESTINATION_NONE, 0} ,
-                // LFOs
-                { LFO_SIN, 4.5, 0, 0} ,
-                { LFO_SIN, 4.8, 0, 1.0} ,
-                { LFO_SIN, 6.0, 0, 4.0} ,
-                { .2, 0, 1.0, 1.0} ,
-                { 1, .2, .2, 1.0} ,
-                { 110, .5,  0, 0}  ,
-                { 140, .6, 0, 0},
-                {{ 0,7,15,15,15,0,15,15,  0,15,15,15,0,15,15,15}} ,
-                {{ 15, 4, 2, 0, 15, 2, 0, 8, 15, 0, 12, 0, 8, 0, 15, 0}} ,
-                "Preset 2"
-        } ,
-        {
-                // patch name : 'Preen 2.0'
-                // Engine
-                { ALGO2, 7, 3, 4} ,
-                { 1.5,1.9,1.8,0.7} ,
-                { 1, 0, 1, 0} ,
-                { 1, 0, 1, 0} ,
-                { 1, 0, 1, 0} ,
-                { 1, 0, 1, 0} ,
-                // Oscillator
-                { OSC_SHAPE_SAW,  OSC_FT_KEYBOARD , 1.0, 0} ,
-                { OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , .5, 0} ,
-                { OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , 2, 0} ,
-                { OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , 4, 0} ,
-                { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 6, 0} ,
-                { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 2.5, 0} ,
-                // Enveloppe
-                { 0, 1, 0, 1 },
-                { 0, 1, 2.56 , 0},
-
-                { .5, 1, .1, .8 },
-                { 0, .8, 4, 0},
-
-                { .1, 1, .5, .6 },
-                { 0, .6, 4, 0},
-
-                { .1, 1, .1, .56 },
-                { .1, 1, .1, .56 },
-
-                { 0, 1, .6, 0},
-                { 0, 0, 0.66, 0},
-
-                { .1, 1, .5, .6},
-                { 0, .5, 0.3, 0},
-
-                // Modulation matrix
-                { MATRIX_SOURCE_LFO1, 1, PAN_OSC2, 0} ,
-                { MATRIX_SOURCE_LFOSEQ1, 0, MAIN_GATE, 0} ,
-                { MATRIX_SOURCE_VELOCITY, 0, INDEX_MODULATION2, 0} ,
-                { MATRIX_SOURCE_LFOENV1, 0, LFO1_FREQ, 0} ,
-                { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION2, 0} ,
-                { MATRIX_SOURCE_VELOCITY, 0, INDEX_MODULATION4, 0} ,
-                { MATRIX_SOURCE_MODWHEEL, 0, MTX4_MUL, 0} ,
-                { MATRIX_SOURCE_MODWHEEL, 0, INDEX_MODULATION1, 0} ,
-                { MATRIX_SOURCE_MODWHEEL, 0, INDEX_MODULATION2, 0} ,
-                { MATRIX_SOURCE_LFO2, 0, PAN_OSC2, 0} ,
-                { MATRIX_SOURCE_LFO3, 0, PAN_OSC1, 0} ,
-                { MATRIX_SOURCE_NONE, 0, DESTINATION_NONE, 0} ,
-                // LFOs
-                { LFO_SIN, 4.5, 0, 0} ,
-                { LFO_SIN, 4.8, 0, 1.0} ,
-                { LFO_SIN, 6.0, 0, 4.0} ,
-                { .2, 0, 1.0, 1.0} ,
-                { 1, .2, .2, 1.0} ,
-                { 110, .5,  0, 0}  ,
-                { 140, .6, 0, 0},
-                {{ 0,7,15,15,15,0,15,15,  0,15,15,15,0,15,15,15}} ,
-                {{ 15, 4, 2, 0, 15, 2, 0, 8, 15, 0, 12, 0, 8, 0, 15, 0}} ,
-                "Preset 3"
-        } ,
-        {
-                // patch name : 'Preen 2.0'
-                // Engine
-                { ALGO3, 7, 1, 4} ,
-                { 1.5,1.9,1.8,0.7} ,
-                { 1, 0, 1, 0} ,
-                { 1, 0, 1, 0} ,
-                { 1, 0, 1, 0} ,
-                { 1, 0, 1, 0} ,
-                // Oscillator
-                { OSC_SHAPE_SAW,  OSC_FT_KEYBOARD , 1.0, 0} ,
-                { OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , .5, 0} ,
-                { OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , 2, 0} ,
-                { OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , 4, 0} ,
-                { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 6, 0} ,
-                { OSC_SHAPE_RAND, OSC_FT_KEYBOARD , 2.5, 0} ,
-                // Enveloppe
-                { 0, 1, 0, 1 },
-                { 0, 1, 2.56 , 0},
-
-                { .5, 1, .1, .8 },
-                { 0, .8, 4, 0},
-
-                { .1, 1, .5, .6 },
-                { 0, .6, 4, 0},
-
-                { .1, 1, .1, .56 },
-                { .1, 1, .1, .56 },
-
-                { 0, 1, .6, 0},
-                { 0, 0, 0.66, 0},
-
-                { .1, 1, .5, .6},
-                { 0, .5, 0.3, 0},
-
-                // Modulation matrix
-                { MATRIX_SOURCE_LFO1, 1, PAN_OSC2, 0} ,
-                { MATRIX_SOURCE_LFOSEQ1, 0, MAIN_GATE, 0} ,
-                { MATRIX_SOURCE_VELOCITY, 0, INDEX_MODULATION2, 0} ,
-                { MATRIX_SOURCE_LFOENV1, 0, LFO1_FREQ, 0} ,
-                { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION2, 0} ,
-                { MATRIX_SOURCE_VELOCITY, 0, INDEX_MODULATION4, 0} ,
-                { MATRIX_SOURCE_MODWHEEL, 0, MTX4_MUL, 0} ,
-                { MATRIX_SOURCE_MODWHEEL, 0, INDEX_MODULATION1, 0} ,
-                { MATRIX_SOURCE_MODWHEEL, 0, INDEX_MODULATION2, 0} ,
-                { MATRIX_SOURCE_LFO2, 0, PAN_OSC2, 0} ,
-                { MATRIX_SOURCE_LFO3, 0, PAN_OSC1, 0} ,
-                { MATRIX_SOURCE_NONE, 0, DESTINATION_NONE, 0} ,
-                // LFOs
-                { LFO_SIN, 4.5, 0, 0} ,
-                { LFO_SIN, 4.8, 0, 1.0} ,
-                { LFO_SIN, 6.0, 0, 4.0} ,
-                { .2, 0, 1.0, 1.0} ,
-                { 1, .2, .2, 1.0} ,
-                { 110, .5,  0, 0}  ,
-                { 140, .6, 0, 0},
-                {{ 0,7,15,15,15,0,15,15,  0,15,15,15,0,15,15,15}} ,
-                {{ 15, 4, 2, 0, 15, 2, 0, 8, 15, 0, 12, 0, 8, 0, 15, 0}} ,
-                "Preset 4"
-        } ,
-        {
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-                { 0,0,0,0} ,
-
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                { 0, 0, 0, 0} ,
-                {{ 15, 4, 2, 0, 15, 2, 0, 8, 15, 0, 12, 0, 8, 0, 15 ,0}} ,
-                {{ 15, 4, 2, 0, 15, 2, 0, 8, 15, 0, 12, 0, 8, 0, 15, 0}} ,
-                "*"
-        }
+		// Modulation matrix
+		{ MATRIX_SOURCE_LFO1, 1, PAN_OSC2, 0} ,
+		{ MATRIX_SOURCE_LFOSEQ1, 0, MAIN_GATE, 0} ,
+		{ MATRIX_SOURCE_VELOCITY, 0, INDEX_MODULATION2, 0} ,
+		{ MATRIX_SOURCE_LFOENV1, 0, LFO1_FREQ, 0} ,
+		{ MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION2, 0} ,
+		{ MATRIX_SOURCE_VELOCITY, 0, INDEX_MODULATION4, 0} ,
+		{ MATRIX_SOURCE_MODWHEEL, 0, MTX4_MUL, 0} ,
+		{ MATRIX_SOURCE_MODWHEEL, 0, INDEX_MODULATION1, 0} ,
+		{ MATRIX_SOURCE_MODWHEEL, 0, INDEX_MODULATION2, 0} ,
+		{ MATRIX_SOURCE_LFO2, 0, PAN_OSC2, 0} ,
+		{ MATRIX_SOURCE_LFO3, 0, PAN_OSC1, 0} ,
+		{ MATRIX_SOURCE_NONE, 0, DESTINATION_NONE, 0} ,
+		// LFOs
+		{ LFO_SIN, 4.5, 0, 0} ,
+		{ LFO_SIN, 4.8, 0, 1.0} ,
+		{ LFO_SIN, 6.0, 0, 4.0} ,
+		{ .2, 0, 1.0, 1.0} ,
+		{ 1, .2, .2, 1.0} ,
+		{ 110, .5,  0, 0}  ,
+		{ 140, .6, 0, 0},
+		{{ 0,7,15,15,15,0,15,15,  0,15,15,15,0,15,15,15}} ,
+		{{ 15, 4, 2, 0, 15, 2, 0, 8, 15, 0, 12, 0, 8, 0, 15, 0}} ,
+		"Preen mk2"
 };
