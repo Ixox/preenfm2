@@ -49,6 +49,8 @@ LiquidCrystal::LiquidCrystal() {
 	};
 
 	realTimeDisplay = true;
+	// For bootloader and firmware
+	delayAfterCommand = 50;
 
 	_rs_pin = pins[0];
 	_enable_pin = pins[1];
@@ -71,14 +73,9 @@ LiquidCrystal::LiquidCrystal() {
 	GPIO_InitStructure.GPIO_Pin = pins[0].pinNumber | pins[1].pinNumber | pins[2].pinNumber | pins[3].pinNumber | pins[4].pinNumber | pins[5].pinNumber;
 	GPIO_Init(pins[0].gpio, &GPIO_InitStructure);
 
-	_displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
-	begin(16,1);
 }
 
 void LiquidCrystal::begin(unsigned char cols, unsigned char lines) {
-	if (lines > 1) {
-		_displayfunction |= LCD_2LINE;
-	}
 	_numlines = lines;
 	_currline = 0;
 
@@ -86,8 +83,10 @@ void LiquidCrystal::begin(unsigned char cols, unsigned char lines) {
 	// datasheet, we need at least 40ms after power rises above 2.7V
 	// before sending commands. Arduino can turn on way befer 4.5V so
 	// we'll wait 50
-	delay_ms(50); // Maple mod
-	//delayMicroseconds(50000);
+	delay_ms(50);
+
+	// Init 4 bits communication
+
 	// Now we pull both RS and R/W low to begin commands
 	RESET(_rs_pin);
 	RESET(_enable_pin);
@@ -96,35 +95,56 @@ void LiquidCrystal::begin(unsigned char cols, unsigned char lines) {
 	// this is according to the hitachi HD44780 datasheet
 	// page 45 figure 23
 
+
 	// Send function set command sequence
-	command(LCD_FUNCTIONSET | _displayfunction);
-	delay_ms(5); // Maple mod
-	//delayMicroseconds(4500);  // wait more than 4.1ms
+	sendInitCommand(LCD_FUNCTIONSET | LCD_8BITMODE);
+	delay_ms(5); // wait more than 4.1ms
 
 	// second try
-	command(LCD_FUNCTIONSET | _displayfunction);
-	delay_ms(1); // Maple mod
-	//delayMicroseconds(150);
+	sendInitCommand(LCD_FUNCTIONSET | LCD_8BITMODE);
+	delay_ms(1);
 
 	// third go
-	command(LCD_FUNCTIONSET | _displayfunction);
+	sendInitCommand(LCD_FUNCTIONSET | LCD_8BITMODE);
+	delay_ms(1);
+
+	// And set the 4 bits mode
+	sendInitCommand(LCD_FUNCTIONSET | LCD_4BITMODE);
+	delay_ms(1);
+
+
+	if (lines > 1) {
+		_displayfunction = LCD_4BITMODE | LCD_2LINE | LCD_5x8DOTS;
+	} else {
+		_displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
+	}
 
 	// finally, set # lines, font size, etc.
 	command(LCD_FUNCTIONSET | _displayfunction);
 
-	// turn the display on with no cursor or blinking default
-	_displaycontrol = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF;
-	display();
 
-	// clear it off
-	clear();
+	command(LCD_DISPLAYCONTROL);
+
+	// clear
+    command(LCD_CLEARDISPLAY); // clear display, set cursor position to zero
+    delay_ms(2);
 
 	// Initialize to default text direction (for romance languages)
 	_displaymode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT;
 	// set the entry mode
 	command(LCD_ENTRYMODESET | _displaymode);
 
+	// turn the display on with no cursor or blinking default
+	_displaycontrol = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF;
+	 display();
+
+#ifndef BOOTLOADER
+	delayAfterCommand = 38;
+#endif
+
 }
+
+
 
 /********** high level commands, for the user! */
 void LiquidCrystal::clear() {
@@ -241,8 +261,8 @@ void LiquidCrystal::noAutoscroll(void) {
 void LiquidCrystal::createChar(unsigned char location,
 		unsigned char charmap[]) {
 	location &= 0x7; // we only have 8 locations 0-7
-	command(LCD_SETCGRAMADDR | (location << 3));
 	for (int i = 0; i < 8; i++) {
+		command(LCD_SETCGRAMADDR | (location << 3) | i);
 		write(charmap[i]);
 	}
 }
@@ -326,6 +346,14 @@ void LiquidCrystal::print(float f) {
 /************ low level data pushing commands **********/
 
 
+void LiquidCrystal::sendInitCommand(unsigned char value) {
+	RESET(_rs_pin);
+
+	write4bits(value >> 4);
+	pulseEnable(delayAfterCommand);
+}
+
+
 // write either command or data, with automatic 4/8-bit selection
 void LiquidCrystal::send(unsigned char value, bool mode) {
 	if (this->realTimeDisplay) {
@@ -338,8 +366,7 @@ void LiquidCrystal::send(unsigned char value, bool mode) {
 		write4bits(value >> 4);
 		pulseEnable(1);
 		write4bits(value);
-		pulseEnable(34);
-
+		pulseEnable(delayAfterCommand);
 	} else {
 		if (!lcdActions.isFull()) {
 			struct LCDAction action;
@@ -354,15 +381,6 @@ void LiquidCrystal::send(unsigned char value, bool mode) {
 LCDAction LiquidCrystal::nextAction() {
     return lcdActions.remove();
 }
- /*
-	struct  action = lcdActions.remove();
-	if (action.delay > 0) {
-	    delay_ms(action.delay);
-	} else {
-	    send(action.value, action.mode);
-	}
-}
-*/
 
 
 void LiquidCrystal::pulseEnable(int delay) {

@@ -67,130 +67,20 @@ void fillSoundBuffer() {
 
 void setup() {
 
-    unsigned char midiIn[8] = {
-            0b00000,
-            0b00000,
-            0b00000,
-            0b01110,
-            0b00000,
-            0b00000,
-            0b00000,
-            0b00000
-    };
-
-    unsigned char backslash[8] = {
-            0b00000,
-            0b10000,
-            0b01000,
-            0b00100,
-            0b00010,
-            0b00001,
-            0b00000,
-            0b00000
-    };
-
-    unsigned char minusPoint[8] = {
-            0b00000,
-            0b00000,
-            0b00000,
-            0b00011,
-            0b00000,
-            0b00000,
-            0b00000,
-            0b00000
-    };
-
-/*
-    unsigned char modified[8] = {
-            0b00101,
-            0b00010,
-            0b00101,
-            0b00000,
-            0b00000,
-            0b00000,
-            0b00000,
-            0b00000
-    };
-*/
-    unsigned char stepCursor[8] = {
-            0b00000,
-            0b00000,
-            0b00000,
-            0b00000,
-            0b10001,
-            0b01110,
-            0b00100,
-            0b00100,
-    };
-
-    unsigned char stepPos[8] = {
-            0b00000,
-            0b00000,
-            0b00000,
-            0b00000,
-            0b00000,
-            0b00100,
-            0b00100,
-            0b00000,
-    };
-
-    unsigned char firstSteps[8] = {
-            0b00000,
-            0b00000,
-            0b00000,
-            0b00000,
-            0b00000,
-            0b00000,
-            0b10000,
-            0b10000,
-    };
-
-
-    unsigned char thirdStep[8] = {
-            0b00000,
-            0b00000,
-            0b00000,
-            0b00000,
-            0b00000,
-            0b00000,
-            0b10100,
-            0b10100,
-    };
-
-    unsigned char note[8] = {
-            0b00100,
-            0b00110,
-            0b00101,
-            0b00101,
-            0b00100,
-            0b11100,
-            0b11100,
-            0b00000,
-    };
-
-
-
-    lcd.begin(20, 4);
-    lcd.createChar(0, midiIn);
-    lcd.createChar(1, backslash);
-    lcd.createChar(2, minusPoint);
-    lcd.createChar(3, stepCursor);
-    lcd.createChar(4, stepPos);
-    lcd.createChar(5, firstSteps);
-    lcd.createChar(6, thirdStep);
-    lcd.createChar(7, note);
-
-
 	LED_Config();
 	USART_Config();
 	MCP4922_Config();
 	RNG_Config();
 
+    lcd.begin(20, 4);
+    lcd.clear();
 
     lcd.setCursor(0,1);
     lcd.print("PreenFM2 v"PFM2_VERSION" "OVERCLOCK_STRING);
 	lcd.setCursor(5,2);
     lcd.print("By Xavier Hosxe");
+
+
 
     // XH : 1/2 of seconde to stabilise
     // Important Prevent USB from failing

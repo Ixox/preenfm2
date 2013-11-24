@@ -32,6 +32,7 @@ public:
 	FMDisplay();
 	~FMDisplay();
 	void init(LiquidCrystal* lcd, Storage* storage);
+	void customCharsInit();
 
 	inline void updateEncoderValue(int row, int encoder, ParameterDisplay* param, float newValue);
 	inline void updateEncoderName(int row, int encoder);

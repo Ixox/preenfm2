@@ -96,9 +96,10 @@ public:
 
 private:
   void send(unsigned char, bool);
+  void sendInitCommand(unsigned char value);
   void delay(unsigned char delay);
   void write4bits(unsigned char);
-  void pulseEnable(int delay = 29);
+  void pulseEnable(int delay);
 
   bool realTimeDisplay;
 
@@ -113,7 +114,7 @@ private:
   unsigned char _initialized;
 
   unsigned char _numlines,_currline;
-
+  int delayAfterCommand;
   RingBuffer<LCDAction, 128> lcdActions;
 };
 
