@@ -397,6 +397,9 @@ void BootLoader::encoderTurned(int encoder, int ticks) {
 void BootLoader::encoderTurnedWhileButtonPressed(int encoder, int ticks, int button) {
 }
 
+void BootLoader::twoButtonsPressed(int number1, int number2) {
+}
+
 void BootLoader::buttonPressed(int number) {
     this->button = number + 1;
 }

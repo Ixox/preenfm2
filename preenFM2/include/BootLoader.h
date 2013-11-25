@@ -60,6 +60,7 @@ public:
 	void encoderTurned(int encoder, int ticks);
 	void encoderTurnedWhileButtonPressed(int encoder, int ticks, int button);
 	void buttonPressed(int button);
+	void twoButtonsPressed(int button1, int button2);
 
 private:
 	LiquidCrystal* lcd;

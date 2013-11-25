@@ -25,6 +25,7 @@ public:
 	virtual void encoderTurned(int encoder, int ticks) = 0;
 	virtual void encoderTurnedWhileButtonPressed(int encoder, int ticks, int button) = 0;
 	virtual void buttonPressed(int button) = 0;
+	virtual void twoButtonsPressed(int button1, int button2) = 0;
 	EncodersListener* nextListener;
 };
 

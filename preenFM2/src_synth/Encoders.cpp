@@ -94,11 +94,12 @@ Encoders::Encoders() {
 		buttonBit[k] = 1 << (buttonPins[k] -1);
 		buttonPreviousState[k] = false;
 		buttonTimer[k] = 0;
-		buttonEncoderTurned[k] = false;
+		buttonUsedFromSomethingElse[k] = false;
 	}
 
 	encoderTimer = 0;
 	firstButtonDown = -1;
+
 }
 
 Encoders::~Encoders() {
@@ -186,8 +187,12 @@ void Encoders::checkStatus(int encoderType) {
 			if (!buttonPreviousState[k]) {
 				if (firstButtonDown == -1) {
 					firstButtonDown = k;
+					buttonUsedFromSomethingElse[k] = false;
+				} else {
+					twoButtonsPressed(firstButtonDown, k);
+					buttonUsedFromSomethingElse[firstButtonDown] = true;
+					buttonUsedFromSomethingElse[k] = true;
 				}
-				buttonEncoderTurned[k] = false;
 			}
 		} else {
 			// Just unpressed ?
@@ -195,7 +200,7 @@ void Encoders::checkStatus(int encoderType) {
 				if (firstButtonDown == k) {
 					firstButtonDown = -1;
 				}
-				if (buttonPreviousState[k] && !buttonEncoderTurned[k]) {
+				if (buttonPreviousState[k] && !buttonUsedFromSomethingElse[k]) {
 					// Just released
 					if (buttonTimer[k] > 7) {
 						buttonPressed(k);

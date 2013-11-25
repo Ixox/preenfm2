@@ -64,7 +64,7 @@ public:
 			for (EncodersListener* listener = firstListener; listener !=0; listener = listener->nextListener) {
 				listener->encoderTurnedWhileButtonPressed(encoder, ticks, firstButtonDown);
 			}
-			buttonEncoderTurned[firstButtonDown] = true;
+			buttonUsedFromSomethingElse[firstButtonDown] = true;
 		}
 	}
 
@@ -81,6 +81,12 @@ public:
 		}
 	}
 
+	void twoButtonsPressed(int button1, int button2) {
+		for (EncodersListener* listener = firstListener; listener !=0; listener = listener->nextListener) {
+			listener->twoButtonsPressed(button1, button2);
+		}
+	}
+
 private:
 	int action[2][16];
 	int encoderBit1[NUMBER_OF_ENCODERS];
@@ -93,7 +99,7 @@ private:
 
 	int buttonBit[NUMBER_OF_BUTTONS];
 	int buttonTimer[NUMBER_OF_BUTTONS];
-	bool buttonEncoderTurned[NUMBER_OF_BUTTONS];
+	bool buttonUsedFromSomethingElse[NUMBER_OF_BUTTONS];
 	bool buttonPreviousState[NUMBER_OF_BUTTONS];
 	int firstButtonDown;
 

@@ -262,6 +262,7 @@ public:
 	}
 	void encoderTurned(int encoder, int ticks);
 	void buttonPressed(int button);
+	void twoButtonsPressed(int button1, int button2);
 	void encoderTurnedWhileButtonPressed(int encoder, int ticks, int button);
 	void encoderTurnedForStepSequencer(int row, int num, int ticks);
 
@@ -383,17 +384,25 @@ public:
 
     void propagateNoteOff() {
         for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-            listener->stopNote(currentTimbre, playingNote);
+            listener->stopNote(playingTimbre, playingNote);
         }
 		this->isPlayingNote = false;
     }
 
-    void propagateNoteOn() {
-        for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-            listener->playNote(currentTimbre, fullState.midiConfigValue[MIDICONFIG_TEST_NOTE], fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY]);
-        }
-		this->isPlayingNote = true;
-		playingNote = fullState.midiConfigValue[MIDICONFIG_TEST_NOTE];
+    void propagateNoteOn(int shift) {
+    	if (this->isPlayingNote && (this->playingNote == fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] + shift)) {
+    		propagateNoteOff();
+    	} else {
+			if (this->isPlayingNote) {
+				propagateNoteOff();
+			}
+			playingNote = fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] + shift ;
+			playingTimbre = currentTimbre;
+			for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+				listener->playNote(playingTimbre, playingNote, fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY]);
+			}
+			this->isPlayingNote = true;
+    	}
     }
 
     void propagateAfterNewParamsLoad();
@@ -431,6 +440,7 @@ private:
 	char currentRow;
 	bool isPlayingNote ;
 	char playingNote;
+	char playingTimbre;
 
 	// Done menu temporisation
 	unsigned int doneClick;

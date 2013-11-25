@@ -125,12 +125,12 @@ public:
 
     // Overide SynthParamListener
     void playNote(int timbre, char note, char velocity) {
-    	lcd->setCursor(4,0);
+    	lcd->setCursor(0,0);
     	lcd->print((char)7);
     }
     void stopNote(int timbre, char note) {
-    	lcd->setCursor(4,0);
-    	lcd->print(' ');
+    	lcd->setCursor(0,0);
+    	lcd->print('I');
     }
 
     void setRefreshStatus(int refreshStatus) {

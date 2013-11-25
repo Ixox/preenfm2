@@ -317,7 +317,6 @@ SynthState::SynthState() {
     stepSelect[1] = 0;
 
     isPlayingNote = false;
-
 }
 
 
@@ -355,6 +354,27 @@ void SynthState::encoderTurnedForStepSequencer(int row, int encoder, int ticks) 
 	}
 }
 
+void SynthState::twoButtonsPressed(int button1, int button2) {
+	if (button1 == BUTTON_BACK) {
+		switch (button2) {
+    	case BUTTON_SYNTH:
+    		propagateNoteOn(12);
+    		break;
+    	case BUTTON_OSC:
+    		propagateNoteOn(8);
+    		break;
+    	case BUTTON_ENV:
+    		propagateNoteOn(0);
+    		break;
+    	case BUTTON_MATRIX:
+    		propagateNoteOn(-8);
+    		break;
+    	case BUTTON_LFO:
+    		propagateNoteOn(-12);
+    		break;
+		}
+	}
+}
 
 
 
@@ -1424,9 +1444,10 @@ void SynthState::propagateAfterNewComboLoad() {
 }
 
 void SynthState::propagateNewTimbre(int timbre) {
-   for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-       listener->newTimbre(timbre);
-   }
+	propagateNoteOff();
+	for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+		listener->newTimbre(timbre);
+	}
 }
 
 void SynthState::tempoClick() {
