@@ -125,12 +125,21 @@ public:
 
     // Overide SynthParamListener
     void playNote(int timbre, char note, char velocity) {
-    	lcd->setCursor(0,0);
+    	if (this->synthState->fullState.synthMode == SYNTH_MODE_EDIT) {
+			lcd->setCursor(0,0);
+    	} else {
+			lcd->setCursor(0,3);
+    	}
     	lcd->print((char)7);
     }
     void stopNote(int timbre, char note) {
-    	lcd->setCursor(0,0);
-    	lcd->print('I');
+    	if (this->synthState->fullState.synthMode == SYNTH_MODE_EDIT) {
+    		lcd->setCursor(0,0);
+    		lcd->print('I');
+    	} else {
+    		lcd->setCursor(0,3);
+    		lcd->print(' ');
+    	}
     }
 
     void setRefreshStatus(int refreshStatus) {

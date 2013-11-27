@@ -382,26 +382,36 @@ public:
         }
     }
 
+    bool canPlayNote() {
+    	return (fullState.synthMode == SYNTH_MODE_EDIT)
+    			|| (fullState.currentMenuItem->menuState == MENU_LOAD_SELECT_BANK_PRESET)
+    			||  (fullState.currentMenuItem->menuState == MENU_LOAD_SELECT_DX7_PRESET);
+    }
+
     void propagateNoteOff() {
-        for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-            listener->stopNote(playingTimbre, playingNote);
-        }
-		this->isPlayingNote = false;
+    	if (this->isPlayingNote && canPlayNote()) {
+			for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+				listener->stopNote(playingTimbre, playingNote);
+			}
+			this->isPlayingNote = false;
+    	}
     }
 
     void propagateNoteOn(int shift) {
-    	if (this->isPlayingNote && (this->playingNote == fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] + shift)) {
-    		propagateNoteOff();
-    	} else {
-			if (this->isPlayingNote) {
+    	if (canPlayNote()) {
+			if (this->isPlayingNote && (this->playingNote == fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] + shift)) {
 				propagateNoteOff();
+			} else {
+				if (this->isPlayingNote) {
+					propagateNoteOff();
+				}
+				playingNote = fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] + shift ;
+				playingTimbre = currentTimbre;
+				for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+					listener->playNote(playingTimbre, playingNote, fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY]);
+				}
+				this->isPlayingNote = true;
 			}
-			playingNote = fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] + shift ;
-			playingTimbre = currentTimbre;
-			for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-				listener->playNote(playingTimbre, playingNote, fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY]);
-			}
-			this->isPlayingNote = true;
     	}
     }
 

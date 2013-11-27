@@ -372,6 +372,11 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
     	case BUTTON_LFO:
     		propagateNoteOn(-12);
     		break;
+    	case BUTTON_MENUSELECT:
+    		propagateNoteOff();
+    		propagateBeforeNewParamsLoad();
+    		propagateAfterNewParamsLoad();
+    		break;
 		}
 	}
 }
@@ -588,6 +593,7 @@ void SynthState::encoderTurned(int encoder, int ticks) {
         		}
         		break;
         	case MENU_LOAD_SELECT_DX7_PRESET:
+                propagateNoteOff();
                 propagateBeforeNewParamsLoad();
         		hexter->loadHexterPatch(storage->dx7LoadPatch(fullState.dx7Bank, fullState.menuSelect), params);
                 propagateAfterNewParamsLoad();
@@ -622,6 +628,7 @@ void SynthState::encoderTurned(int encoder, int ticks) {
         		}
         		break;
 			case MENU_LOAD_SELECT_BANK_PRESET:
+                propagateNoteOff();
 				propagateBeforeNewParamsLoad();
 				storage->loadPreenFMPatch(fullState.preenFMBank, fullState.menuSelect, params);
 				propagateAfterNewParamsLoad();
@@ -869,6 +876,8 @@ void SynthState::buttonPressed(int button) {
             if (isEnterNameState(fullState.currentMenuItem->menuState)) {
 				fullState.name[fullState.menuSelect] = 0;
 				propagateNewMenuSelect();
+			} else {
+				propagateNoteOn(-12);
 			}
 			break;
 		}
@@ -877,6 +886,8 @@ void SynthState::buttonPressed(int button) {
             if (isEnterNameState(fullState.currentMenuItem->menuState)) {
 				fullState.name[fullState.menuSelect] = 27;
 				propagateNewMenuSelect();
+            } else {
+				propagateNoteOn(-8);
 			}
 			break;
 		}
@@ -885,6 +896,8 @@ void SynthState::buttonPressed(int button) {
             if (isEnterNameState(fullState.currentMenuItem->menuState)) {
 				fullState.name[fullState.menuSelect] = 55;
 				propagateNewMenuSelect();
+            } else {
+				propagateNoteOn(0);
 			}
 			break;
 		}
@@ -893,8 +906,14 @@ void SynthState::buttonPressed(int button) {
             if (isEnterNameState(fullState.currentMenuItem->menuState)) {
 				fullState.name[fullState.menuSelect] = 66;
 				propagateNewMenuSelect();
+            } else {
+				propagateNoteOn(8);
 			}
 			break;
+		}
+		case BUTTON_SYNTH:
+		{
+			propagateNoteOn(12);
 		}
 		}
     }
@@ -1374,6 +1393,7 @@ const MenuItem* SynthState::menuBack() {
         fullState.menuSelect = fullState.preenFMComboNumber;
         break;
     case MENU_LOAD_SELECT_BANK_PRESET:
+        propagateNoteOff();
         fullState.menuSelect = fullState.preenFMBankNumber;
         propagateBeforeNewParamsLoad();
         PresetUtil::copySynthParams((char*)&backupParams, (char*)params);
@@ -1386,6 +1406,7 @@ const MenuItem* SynthState::menuBack() {
         propagateAfterNewParamsLoad();
         break;
     case MENU_LOAD_SELECT_DX7_PRESET:
+        propagateNoteOff();
         fullState.menuSelect = fullState.dx7BankNumber;
         propagateBeforeNewParamsLoad();
         PresetUtil::copySynthParams((char*)&backupParams, (char*)params);
