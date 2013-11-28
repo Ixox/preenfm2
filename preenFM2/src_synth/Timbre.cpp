@@ -118,10 +118,11 @@ void Timbre::fxAfterBlock() {
     if (gate <= 0 && currentGate <= 0) {
         return;
     }
-    if (gate > 1.37841423f) {
-        gate = 1.37841423f;
+    gate *=.72547132656922730694f; // 0 < gate < 1.0
+    if (gate > 1.0f) {
+        gate = 1.0f;
     }
-    float incGate = (gate - currentGate) / 32.0f;
+    float incGate = (gate - currentGate) * .03125f; // ( *.03125f = / 32)
     // limit the speed.
     if (incGate > 0.002f) {
         incGate = 0.002f;
@@ -133,7 +134,7 @@ void Timbre::fxAfterBlock() {
     float coef;
     while (sp < this->sbMax) {
         currentGate += incGate;
-        coef = 1.37841423f - currentGate;
+        coef = 1.0f - currentGate;
         *sp = *sp * coef;
         sp++;
         *sp = *sp * coef;

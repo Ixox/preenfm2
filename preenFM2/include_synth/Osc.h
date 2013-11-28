@@ -58,7 +58,7 @@ public:
     void glideStep(struct OscState* oscState, float phase);
 
     inline void calculateFrequencyWithMatrix(struct OscState *oscState) {
-		oscState->mainFrequencyPlusMatrix = oscState->mainFrequency + ((oscState->mainFrequency   * (this->matrix->getDestination(destFreq) + this->matrix->getDestination(ALL_OSC_FREQ)))) * .05f;
+		oscState->mainFrequencyPlusMatrix = oscState->mainFrequency + ((oscState->mainFrequency   * (this->matrix->getDestination(destFreq) + this->matrix->getDestination(ALL_OSC_FREQ)))) * .1f;
     }
 
     inline float getNextSample(struct OscState *oscState)  {
