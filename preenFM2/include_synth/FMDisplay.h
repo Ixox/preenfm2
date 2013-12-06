@@ -113,6 +113,11 @@ public:
     	displayPreset();
     };
 
+    void showAlgo() {
+    	displayAlgo(this->synthState->params->engine1.algo);
+    }
+
+
     void beforeNewParamsLoad(int timbre) { };
     void afterNewParamsLoad(int timbre) {
         presetModifed[timbre] = false;

@@ -207,8 +207,10 @@ bool FMDisplay::shouldThisValueShowUp(int row, int encoder) {
         if ((encoder>>1) >= (algoInformation[algo].mix-2)) {
             return false;
         }
-    } else if (row == ROW_ENGINE && encoder == ENCODER_ENGINE_GLIDE && this->synthState->params->engine1.numberOfVoice >1) {
-        return false;
+    } else if (row == ROW_ENGINE && encoder == ENCODER_ENGINE_GLIDE) {
+    	if (this->synthState->params->engine1.numberOfVoice != 1) {
+            return false;
+    	}
     }
 
     return true;
@@ -296,6 +298,12 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
             // if voices = 1 or 0 let's refresh the glide info
             updateEncoderValue(ENCODER_ENGINE_GLIDE+1);
             updateEncoderName(row, ENCODER_ENGINE_GLIDE);
+        } else {
+        	// erase glide
+            lcd->setCursor(ENCODER_ENGINE_GLIDE * 5, 2);
+            lcd->print("    ");
+            lcd->setCursor(ENCODER_ENGINE_GLIDE * 5, 3);
+            lcd->print(' ');
         }
         break;
     case DISPLAY_TYPE_STEP_SEQ1:
@@ -442,7 +450,11 @@ void FMDisplay::displayPreset() {
 		lcd->print("         ");
     }
     lcd->setCursor(0, 0);
-    lcd->print('I');
+    if (this->synthState->getIsPlayingNote()) {
+    	lcd->print((char)7);
+    } else {
+    	lcd->print('I');
+    }
     lcd->print((char)('0'+currentTimbre +1));
     lcd->print(' ');
     lcd->print(this->synthState->params->presetName);
@@ -534,7 +546,7 @@ void FMDisplay::newParamValue(int timbre, SynthParamType type, int currentRow, i
 			}
 		}
 
-		// display algo if algo channged else if algo shows erase it...
+		// display algo if algo changed else if algo shows erase it...
 		if (currentRow == ROW_ENGINE && encoder == ENCODER_ENGINE_ALGO) {
 			displayAlgo(newValue);
 		} else if (algoCounter > 0) {
@@ -853,10 +865,17 @@ void FMDisplay::midiClock(bool show) {
 			lcd->print(' ');
 		}
 	}
+	if (show) {
+		if (synthState->fullState.midiConfigValue[MIDICONFIG_LED_CLOCK] == 1) {
+			GPIO_SetBits(GPIOB, GPIO_Pin_6);
+		}
+	} else {
+		GPIO_ResetBits(GPIOB, GPIO_Pin_6);
+	}
 }
 
 void FMDisplay::noteOn(int timbre, bool show) {
-	if (this->synthState->fullState.synthMode  == SYNTH_MODE_EDIT) {
+	if (this->synthState->fullState.synthMode  == SYNTH_MODE_EDIT && algoCounter == 0) {
         lcd->setCursor(16+timbre, 0);
 		if (show) {
 		    noteOnCounter[timbre] = 2;

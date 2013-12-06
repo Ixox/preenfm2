@@ -302,6 +302,7 @@ SynthState::SynthState() {
     fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY] = 120;
     fullState.midiConfigValue[MIDICONFIG_ENCODER] = 0;
     fullState.midiConfigValue[MIDICONFIG_OP_OPTION] = 0;
+    fullState.midiConfigValue[MIDICONFIG_LED_CLOCK] = 0;
     fullState.firstMenu = 0;
 
     for (int k=0; k<12; k++) {
@@ -377,6 +378,10 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
     		propagateBeforeNewParamsLoad();
     		propagateAfterNewParamsLoad();
     		break;
+		}
+	} else if (button1 == BUTTON_SYNTH) {
+		if (fullState.synthMode  == SYNTH_MODE_EDIT) {
+			propagateShowAlgo();
 		}
 	}
 }

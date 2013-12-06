@@ -62,6 +62,7 @@ public:
     virtual void beforeNewParamsLoad(int timbre) = 0;
     virtual void afterNewParamsLoad(int timbre) = 0;
     virtual void afterNewComboLoad() = 0;
+    virtual void showAlgo() = 0;
     // could be in synthMenuListener but the consequences affects the params
     virtual void newMidiConfig(int menuSelect, char newValue) = 0;
 

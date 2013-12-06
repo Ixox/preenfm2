@@ -227,6 +227,14 @@ void loop(void) {
         fillSoundBuffer();
         fmDisplay.refreshAllScreenByStep();
     }
+
+    if ((newMicros - tempoMicros) > 10000) {
+         fillSoundBuffer();
+         synthState.tempoClick();
+         fmDisplay.tempoClick();
+         tempoMicros = newMicros;
+     }
+
     lcd.setRealTimeAction(true);
     while (lcd.hasActions()) {
         if (usartBuffer.getCount() > 100) {
@@ -239,12 +247,6 @@ void loop(void) {
         lcd.realTimeAction(&action, fillSoundBuffer);
     }
 
-    if ((newMicros - tempoMicros) > 10000) {
-         fillSoundBuffer();
-         synthState.tempoClick();
-         fmDisplay.tempoClick();
-         tempoMicros = newMicros;
-     }
 }
 
 int main(void) {

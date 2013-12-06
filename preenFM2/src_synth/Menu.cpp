@@ -18,6 +18,11 @@
 
 #include "./Menu.h"
 
+#ifndef OVERCLOCK
+#define OVERCLOCK_STRING
+#else
+#define OVERCLOCK_STRING "o"
+#endif
 
 
 const char* midiChannels [] = { "All", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"};
@@ -29,6 +34,7 @@ const char* bootOptions [] = { "Default", "Bank", "Combo", "DX7" };
 const char* encoderType [] = { "12", "24" };
 const char* usbMidi[] = { "Off", "In", "In/Out" };
 const char* operatorButton[] = { "New", "Old" };
+const char* version[] = { PFM2_VERSION" "OVERCLOCK_STRING };
 
 const struct MidiConfig midiConfig[]  = {
 		{
@@ -100,7 +106,19 @@ const struct MidiConfig midiConfig[]  = {
                 "Test Velocity: ",
                 127,
                 0
+        },
+        {
+                "Clock Led: ",
+                2,
+                yesNo
+        },
+        // Don't count in MIDICONFIG_SIZE
+        {
+                "Firmware: ",
+                1,
+                version
         }
+
 };
 
 const struct MenuItem allMenus[]  = {
@@ -312,7 +330,7 @@ const struct MenuItem allMenus[]  = {
                 MENU_CONFIG_SETTINGS,
                 "Set",
                 false,
-                MIDICONFIG_SIZE,
+                MIDICONFIG_SIZE + 1,
                 {MENU_CONFIG_SETTINGS_SAVE}
         },
         {

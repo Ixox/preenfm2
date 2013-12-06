@@ -37,8 +37,8 @@ enum {
     MIDICONFIG_ENCODER,
     MIDICONFIG_TEST_NOTE,
     MIDICONFIG_TEST_VELOCITY,
-    MIDICONFIG_SIZE,
-    // TO put back later...
+    MIDICONFIG_LED_CLOCK,
+    MIDICONFIG_SIZE
 };
 
 enum SynthEditMode {
@@ -124,7 +124,7 @@ struct FullState {
     unsigned char saveWhat;
     unsigned char firstMenu;
     unsigned char  menuPosition[5];
-    char  midiConfigValue[MIDICONFIG_SIZE];
+    char  midiConfigValue[MIDICONFIG_SIZE + 1];
 
     unsigned char preenFMBankNumber;
     unsigned char preenFMPresetNumber;

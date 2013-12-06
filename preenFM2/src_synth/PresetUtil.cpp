@@ -590,6 +590,7 @@ void PresetUtil::resetConfigAndSaveToEEPROM() {
     PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY] = 120;
     PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_ENCODER] = 0;
     PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_OP_OPTION] = 0;
+    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_LED_CLOCK] = 0;
 }
 
 

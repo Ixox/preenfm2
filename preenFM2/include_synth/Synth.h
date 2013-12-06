@@ -82,7 +82,7 @@ public:
     void beforeNewParamsLoad(int timbreNumber);
     void afterNewParamsLoad(int timbre);
     void afterNewComboLoad();
-
+    void showAlgo() { }
     void newMidiConfig(int menuSelect, char newValue);
 
     void midiClockSetSongPosition(int songPosition) {

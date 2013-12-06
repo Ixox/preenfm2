@@ -24,6 +24,7 @@
 #include "flash_if.h"
 #include "usb_hcd_int.h"
 #include "stm32f4xx_conf.h"
+#include "stm32f4xx_gpio.h"
 
 /**
   * @brief  USB_OTG_BSP_uDelay
@@ -474,12 +475,31 @@ void BootLoader::USART_Config() {
 	USART_Cmd(USART3, ENABLE);
 }
 
+void switchLedInit() {
+	// GPIOG Periph clock enable
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
 
-void jumpToDfuLoader() {
+	/* Configure PB5 in output mode */
+	GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+}
+void switchLedOn() {
+	GPIO_SetBits(GPIOB, GPIO_Pin_6);
 }
 
+void switchLedOff() {
+    GPIO_ResetBits(GPIOB, GPIO_Pin_6);
+}
 
 int main(void) {
+	switchLedInit();
+	switchLedOn();
 	LiquidCrystal lcd;
 	BootLoader bootLoader(&lcd);
     Encoders encoders;
@@ -528,10 +548,10 @@ int main(void) {
         // App ready ?
         pFunction Jump_To_Application;
         uint32_t JumpAddress;
-
         // Stack can be on RAM or CCRAM
         if (((*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFC0000) == 0x20000000
 		|| ((*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFE0000) == 0x10000000) {
+            switchLedOff();
             /* Jump to user application */
             JumpAddress = *(__IO uint32_t*) (APPLICATION_ADDRESS + 4);
             Jump_To_Application = (pFunction) JumpAddress;
@@ -545,6 +565,16 @@ int main(void) {
             lcd.print("Bootloader OK but");
             lcd.setCursor(1, 1);
             lcd.print("No PreenFM Firmware");
+            int cpt = 0;
+            while (1) {
+            	cpt++;
+            	if (cpt == 1000000) {
+            		switchLedOff();
+            	} else if (cpt == 2000000) {
+            		switchLedOn();
+            		cpt = 0;
+            	}
+            }
         }
     }
 

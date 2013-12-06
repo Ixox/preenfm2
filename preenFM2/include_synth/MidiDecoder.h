@@ -100,6 +100,7 @@ public:
     void beforeNewParamsLoad(int timbre) {}
     void afterNewParamsLoad(int timbre) {}
     void afterNewComboLoad() {}
+    void showAlgo() {}
     virtual void newMidiConfig(int menuSelect, char newValue) {}
 
     void sendMidiOut();

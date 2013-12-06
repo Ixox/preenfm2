@@ -376,7 +376,8 @@ public:
 		}
 	}
 
-    void propagateBeforeNewParamsLoad() {
+
+	void propagateBeforeNewParamsLoad() {
         for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
             listener->beforeNewParamsLoad(currentTimbre);
         }
@@ -387,6 +388,12 @@ public:
     			|| (fullState.currentMenuItem->menuState == MENU_LOAD_SELECT_BANK_PRESET)
     			||  (fullState.currentMenuItem->menuState == MENU_LOAD_SELECT_DX7_PRESET);
     }
+
+	void propagateShowAlgo() {
+		for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+			listener->showAlgo();
+		}
+	}
 
     void propagateNoteOff() {
     	if (this->isPlayingNote && canPlayNote()) {
@@ -434,6 +441,10 @@ public:
     void setParamsAndTimbre(struct OneSynthParams *newParams, int newCurrentTimbre);
 
     void resetDisplay();
+
+    bool getIsPlayingNote() {
+    	return isPlayingNote;
+    }
 
     int currentTimbre;
     struct OneSynthParams *params;
