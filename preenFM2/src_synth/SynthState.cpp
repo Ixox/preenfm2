@@ -197,7 +197,7 @@ struct ParameterRowDisplay lfoParameterRow = {
         { "Shap", "Freq", "Bias", "KSyn" },
         {
                 { LFO_SIN, LFO_TYPE_MAX-1, LFO_TYPE_MAX, DISPLAY_TYPE_STRINGS,  lfoShapeNames, nullNamesOrder, nullNamesOrder},
-                { 0, 24.9, 250,DISPLAY_TYPE_FLOAT_LFO_FREQUENCY, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, 24.9, 250, DISPLAY_TYPE_FLOAT_LFO_FREQUENCY, nullNames, nullNamesOrder, nullNamesOrder },
                 { -1, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
         }
@@ -318,6 +318,17 @@ SynthState::SynthState() {
     stepSelect[1] = 0;
 
     isPlayingNote = false;
+
+    for (int row= 0; row <NUMBER_OF_ROWS; row++) {
+    	for (int param=0; param<NUMBER_OF_ENCODERS; param++) {
+            struct ParameterDisplay* paramDisplay = &(allParameterRows.row[row]->params[param]);
+            if (paramDisplay->numberOfValues > 1.0) {
+            	paramDisplay->incValue = ((paramDisplay->maxValue - paramDisplay->minValue) / (paramDisplay->numberOfValues - 1.0f));
+            } else {
+            	paramDisplay->incValue = 0.0f;
+            }
+    	}
+    }
 }
 
 
@@ -451,7 +462,7 @@ void SynthState::encoderTurned(int encoder, int ticks) {
 		if (param->valueNameOrder == NULL) {
 			// Not string parameters
 
-			// floating point test to be sure numberOfValues is diferent from 1.
+			// floating point test to be sure numberOfValues is different from 1.
 			// for voices when number of voices forced to 0
 			if (param->numberOfValues < 1.5) {
 				return;
@@ -460,7 +471,13 @@ void SynthState::encoderTurned(int encoder, int ticks) {
 
 			float &value = ((float*)params)[num];
 			oldValue = value;
-			float inc = ((param->maxValue - param->minValue) / (param->numberOfValues - 1.0f));
+
+			float inc = param->incValue;
+
+			// Slow down LFO frequency
+			if (param->displayType == DISPLAY_TYPE_FLOAT_LFO_FREQUENCY && oldValue < 1.0f) {
+				inc = inc * .1f;
+			}
 
 			int tickIndex = (value - param->minValue) / inc + .0005f + ticks;
 			newValue = param->minValue + tickIndex * inc;

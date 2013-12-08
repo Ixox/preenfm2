@@ -1,17 +1,9 @@
 TODO (temporary list, grow over time) : 
+. LFO frequency finer
+. DX7 bank that start with $
+. Bug: can increase number of voice after having loaded a new preset.
 
 
-TO check hardware :
-. Low pass filter
-
-Documentation : 
-. DOC !!!!
-
-
-No sure : 
-. Modify button : Osc->Operator# , Env : Osc, EnvA, EnvB ?
-. 'Panic!' to add... Voice = 0 enough ?
-. Play note in combo (spec)
 
 
 
@@ -23,6 +15,9 @@ OK to test
 
 
 DONE:
+. Modify button : Osc->Operator# , Env : Osc, EnvA, EnvB ?
+. 'Panic!' to add... Voice = 0 enough ?
+. Play note in combo (spec)
 . But when release > 8 secs
 . USB Midi : SYSEX, after touch, program change..
 . Bootloader can now jump to STM32 ROM dfu loader

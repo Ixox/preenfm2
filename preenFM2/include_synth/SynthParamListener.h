@@ -50,6 +50,7 @@ struct ParameterDisplay {
     const char** valueName;
     const unsigned char * valueNameOrder;
     const unsigned char * valueNameOrderReversed;
+    float incValue;
 };
 
 
