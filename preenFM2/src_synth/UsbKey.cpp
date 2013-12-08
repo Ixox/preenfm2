@@ -193,13 +193,14 @@ int UsbKey::dx7Init() {
     if (commandParams.commandResult != COMMAND_SUCCESS) {
     	return commandParams.commandResult;
     }
-    for (int k=0; k<NUMBEROFDX7BANKS; k++) {
+    int k;
+    for (k = 0; k<NUMBEROFDX7BANKS; k++) {
     	res = dx7ReadNextFileName(&dx7Bank[k]);
     	if (res != COMMAND_SUCCESS) {
-    		dx7NumberOfBanks = k ;
     		break;
     	}
     }
+	dx7NumberOfBanks = k ;
 	sortBankFile(dx7Bank, dx7NumberOfBanks);
     return res;
 }
