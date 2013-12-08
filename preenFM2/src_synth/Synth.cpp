@@ -242,7 +242,9 @@ void Synth::afterNewParamsLoad(int timbre) {
     timbres[timbre].params.engine1.numberOfVoice = 0;
 
 
+    // refresh a first time with numberofvoice = 0
     refreshNumberOfOsc();
+
     int freeOsc = 48 - this->numberOfOsc;
     float voicesMax = (float)freeOsc / (float)algoInformation[(int)timbres[timbre].params.engine1.algo].osc ;
 
@@ -251,6 +253,8 @@ void Synth::afterNewParamsLoad(int timbre) {
     } else {
     	timbres[timbre].params.engine1.numberOfVoice = numberOfVoice;
     }
+    // Refresh again so that the value is up to date
+    refreshNumberOfOsc();
 
     rebuidVoiceTimbre();
 }
