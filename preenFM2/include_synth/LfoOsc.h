@@ -55,7 +55,7 @@ public:
 	void noteOn() {
         if (ramp > 0) {
             currentRamp = 0;
-        	if (lfo->freq <LFO_MIDICLOCK_MC_DIV_16) {
+            if ((lfo->freq * 10.0f) < LFO_MIDICLOCK_MC_DIV_16) {
         		phase = 0;
         	}
         } else {
