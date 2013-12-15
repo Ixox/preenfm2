@@ -62,24 +62,25 @@ public:
 
     void computeAllFutureDestintationAndSwitch() {
         float mul;
-    	resetUsedFuturDestination();
-        for (int k=0; k< MATRIX_SIZE;) {
-			mul = rows[k].mul + currentDestinations[MTX1_MUL + k];
-			futurDestinations[(int)rows[k].destination] += sources[(int)rows[k].source] * mul;
-			k++;
 
-            mul = rows[k].mul + currentDestinations[MTX1_MUL + k];
-            futurDestinations[(int)rows[k].destination] += sources[(int)rows[k].source] * mul;
-            k++;
+        resetUsedFuturDestination();
+		mul = rows[0].mul + currentDestinations[MTX1_MUL];
+		futurDestinations[(int)rows[0].destination] += sources[(int)rows[0].source] * mul;
+		mul = rows[1].mul + currentDestinations[MTX2_MUL];
+        futurDestinations[(int)rows[1].destination] += sources[(int)rows[1].source] * mul;
+        mul = rows[2].mul + currentDestinations[MTX3_MUL];
+        futurDestinations[(int)rows[2].destination] += sources[(int)rows[2].source] * mul;
+        mul = rows[3].mul + currentDestinations[MTX4_MUL];
+        futurDestinations[(int)rows[3].destination] += sources[(int)rows[3].source] * mul;
+        futurDestinations[(int)rows[4].destination] += sources[(int)rows[4].source] * rows[4].mul;
+        futurDestinations[(int)rows[5].destination] += sources[(int)rows[5].source] * rows[5].mul;
+        futurDestinations[(int)rows[6].destination] += sources[(int)rows[6].source] * rows[6].mul;
+        futurDestinations[(int)rows[7].destination] += sources[(int)rows[7].source] * rows[7].mul;
+        futurDestinations[(int)rows[8].destination] += sources[(int)rows[8].source] * rows[8].mul;
+        futurDestinations[(int)rows[9].destination] += sources[(int)rows[9].source] * rows[9].mul;
+        futurDestinations[(int)rows[10].destination] += sources[(int)rows[10].source] * rows[10].mul;
+        futurDestinations[(int)rows[11].destination] += sources[(int)rows[11].source] * rows[11].mul;
 
-            mul = rows[k].mul + currentDestinations[MTX1_MUL + k];
-            futurDestinations[(int)rows[k].destination] += sources[(int)rows[k].source] * mul;
-            k++;
-
-            mul = rows[k].mul + currentDestinations[MTX1_MUL + k];
-            futurDestinations[(int)rows[k].destination] += sources[(int)rows[k].source] * mul;
-            k++;
-        }
         useNewValues();
     }
 
