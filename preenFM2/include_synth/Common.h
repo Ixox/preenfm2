@@ -129,6 +129,8 @@ enum {
 #define NUMBER_OF_ROWS ROW_LFO_LAST+1
 
 #define PATCH_SIZE_PFM2 ((NUMBER_OF_ROWS)*4*2 + 16*2 + 13)
+#define PFM1_PATCH_SIZE (128+64)
+
 
 extern const struct OneSynthParams preenMainPreset;
 extern const struct OneSynthParams defaultPreset;

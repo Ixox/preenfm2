@@ -120,7 +120,7 @@ struct ParameterRowDisplay oscParameterRow = {
 
 struct ParameterRowDisplay envParameterRow1 = {
         "Env A",
-        { "Attk", "lv  ", "Deca", "lv " },
+        { "Attk", "lv  ", "Deca", "lv  " },
         {
                 { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
@@ -1129,7 +1129,7 @@ const MenuItem* SynthState::afterButtonPressed() {
         	lcd.setRealTimeAction(true);
         	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
         	propagateNewMenuState();
-        	storage->saveBank(fullState.name, sysexTmpMem + 8);
+        	storage->saveBank(fullState.name, sysexTmpMem);
             fullState.currentMenuItem = cmi;
         	lcd.setRealTimeAction(false);
         } else {
@@ -1142,7 +1142,7 @@ const MenuItem* SynthState::afterButtonPressed() {
     	lcd.setRealTimeAction(true);
     	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
     	propagateNewMenuState();
-    	storage->saveBank(fullState.name, sysexTmpMem + 8);
+    	storage->saveBank(fullState.name, sysexTmpMem);
         fullState.currentMenuItem = cmi;
     	lcd.setRealTimeAction(false);
     	break;
@@ -1461,10 +1461,14 @@ void SynthState::newSysexBankReady() {
 		// TODO : ERROR TO WRITE
 		return;
 	}
-	for (int k=0; k<8; k++) {
-		for (int j=0; j<getLength(allChars); j++) {
-			if (sysexTmpMem[k] == allChars[j]) {
-				fullState.name[k] = j;
+	fullState.name[0] = 0;
+	// sysexTmpMem contains bank name only if from pfm2
+	if (sysexTmpMem[8 + PATCH_SIZE_PFM2 * 128] == '2') {
+		for (int k=0; k<8; k++) {
+			for (int j=0; j<getLength(allChars); j++) {
+				if (sysexTmpMem[k] == allChars[j]) {
+					fullState.name[k] = j;
+				}
 			}
 		}
 	}

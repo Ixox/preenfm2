@@ -257,7 +257,11 @@ void Storage::saveBank(const char* newBankName, const uint8_t* sysexTmpMem) {
 		return;
 	}
 	for (int k=0; k<128; k++) {
-		PresetUtil::convertCharArrayToSynthState(sysexTmpMem + PATCH_SIZE_PFM2 * k, &oneSynthParamsTmp);
+		if (sysexTmpMem[8 + PATCH_SIZE_PFM2 * 128] == '2') {
+			PresetUtil::convertCharArrayToSynthState(8 + sysexTmpMem + PATCH_SIZE_PFM2 * k, &oneSynthParamsTmp);
+		} else /* MUST BE '1' */ {
+			PresetUtil::convertPFM1CharArrayToSynthState(sysexTmpMem + PFM1_PATCH_SIZE * k, &oneSynthParamsTmp, false);
+		}
 		savePreenFMPatch(newBank, k, &oneSynthParamsTmp);
 	}
 #endif
