@@ -23,18 +23,17 @@
 
 extern USB_OTG_CORE_HANDLE          usbOTGDevice;
 
-#include "LiquidCrystal.h"
-extern LiquidCrystal lcd;
-
-
 bool usbReady;
 
 
 #define INV127 .00787401574803149606f
 
 #ifdef LCDDEBUG
-int pos = 0;
 
+#include "LiquidCrystal.h"
+extern LiquidCrystal lcd;
+
+int pos = 0;
 
 void eraseNext(int pos) {
     int x = (pos % 2) * 10;
@@ -132,11 +131,12 @@ void MidiDecoder::newByte(unsigned char byte) {
         }
     } else {
         if (currentEventState.eventState == MIDI_EVENT_WAITING && byte >= 0x80) {
-            newMessageType(byte);
+        	// Running status is cleared later in newMEssageType() if byte >= 0xF0
             this->runningStatus = byte;
+            newMessageType(byte);
         } else if (currentEventState.eventState == MIDI_EVENT_WAITING && byte < 0x80) {
             // midi source use running status...
-            if (this->runningStatus>0) {
+            if (this->runningStatus > 0) {
                 newMessageType(this->runningStatus);
                 newMessageData(byte);
             }
@@ -199,7 +199,7 @@ void MidiDecoder::newMessageType(unsigned char byte) {
         currentEventState.numberOfBytes = 1;
         currentEventState.eventState = MIDI_EVENT_IN_PROGRESS;
         break;
-    case MIDI_REAL_TIME_EVENT:
+    case MIDI_SYSTEM_COMMON:
         // We must be sure it's 0xF0 and not 0xF1, 0xF8....
         this->runningStatus = 0;
         switch (byte)  {
