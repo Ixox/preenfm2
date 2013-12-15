@@ -169,6 +169,8 @@ void Voice::noteOff() {
 void Voice::killNow() {
 	this->note = 0;
 	this->playing = false;
+	this->nextNote = 0;
+	this->gliding = false;
     this->env1ValueMem = 0;
     this->env2ValueMem = 0;
     this->env3ValueMem = 0;
