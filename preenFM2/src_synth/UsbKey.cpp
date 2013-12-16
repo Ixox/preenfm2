@@ -248,7 +248,7 @@ int UsbKey::preenFMBankInit() {
     if (commandParams.commandResult != COMMAND_SUCCESS) {
     	return commandParams.commandResult;
     }
-    int k = 0;
+    int k;
     for (k=0; k<NUMBEROFPREENFMBANKS; k++) {
     	res = preenFMBankReadNextFileName(&preenFMBank[k]);
     	if (res != COMMAND_SUCCESS) {
@@ -315,8 +315,8 @@ int UsbKey::preenFMComboInit() {
     if (commandParams.commandResult != COMMAND_SUCCESS) {
     	return commandParams.commandResult;
     }
-    int k =0;
-    for (int k=0; k<NUMBEROFPREENFMCOMBOS; k++) {
+    int k;
+    for (k=0; k<NUMBEROFPREENFMCOMBOS; k++) {
     	res = preenFMComboReadNextFileName(&preenFMCombo[k]);
     	if (res != COMMAND_SUCCESS) {
     		break;
