@@ -1,0 +1,362 @@
+/*
+ * Copyright 2013 Xavier Hosxe
+ *
+ * Author: Xavier Hosxe (xavier . hosxe (at) gmail . com)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef COMMON_H_
+#define COMMON_H_
+
+#include <stdint.h>
+
+#define BLOCK_SIZE 32
+
+#ifndef OVERCLOCK
+#define PREENFM_FREQUENCY 39000.0f
+#else
+#define PREENFM_FREQUENCY 44000.0f
+#endif
+
+#define PREENFM_FREQUENCY_INVERSED 1.0f/PREENFM_FREQUENCY
+#define PREENFM_FREQUENCY_INVERSED_LFO PREENFM_FREQUENCY_INVERSED*32.0f
+
+#define NUMBER_OF_WAVETABLES 8
+
+#ifndef BOOTLOADER
+#define NUMBEROFDX7BANKS 256
+#define NUMBEROFPREENFMBANKS 64
+#define NUMBEROFPREENFMCOMBOS 8
+#endif
+
+#ifdef BOOTLOADER
+#define NUMBEROFDX7BANKS 1
+#define NUMBEROFPREENFMBANKS 1
+#define NUMBEROFPREENFMCOMBOS 1
+#endif
+
+typedef enum {
+    FILE_OK = 0,
+    FILE_READ_ONLY,
+    FILE_EMPTY
+} FileType;
+
+struct AlgoInformation {
+    unsigned char osc;
+    unsigned char im;
+    unsigned char mix;
+};
+
+enum {
+    ROW_ENGINE_FIRST = 0,
+    ROW_ENGINE = ROW_ENGINE_FIRST,
+    ROW_MODULATION1 ,
+    ROW_MODULATION2 ,
+    ROW_OSC_MIX1,
+    ROW_OSC_MIX2,
+    ROW_OSC_MIX3,
+    ROW_ENGINE_LAST = ROW_OSC_MIX3
+};
+
+enum {
+    ROW_OSC_FIRST = ROW_ENGINE_LAST+1,
+    ROW_OSC1 = ROW_OSC_FIRST,
+    ROW_OSC2 ,
+    ROW_OSC3 ,
+    ROW_OSC4 ,
+    ROW_OSC5 ,
+    ROW_OSC6 ,
+    ROW_OSC_LAST = ROW_OSC6
+};
+
+
+enum {
+    ROW_ENV_FIRST = ROW_OSC_LAST+1,
+    ROW_ENV1a = ROW_ENV_FIRST,
+    ROW_ENV1b,
+    ROW_ENV2a ,
+    ROW_ENV2b ,
+    ROW_ENV3a ,
+    ROW_ENV3b ,
+    ROW_ENV4a ,
+    ROW_ENV4b ,
+    ROW_ENV5a ,
+    ROW_ENV5b ,
+    ROW_ENV6a ,
+    ROW_ENV6b ,
+    ROW_ENV_LAST = ROW_ENV6b
+};
+
+enum {
+    ROW_MATRIX_FIRST = ROW_ENV_LAST+1,
+    ROW_MATRIX1 = ROW_MATRIX_FIRST,
+    ROW_MATRIX2 ,
+    ROW_MATRIX3 ,
+    ROW_MATRIX4 ,
+    ROW_MATRIX5 ,
+    ROW_MATRIX6 ,
+    ROW_MATRIX7 ,
+    ROW_MATRIX8 ,
+    ROW_MATRIX9 ,
+    ROW_MATRIX10 ,
+    ROW_MATRIX11 ,
+    ROW_MATRIX12 ,
+    ROW_MATRIX_LAST = ROW_MATRIX12
+};
+
+enum {
+    ROW_LFO_FIRST = ROW_MATRIX_LAST+1,
+    ROW_LFOOSC1 = ROW_LFO_FIRST,
+    ROW_LFOOSC2 ,
+    ROW_LFOOSC3 ,
+    ROW_LFOENV1 ,
+    ROW_LFOENV2 ,
+    ROW_LFOSEQ1 ,
+    ROW_LFOSEQ2 ,
+    ROW_LFO_LAST = ROW_LFOSEQ2
+};
+
+#define NUMBER_OF_ROWS ROW_LFO_LAST+1
+
+#define PATCH_SIZE_PFM2 ((NUMBER_OF_ROWS)*4*2 + 16*2 + 13)
+#define PFM1_PATCH_SIZE (128+64)
+
+
+extern const struct OneSynthParams preenMainPreset;
+extern const struct OneSynthParams defaultPreset;
+extern const char* allChars;
+extern struct AlgoInformation algoInformation[];
+extern uint8_t sysexTmpMem[];
+extern struct OneSynthParams oneSynthParamsTmp;
+
+struct Engine1Params {
+    float algo;
+    float velocity;
+    float numberOfVoice;
+    float glide;
+};
+
+struct EngineIm1 {
+    float modulationIndex1;
+    float modulationIndex2;
+    float modulationIndex3;
+    float modulationIndex4;
+};
+
+struct EngineIm2 {
+    float modulationIndex5;
+    float modulationIndex6;
+    float notUsed1;
+    float notUsed2;
+};
+
+struct EngineMix1 {
+    float mixOsc1;
+    float panOsc1;
+    float mixOsc2;
+    float panOsc2;
+};
+
+struct EngineMix2 {
+    float mixOsc3;
+    float panOsc3;
+    float mixOsc4;
+    float panOsc4;
+};
+
+struct EngineMix3 {
+    float mixOsc5;
+    float panOsc5;
+    float mixOsc6;
+    float panOsc6;
+};
+
+struct EnvelopeParamsA {
+    float attackTime;
+    float attackLevel;
+    float decayTime;
+    float decayLevel;
+};
+
+struct EnvelopeParamsB {
+    float sustainTime;
+    float sustainLevel;
+    float releaseTime;
+    float releaseLevel;
+};
+
+struct EnvelopeParams {
+    float attack;
+    float decay;
+    float sustain;
+    float release;
+};
+
+struct Envelope2Params {
+    float silence;
+    float attack;
+    float decay;
+    float loop;
+};
+
+struct OscillatorParams {
+    float shape; // OSC_SHAPE_*
+    float frequencyType; // OSC_FT_*
+    float frequencyMul;
+    float  detune;
+};
+
+struct MatrixRowParams {
+    float source;
+    float mul;
+    float destination;
+    float not_used;
+};
+
+struct LfoParams {
+    float shape; // LFO_SHAPE_*
+    float freq;  // lfoFreq[]*
+    float bias;
+    float keybRamp;
+};
+
+
+struct StepSequencerParams {
+    float bpm;
+    float gate;
+    float unused1;
+    float unused2;
+};
+
+struct StepSequencerSteps {
+    char steps[16];
+};
+
+
+struct OneSynthParams {
+    struct Engine1Params engine1;
+    struct EngineIm1 engineIm1;
+    struct EngineIm2 engineIm2;
+    struct EngineMix1 engineMix1;
+    struct EngineMix2 engineMix2;
+    struct EngineMix3 engineMix3;
+    struct OscillatorParams osc1;
+    struct OscillatorParams osc2;
+    struct OscillatorParams osc3;
+    struct OscillatorParams osc4;
+    struct OscillatorParams osc5;
+    struct OscillatorParams osc6;
+    struct EnvelopeParamsA env1a;
+    struct EnvelopeParamsB env1b;
+    struct EnvelopeParamsA env2a;
+    struct EnvelopeParamsB env2b;
+    struct EnvelopeParamsA env3a;
+    struct EnvelopeParamsB env3b;
+    struct EnvelopeParamsA env4a;
+    struct EnvelopeParamsB env4b;
+    struct EnvelopeParamsA env5a;
+    struct EnvelopeParamsB env5b;
+    struct EnvelopeParamsA env6a;
+    struct EnvelopeParamsB env6b;
+    struct MatrixRowParams matrixRowState1;
+    struct MatrixRowParams matrixRowState2;
+    struct MatrixRowParams matrixRowState3;
+    struct MatrixRowParams matrixRowState4;
+    struct MatrixRowParams matrixRowState5;
+    struct MatrixRowParams matrixRowState6;
+    struct MatrixRowParams matrixRowState7;
+    struct MatrixRowParams matrixRowState8;
+    struct MatrixRowParams matrixRowState9;
+    struct MatrixRowParams matrixRowState10;
+    struct MatrixRowParams matrixRowState11;
+    struct MatrixRowParams matrixRowState12;
+    struct LfoParams lfoOsc1;
+    struct LfoParams lfoOsc2;
+    struct LfoParams lfoOsc3;
+    struct EnvelopeParams lfoEnv1;
+    struct Envelope2Params lfoEnv2;
+    struct StepSequencerParams lfoSeq1;
+    struct StepSequencerParams lfoSeq2;
+    struct StepSequencerSteps lfoSteps1;
+    struct StepSequencerSteps lfoSteps2;
+    char presetName[13];
+};
+
+enum SourceEnum {
+    MATRIX_SOURCE_NONE = 0,
+    MATRIX_SOURCE_LFO1,
+    MATRIX_SOURCE_LFO2,
+    MATRIX_SOURCE_LFO3,
+    MATRIX_SOURCE_LFOENV1,
+    MATRIX_SOURCE_LFOENV2,
+    MATRIX_SOURCE_LFOSEQ1,
+    MATRIX_SOURCE_LFOSEQ2,
+    MATRIX_SOURCE_MODWHEEL,
+    MATRIX_SOURCE_PITCHBEND,
+    MATRIX_SOURCE_AFTERTOUCH,
+    MATRIX_SOURCE_VELOCITY,
+    MATRIX_SOURCE_KEY,
+    MATRIX_SOURCE_MAX
+};
+
+
+enum DestinationEnum {
+    DESTINATION_NONE = 0,
+    MAIN_GATE,
+    INDEX_MODULATION1,
+    INDEX_MODULATION2,
+    INDEX_MODULATION3,
+    INDEX_MODULATION4,
+    INDEX_ALL_MODULATION,
+    MIX_OSC1,
+    PAN_OSC1,
+    MIX_OSC2,
+    PAN_OSC2,
+    MIX_OSC3,
+    PAN_OSC3,
+    MIX_OSC4,
+    PAN_OSC4,
+    ALL_MIX,
+    ALL_PAN,
+    OSC1_FREQ,
+    OSC2_FREQ,
+    OSC3_FREQ,
+    OSC4_FREQ,
+    OSC5_FREQ,
+    OSC6_FREQ,
+    ALL_OSC_FREQ,
+    ENV1_ATTACK,
+    ENV2_ATTACK,
+    ENV3_ATTACK,
+    ENV4_ATTACK,
+    ENV5_ATTACK,
+    ENV6_ATTACK,
+    ALL_ENV_ATTACK,
+    ALL_ENV_RELEASE,
+    MTX1_MUL,
+    MTX2_MUL,
+    MTX3_MUL,
+    MTX4_MUL,
+    LFO1_FREQ,
+    LFO2_FREQ,
+    LFO3_FREQ,
+    LFOENV2_SILENCE,
+    LFOSEQ1_GATE,
+    LFOSEQ2_GATE,
+    DESTINATION_MAX
+};
+
+int strcmp(const char *s1, const char *s2);
+
+
+#endif /* COMMON_H_ */
