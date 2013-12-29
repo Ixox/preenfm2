@@ -2,25 +2,37 @@
   ******************************************************************************
   * @file    usb_dcd_int.c
   * @author  MCD Application Team
-  * @version V2.0.0
-  * @date    22-July-2011
+  * @version V2.1.0
+  * @date    19-March-2012
   * @brief   Peripheral Device interrupt subroutines
   ******************************************************************************
-  * @attention 
+  * @attention
   *
-  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
-  * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
-  * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
-  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
-  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+  * <h2><center>&copy; COPYRIGHT 2012 STMicroelectronics</center></h2>
   *
-  * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
+  * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
+  * You may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at:
+  *
+  *        http://www.st.com/software_license_agreement_liberty_v2
+  *
+  * Unless required by applicable law or agreed to in writing, software 
+  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  *
   ******************************************************************************
   */
 
+
 /* Includes ------------------------------------------------------------------*/
+#include "LiquidCrystal.h"
 #include "usb_dcd_int.h"
+
+extern LiquidCrystal lcd;
+
+int cpt = 0;
 /** @addtogroup USB_OTG_DRIVER
 * @{
 */
@@ -140,11 +152,7 @@ uint32_t USBD_OTG_EP1OUT_ISR_Handler (USB_OTG_CORE_HANDLE *pdev)
     /* Clear the bit in DOEPINTn for this interrupt */
     CLEAR_OUT_EP_INTR(1, epdisabled);
   }
-  /* AHB Error */
-  if ( doepint.b.ahberr )
-  {
-    CLEAR_OUT_EP_INTR(1, ahberr);
-  } 
+
   return 1;
 }
 
@@ -154,9 +162,11 @@ uint32_t USBD_OTG_EP1OUT_ISR_Handler (USB_OTG_CORE_HANDLE *pdev)
 * @param  pdev: device instance
 * @retval status
 */
+
+
+
 uint32_t USBD_OTG_EP1IN_ISR_Handler (USB_OTG_CORE_HANDLE *pdev)
 {
-  
   USB_OTG_DIEPINTn_TypeDef  diepint;
   uint32_t fifoemptymsk, msk, emp;
   
@@ -173,10 +183,6 @@ uint32_t USBD_OTG_EP1IN_ISR_Handler (USB_OTG_CORE_HANDLE *pdev)
     /* TX COMPLETE */
     USBD_DCD_INT_fops->DataInStage(pdev , 1);
   }
-  if ( diepint.b.ahberr )
-  {
-    CLEAR_IN_EP_INTR(1, ahberr);
-  }
   if ( diepint.b.epdisabled )
   {
     CLEAR_IN_EP_INTR(1, epdisabled);
@@ -188,10 +194,6 @@ uint32_t USBD_OTG_EP1IN_ISR_Handler (USB_OTG_CORE_HANDLE *pdev)
   if (diepint.b.intktxfemp)
   {
     CLEAR_IN_EP_INTR(1, intktxfemp);
-  }
-  if (diepint.b.intknepmis)
-  {
-    CLEAR_IN_EP_INTR(1, intknepmis);
   }
   if (diepint.b.inepnakeff)
   {
@@ -390,7 +392,9 @@ static uint32_t DCD_HandleUSBSuspend_ISR(USB_OTG_CORE_HANDLE *pdev)
   USB_OTG_GINTSTS_TypeDef  gintsts;
   USB_OTG_PCGCCTL_TypeDef  power;
   USB_OTG_DSTS_TypeDef     dsts;
+  __IO uint8_t prev_status = 0;
   
+  prev_status = pdev->dev.device_status;
   USBD_DCD_INT_fops->Suspend (pdev);      
   
   dsts.d32 = USB_OTG_READ_REG32(&pdev->regs.DREGS->DSTS);
@@ -400,7 +404,9 @@ static uint32_t DCD_HandleUSBSuspend_ISR(USB_OTG_CORE_HANDLE *pdev)
   gintsts.b.usbsuspend = 1;
   USB_OTG_WRITE_REG32(&pdev->regs.GREGS->GINTSTS, gintsts.d32);
   
-  if((pdev->cfg.low_power) && (dsts.b.suspsts == 1))
+  if((pdev->cfg.low_power) && (dsts.b.suspsts == 1)  && 
+    (pdev->dev.connection_status == 1) && 
+    (prev_status  == USB_OTG_CONFIGURED))
   {
 	/*  switch-off the clocks */
     power.d32 = 0;
@@ -454,10 +460,6 @@ static uint32_t DCD_HandleInEP_ISR(USB_OTG_CORE_HANDLE *pdev)
           }
         }           
       }
-      if ( diepint.b.ahberr )
-      {
-        CLEAR_IN_EP_INTR(epnum, ahberr);
-      }
       if ( diepint.b.timeout )
       {
         CLEAR_IN_EP_INTR(epnum, timeout);
@@ -465,10 +467,6 @@ static uint32_t DCD_HandleInEP_ISR(USB_OTG_CORE_HANDLE *pdev)
       if (diepint.b.intktxfemp)
       {
         CLEAR_IN_EP_INTR(epnum, intktxfemp);
-      }
-      if (diepint.b.intknepmis)
-      {
-        CLEAR_IN_EP_INTR(epnum, intknepmis);
       }
       if (diepint.b.inepnakeff)
       {
@@ -484,12 +482,6 @@ static uint32_t DCD_HandleInEP_ISR(USB_OTG_CORE_HANDLE *pdev)
         DCD_WriteEmptyTxFifo(pdev , epnum);
         
         CLEAR_IN_EP_INTR(epnum, emptyintr);
-
-        // PreenFM2 Hack
-        // If epnum is not control we want to notify that usb is ready
-        if (epnum != 0) {
-        	USBD_DCD_INT_fops->DataInStage(pdev , epnum);
-        }
       }
     }
     epnum++;
@@ -554,11 +546,6 @@ static uint32_t DCD_HandleOutEP_ISR(USB_OTG_CORE_HANDLE *pdev)
       {
         /* Clear the bit in DOEPINTn for this interrupt */
         CLEAR_OUT_EP_INTR(epnum, epdisabled);
-      }
-      /* AHB Error */
-      if ( doepint.b.ahberr )
-      {
-        CLEAR_OUT_EP_INTR(epnum, ahberr);
       }
       /* Setup Phase Done (control EPs) */
       if ( doepint.b.setup )
@@ -695,13 +682,15 @@ static uint32_t DCD_WriteEmptyTxFifo(USB_OTG_CORE_HANDLE *pdev, uint32_t epnum)
     
     ep->xfer_buff  += len;
     ep->xfer_count += len;
-    
-    if( ep->xfer_count >= ep->xfer_len){
-      uint32_t fifoemptymsk = 1 << ep->num;
-      USB_OTG_MODIFY_REG32(&pdev->regs.DREGS->DIEPEMPMSK, fifoemptymsk, 0);
-      break;
-    }
 
+    // XH NOTE : fix
+    // https://my.st.com/public/STe2ecommunities/mcu/Lists/cortex_mx_stm32/flat.aspx?RootFolder=%2Fpublic%2FSTe2ecommunities%2Fmcu%2FLists%2Fcortex_mx_stm32%2Fstdio%20via%20USB%20virtual%20COM%20port&FolderCTID=0x01200200770978C69A1141439FE559EB459D7580009C4E14902C3CDE46A77F0FFD06506F5B&currentviews=14245
+    if( ep->xfer_count >= ep->xfer_len){
+       uint32_t fifoemptymsk = 1 << ep->num;
+       USB_OTG_MODIFY_REG32(&pdev->regs.DREGS->DIEPEMPMSK, fifoemptymsk, 0);
+       break;
+     }
+    
     txstatus.d32 = USB_OTG_READ_REG32(&pdev->regs.INEP_REGS[epnum]->DTXFSTS);
   }
   
@@ -751,7 +740,6 @@ static uint32_t DCD_HandleUsbReset_ISR(USB_OTG_CORE_HANDLE *pdev)
   
   doepmsk.b.setup = 1;
   doepmsk.b.xfercompl = 1;
-  doepmsk.b.ahberr = 1;
   doepmsk.b.epdisabled = 1;
   USB_OTG_WRITE_REG32( &pdev->regs.DREGS->DOEPMSK, doepmsk.d32 );
 #ifdef USB_OTG_HS_DEDICATED_EP1_ENABLED   
@@ -760,8 +748,7 @@ static uint32_t DCD_HandleUsbReset_ISR(USB_OTG_CORE_HANDLE *pdev)
   diepmsk.b.xfercompl = 1;
   diepmsk.b.timeout = 1;
   diepmsk.b.epdisabled = 1;
-  diepmsk.b.ahberr = 1;
-  diepmsk.b.intknepmis = 1;
+
   USB_OTG_WRITE_REG32( &pdev->regs.DREGS->DIEPMSK, diepmsk.d32 );
 #ifdef USB_OTG_HS_DEDICATED_EP1_ENABLED  
   USB_OTG_WRITE_REG32( &pdev->regs.DREGS->DINEP1MSK, diepmsk.d32 );
@@ -895,4 +882,4 @@ static uint32_t DCD_ReadDevInEP (USB_OTG_CORE_HANDLE *pdev, uint8_t epnum)
 * @}
 */
 
-/******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/
+/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

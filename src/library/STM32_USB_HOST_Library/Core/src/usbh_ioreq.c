@@ -2,20 +2,26 @@
   ******************************************************************************
   * @file    usbh_ioreq.c 
   * @author  MCD Application Team
-  * @version V2.0.0
-  * @date    22-July-2011
+  * @version V2.1.0
+  * @date    19-March-2012
   * @brief   This file handles the issuing of the USB transactions
   ******************************************************************************
   * @attention
   *
-  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
-  * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
-  * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
-  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
-  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+  * <h2><center>&copy; COPYRIGHT 2012 STMicroelectronics</center></h2>
   *
-  * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
+  * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
+  * You may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at:
+  *
+  *        http://www.st.com/software_license_agreement_liberty_v2
+  *
+  * Unless required by applicable law or agreed to in writing, software 
+  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  *
   ******************************************************************************
   */ 
 /* Includes ------------------------------------------------------------------*/
@@ -102,10 +108,6 @@ USBH_Status USBH_CtlReq     (USB_OTG_CORE_HANDLE *pdev,
                              uint16_t            length)
 {
   USBH_Status status;
-  URB_STATE URB_Status = URB_IDLE;
-  
-  URB_Status = HCD_GetURB_State(pdev, phost->Control.hc_num_out); 
-  
   status = USBH_BUSY;
   
   switch (phost->RequestState)
@@ -118,19 +120,20 @@ USBH_Status USBH_CtlReq     (USB_OTG_CORE_HANDLE *pdev,
     break;
     
   case CMD_WAIT:
-    if  (URB_Status == URB_DONE)
+     if (phost->Control.state == CTRL_COMPLETE ) 
     {
       /* Commands successfully sent and Response Received  */       
       phost->RequestState = CMD_SEND;
-      status = USBH_OK;
+      phost->Control.state =CTRL_IDLE;  
+      status = USBH_OK;      
     }
-    else if  (URB_Status == URB_ERROR)
+    else if  (phost->Control.state == CTRL_ERROR)
     {
       /* Failure Mode */
       phost->RequestState = CMD_SEND;
       status = USBH_FAIL;
     }   
-     else if  (URB_Status == URB_STALL)
+     else if  (phost->Control.state == CTRL_STALLED )
     {
       /* Commands successfully sent and Response Received  */       
       phost->RequestState = CMD_SEND;
@@ -175,7 +178,7 @@ USBH_Status USBH_CtlSendSetup ( USB_OTG_CORE_HANDLE *pdev,
   */
 USBH_Status USBH_CtlSendData ( USB_OTG_CORE_HANDLE *pdev, 
                                 uint8_t *buff, 
-                                uint8_t length,
+                                uint16_t length,
                                 uint8_t hc_num)
 {
   pdev->host.hc[hc_num].ep_is_in = 0;
@@ -214,7 +217,7 @@ USBH_Status USBH_CtlSendData ( USB_OTG_CORE_HANDLE *pdev,
   */
 USBH_Status USBH_CtlReceiveData(USB_OTG_CORE_HANDLE *pdev, 
                                 uint8_t* buff, 
-                                uint8_t length,
+                                uint16_t length,
                                 uint8_t hc_num)
 {
 
@@ -397,6 +400,58 @@ static USBH_Status USBH_SubmitSetupRequest(USBH_HOST *phost,
   return USBH_OK;  
 }
 
+
+/**
+  * @brief  USBH_IsocReceiveData
+  *         Receives the Device Response to the Isochronous IN token
+  * @param  pdev: Selected device
+  * @param  buff: Buffer pointer in which the response needs to be copied
+  * @param  length: Length of the data to be received
+  * @param  hc_num: Host channel Number
+  * @retval Status. 
+  */
+USBH_Status USBH_IsocReceiveData( USB_OTG_CORE_HANDLE *pdev, 
+                                uint8_t *buff, 
+                                uint32_t length,
+                                uint8_t hc_num)
+{    
+  
+  pdev->host.hc[hc_num].ep_is_in = 1;  
+  pdev->host.hc[hc_num].xfer_buff = buff;
+  pdev->host.hc[hc_num].xfer_len = length;
+  pdev->host.hc[hc_num].data_pid = HC_PID_DATA0;
+  
+
+  HCD_SubmitRequest (pdev , hc_num);  
+  
+  return USBH_OK;
+}
+
+/**
+  * @brief  USBH_IsocSendData
+  *         Sends the data on Isochronous OUT Endpoint
+  * @param  pdev: Selected device
+  * @param  buff: Buffer pointer from where the data needs to be copied
+  * @param  length: Length of the data to be sent
+  * @param  hc_num: Host channel Number
+  * @retval Status. 
+  */
+USBH_Status USBH_IsocSendData( USB_OTG_CORE_HANDLE *pdev, 
+                                uint8_t *buff, 
+                                uint32_t length,
+                                uint8_t hc_num)
+{
+  
+  pdev->host.hc[hc_num].ep_is_in = 0;  
+  pdev->host.hc[hc_num].xfer_buff = buff;
+  pdev->host.hc[hc_num].xfer_len = length;
+  pdev->host.hc[hc_num].data_pid = HC_PID_DATA0;
+  
+  HCD_SubmitRequest (pdev , hc_num);  
+  
+  return USBH_OK;
+}
+
 /**
 * @}
 */ 
@@ -413,7 +468,7 @@ static USBH_Status USBH_SubmitSetupRequest(USBH_HOST *phost,
 * @}
 */ 
 
-/******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/
+/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 
 
 

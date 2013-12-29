@@ -41,10 +41,13 @@ extern int spiState ;
 
 extern LiquidCrystal lcd;
 extern Synth synth;
+extern SynthState         synthState;
 extern MidiDecoder        midiDecoder;
-extern RingBuffer<uint8_t, 200> usartBuffer;
+extern RingBuffer<uint8_t, 200> usartBufferIn;
+extern RingBuffer<uint8_t, 100> usartBufferOut;
+
 extern USB_OTG_CORE_HANDLE  usbOTGHost;
-extern USB_OTG_CORE_HANDLE          usbOTGDevice;
+extern USB_OTG_CORE_HANDLE  usbOTGDevice;
 extern USBD_Usr_cb_TypeDef midiStreamingUsrCallback;
 
 
@@ -54,8 +57,6 @@ extern int state;
 extern bool usbReady;
 extern char usbHostText[128];
 extern unsigned int preenTimer;
-extern uint8_t midiBuff[4];
-extern uint8_t midiNote;
 
 extern Synth synth;
 
@@ -64,6 +65,7 @@ void LED_Config();
 void MCP4922_Config();
 void SysTick_Config();
 void RNG_Config();
+void LCD_InitChars(LiquidCrystal *lcd);
 
 
 void strobePin(u8 count, u32 rate);

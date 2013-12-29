@@ -1,7 +1,4 @@
 TODO (temporary list, grow over time) : 
-. LFO frequency finer
-. DX7 bank that start with $
-. Bug: can increase number of voice after having loaded a new preset.
 
 
 
@@ -10,11 +7,13 @@ TODO (temporary list, grow over time) :
 OK to test  
 . Freeze when no file on USB
 . env attack as target...
-. Fine tune too hard !
-. Midi through
-
 
 DONE:
+. Midi through latency : move into interupt
+. Fine tune too hard !
+. LFO frequency finer
+. DX7 bank that start with $
+. Bug: can increase number of voice after having loaded a new preset.
 . Modify button : Osc->Operator# , Env : Osc, EnvA, EnvB ?
 . 'Panic!' to add... Voice = 0 enough ?
 . Play note in combo (spec)

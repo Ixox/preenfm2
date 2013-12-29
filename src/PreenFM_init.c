@@ -85,6 +85,7 @@ void USART_Config() {
 	 */
 	NVIC_InitTypeDef NVIC_InitStructure;
 	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE); // enable the USART3 receive interrupt
+	USART_ITConfig(USART3, USART_IT_TXE, DISABLE);
 
 	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn; // we want to configure the USART3 interrupts
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 10; // this sets the priority group of the USART3 interrupts
@@ -197,6 +198,79 @@ void RNG_Config(void)
   RNG_Cmd(ENABLE);
 }
 
+
+void LCD_InitChars(LiquidCrystal *lcd) {
+    unsigned char row0[8] = {
+            0b11111,
+            0b11111,
+            0b11111,
+            0b11111,
+            0b11111,
+            0b11111,
+            0b11111,
+            0b11111,
+    };
+    unsigned char row1[8] = {
+            0b01111,
+            0b01111,
+            0b01111,
+            0b01111,
+            0b01111,
+            0b01111,
+            0b01111,
+            0b01111,
+    };
+    unsigned char row2[8] = {
+            0b00111,
+            0b00111,
+            0b00111,
+            0b00111,
+            0b00111,
+            0b00111,
+            0b00111,
+            0b01111,
+    };
+    unsigned char row3[8] = {
+            0b00011,
+            0b00011,
+            0b00011,
+            0b00011,
+            0b00011,
+            0b00011,
+            0b00011,
+            0b00011,
+    };
+    unsigned char row4[8] = {
+            0b00001,
+            0b00001,
+            0b00001,
+            0b00001,
+            0b00001,
+            0b00001,
+            0b00001,
+            0b00001,
+    };
+
+    unsigned char row5[8] = {
+            0b00000,
+            0b00000,
+            0b00000,
+            0b00000,
+            0b00000,
+            0b00000,
+            0b00000,
+            0b00000,
+    };
+
+
+    lcd->createChar(0, row0);
+    lcd->createChar(1, row1);
+    lcd->createChar(2, row2);
+    lcd->createChar(3, row3);
+    lcd->createChar(4, row4);
+    lcd->createChar(5, row5);
+
+}
 
 
 

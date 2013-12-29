@@ -41,9 +41,9 @@
 
 SynthState         synthState __attribute__ ((section(".ccmnoload")));
 Synth              synth __attribute__ ((section(".ccmnoload")));
-USB_OTG_CORE_HANDLE          usbOTGDevice __attribute__ ((section(".ccmnoload")));
 
 // No need to put the following in the CCM memory
+USB_OTG_CORE_HANDLE          usbOTGDevice;
 LiquidCrystal      lcd ;
 FMDisplay          fmDisplay ;
 MidiDecoder        midiDecoder;
@@ -51,10 +51,9 @@ Encoders           encoders ;
 UsbKey             usbKey ;
 Hexter             hexter;
 
-// Init left/right
-struct sampleForSPI samples __attribute__ ((section(".ccmnoload"))) ;
-int spiState __attribute__ ((section(".ccm"))) = 0;
 
+struct sampleForSPI samples;
+int spiState ;
 
 void fillSoundBuffer() {
     int cpt = 0;
@@ -64,38 +63,30 @@ void fillSoundBuffer() {
     }
 }
 
+const char* line1 = "PreenFM2 v"PFM2_VERSION" "OVERCLOCK_STRING;
+const char* line2 = "     By Xavier Hosxe";
+
 
 void setup() {
+    lcd.begin(20, 4);
 
-	LED_Config();
+    LCD_InitChars(&lcd);
+
+    for (int r=0; r<20; r++) {
+    	lcd.setCursor(r,0);
+    	lcd.print((char)0);
+    	lcd.setCursor(r,1);
+    	lcd.print((char)0);
+    	lcd.setCursor(r,2);
+    	lcd.print((char)0);
+    	lcd.setCursor(r,3);
+    	lcd.print((char)0);
+    }
+
+    LED_Config();
 	USART_Config();
 	MCP4922_Config();
 	RNG_Config();
-
-    lcd.begin(20, 4);
-    lcd.clear();
-
-    lcd.setCursor(0,1);
-    lcd.print("PreenFM2 v"PFM2_VERSION" "OVERCLOCK_STRING);
-	lcd.setCursor(5,2);
-    lcd.print("By Xavier Hosxe");
-
-
-
-    // XH : 1/2 of seconde to stabilise
-    // Important Prevent USB from failing
-    int us = 50000000 / 2;
-
-    /* fudge for function call overhead  */
-    //us--;
-    asm volatile("   mov r0, %[us]          \n\t"
-                 "1: subs r0, #1            \n\t"
-                 "   bhi 1b                 \n\t"
-                 :
-                 : [us] "r" (us)
-                 : "r0");
-
-
 
     // ---------------------------------------
     // Dependencies Injection
@@ -109,6 +100,7 @@ void setup() {
     midiDecoder.setVisualInfo(&fmDisplay);
     PresetUtil::setSynthState(&synthState);
     PresetUtil::setStorage(&usbKey);
+    PresetUtil::setMidiDecoder(&midiDecoder);
     midiDecoder.setSynth(&synth);
     midiDecoder.setStorage(&usbKey);
 
@@ -133,14 +125,6 @@ void setup() {
 
     usbKey.init(synth.getTimbre(0)->getParamRaw(), synth.getTimbre(1)->getParamRaw(), synth.getTimbre(2)->getParamRaw(), synth.getTimbre(3)->getParamRaw());
     usbKey.loadConfig(synthState.fullState.midiConfigValue);
-    if (usbKey.loadDefaultCombo()) {
-    	synthState.propagateAfterNewComboLoad();
-    }
-
-    // Init core FS as a midiStreaming device
-    if (synthState.fullState.midiConfigValue[MIDICONFIG_USB] != USBMIDI_OFF) {
-    	USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &preenFMDescriptor, &midiCallback, &midiStreamingUsrCallback);
-    }
 
     // launch the engine !!
     // Init DAC number
@@ -148,6 +132,90 @@ void setup() {
     samples.sampleLeftLSB = 0xB << 12;
     samples.sampleRightMSB = 0x3 << 12;
     samples.sampleRightLSB = 0xB << 12;
+
+
+    SysTick_Config();
+    synth.buildNewSampleBlock();
+    synth.buildNewSampleBlock();
+
+    // shorten the release value for init sound...
+    ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env1b.releaseTime = 1.1f;
+    ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env4b.releaseTime = 0.8f;
+
+    bool displayline1 = true;
+    for (int r=0; r<20; r++) {
+    	switch (r) {
+    	case 0:
+        	synth.noteOn(0, 40, 120);
+        	break;
+    	case 1:
+    		synth.noteOff(0, 40);
+    		break;
+    	case 3:
+        	synth.noteOn(0, 52, 120);
+        	break;
+    	case 4:
+    		synth.noteOff(0,52);
+    		break;
+    	}
+
+    	for (char s=1; s<6; s++) {
+    	    fillSoundBuffer();
+			lcd.setCursor(r,0);
+			lcd.print(s);
+		    fillSoundBuffer();
+			lcd.setCursor(r,1);
+			lcd.print(s);
+		    fillSoundBuffer();
+			lcd.setCursor(r,2);
+			lcd.print(s);
+		    fillSoundBuffer();
+			lcd.setCursor(r,3);
+			lcd.print(s);
+		    for (int i=0; i<100; i++) {
+		        fillSoundBuffer();
+				PreenFM2_uDelay(50);
+		    }
+    	}
+
+        fillSoundBuffer();
+
+
+    	if (displayline1) {
+    		if (line1[r] != 0) {
+    			lcd.setCursor(r,1);
+    			lcd.print(line1[r]);
+    		} else {
+    			displayline1 = false;
+    		}
+    	}
+
+        fillSoundBuffer();
+		lcd.setCursor(r,2);
+		lcd.print(line2[r]);
+	    fillSoundBuffer();
+    }
+
+
+
+
+    for (int i=0; i<4000; i++) {
+        fillSoundBuffer();
+		PreenFM2_uDelay(250);
+    }
+
+
+
+    // FS = Full speed : midi
+    // HS = high speed : USB Key
+    // Init core FS as a midiStreaming device
+    if (synthState.fullState.midiConfigValue[MIDICONFIG_USB] != USBMIDI_OFF) {
+    	USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &preenFMDescriptor, &midiCallback, &midiStreamingUsrCallback);
+    }
+
+    if (usbKey.loadDefaultCombo()) {
+    	synthState.propagateAfterNewComboLoad();
+    }
 
     fmDisplay.init(&lcd, &usbKey);
 
@@ -179,9 +247,6 @@ void setup() {
     }
 
 
-    SysTick_Config();
-    synth.buildNewSampleBlock();
-    synth.buildNewSampleBlock();
 }
 
 unsigned int ledMicros = 0;
@@ -207,14 +272,9 @@ void loop(void) {
 	}
 	*/
 
-    while (midiDecoder.hasMidiToSend()) {
-            fillSoundBuffer();
-            midiDecoder.sendMidiOut();
-    }
-
-    while (usartBuffer.getCount() > 0) {
+    while (usartBufferIn.getCount() > 0) {
         fillSoundBuffer();
-		midiDecoder.newByte(usartBuffer.remove());
+		midiDecoder.newByte(usartBufferIn.remove());
 	}
 
 	// Comment following line for debug....
@@ -237,10 +297,10 @@ void loop(void) {
 
     lcd.setRealTimeAction(true);
     while (lcd.hasActions()) {
-        if (usartBuffer.getCount() > 100) {
-            while (usartBuffer.getCount() > 0) {
+        if (usartBufferIn.getCount() > 50) {
+            while (usartBufferIn.getCount() > 0) {
                 fillSoundBuffer();
-                midiDecoder.newByte(usartBuffer.remove());
+                midiDecoder.newByte(usartBufferIn.remove());
             }
         }
         LCDAction action = lcd.nextAction();

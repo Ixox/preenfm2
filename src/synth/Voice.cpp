@@ -80,7 +80,7 @@ void Voice::glideToNote(short newNote) {
 	// Must glide...
 	this->gliding = true;
 	this->glidePhase = 0.0f;
-	this->nextNote = newNote;
+	this->nextGlidingNote = newNote;
 
 	for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
 		currentTimbre->osc[k]->glideToNote(oscState[k], newNote);
@@ -88,7 +88,6 @@ void Voice::glideToNote(short newNote) {
 }
 
 void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) {
-
 	// Update index : so that few chance to be chosen again during the quick dying
 	this->index = index;
 	if (!this->released && (int)currentTimbre->params.engine1.numberOfVoice == 1 && currentTimbre->params.engine1.glide > 0) {
@@ -99,7 +98,7 @@ void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) 
 		// Quick dead !
 		this->newNotePending = true;
 		this->nextVelocity = velocity;
-		this->nextNote = newNote;
+		this->nextPendingNote = newNote;
 		// Not release anymore... not available for new notes...
 		this->released = false;
 		for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
@@ -134,7 +133,8 @@ void Voice::noteOn(short timbre, short newNote, short velo, unsigned int index) 
 	this->released = false;
 	this->playing = true;
 	this->note = newNote;
-	this->nextNote = 0;
+	this->nextPendingNote = 0;
+	this->newNotePending = false;
 	this->index = index;
 	this->velocity = (float)velo * .0078125f; // divide by 127
 
@@ -147,17 +147,35 @@ void Voice::noteOn(short timbre, short newNote, short velo, unsigned int index) 
 	currentTimbre->noteOn();
 }
 
+void Voice::endNoteOrBeginNextOne() {
+    if (this->newNotePending) {
+        noteOn(voiceTimbre, nextPendingNote, nextVelocity, index);
+        this->newNotePending = false;
+    } else {
+        this->playing = false;
+    	this->released = false;
+    }
+    this->env1ValueMem = 0;
+    this->env2ValueMem = 0;
+    this->env3ValueMem = 0;
+    this->env4ValueMem = 0;
+    this->env5ValueMem = 0;
+    this->env6ValueMem = 0;
+}
+
+
 void Voice::glideNoteOff() {
 	// while gliding the first note was released
-	this->note = this->nextNote;
-	this->nextNote = 0;
+	this->note = this->nextGlidingNote;
+	this->nextGlidingNote = 0;
 }
 
 void Voice::noteOff() {
 	this->note = 0;
 	this->released = true;
-	this->nextNote = 0;
+	this->nextPendingNote = 0;
 	this->gliding = false;
+
 	for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
 		currentTimbre->env[k]->noteOff(envState[k]);
 	}
@@ -169,15 +187,16 @@ void Voice::noteOff() {
 void Voice::killNow() {
 	this->note = 0;
 	this->playing = false;
-	this->nextNote = 0;
+	this->nextPendingNote = 0;
+	this->nextGlidingNote = 0;
 	this->gliding = false;
+	this->released = false;
     this->env1ValueMem = 0;
     this->env2ValueMem = 0;
     this->env3ValueMem = 0;
     this->env4ValueMem = 0;
     this->env5ValueMem = 0;
     this->env6ValueMem = 0;
-
 }
 
 

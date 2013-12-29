@@ -120,8 +120,7 @@ void LiquidCrystal::begin(unsigned char cols, unsigned char lines) {
 	}
 
 	// finally, set # lines, font size, etc.
-	command(LCD_FUNCTIONSET | _displayfunction);
-
+	command(LCD_FUNCTIONSET | _displayfunction );
 
 	command(LCD_DISPLAYCONTROL);
 

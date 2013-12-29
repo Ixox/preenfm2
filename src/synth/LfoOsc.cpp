@@ -42,21 +42,19 @@ void LfoOsc::init(struct LfoParams *lfoParams, Matrix *matrix, SourceEnum source
 void LfoOsc::midiClock(int songPosition, bool computeStep) {
 
     // Midi Clock
-    /*
-    if ((lfo->freq * 10.0f) >= LFO_MIDICLOCK_MC_DIV_16) {
-        if ((songPosition & 0x1)==0) {
-            if (computeStep) {
-                lcd.setCursor(0,1);
-                lcd.print((int)(lfo->freq * 10.0f));
-                lcd.print(' ');
-
-                lcd.setCursor(5,1);
-                lcd.print((int) ticks);
-                lcd.print(' ');
-            }
-        }
-    }
-    */
+//    if ((lfo->freq * 10.0f) >= LFO_MIDICLOCK_MC_DIV_16) {
+//        if ((songPosition & 0x1)==0) {
+//            if (computeStep) {
+//                lcd.setCursor(0,1);
+//                lcd.print((int)(lfo->freq * 10.0f));
+//                lcd.print(' ');
+//
+//                lcd.setCursor(5,1);
+//                lcd.print((int) ticks);
+//                lcd.print(' ');
+//            }
+//        }
+//    }
 
 	ticks &= 0x7fff;
 
@@ -147,16 +145,14 @@ void LfoOsc::midiClock(int songPosition, bool computeStep) {
         break;
     }
 
-/*
-    if ((lfo->freq * 10.0f) >= LFO_MIDICLOCK_MC_DIV_16) {
-
-        if ((songPosition & 0x1)==0) {
-            lcd.setCursor(11,1);
-            lcd.print((int)(currentFreq*1000.0f));
-            lcd.print(' ');
-        }
-    }
-    */
+//    if ((lfo->freq * 10.0f) >= LFO_MIDICLOCK_MC_DIV_16) {
+//
+//        if ((songPosition & 0x1)==0) {
+//            lcd.setCursor(11,1);
+//            lcd.print((int)(currentFreq*1000.0f));
+//            lcd.print(' ');
+//        }
+//    }
 
 }
 

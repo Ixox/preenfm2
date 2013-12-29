@@ -21,6 +21,8 @@
 #include "LiquidCrystal.h"
 extern LiquidCrystal      lcd;
 
+#include "Synth.h"
+extern Synth synth;
 
 #define NULL 0
 // FLASH :  __attribute__ ((section (".USER_FLASH")))
@@ -366,6 +368,8 @@ void SynthState::encoderTurnedForStepSequencer(int row, int encoder, int ticks) 
 	}
 }
 
+
+
 void SynthState::twoButtonsPressed(int button1, int button2) {
 	if (button1 == BUTTON_BACK) {
 		switch (button2) {
@@ -393,6 +397,10 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
 	} else if (button1 == BUTTON_SYNTH) {
 		if (fullState.synthMode  == SYNTH_MODE_EDIT) {
 			propagateShowAlgo();
+		}
+	} else if (button1 == BUTTON_LFO) {
+		if (button2 == BUTTON_MATRIX) {
+			synth.debugVoice();
 		}
 	}
 }
@@ -1129,7 +1137,7 @@ const MenuItem* SynthState::afterButtonPressed() {
         	lcd.setRealTimeAction(true);
         	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
         	propagateNewMenuState();
-        	storage->saveBank(fullState.name, sysexTmpMem);
+        	storage->saveBank(fullState.name, PresetUtil::sysexTmpMem);
             fullState.currentMenuItem = cmi;
         	lcd.setRealTimeAction(false);
         } else {
@@ -1142,7 +1150,7 @@ const MenuItem* SynthState::afterButtonPressed() {
     	lcd.setRealTimeAction(true);
     	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
     	propagateNewMenuState();
-    	storage->saveBank(fullState.name, sysexTmpMem);
+    	storage->saveBank(fullState.name, PresetUtil::sysexTmpMem);
         fullState.currentMenuItem = cmi;
     	lcd.setRealTimeAction(false);
     	break;
@@ -1463,10 +1471,10 @@ void SynthState::newSysexBankReady() {
 	}
 	fullState.name[0] = 0;
 	// sysexTmpMem contains bank name only if from pfm2
-	if (sysexTmpMem[8 + PATCH_SIZE_PFM2 * 128] == '2') {
+	if (PresetUtil::sysexTmpMem[8 + PATCH_SIZE_PFM2 * 128] == '2') {
 		for (int k=0; k<8; k++) {
 			for (int j=0; j<getLength(allChars); j++) {
-				if (sysexTmpMem[k] == allChars[j]) {
+				if (PresetUtil::sysexTmpMem[k] == allChars[j]) {
 					fullState.name[k] = j;
 				}
 			}

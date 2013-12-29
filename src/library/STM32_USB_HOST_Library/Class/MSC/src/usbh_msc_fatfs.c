@@ -70,7 +70,7 @@ DRESULT disk_read (
     
     do
     {
-      status = USBH_MSC_Read10(&usbOTGHost, buff, sector, 512*count);
+      status = USBH_MSC_Read10(&usbOTGHost, buff,sector,512 * count);
       USBH_MSC_HandleBOTXfer(&usbOTGHost ,&usbHost);
       
       if(!HCD_IsDeviceConnected(&usbOTGHost))
@@ -111,7 +111,7 @@ DRESULT disk_write (
   {  
     do
     {
-      status = USBH_MSC_Write10(&usbOTGHost,(BYTE*)buff, sector, 512*count);
+      status = USBH_MSC_Write10(&usbOTGHost,(BYTE*)buff,sector,512 * count);
       USBH_MSC_HandleBOTXfer(&usbOTGHost, &usbHost);
       
       if(!HCD_IsDeviceConnected(&usbOTGHost))

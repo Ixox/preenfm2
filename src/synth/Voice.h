@@ -32,20 +32,7 @@ public:
 
     void nextBlock();
 
-    void endNoteOrBeginNextOne() {
-        if (newNotePending) {
-            noteOn(voiceTimbre, nextNote, nextVelocity, index);
-            this->newNotePending = false;
-        } else {
-            playing = false;
-        }
-        this->env1ValueMem = 0;
-        this->env2ValueMem = 0;
-        this->env3ValueMem = 0;
-        this->env4ValueMem = 0;
-        this->env5ValueMem = 0;
-        this->env6ValueMem = 0;
-    }
+    void endNoteOrBeginNextOne();
 
     void noteOnWithoutPop(short note, short velocity, unsigned int index);
     void noteOn(short timbre, short note, short velocity, unsigned int index);
@@ -57,10 +44,11 @@ public:
 
     bool isReleased() { return this->released; }
     bool isPlaying() { return this->playing; }
-    bool isGliding() { return this->gliding; }
+    bool isNewNotePending() { return this->newNotePending; }
     unsigned int getIndex() { return this->index; }
     char getNote() { return this->note; }
-    char getNextNote() { return this->nextNote; }
+    char getNextPendingNote() { return this->nextPendingNote; }
+    char getNextGlidingNote() { return this->nextGlidingNote; }
     int getCurrentTimbre() { return this->voiceTimbre; }
 
 private:
@@ -91,13 +79,14 @@ private:
 
     // Fixing the "plop" when all notes are buisy...
     bool newNotePending;
-    char nextNote;
+    char nextPendingNote;
     char nextVelocity;
     unsigned int nextIndex;
 
     // Gliding ?
     bool gliding;
     float glidePhase;
+    char nextGlidingNote;
 
     // env Value
     float env1ValueMem;

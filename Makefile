@@ -1,4 +1,4 @@
-PFM2_VERSION_NUMBER=0.9l
+PFM2_VERSION_NUMBER=0.9m
 PFM2_BIN_NUMBER=$(subst .,,${PFM2_VERSION_NUMBER})
 PFM2_BOOTLOADER_VERSION_NUMBER=1.02
 PFM2_VERSION=\"${PFM2_VERSION_NUMBER}\"
@@ -25,101 +25,100 @@ OD      = arm-none-eabi-objdump
 AS      = arm-none-eabi-as
 
 
-SRC_FIRMWARE = PreenFM.cpp \
-	PreenFM_irq.c \
-	PreenFM_init.c \
-	usbKey_usr.c \
-	usbMidi_usr.c \
-	usbd_preenFM_desc.c \
-	system_stm32f4xx.c \
-	usb_bsp.c \
-	fat_fs/src/ff.c \
-	fat_fs/src/fattime.c \
-	STM32_USB_OTG_Driver/src/usb_core.c \
-	STM32_USB_OTG_Driver/src/usb_hcd.c \
-	STM32_USB_OTG_Driver/src/usb_hcd_int.c \
-	STM32_USB_HOST_Library/Core/src/usbh_core.c \
-	STM32_USB_HOST_Library/Core/src/usbh_hcs.c \
-	STM32_USB_HOST_Library/Core/src/usbh_ioreq.c \
-	STM32_USB_HOST_Library/Core/src/usbh_stdreq.c \
-	STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_core.c \
-	STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_bot.c \
-	STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_scsi.c \
-	STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_fatfs.c \
-	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c \
-	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c \
-	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c \
-	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.c \
-	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rng.c \
-	STM32F4xx_StdPeriph_Driver/src/misc.c \
-	STM32_USB_OTG_Driver/src/usb_dcd.c \
-	STM32_USB_OTG_Driver/src/usb_dcd_int.c \
-	STM32_USB_Device_Library/Class/midi/usbd_midi_core.c \
-	STM32_USB_Device_Library/Core/usbd_core.c \
-	STM32_USB_Device_Library/Core/usbd_ioreq.c \
-	STM32_USB_Device_Library/Core/usbd_req.c \
-	src_synth/Env.cpp \
-	src_synth/FMDisplay.cpp \
-	src_synth/Hexter.cpp \
-	src_synth/Lfo.cpp \
-	src_synth/LfoEnv.cpp \
-	src_synth/LfoEnv2.cpp \
-	src_synth/LfoOsc.cpp \
-	src_synth/LfoStepSeq.cpp \
-	src_synth/LiquidCrystal.cpp \
-	src_synth/Matrix.cpp \
-	src_synth/Menu.cpp \
-	src_synth/MidiDecoder.cpp \
-	src_synth/Osc.cpp \
-	src_synth/Presets.cpp \
-	src_synth/RingBuffer.cpp \
-	src_synth/Synth.cpp \
-	src_synth/SynthMenuListener.cpp \
-	src_synth/SynthParamListener.cpp \
-	src_synth/SynthStateAware.cpp \
-	src_synth/SynthState.cpp \
-	src_synth/Voice.cpp \
-	src_synth/PresetUtil.cpp \
-	src_synth/Encoders.cpp \
-	src_synth/Timbre.cpp \
-	src_synth/LiquidCrystal.cpp \
-	src_synth/UsbKey.cpp \
-	src_synth/Storage.cpp \
-	src_synth/Common.cpp
+SRC_FIRMWARE = src/PreenFM.cpp \
+	src/PreenFM_irq.c \
+	src/PreenFM_init.c \
+	src/usb/usbKey_usr.c \
+	src/usb/usbMidi_usr.c \
+	src/usb/usbd_preenFM_desc.c \
+	src/usb/usb_bsp.c \
+	src/usb/usbd_midi_core.c \
+	src/library/STM32_USB_OTG_Driver/src/usb_core.c \
+	src/library/STM32_USB_OTG_Driver/src/usb_hcd.c \
+	src/library/STM32_USB_OTG_Driver/src/usb_hcd_int.c \
+	src/library/STM32_USB_HOST_Library/Core/src/usbh_core.c \
+	src/library/STM32_USB_HOST_Library/Core/src/usbh_hcs.c \
+	src/library/STM32_USB_HOST_Library/Core/src/usbh_ioreq.c \
+	src/library/STM32_USB_HOST_Library/Core/src/usbh_stdreq.c \
+	src/library/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_core.c \
+	src/library/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_bot.c \
+	src/library/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_scsi.c \
+	src/library/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_fatfs.c \
+	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c \
+	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c \
+	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c \
+	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.c \
+	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rng.c \
+	src/library/STM32F4xx_StdPeriph_Driver/src/misc.c \
+	src/library/STM32_USB_OTG_Driver/src/usb_dcd.c \
+	src/library/STM32_USB_OTG_Driver/src/usb_dcd_int.c \
+	src/library/STM32_USB_Device_Library/Core/src/usbd_core.c \
+	src/library/STM32_USB_Device_Library/Core/src/usbd_ioreq.c \
+	src/library/STM32_USB_Device_Library/Core/src/usbd_req.c \
+	src/third/system_stm32f4xx.c \
+	src/utils/Hexter.cpp \
+	src/utils/RingBuffer.cpp \
+	src/hardware/LiquidCrystal.cpp \
+	src/hardware/Menu.cpp \
+	src/hardware/FMDisplay.cpp \
+	src/hardware/Encoders.cpp \
+	src/hardware/LiquidCrystal.cpp \
+	src/hardware/UsbKey.cpp \
+	src/hardware/Storage.cpp \
+	src/midi/MidiDecoder.cpp \
+	src/midi/PresetUtil.cpp \
+	src/synth/Env.cpp \
+	src/synth/Lfo.cpp \
+	src/synth/LfoEnv.cpp \
+	src/synth/LfoEnv2.cpp \
+	src/synth/LfoOsc.cpp \
+	src/synth/LfoStepSeq.cpp \
+	src/synth/Matrix.cpp \
+	src/synth/Osc.cpp \
+	src/synth/Presets.cpp \
+	src/synth/Synth.cpp \
+	src/synth/SynthMenuListener.cpp \
+	src/synth/SynthParamListener.cpp \
+	src/synth/SynthStateAware.cpp \
+	src/synth/SynthState.cpp \
+	src/synth/Voice.cpp \
+	src/synth/Timbre.cpp \
+	src/synth/Common.cpp \
+	src/library/fat_fs/src/ff.c \
+	src/library/fat_fs/src/fattime.c \
 	
-#	src_synth/FM.cpp 
+ 
 
-SRC_BOOTLOADER = BootLoader.cpp \
-	Encoders.cpp \
-	LiquidCrystal.cpp \
-	src_synth/UsbKey.cpp \
-	src_synth/Storage.cpp \
-	src_synth/LiquidCrystal.cpp \
-	src_synth/Common.cpp \
-	system_stm32f4xx.c \
-	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c \
-	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c \
-	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.c   \
-	STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c \
-	usbKey_usr.c \
-	usb_bsp.c \
-	fat_fs/src/ff.c \
-	fat_fs/src/fattime.c \
-	STM32_USB_OTG_Driver/src/usb_core.c \
-	STM32_USB_OTG_Driver/src/usb_hcd.c \
-	STM32_USB_OTG_Driver/src/usb_hcd_int.c \
-	STM32_USB_HOST_Library/Core/src/usbh_core.c \
-	STM32_USB_HOST_Library/Core/src/usbh_hcs.c \
-	STM32_USB_HOST_Library/Core/src/usbh_ioreq.c \
-	STM32_USB_HOST_Library/Core/src/usbh_stdreq.c \
-	STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_core.c \
-	STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_bot.c \
-	STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_scsi.c \
-	STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_fatfs.c \
-	STM32F4xx_StdPeriph_Driver/src/misc.c 
+SRC_BOOTLOADER = src/bootloader/BootLoader.cpp \
+	src/hardware/Encoders.cpp \
+	src/hardware/LiquidCrystal.cpp \
+	src/hardware/UsbKey.cpp \
+	src/hardware/Storage.cpp \
+	src/synth/Common.cpp \
+	src/third/system_stm32f4xx.c \
+	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c \
+	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c \
+	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.c   \
+	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c \
+	usr/usb/usbKey_usr.c \
+	usr/usb/usb_bsp.c \
+	src/library/fat_fs/src/ff.c \
+	src/library/fat_fs/src/fattime.c \
+	src/library/STM32_USB_OTG_Driver/src/usb_core.c \
+	src/library/STM32_USB_OTG_Driver/src/usb_hcd.c \
+	src/library/STM32_USB_OTG_Driver/src/usb_hcd_int.c \
+	src/library/STM32_USB_HOST_Library/Core/src/usbh_core.c \
+	src/library/STM32_USB_HOST_Library/Core/src/usbh_hcs.c \
+	src/library/STM32_USB_HOST_Library/Core/src/usbh_ioreq.c \
+	src/library/STM32_USB_HOST_Library/Core/src/usbh_stdreq.c \
+	src/library/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_core.c \
+	src/library/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_bot.c \
+	src/library/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_scsi.c \
+	src/library/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_fatfs.c \
+	src/library/STM32F4xx_StdPeriph_Driver/src/misc.c 
 
  
-INCLUDESDIR = -I./include  -I./include_synth  -I./STM32F4xx_StdPeriph_Driver/inc/ -I./LiquidCrystal -I./STM32_USB_HOST_Library/Class/MSC/inc -I./STM32_USB_HOST_Library/Core/inc -I./STM32_USB_OTG_Driver/inc -I./fat_fs/inc -I./STM32_USB_Device_Library/Core/inc -I./STM32_USB_Device_Library/Class/midi/inc 
+INCLUDESDIR = -I./src/third/ -I./src/library/STM32_USB_HOST_Library/Class/MSC/inc -I./src/library/STM32_USB_HOST_Library/Core/inc -I./src/library/STM32_USB_OTG_Driver/inc -I./src/library/fat_fs/inc -I./src/library/STM32_USB_Device_Library/Core/inc -I./src/library/STM32_USB_Device_Library/Class/midi/inc -I./src/library/STM32F4xx_StdPeriph_Driver/inc/ -I./src/library/CMSIS/Include/ -I./src/utils/ -I./src/hardware -I./src/usb -I./src/synth -I./src/midi -I./src
 SMALLBINOPTS = -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions  -Wl,--gc-sections  
 
 # 
@@ -165,7 +164,7 @@ pfm2_$(PFM2_VERSION_NUMBER).zip :
 	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_BOOTLOADER)) -R -s 0x8000000" > build/install_bootloader.cmd
 	zip pfm2_$(PFM2_VERSION_NUMBER).zip build/*.bin build/*.syx build/*.cmd
 
-pfm: clean $(BIN_FIRMWARE) 
+pfm: $(BIN_FIRMWARE) 
 
 pfmo: CFLAGS += -DOVERCLOCK
 pfmo: clean $(BIN_FIRMWARE_O) 
@@ -248,32 +247,7 @@ $(STARTUP_BOOTLOADER): linker_bootloader/startup_stm32f4xx.s
 	$(AS) $(AFLAGS) -o $(STARTUP_BOOTLOADER) linker_bootloader/startup_stm32f4xx.s > linker_bootloader/startup_stm32f4xx.lst
 
 
-build/usbh_msc_%.o: STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_%.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
 
-build/stm32f4xx_%.o: ./STM32F4xx_StdPeriph_Driver/src/stm32f4xx_%.c
-	$(CC) $(CFLAGS) $< -o $@
-
-build/misc.o: ./STM32F4xx_StdPeriph_Driver/src/misc.c
-	$(CC) $(CFLAGS) $< -o $@
-
-build/usbh_%.o: STM32_USB_HOST_Library/Core/src/usbh_%.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
-
-build/usbd_%.o: STM32_USB_Device_Library/Core/src/usbd_%.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
-
-build/usb_%.o: STM32_USB_OTG_Driver/src/usb_%.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
-
-build/usbd_midi_%.o: STM32_USB_Device_Library/Class/midi/src/usbd_midi_%.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
-
-build/ff.o: ./fat_fs/src/ff.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
-
-build/fattime.o: ./fat_fs/src/fattime.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
 
 build/%.o: src/%.c
 	$(CC) $(CFLAGS) $< -o $@
@@ -281,8 +255,49 @@ build/%.o: src/%.c
 build/%.o: src/%.cpp
 	$(CC) $(CFLAGS) $< -o $@
 
-build/%.o: src_synth/%.cpp
+build/%.o: src/bootloader/%.cpp
 	$(CC) $(CFLAGS) $< -o $@
+
+build/%.o: src/usb/%.cpp
+	$(CC) $(CFLAGS) $< -o $@
+
+build/%.o: src/usb/%.c
+	$(CC) $(CFLAGS) $< -o $@
+
+build/%.o: src/third/%.c
+	$(CC) $(CFLAGS) $< -o $@
+
+build/%.o: src/synth/%.cpp
+	$(CC) $(CFLAGS) $< -o $@
+
+build/%.o: src/hardware/%.cpp
+	$(CC) $(CFLAGS) $< -o $@
+
+build/%.o: src/midi/%.cpp
+	$(CC) $(CFLAGS) $< -o $@
+
+build/%.o: src/utils/%.cpp
+	$(CC) $(CFLAGS) $< -o $@
+
+build/%.o: src/library/STM32_USB_OTG_Driver/src/%.c
+	$(CC) $(CFLAGS) $< -o $@
+
+build/%.o: src/library/STM32_USB_HOST_Library/Core/src/%.c
+	$(CC) $(CFLAGS) -fpermissive $< -o $@
+
+build/%.o: src/library/STM32_USB_HOST_Library/Class/MSC/src/%.c
+	$(CC) $(CFLAGS) -fpermissive $< -o $@
+
+build/%.o: src/library/STM32_USB_Device_Library/Core/src/%.c
+	$(CC) $(CFLAGS) -fpermissive $< -o $@
+
+build/%.o: src/library/STM32F4xx_StdPeriph_Driver/src/%.c
+	$(CC) $(CFLAGS) -fpermissive $< -o $@
+
+build/%.o: src/library/fat_fs/src/%.c
+	$(CC) $(CFLAGS) -fpermissive $< -o $@
+
+
 
 clean:
 	@ echo ".clean"

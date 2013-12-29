@@ -45,8 +45,9 @@ public:
 
     void noteOn(int timbre, char note, char velocity);
     void noteOff(int timbre, char note);
-    void allNoteOff();
+    void allNoteOff(int timbre);
     void allSoundOff();
+    void allSoundOff(int timbre);
     bool isPlaying();
     void buildNewSampleBlock();
 
@@ -79,7 +80,7 @@ public:
     }
     void newTimbre(int timbre);
 
-    void beforeNewParamsLoad(int timbreNumber);
+    void beforeNewParamsLoad(int timbre);
     void afterNewParamsLoad(int timbre);
     void afterNewComboLoad();
     void showAlgo() { }
@@ -141,7 +142,11 @@ public:
 
     void setNewValueFromMidi(int timbre, int row, int encoder, float newValue);
 
+    void setHoldPedal(int timbre, int value);
 
+
+
+    void debugVoice();
 
 private:
     // Called by setSynthState
@@ -154,6 +159,7 @@ private:
     int numberOfOsc;
 
     Timbre timbres[NUMBER_OF_TIMBRES];
+    bool holdPedal[NUMBER_OF_TIMBRES];
     // voiceTimbre
     char voiceTimbre[NUMBER_OF_TIMBRES][MAX_NUMBER_OF_VOICES];
 

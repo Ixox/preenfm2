@@ -27,24 +27,23 @@
 #include "usb_dcd.h"
 #include "usbKey_usr.h"
 
-extern RingBuffer<uint8_t, 200> usartBuffer;
+extern RingBuffer<uint8_t, 200> usartBufferIn;
 
 
-#define NULL 0
 extern LiquidCrystal lcd;
-extern const struct MidiConfig midiConfig[];
 
 
 SynthState * PresetUtil::synthState;
 Storage * PresetUtil::storage;
+MidiDecoder * PresetUtil::midiDecoder;
+
+uint8_t PresetUtil::sysexBuffer[3];
+int PresetUtil::sysexIndex = 0;
+
+uint8_t PresetUtil::sysexTmpMem[8 + PATCH_SIZE_PFM2 * 128 + 1]; // +1 to store if it's a PFM1 '1' or PFM2 '2'
 
 
-uint8_t sysexTmpMem[8 + PATCH_SIZE_PFM2 * 128 + 1]; // +1 to store if it's a PFM1 '1' or PFM2 '2'
 struct OneSynthParams oneSynthParamsTmp;
-
-uint8_t usbBuffer[4];
-uint8_t sysexBuffer[3];
-int sysexIndex = 0;
 
 #define SYSEX_PFM1_BYTE_PATCH 1
 #define SYSEX_PFM1_BYTE_BANK 2
@@ -137,6 +136,9 @@ void PresetUtil::setStorage(Storage* storage) {
     PresetUtil::storage = storage;
 }
 
+void PresetUtil::setMidiDecoder(MidiDecoder* midiDecoder) {
+    PresetUtil::midiDecoder = midiDecoder;
+}
 
 #ifdef DEBUG
 
@@ -306,121 +308,24 @@ void PresetUtil::dumpPatch() {
 
 
 
-
-
-
-
-void PresetUtil::sendSysexByte(uint8_t byte) {
-	if (sysexIndex > 2) {
-	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
-	    USART3->DR = (uint16_t)sysexBuffer[0];
-
-	    if (synthState->fullState.midiConfigValue[MIDICONFIG_USB] == USBMIDI_IN_AND_OUT
-	    		&& usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
-	        // usbBuf[0] = [number of cable on 4 bits] [event type on 4 bites]
-	    	// 0x4 SysEx starts or continues
-	        usbBuffer[0] = 0x00  | 0x4;
-	        usbBuffer[1] = sysexBuffer[0];
-	        usbBuffer[2] = sysexBuffer[1];
-	        usbBuffer[3] = sysexBuffer[2];
-
-	        DCD_EP_Tx(&usbOTGDevice, 0x81, usbBuffer, 4);
-	    }
-
-	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
-	    USART3->DR = (uint16_t)sysexBuffer[1];
-	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
-	    USART3->DR = (uint16_t)sysexBuffer[2];
-
-	    sysexIndex = 0;
-	}
-	sysexBuffer[sysexIndex] = byte;
-	sysexIndex ++;
-	// 31250 bauds : we must wait 32 us
-    PreenFM2_uDelay(32);
-
-}
-
-void PresetUtil::sendSysexFinished() {
-	bool usbMidi = false;
-
-	if (synthState->fullState.midiConfigValue[MIDICONFIG_USB] == USBMIDI_IN_AND_OUT
-    		&& usbOTGDevice.dev.device_status == USB_OTG_CONFIGURED) {
-    	usbMidi = true;
-    }
-
-	if (sysexIndex == 1) {
-
-	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
-	    USART3->DR = (uint16_t)sysexBuffer[0];
-
-	    if (usbMidi) {
-	    	// 0x5 SysEx ends with 1 byte
-	        usbBuffer[0] = 0x00  | 0x5;
-	        usbBuffer[1] = sysexBuffer[0];
-	        usbBuffer[2] = 0;
-	        usbBuffer[3] = 0;
-
-	        DCD_EP_Tx(&usbOTGDevice, 0x81, usbBuffer, 4);
-	    }
-
-	} else if (sysexIndex == 2) {
-
-		while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
-	    USART3->DR = (uint16_t)sysexBuffer[0];
-
-	    if (usbMidi) {
-	    	// 0x6 SysEx ends with 2 bytes
-	        usbBuffer[0] = 0x00  | 0x6;
-	        usbBuffer[1] = sysexBuffer[0];
-	        usbBuffer[2] = sysexBuffer[1];
-	        usbBuffer[3] = 0;
-
-	        DCD_EP_Tx(&usbOTGDevice, 0x81, usbBuffer, 4);
-	    }
-	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
-	    USART3->DR = (uint16_t)sysexBuffer[1];
-
-	} else if (sysexIndex == 3) {
-
-		while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
-	    USART3->DR = (uint16_t)sysexBuffer[0];
-
-	    if (usbMidi) {
-	    	// 0x7 SysEx ends with 3 bytes
-	        usbBuffer[0] = 0x00  | 0x7;
-	        usbBuffer[1] = sysexBuffer[0];
-	        usbBuffer[2] = sysexBuffer[1];
-	        usbBuffer[3] = sysexBuffer[2];
-
-	        DCD_EP_Tx(&usbOTGDevice, 0x81, usbBuffer, 4);
-	    }
-	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
-	    USART3->DR = (uint16_t)sysexBuffer[1];
-
-	    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET) {}
-	    USART3->DR = (uint16_t)sysexBuffer[2];
-	}
-}
-
 void PresetUtil::sendCurrentPatchToSysex() {
     uint8_t newPatch[] = { 0xf0, 0x7d, SYSEX_PFM2_BYTE_PATCH };
     for (int k = 0; k <= 2; k++) {
-        sendSysexByte(newPatch[k]);
+        midiDecoder->sendSysexByte(newPatch[k]);
     }
 
     PresetUtil::convertSynthStateToCharArray(PresetUtil::synthState->params, sysexTmpMem);
     PresetUtil::sendParamsToSysex(sysexTmpMem);
 
-    sendSysexByte(0xf7);
-    sendSysexFinished();
+    midiDecoder->sendSysexByte(0xf7);
+    midiDecoder->sendSysexFinished();
 }
 
 
 void PresetUtil::sendBankToSysex(int bankNumber) {
     unsigned char newPatch[] = { 0xf0, 0x7d, SYSEX_PFM2_BYTE_BANK };
     for (int k = 0; k <= 2; k++) {
-        sendSysexByte(newPatch[k]);
+    	midiDecoder->sendSysexByte(newPatch[k]);
     }
     const struct BankFile* bank = storage->getPreenFMBank(bankNumber);
 
@@ -438,7 +343,7 @@ void PresetUtil::sendBankToSysex(int bankNumber) {
 		bankNameToSend[k] = c1;
     }
     for (int k=0; k<8; k++) {
-    	sendSysexByte(bankNameToSend[k]);
+    	midiDecoder->sendSysexByte(bankNameToSend[k]);
     }
 
     for (int preset = 0; preset < 128; preset++) {
@@ -450,17 +355,19 @@ void PresetUtil::sendBankToSysex(int bankNumber) {
         PresetUtil::sendParamsToSysex(sysexTmpMem);
     }
 
-    sendSysexByte((unsigned char) 0xf7);
-    sendSysexFinished();
+    midiDecoder->sendSysexByte((unsigned char) 0xf7);
+    midiDecoder->sendSysexFinished();
 }
 
 
 
 
 void PresetUtil::sendNrpn(struct MidiEvent cc) {
+	/*
     sendSysexByte((unsigned char) (cc.eventType + cc.channel));
     sendSysexByte((unsigned char) cc.value[0]);
     sendSysexByte((unsigned char) cc.value[1]);
+    */
 }
 
 void PresetUtil::sendCurrentPatchAsNrpns(int timbre) {
@@ -544,10 +451,10 @@ void PresetUtil::sendParamsToSysex(unsigned char* params) {
     for (int k = 0; k < PATCH_SIZE_PFM2; k++) {
         unsigned char byte = params[k];
         checksum += byte;
-        sendSysexByte(byte);
+        midiDecoder->sendSysexByte(byte);
     }
 
-    sendSysexByte((unsigned char) (checksum % 128));
+    midiDecoder->sendSysexByte((unsigned char) (checksum % 128));
 }
 
 int PresetUtil::readSysexPatch(unsigned char* params) {
@@ -604,21 +511,12 @@ void PresetUtil::resetConfigAndSaveToEEPROM() {
 
 int PresetUtil::getNextMidiByte() {
     int timeout = 0;
-    while (usartBuffer.getCount() == 0) {
+    while (usartBufferIn.getCount() == 0) {
         if (timeout++ >= 50000000) {
             return -1;
         }
     }
-    unsigned char byte = usartBuffer.remove();
-
-    /* TODO : to put back...
-    if (PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_THROUGH] == 1) {
-        sendSysexByte((unsigned char) byte);
-    }
-    */
-
-    return (int)byte;
-
+	return (int)usartBufferIn.remove();
 }
 
 /*
@@ -788,7 +686,7 @@ uint16_t PresetUtil::getShortFromParamFloat(int row, int encoder, float value) {
     if (isSpecialSyexValue(row, encoder)) {
         valueToSend = value * 100.0f + .1f ;
     } else {
-        valueToSend = (param->numberOfValues - 1.0f) * (value - param->minValue) / (param->maxValue - param->minValue) + .1f ;
+        valueToSend = ((float)(param->numberOfValues - 1.0f) * (value - param->minValue) / (param->maxValue - param->minValue) + .1f);
     }
 
     return valueToSend;
@@ -799,7 +697,11 @@ float PresetUtil::getParamFloatFromShort(int row, int encoder, short value) {
     if (isSpecialSyexValue(row, encoder)) {
 		return value * .01f;
 	} else {
-		return param->minValue + value / (param->numberOfValues - 1.0f) * (param->maxValue - param->minValue);
+		if (param->displayType == DISPLAY_TYPE_STRINGS) {
+			return param->minValue + ((float)value) / (param->numberOfValues - 1.0f) * (param->maxValue - param->minValue) + .1f;
+		} else {
+			return param->minValue + ((float)value) / (param->numberOfValues - 1.0f) * (param->maxValue - param->minValue);
+		}
 	}
 }
 

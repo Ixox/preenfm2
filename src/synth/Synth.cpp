@@ -37,6 +37,7 @@ void Synth::init() {
         }
         timbres[t].params.engine1.numberOfVoice = numberOfVoices[t];
         timbres[t].init();
+        holdPedal[t] = false;
     }
 
     newTimbre(0);
@@ -49,10 +50,10 @@ void Synth::init() {
     refreshNumberOfOsc();
 }
 
-
+int noCpt = 0;
 
 void Synth::noteOn(int timbre, char note, char velocity) {
-    int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
+	int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
 
     if (numberOfVoices == 0) {
         return;
@@ -85,6 +86,7 @@ void Synth::noteOn(int timbre, char note, char velocity) {
             if (indexVoice < indexMin) {
                 indexMin = indexVoice;
                 voiceToUse = n;
+                // NO break... We must take the elder one
             }
         }
     }
@@ -94,36 +96,43 @@ void Synth::noteOn(int timbre, char note, char velocity) {
             // voice number k of timbre
             int n = voiceTimbre[timbre][k];
             int indexVoice = voices[n].getIndex();
-            if (indexVoice < indexMin) {
+            if (indexVoice < indexMin && !voices[n].isNewNotePending()) {
                 indexMin = indexVoice;
                 voiceToUse = n;
+                // NO break... We must take the elder one
             }
         }
     }
-    voices[voiceToUse].noteOnWithoutPop(note, newVelocity, this->voiceIndex++);
+    // All voices in newnotepending state ?
+    if (voiceToUse != -1) {
+    	voices[voiceToUse].noteOnWithoutPop(note, newVelocity, this->voiceIndex++);
+    }
 }
 
 void Synth::noteOff(int timbre, char note) {
+	if (holdPedal[timbre] == true) {
+		return;
+	}
+
     int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
 
     for (int k = 0; k < numberOfVoices; k++) {
         // voice number k of timbre
         int n = voiceTimbre[timbre][k];
 
-        if (voices[n].getNextNote() == 0) {
+        if (voices[n].getNextGlidingNote() == 0) {
             if (voices[n].getNote() == note) {
                 voices[n].noteOff();
                 return;
             }
         } else {
-        	// Gliding only on note 0 of the timbre...
             // if gliding and releasing first note
             if (voices[n].getNote() == note) {
                 voices[n].glideNoteOff();
                 return;
             }
             // if gliding and releasing next note
-            if (voices[n].getNextNote() == note) {
+            if (voices[n].getNextGlidingNote() == note) {
                 voices[n].glideToNote(voices[n].getNote());
                 voices[n].glideNoteOff();
                 return;
@@ -132,9 +141,30 @@ void Synth::noteOff(int timbre, char note) {
     }
 }
 
-void Synth::allNoteOff() {
-    for (int k = 0; k < MAX_NUMBER_OF_VOICES; k++) {
-        voices[k].noteOff();
+void Synth::setHoldPedal(int timbre, int value) {
+	if (value <64) {
+		this->holdPedal[timbre] = false;
+		allNoteOff(timbre);
+	} else {
+		this->holdPedal[timbre] = true;
+	}
+}
+
+void Synth::allNoteOff(int timbre) {
+    int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
+    for (int k = 0; k < numberOfVoices; k++) {
+        // voice number k of timbre
+        int n = voiceTimbre[timbre][k];
+        voices[n].noteOff();
+    }
+}
+
+void Synth::allSoundOff(int timbre) {
+    int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
+    for (int k = 0; k < numberOfVoices; k++) {
+        // voice number k of timbre
+        int n = voiceTimbre[timbre][k];
+        voices[n].killNow();
     }
 }
 
@@ -225,7 +255,7 @@ void Synth::buildNewSampleBlock() {
 
 }
 
-void Synth::beforeNewParamsLoad(int timbreNumber) {
+void Synth::beforeNewParamsLoad(int timbre) {
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
         for (int v=0; v<MAX_NUMBER_OF_VOICES; v++) {
             voiceTimbre[t][v] = -1;
@@ -345,6 +375,15 @@ void Synth::newParamValue(int timbre, SynthParamType type, int currentRow, int e
                 }
 
             }
+            /* DEBUG TEST setHoldPedal...
+            else if (encoder == ENCODER_ENGINE_VELOCITY) {
+            	if (newValue == 6) {
+            		setHoldPedal(0, 80);
+            	} else if (newValue == 7) {
+            		setHoldPedal(0, 20);
+            	}
+            }
+            */
         }
     } else if (type == SYNTH_PARAM_TYPE_ENV) {
         switch (currentRow) {
@@ -494,4 +533,33 @@ void Synth::setNewValueFromMidi(int timbre, int row, int encoder, float newValue
     float oldValue = ((float*)this->timbres[timbre].getParamRaw())[index];
     this->timbres[timbre].setNewValue(index, param, newValue);
     this->synthState->propagateNewParamValueFromExternal(timbre, row, encoder, param, oldValue, newValue);
+}
+
+
+void Synth::debugVoice() {
+
+	lcd.setRealTimeAction(true);
+	lcd.clearActions();
+	lcd.clear();
+
+    int numberOfVoices = timbres[0].params.engine1.numberOfVoice;
+
+    for (int k = 0; k < numberOfVoices && k < 4; k++) {
+        // voice number k of timbre
+        int n = voiceTimbre[0][k];
+
+        lcd.setCursor(0, k);
+        lcd.print((int)voices[n].getNote());
+
+        lcd.setCursor(4, k);
+        lcd.print((int)voices[n].getNextPendingNote());
+
+        lcd.setCursor(12, k);
+        lcd.print((int)voices[n].getIndex());
+
+        lcd.setCursor(17, k);
+        lcd.print((int) voices[n].isReleased());
+		lcd.print((int) voices[n].isPlaying());
+    }
+	lcd.setRealTimeAction(false);
 }

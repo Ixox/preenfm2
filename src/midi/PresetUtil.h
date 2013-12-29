@@ -22,9 +22,9 @@
 #include <stdint.h>
 
 
-
 class SynthState;
 class Storage;
+class MidiDecoder;
 struct OneSynthParams;
 struct ParameterDisplay;
 
@@ -239,7 +239,7 @@ public:
 
     static void setSynthState(SynthState* synthState);
     static void setStorage(Storage* storage);
-
+    static void setMidiDecoder(MidiDecoder *midiDecoder);
     static void dumpPatch();
     static void dumpLine(const char *enums1[], int a, const char *enums2[], int b, const char *enums3[], int c, const char *enums4[], int d) ;
 
@@ -252,9 +252,6 @@ public:
 
     static void sendBankToSysex(int bankNumber);
     static void sendCurrentPatchToSysex();
-    static void sendSysexByte(uint8_t bytes);
-    static void send3SysexBytes(uint8_t* bytes);
-    static void sendSysexFinished();
     static void sendParamsToSysex(unsigned char* params);
     static int  readSysex(bool patchAllowed, bool bankAllowed);
     static int  readSysexPatch(unsigned char* params);
@@ -275,6 +272,8 @@ public:
     static void sendNrpn(struct MidiEvent cc);
     static void sendCurrentPatchAsNrpns(int timbre);
 
+    static uint8_t sysexTmpMem[];
+
 private:
     static bool isSpecialSyexValue(int row, int encoder);
     static void copy4Charto4Float(unsigned char* source, float*dest);
@@ -282,6 +281,11 @@ private:
 
     static SynthState * synthState;
     static Storage * storage;
+    static MidiDecoder * midiDecoder;
+
+    static uint8_t sysexBuffer[];
+    static int sysexIndex;
+
 };
 
 #endif /* PRESETUTIL_H_ */

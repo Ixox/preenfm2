@@ -105,7 +105,7 @@ USBH_USR_Status USBH_USR_UserInput(void);
 int USBH_USR_MSC_Application(void);
 void USBH_USR_DeInit(void);
 void USBH_USR_DeviceNotSupported(void);
-void USBH_USR_UnrecoveredError(int err);
+void USBH_USR_UnrecoveredError();
 
 
 void Fail_Handler(const char*msg);

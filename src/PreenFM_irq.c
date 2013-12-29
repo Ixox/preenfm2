@@ -20,7 +20,8 @@
 #include "usb_dcd_int.h"
 
 
-RingBuffer<uint8_t, 200> usartBuffer  __attribute__ ((section(".ccmnoload")));
+RingBuffer<uint8_t, 200> usartBufferIn  __attribute__ ((section(".ccmnoload")));
+RingBuffer<uint8_t, 100> usartBufferOut  __attribute__ ((section(".ccmnoload")));
 unsigned int preenTimer  __attribute__ ((section(".ccm"))) = 0;
 
 
@@ -49,8 +50,32 @@ void hardfault_handler(void) {
 }
 
 void USART3_IRQHandler(void) {
-	usartBuffer.insert((char) USART3->DR);
+	uint8_t data;
+
+	if (USART_GetITStatus(USART3, USART_IT_TXE) != RESET) {
+		if (usartBufferOut.getCount() > 0) {
+			USART_SendData(USART3, usartBufferOut.remove());
+		} else {
+			//disable Transmit Data Register empty interrupt
+			USART_ITConfig(USART3, USART_IT_TXE, DISABLE);
+		}
+	}
+
+
+	//if Receive interrupt (rx not empty)
+	if (USART_GetITStatus(USART3, USART_IT_RXNE) != RESET) {
+		uint8_t newByte = USART_ReceiveData(USART3);
+		usartBufferIn.insert(newByte);
+
+		if (synthState.fullState.midiConfigValue[MIDICONFIG_THROUGH] == 1) {
+	    	usartBufferOut.insert(newByte);
+	    	USART_ITConfig(USART3, USART_IT_TXE, ENABLE);
+	    }
+	}
+
 }
+
+
 
 void SysTick_Handler(void)
 {

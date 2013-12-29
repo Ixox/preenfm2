@@ -5,8 +5,9 @@
 
 
 // Usb midi buffer..
-uint8_t midiBuff[64];
-
+uint8_t usbMidiBuffAll[128];
+uint8_t *usbMidiBuffWrt = usbMidiBuffAll;
+uint8_t *usbMidiBuffRead = usbMidiBuffAll;
 
 /*********************************************
  midi Device library callbacks
@@ -25,12 +26,12 @@ USBD_Class_cb_TypeDef midiCallback = {
 		usbd_midi_Init,
 		usbd_midi_DeInit,
 		usbd_midi_Setup,
-		(void*) 0, /* EP0_TxSent */
+		0, /* EP0_TxSent */
 		usbd_midi_EP0_RxReady,
-		usbd_midi_DataIn,
+		0, // usbd_midi_DataIn,
 		usbd_midi_DataOut,
 		usbd_midi_SOF,
-		(void*) 0,
+		0,
 		usbd_midi_OUT_Incplt,
 		usbd_midi_GetCfgDesc,
 		usbd_midi_GetCfgDesc
@@ -182,10 +183,11 @@ static uint8_t usbd_midi_Init(void *pdev, uint8_t cfgidx) {
 			  64,
 			  0x02);
 
+
 	// Prepare for next midi information
 	DCD_EP_PrepareRx((USB_OTG_CORE_HANDLE *)pdev,
 			0x1,
-			(uint8_t*)midiBuff,
+			usbMidiBuffWrt,
 			64);
 
 	return USBD_OK;
@@ -206,44 +208,60 @@ static uint8_t usbd_midi_EP0_RxReady(void *pdev) {
 	return 0;
 }
 
-extern bool usbReady;
 static uint8_t usbd_midi_DataIn(void *pdev, uint8_t epnum) {
     DCD_EP_Flush((USB_OTG_CORE_HANDLE *)pdev, 0x81);
-    usbReady = true;
     return USBD_OK;
 }
 
+
 static uint8_t usbd_midi_DataOut(void *pdev, uint8_t epnum) {
-    switch (midiBuff[0] & 0xf) {
-    case 0x9:
-    case 0x8:
-    case 0xb:
-    case 0xe:
-    case 0x3:
-// Sysex :
-//    case 0x4:
-//    case 0x7:
-	    usartBuffer.insert(midiBuff[1]);
-	    usartBuffer.insert(midiBuff[2]);
-	    usartBuffer.insert(midiBuff[3]);
-	    break;
-// Sysex :
-//    case 0x6:
-    case 0x2:
-        usartBuffer.insert(midiBuff[1]);
-        usartBuffer.insert(midiBuff[2]);
-        break;
-    case 0x5:
-    case 0xF:
-        usartBuffer.insert(midiBuff[1]);
-        break;
-    }
+	int usbr = 0;
+
+	usbMidiBuffWrt += 64;
+	if (usbMidiBuffWrt >= (usbMidiBuffAll + 128)) {
+		usbMidiBuffWrt = usbMidiBuffAll;
+	}
 
 	// Prepare for next midi information
 	DCD_EP_PrepareRx((USB_OTG_CORE_HANDLE *)pdev,
 			0x1,
-			(uint8_t*)midiBuff,
-			4);
+			(uint8_t*) usbMidiBuffWrt,
+			64);
+
+	usbr = 0;
+	while (usbMidiBuffRead[usbr] != 0 && usbr < 64) {
+		// Cable 0
+		if ((usbMidiBuffRead[usbr] >> 4) == 0) {
+			switch (usbMidiBuffRead[usbr] & 0xf) {
+			case 0x9:
+			case 0x8:
+			case 0xb:
+			case 0xe:
+			case 0x3:
+		// Sysex :
+		//    case 0x4:
+		//    case 0x7:
+				usartBufferIn.insert(usbMidiBuffRead[usbr+1]);
+				usartBufferIn.insert(usbMidiBuffRead[usbr+2]);
+				usartBufferIn.insert(usbMidiBuffRead[usbr+3]);
+				break;
+		// Sysex :
+		//    case 0x6:
+			case 0x2:
+				usartBufferIn.insert(usbMidiBuffRead[usbr+1]);
+				usartBufferIn.insert(usbMidiBuffRead[usbr+2]);
+				break;
+			case 0x5:
+			case 0xF:
+				usartBufferIn.insert(usbMidiBuffRead[usbr+1]);
+				break;
+			}
+		}
+		usbMidiBuffRead[usbr] = 0;
+		usbr+=4;
+	}
+
+	usbMidiBuffRead = usbMidiBuffWrt;
 
 	return USBD_OK;
 }

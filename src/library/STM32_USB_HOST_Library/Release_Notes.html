@@ -13,7 +13,7 @@ w\:* {behavior:url(#default#VML);}
 
 
 
-<title>Release Notes for STM32F105/7xx and STM32F2xx USB Host Library</title><!--[if gte mso 9]><xml>
+<title>Release Notes for STM32F105/7xx, STM32F2xx and STM32F4xx USB Host Library</title><!--[if gte mso 9]><xml>
  <o:DocumentProperties>
   <o:Author>STMicroelectronics</o:Author>
   <o:LastAuthor>Raouf Hosni</o:LastAuthor>
@@ -877,8 +877,8 @@ ul
 </xml><![endif]--><!--[if gte mso 9]><xml>
  <o:shapelayout v:ext="edit">
   <o:idmap v:ext="edit" data="1"/>
- </o:shapelayout></xml><![endif]--></head>
-<body style="" lang="EN-US" link="blue" vlink="blue">
+ </o:shapelayout></xml><![endif]--><meta content="MCD Application Team" name="author"></head>
+<body style="" link="blue" vlink="blue">
 
 <div class="WordSection1">
 
@@ -897,9 +897,9 @@ ul
    </tr>
    <tr style="">
     <td style="padding: 1.5pt;">
-    <h1 style="margin-bottom: 0.25in; text-align: center;" align="center"><span style="font-size: 20pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;; color: rgb(51, 102, 255);">Release Notes for STM32F105/7xx and STM32F2xx USB Host Library</span><span style="font-size: 20pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;;"><o:p></o:p></span></h1>
+    <h1 style="margin-bottom: 0.25in; text-align: center;" align="center"><span style="font-size: 20pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;; color: rgb(51, 102, 255);">Release Notes for STM32F105/7xx, STM32F2xx and STM32F4xx USB Host Library</span><span style="font-size: 20pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;;"><o:p></o:p></span></h1>
     <p class="MsoNormal" style="text-align: center;" align="center"><span style="font-size: 10pt; font-family: &quot;Arial&quot;,&quot;sans-serif&quot;; color: black;">Copyright
-    2011 STMicroelectronics</span><span style="color: black;"><u1:p></u1:p><o:p></o:p></span></p>
+    2012 STMicroelectronics</span><span style="color: black;"><u1:p></u1:p><o:p></o:p></span></p>
     <p class="MsoNormal" style="text-align: center;" align="center"><span style="font-size: 10pt; font-family: &quot;Arial&quot;,&quot;sans-serif&quot;; color: black;"><img id="_x0000_i1026" src="../../_htmresc/logo.bmp" border="0" height="65" width="86"></span><span style="font-size: 10pt;"><o:p></o:p></span></p>
     </td>
    </tr>
@@ -910,23 +910,32 @@ ul
     <td style="padding: 0in;" valign="top">
     <h2 style="background: rgb(51, 102, 255) none repeat scroll 0% 50%; -moz-background-clip: initial; -moz-background-origin: initial; -moz-background-inline-policy: initial;"><span style="font-size: 12pt; color: white;">Contents<o:p></o:p></span></h2>
     <ol style="margin-top: 0in;" start="1" type="1">
-     <li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;;"><a href="#History">STM32F105/7xx and STM32F2xx USB Host Library&nbsp;update History</a><o:p></o:p></span></li>
+     <li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;;"><a href="#History">Update History</a><o:p></o:p></span></li>
      <li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;;"><a href="#License">License</a><o:p></o:p></span></li>
     </ol>
-    <h2 style="background: rgb(51, 102, 255) none repeat scroll 0% 50%; -moz-background-clip: initial; -moz-background-origin: initial; -moz-background-inline-policy: initial;"><a name="History"></a><span style="font-size: 12pt; color: white;">STM32F105/7xx and STM32F2xx USB Host Library&nbsp; update History</span></h2><h3 style="background: rgb(51, 102, 255) none repeat scroll 0% 50%; -moz-background-clip: initial; -moz-background-origin: initial; -moz-background-inline-policy: initial; margin-right: 500pt; width: 171px;"><span style="font-size: 10pt; font-family: Arial; color: white;">V2.0.0 / 22-July-2011 <o:p></o:p></span></h3><p class="MsoNormal" style="margin: 4.5pt 0cm 4.5pt 18pt;"><b style=""><u><span style="font-size: 10pt; font-family: Verdana; color: black;">Main
+    <h2 style="background: rgb(51, 102, 255) none repeat scroll 0% 50%; -moz-background-clip: initial; -moz-background-origin: initial; -moz-background-inline-policy: initial;"><a name="History"></a><span style="font-size: 12pt; color: white;">Update History</span></h2><h3 style="background: rgb(51, 102, 255) none repeat scroll 0% 50%; -moz-background-clip: initial; -moz-background-origin: initial; -moz-background-inline-policy: initial; margin-right: 500pt; width: 200px;"><span style="font-size: 10pt; font-family: Arial; color: white;">V2.1.0 / 19-March-2012<o:p></o:p></span></h3>
+            <p class="MsoNormal" style="margin: 4.5pt 0cm 4.5pt 18pt;"><b style=""><u><span style="font-size: 10pt; font-family: Verdana; color: black;">Main
+Changes<o:p></o:p></span></u></b></p>
+
+            <ul style="margin-top: 0cm;" type="square"><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Official support of </span><span style="font-size: 10pt; font-family: Verdana;"><span style="font-weight: bold; font-style: italic;">STM32F4xx</span> devices</span></li><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">All source files: license disclaimer text update and add link to the License file on ST Internet</span></li><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Add ISR structure to link the low level driver to the Host library</span></li><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Change length parameter in the I/O operations to handle large amount of data</span></li><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Enhance the configuration descriptor parsing method to take into account multi interface devices</span></li><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">HID class</span></li><ul><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Remove blocking even frame synchronization loop</span></li></ul><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">MSC class</span></li><ul><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Handle correctly the BOT transfer with length &lt; max length</span></li></ul><ul><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Handle multi sector length data in the FAT FS interface</span></li></ul><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Miscellaneous bug fix<br></span></li></ul><h3 style="background: rgb(51, 102, 255) none repeat scroll 0% 50%; -moz-background-clip: initial; -moz-background-origin: initial; -moz-background-inline-policy: initial; margin-right: 500pt; width: 171px;"><span style="font-size: 10pt; font-family: Arial; color: white;">V2.0.0 / 22-July-2011 <o:p></o:p></span></h3><p class="MsoNormal" style="margin: 4.5pt 0cm 4.5pt 18pt;"><b style=""><u><span style="font-size: 10pt; font-family: Verdana; color: black;">Main
 Changes<o:p></o:p></span></u></b></p>
 <ul style="margin-top: 0cm;" type="square"><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Second official version supporting STM32F105/7 and STM32F2xx devices</span></li><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Add support for <span style="font-weight: bold; font-style: italic;">STM32F2xx</span> devices</span><span style="font-size: 10pt; font-family: Verdana;"></span></li><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Add multi interface feature</span><span style="font-size: 10pt; font-family: Verdana;"></span></li><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Add dynamic configuration parsing</span></li><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Add
 USBH_DeAllocate_AllChannel function in the Host channel management
 layer to clean up channels allocation table when de-initializing the
 library</span></li><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Change the core layer to stop correctly the host core and free all allocated channels</span></li><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Add usbh_conf.h file in the application layer to customize some user parameters</span></li></ul><span style="font-size: 10pt; font-family: Verdana;"><br></span><h3 style="background: rgb(51, 102, 255) none repeat scroll 0% 50%; -moz-background-clip: initial; -moz-background-origin: initial; -moz-background-inline-policy: initial; margin-right: 500pt; width: 171px;"><span style="font-size: 10pt; font-family: Arial; color: white;">V1.0.0&nbsp;- 11/29/2010<o:p></o:p></span></h3>
 <ul style="margin-top: 0cm;" type="square"><li class="MsoNormal" style="color: black; margin-top: 4.5pt; margin-bottom: 4.5pt;"><span style="font-size: 10pt; font-family: Verdana;">Created&nbsp;</span></li></ul><h2 style="background: rgb(51, 102, 255) none repeat scroll 0% 50%; -moz-background-clip: initial; -moz-background-origin: initial; -moz-background-inline-policy: initial;"><a name="License"></a><span style="font-size: 12pt; color: white;">License<o:p></o:p></span></h2>
-    <p class="MsoNormal"><span style="font-size: 10pt; font-family: Verdana; color: black;">The use of this STM32 software is governed by the terms and conditions of the License Agreement </span><span style="font-size: 10pt; font-family: Verdana; color: black;"><span style="font-weight: bold; font-style: italic;">"MCD-ST Liberty SW License Agreement 20Jul2011 v0.1.pdf"</span> </span><span style="font-size: 10pt; font-family: Verdana; color: black;">available in the root of this package.</span><span style="color: black;"><o:p>&nbsp;</o:p></span></p>
+    <p class="MsoNormal"><span style="font-size: 10pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;; color: black;">Licensed under MCD-ST Liberty SW License Agreement V2, (the "License"); You may not use this&nbsp;</span><span style="font-size: 10pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;; color: black;">package</span><span style="font-size: 10pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;; color: black;"> except in compliance with the License. You may obtain a copy of the License at:<br><br></span></p><div style="text-align: center;"><span style="font-size: 10pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;; color: black;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a target="_blank" href="http://www.st.com/software_license_agreement_liberty_v2">http://www.st.com/software_license_agreement_liberty_v2</a></span><br><span style="font-size: 10pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;; color: black;"></span></div><span style="font-size: 10pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;; color: black;"><br>Unless
+required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, <br>WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See
+the License for the specific language governing permissions and
+limitations under the License.</span>
     <div class="MsoNormal" style="text-align: center;" align="center"><span style="color: black;">
     <hr align="center" size="2" width="100%">
     </span></div>
     <p class="MsoNormal" style="margin: 4.5pt 0in 4.5pt 0.25in; text-align: center;" align="center"><span style="font-size: 10pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;; color: black;">For
-    complete documentation on </span><span style="font-size: 10pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;;">STM32(<span style="color: black;">CORTEX M3) 32-Bit
-    Microcontrollers visit </span><u><span style="color: blue;"><a href="http://www.st.com/stm32" target="_blank">www.st.com/STM32</a></span></u></span><span style="color: black;"><o:p></o:p></span></p>
+    complete documentation on </span><span style="font-size: 10pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;;">STM32<span style="color: black;">
+    Microcontrollers visit </span><u><span style="color: blue;"><a href="http://www.st.com/internet/mcu/family/141.jsp" target="_blank">www.st.com/STM32</a></span></u></span><span style="font-size: 10pt; font-family: &quot;Verdana&quot;,&quot;sans-serif&quot;;"><u><span style="color: blue;"><a href="http://www.st.com/stm32" target="_blank"></a></span></u></span><span style="color: black;"><o:p></o:p></span></p>
     </td>
    </tr>
   </tbody></table>

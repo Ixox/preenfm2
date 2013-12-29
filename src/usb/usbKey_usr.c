@@ -87,7 +87,7 @@ void USBH_USR_DeviceAttached(void) {
  * @param  None
  * @retval None
  */
-void USBH_USR_UnrecoveredError(int err) {
+void USBH_USR_UnrecoveredError() {
 	/* Toggle Red LED in infinite loop */
 /*    lcd.setCursor(0,3);
     lcd.print(err);

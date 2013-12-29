@@ -24,6 +24,8 @@
 #include "VisualInfo.h"
 #include "Storage.h"
 
+
+
 // number of external control change
 #define NUMBER_OF_ECC 4
 
@@ -60,9 +62,13 @@ enum AllControlChange {
     CC_LFO_ENV2_SILENCE,
     CC_STEPSEQ5_GATE,
     CC_STEPSEQ6_GATE,
+    CC_HOLD_PEDAL = 64,
     // 119 is empty
     CC_ALL_SOUND_OFF = 120,
-    CC_ALL_NOTES_OFF = 123
+    CC_ALL_NOTES_OFF = 123,
+    CC_OMNI_OFF = 124,
+    CC_OMNI_ON,
+    CC_RESET = 127
 
 };
 
@@ -103,16 +109,16 @@ public:
     void showAlgo() {}
     virtual void newMidiConfig(int menuSelect, char newValue) {}
 
-    void sendMidiOut();
+    void sendMidiCCOut(struct MidiEvent *toSend, bool flush);
+    void sendSysexByte(uint8_t byte);
+    void sendSysexFinished();
+    void flushMidiOut();
     void sendToExternalGear(int enumber);
     void readSysex();
     void playNote(int timbre, char note, char velocity) {}
     void stopNote(int timbre, char note) {}
     void newTimbre(int timbre) {}
 
-    bool hasMidiToSend() {
-        return midiToSend.getCount()>0;
-    }
 
 private:
     struct MidiEventState currentEventState;
@@ -120,10 +126,10 @@ private:
     Synth* synth;
     VisualInfo *visualInfo;
     Storage* storage;
-    RingBuffer<MidiEvent, 64> midiToSend;
     struct MidiEvent toSend ;
     struct MidiEvent lastSentCC;
     struct Nrpn currentNrpn[NUMBER_OF_TIMBRES];
+    bool omniOn[NUMBER_OF_TIMBRES];
     unsigned char runningStatus;
 
     // Midi Clock
@@ -132,7 +138,10 @@ private:
     int songPosition;
 
     // usb midi data buffer
-    uint8_t usbBuf[4];
+    uint8_t usbBuf[128];
+    uint8_t *usbBufRead;
+    uint8_t *usbBufWrite;
+    int sysexIndex;
 };
 
 #endif /* MIDIDECODER_H_ */
