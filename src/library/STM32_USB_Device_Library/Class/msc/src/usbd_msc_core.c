@@ -110,8 +110,6 @@ uint8_t  *USBD_MSC_GetOtherCfgDesc (uint8_t speed,
 #endif
 
 
-uint8_t USBD_MSC_CfgDesc[USB_MSC_CONFIG_DESC_SIZ];
-
 
 
 
