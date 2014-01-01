@@ -6,11 +6,11 @@
 #include "usb_regs.h"
 
 
-#define USBD_VID                     0xFFFF
-#define USBD_PID                     0x0000
+#define USBD_VID                   0x0483
+#define USBD_PID                   0x5730
 
-#define USBD_LANGID_STRING            0x409
-#define USBD_MANUFACTURER_STRING      "Ixox"
+#define USBD_LANGID_STRING         0x409
+#define USBD_MANUFACTURER_STRING   "Xavier Hosxe"
 
 #define USBD_PRODUCT_HS_STRING        "PreenFM mk2"
 #define USBD_SERIALNUMBER_HS_STRING   "00000000011B"
@@ -25,7 +25,7 @@
 #define USBD_INTERFACE_FS_STRING      "PreenFM Interface"
 
 
-USBD_DEVICE preenFMDescriptor =
+USBD_DEVICE usbdMidiDescriptor =
 {
   USBD_USR_DeviceDescriptor,
   USBD_USR_LangIDStrDescriptor, 
