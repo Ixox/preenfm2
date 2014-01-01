@@ -16,13 +16,16 @@
  */
 
 #include "BootLoader.h"
+#include "usbd_storage_desc.h"
 #include "LiquidCrystal.h"
 #include "Encoders.h"
+#include "usbd_msc_core.h"
 #include "UsbKey.h"
 #include "usbKey_usr.h"
 #include "RingBuffer.h"
 #include "flash_if.h"
 #include "usb_hcd_int.h"
+#include "usb_dcd_int.h"
 #include "stm32f4xx_conf.h"
 #include "stm32f4xx_gpio.h"
 
@@ -38,8 +41,12 @@
 
 UsbKey             usbKey ;
 RingBuffer<uint8_t, 100> usartBufferIn;
+USB_OTG_CORE_HANDLE     usbOTGDevice __ALIGN_END ;
+extern USBD_Usr_cb_TypeDef storageUsrCallback;
+LiquidCrystal lcd;
 
-
+int readCpt = -1;
+int writeCpt = -1;
 
 extern "C" {
 // USART 3 IRQ
@@ -61,6 +68,10 @@ extern "C" {
 
 void OTG_HS_IRQHandler(void) {
     USBH_OTG_ISR_Handler(&usbOTGHost);
+}
+
+void OTG_FS_IRQHandler(void) {
+	USBD_OTG_ISR_Handler(&usbOTGDevice);
 }
 
 #ifdef __cplusplus
@@ -199,11 +210,8 @@ void BootLoader::process() {
         break;
     case BL_SYSEX_READING:
 
-    	while (usartBufferIn.getCount() == 0);
-    	if (!sysexWaitFor(0xf0)) {
-            this->state = BL_FINISHED;
-            break;
-    	}
+    	sysexWaitForeverFor(0xf0);
+
     	if (!sysexWaitFor(0x7d)) {
             this->state = BL_FINISHED;
             break;
@@ -256,6 +264,16 @@ void BootLoader::process() {
         this->state = BL_FINISHED;
         break;
     }
+}
+
+
+
+void BootLoader::sysexWaitForeverFor(uint8_t byte) {
+	uint8_t readByte = 0;
+	while (readByte != byte) {
+		while (usartBufferIn.getCount() == 0);
+		readByte = usartBufferIn.remove();
+	}
 }
 
 bool BootLoader::sysexWaitFor(uint8_t byte) {
@@ -413,10 +431,8 @@ void BootLoader::resetButtonPressed() {
 void BootLoader::welcome() {
     this->lcd->begin(20,4);
     this->lcd->clear();
-    this->lcd->setCursor(1,0);
-    this->lcd->print("PreenFM bootloader");
-    this->lcd->setCursor(1,1);
-    this->lcd->print("      v"PFM2_BOOTLOADER_VERSION);
+    this->lcd->setCursor(0,0);
+    this->lcd->print("BootLoader v"PFM2_BOOTLOADER_VERSION);
 }
 
 
@@ -497,17 +513,101 @@ void switchLedOff() {
     GPIO_ResetBits(GPIOB, GPIO_Pin_6);
 }
 
+
 int main(void) {
 	switchLedInit();
 	switchLedOn();
-	LiquidCrystal lcd;
 	BootLoader bootLoader(&lcd);
     Encoders encoders;
 
     encoders.insertListener(&bootLoader);
+
     encoders.checkSimpleStatus();
 
-    if (bootLoader.getButton() == 2) {
+    if (bootLoader.getButton() == 0) {
+        // App ready ?
+        pFunction Jump_To_Application;
+        uint32_t JumpAddress;
+        // Stack can be on RAM or CCRAM
+        if (((*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFC0000) == 0x20000000
+		|| ((*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFE0000) == 0x10000000) {
+            switchLedOff();
+            /* Jump to user application */
+            JumpAddress = *(__IO uint32_t*) (APPLICATION_ADDRESS + 4);
+            Jump_To_Application = (pFunction) JumpAddress;
+            /* Initialize user application's Stack Pointer */
+            __set_MSP(*(__IO uint32_t*) APPLICATION_ADDRESS);
+            Jump_To_Application();
+        } else {
+            lcd.begin(20,4);
+            lcd.clear();
+            lcd.setCursor(1, 0);
+            lcd.print("Bootloader OK but");
+            lcd.setCursor(1, 1);
+            lcd.print("No PreenFM Firmware");
+            int cpt = 0;
+            while (1) {
+            	cpt++;
+            	if (cpt == 1000000) {
+            		switchLedOff();
+            	} else if (cpt == 2000000) {
+            		switchLedOn();
+            		cpt = 0;
+            	}
+            }
+        }
+    }
+
+	bootLoader.welcome();
+    while (bootLoader.getButton() != 0) {
+    	bootLoader.resetButtonPressed();
+        encoders.checkSimpleStatus();
+	}
+
+	lcd.setCursor(0,1);
+	lcd.print("Eng:USB stick access");
+	lcd.setCursor(0,2);
+	lcd.print("Op :flash from stick");
+	lcd.setCursor(0,3);
+	lcd.print("Op2:Midi    Mtx:DFU");
+
+    while (bootLoader.getButton() == 0) {
+    	bootLoader.resetButtonPressed();
+        encoders.checkSimpleStatus();
+	}
+
+    if (bootLoader.getButton() == 1) {
+    	bootLoader.welcome();
+
+        // Init state
+        uDelay(1000000);
+        usbKey.init(0,0,0,0);
+    	USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &USR_storage_desc, &USBD_MSC_cb, &storageUsrCallback);
+
+
+    	while (1) {
+    		if (readCpt >=0) {
+    			if (readCpt >= 99998) {
+    				lcd.setCursor(9,3);
+    				lcd.print('R');
+    			} else if (readCpt == 0) {
+    				lcd.setCursor(9,3);
+    				lcd.print(' ');
+    			}
+    			readCpt --;
+    		}
+    		if (writeCpt >=0) {
+    			if (writeCpt >= 99998) {
+    				lcd.setCursor(10,3);
+    				lcd.print('W');
+    			} else if (writeCpt == 0) {
+    				lcd.setCursor(10,3);
+    				lcd.print(' ');
+    			}
+    			writeCpt --;
+    		}
+        }
+    } else if (bootLoader.getButton() == 2) {
         // Button... flash new firmware
     	bootLoader.welcome();
     	lcd.setCursor(4,2);
@@ -545,37 +645,6 @@ int main(void) {
 		__set_MSP(*(__IO uint32_t*) 0x08000000);
 		jumpToBootloader();
     } else {
-        // App ready ?
-        pFunction Jump_To_Application;
-        uint32_t JumpAddress;
-        // Stack can be on RAM or CCRAM
-        if (((*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFC0000) == 0x20000000
-		|| ((*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFE0000) == 0x10000000) {
-            switchLedOff();
-            /* Jump to user application */
-            JumpAddress = *(__IO uint32_t*) (APPLICATION_ADDRESS + 4);
-            Jump_To_Application = (pFunction) JumpAddress;
-            /* Initialize user application's Stack Pointer */
-            __set_MSP(*(__IO uint32_t*) APPLICATION_ADDRESS);
-            Jump_To_Application();
-        } else {
-            lcd.begin(20,4);
-            lcd.clear();
-            lcd.setCursor(1, 0);
-            lcd.print("Bootloader OK but");
-            lcd.setCursor(1, 1);
-            lcd.print("No PreenFM Firmware");
-            int cpt = 0;
-            while (1) {
-            	cpt++;
-            	if (cpt == 1000000) {
-            		switchLedOff();
-            	} else if (cpt == 2000000) {
-            		switchLedOn();
-            		cpt = 0;
-            	}
-            }
-        }
     }
 
     while (1);

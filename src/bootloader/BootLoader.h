@@ -52,6 +52,7 @@ public:
 
 	bool formatFlash(int firmwareSize);
 	bool sysexWaitFor(uint8_t byte);
+	void sysexWaitForeverFor(uint8_t byte);
 	uint32_t sysexReadInt(int index);
 	bool burnFlash();
 	void sysexMode();
