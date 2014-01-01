@@ -28,7 +28,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_req.h"
 #include "usbd_ioreq.h"
-#include "usbd_preenFM_desc.h"
+
+#ifdef BOOTLOADER
+#include "usbd_storage_desc.h"
+#else
+#include "usbd_midi_desc.h"
+#endif
+
 
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
