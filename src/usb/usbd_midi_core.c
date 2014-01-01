@@ -233,27 +233,46 @@ static uint8_t usbd_midi_DataOut(void *pdev, uint8_t epnum) {
 		// Cable 0
 		if ((usbMidiBuffRead[usbr] >> 4) == 0) {
 			switch (usbMidiBuffRead[usbr] & 0xf) {
+			// ========= 3 bytes =======================
 			case 0x9:
 			case 0x8:
 			case 0xb:
 			case 0xe:
 			case 0x3:
-		// Sysex :
-		//    case 0x4:
-		//    case 0x7:
+				if (synthState.fullState.midiConfigValue[MIDICONFIG_THROUGH] == 1) {
+					usartBufferOut.insert(usbMidiBuffRead[usbr+1]);
+					usartBufferOut.insert(usbMidiBuffRead[usbr+2]);
+					usartBufferOut.insert(usbMidiBuffRead[usbr+3]);
+			    	USART_ITConfig(USART3, USART_IT_TXE, ENABLE);
+			    }
+			// Sysex - No thru
+		    case 0x4:
+		    case 0x7:
 				usartBufferIn.insert(usbMidiBuffRead[usbr+1]);
 				usartBufferIn.insert(usbMidiBuffRead[usbr+2]);
 				usartBufferIn.insert(usbMidiBuffRead[usbr+3]);
 				break;
-		// Sysex :
-		//    case 0x6:
+			// ========= 2 bytes =======================
 			case 0x2:
+				if (synthState.fullState.midiConfigValue[MIDICONFIG_THROUGH] == 1) {
+					usartBufferOut.insert(usbMidiBuffRead[usbr+1]);
+					usartBufferOut.insert(usbMidiBuffRead[usbr+2]);
+			    	USART_ITConfig(USART3, USART_IT_TXE, ENABLE);
+			    }
+			// Sysex - No thru
+		    case 0x6:
 				usartBufferIn.insert(usbMidiBuffRead[usbr+1]);
 				usartBufferIn.insert(usbMidiBuffRead[usbr+2]);
 				break;
-			case 0x5:
+			// ========= 1 byte =======================
 			case 0xF:
 				usartBufferIn.insert(usbMidiBuffRead[usbr+1]);
+				if (synthState.fullState.midiConfigValue[MIDICONFIG_THROUGH] == 1) {
+					usartBufferOut.insert(usbMidiBuffRead[usbr+1]);
+			    	USART_ITConfig(USART3, USART_IT_TXE, ENABLE);
+			    }
+			// Sysex - No thru
+			case 0x5:
 				break;
 			}
 		}

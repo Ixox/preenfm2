@@ -1,6 +1,5 @@
 #include "usbd_usr.h"
 #include "usbd_ioreq.h"
-#include "PreenFM.h"
 
 
 USBD_Usr_cb_TypeDef midiStreamingUsrCallback =
@@ -24,10 +23,6 @@ USBD_Usr_cb_TypeDef midiStreamingUsrCallback =
 */
 void USBD_USR_Init(void)
 {
-	/*
-	lcd.setCursor(10, 0);
-	lcd.print("I");
-	*/
 }
 
 /**
@@ -38,10 +33,6 @@ void USBD_USR_Init(void)
 */
 void USBD_USR_DeviceReset(uint8_t speed )
 {
-	/*
-	lcd.setCursor(11, 0);
-	lcd.print("R");
-	*/
 }
 
 
@@ -53,10 +44,6 @@ void USBD_USR_DeviceReset(uint8_t speed )
 */
 void USBD_USR_DeviceConfigured (void)
 {
-	/*
-	lcd.setCursor(19, 0);
-	lcd.print("C");
-	*/
 }
 
 
@@ -68,10 +55,6 @@ void USBD_USR_DeviceConfigured (void)
 */
 void USBD_USR_DeviceConnected (void)
 {
-	/*
-	lcd.setCursor(12, 0);
-	lcd.print("C");
-	*/
 }
 
 
@@ -83,10 +66,6 @@ void USBD_USR_DeviceConnected (void)
 */
 void USBD_USR_DeviceDisconnected (void)
 {
-	/*
-	lcd.setCursor(13, 0);
-	lcd.print("0");
-	*/
 }
 
 /**
@@ -111,26 +90,5 @@ void USBD_USR_DeviceResumed(void)
 {
   /* Users can do their application actions here for the USB-Reset */
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

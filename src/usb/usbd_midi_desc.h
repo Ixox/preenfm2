@@ -2,8 +2,6 @@
 
 #include "usbd_def.h"
 
-extern USBD_DEVICE preenFMDescriptor;
-
 
 #define USB_DEVICE_DESCRIPTOR_TYPE              0x01
 #define USB_CONFIGURATION_DESCRIPTOR_TYPE       0x02
@@ -18,7 +16,7 @@ extern  uint8_t USBD_DeviceDesc  [USB_SIZ_DEVICE_DESC];
 extern  uint8_t USBD_OtherSpeedCfgDesc[USB_LEN_CFG_DESC]; 
 extern  uint8_t USBD_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC];
 extern  uint8_t USBD_LangIDDesc[USB_SIZ_STRING_LANGID];
-extern  USBD_DEVICE preenFMDescriptor;
+extern  USBD_DEVICE usbdMidiDescriptor;
 
 uint8_t *     USBD_USR_DeviceDescriptor( uint8_t speed , uint16_t *length);
 uint8_t *     USBD_USR_LangIDStrDescriptor( uint8_t speed , uint16_t *length);

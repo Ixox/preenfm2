@@ -1,6 +1,6 @@
 
 #include "usbd_core.h"
-#include "usbd_preenFM_desc.h"
+#include "usbd_midi_desc.h"
 #include "usbd_req.h"
 #include "usbd_conf.h"
 #include "usb_regs.h"
@@ -37,11 +37,6 @@ USBD_DEVICE preenFMDescriptor =
   
 };
 
-#ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
-  #if defined ( __ICCARM__ ) /*!< IAR Compiler */
-    #pragma data_alignment=4   
-  #endif
-#endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
 /* USB Standard Device Descriptor */
 __ALIGN_BEGIN uint8_t USBD_DeviceDesc[USB_SIZ_DEVICE_DESC] __ALIGN_END =
   {
@@ -65,11 +60,6 @@ __ALIGN_BEGIN uint8_t USBD_DeviceDesc[USB_SIZ_DEVICE_DESC] __ALIGN_END =
     USBD_CFG_MAX_NUM            /*bNumConfigurations*/
   } ; /* USB_DeviceDescriptor */
 
-#ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
-  #if defined ( __ICCARM__ ) /*!< IAR Compiler */
-    #pragma data_alignment=4   
-  #endif
-#endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
 /* USB Standard Device Descriptor */
 __ALIGN_BEGIN uint8_t USBD_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] __ALIGN_END =
 {
@@ -85,11 +75,6 @@ __ALIGN_BEGIN uint8_t USBD_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] __ALI
   0x00,
 };
 
-#ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
-  #if defined ( __ICCARM__ ) /*!< IAR Compiler */
-    #pragma data_alignment=4   
-  #endif
-#endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
 /* USB Standard Device Descriptor */
 __ALIGN_BEGIN uint8_t USBD_LangIDDesc[USB_SIZ_STRING_LANGID] __ALIGN_END =
 {
@@ -253,4 +238,3 @@ uint8_t *  USBD_USR_InterfaceStrDescriptor( uint8_t speed , uint16_t *length)
   */ 
 
 /******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/
-

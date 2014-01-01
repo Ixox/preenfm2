@@ -143,8 +143,15 @@ void USB_OTG_BSP_EnableInterrupt(USB_OTG_CORE_HANDLE *pdev)
 
 	  // HS
 	  NVIC_InitStructure.NVIC_IRQChannel = OTG_HS_IRQn;
+	  // The BootLoader requires UsbStick access to be higher priority than device Mass storage
+	  // In firmware we want usb midi to be higher priority
+#ifdef BOOTLOADER
+	  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+#else
 	  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
 	  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;
+#endif
 	  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	  NVIC_Init(&NVIC_InitStructure);
 #endif
@@ -153,8 +160,15 @@ void USB_OTG_BSP_EnableInterrupt(USB_OTG_CORE_HANDLE *pdev)
 
 	  // FS
 	  NVIC_InitStructure.NVIC_IRQChannel = OTG_FS_IRQn;
+	  // The BootLoader requires UsbStick access to be higher priority than device Mass storage
+	  // In firmware we want usb midi to be higher priority
+#ifdef BOOTLOADER
 	  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-	  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
+	  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;
+#else
+	  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+#endif
 	  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	  NVIC_Init(&NVIC_InitStructure);
 #endif
