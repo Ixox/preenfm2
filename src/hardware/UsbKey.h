@@ -23,6 +23,12 @@
 #include "Common.h"
 #include "Storage.h"
 
+#include "usbKey_usr.h"
+
+extern USB_OTG_CORE_HANDLE          usbOTGHost;
+extern USBH_HOST                    usbHost;
+
+
 #define DEFAULT_COMBO_NAME       "0:/pfm2/DfltCmbo.pfm"
 #define PATCH_BANK1_NAME         "0:/pfm2/Bank1.pfm"
 #define PATCH_BANK2_NAME         "0:/pfm2/Bank2.pfm"
@@ -60,6 +66,12 @@ public:
 
     int renameBank(const struct BankFile* bank, const char* newName);
     int renameCombo(const struct BankFile* bank, const char* newName);
+
+#ifdef BOOTLOADER
+    unsigned int diskioGetSectorNumber();
+    int diskioRead(uint8_t* buff, int address, int lenght);
+    int diskioWrite(uint8_t* buff, int address, int lenght);
+#endif
 
 private:
     int renameFile(const struct BankFile* bank, const char* newName);

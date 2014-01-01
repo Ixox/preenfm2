@@ -16,10 +16,6 @@
  */
 
 #include "UsbKey.h"
-#include "usbKey_usr.h"
-
-extern USB_OTG_CORE_HANDLE          usbOTGHost;
-extern USBH_HOST                    usbHost;
 
 // define in PreenFM.c
 void fillSoundBuffer();
@@ -72,7 +68,6 @@ const char* UsbKey::getFileName(FILE_ENUM file) {
             return PROPERTIES_NAME;
     }
 }
-
 
 
 
@@ -499,3 +494,34 @@ void UsbKey::sortBankFile(struct BankFile* bankFiles, int numberOfFiles) {
 		swapBankFile(bankFiles, i, minBank);
 	}
 }
+
+#ifdef BOOTLOADER
+
+unsigned int UsbKey::diskioGetSectorNumber() {
+	unsigned long size;
+	commandParams.commandState = DISKIO_GETSECTORNUMBER;
+	commandParams.commandParam1 = &size;
+	usbProcess();
+	return size;
+}
+
+
+int UsbKey::diskioRead(uint8_t* buff, int address, int length) {
+	commandParams.commandState = DISKIO_READ;
+	commandParams.commandParam1 = buff;
+	commandParams.commandParam2 = &address;
+	commandParams.commandParamSize = length;
+	usbProcess();
+	return commandParams.commandResult;
+}
+
+int UsbKey::diskioWrite(uint8_t* buff, int address, int length) {
+	commandParams.commandState = DISKIO_WRITE;
+	commandParams.commandParam1 = buff;
+	commandParams.commandParam2 = &address;
+	commandParams.commandParamSize = length;
+	usbProcess();
+	return commandParams.commandResult;
+}
+
+#endif
