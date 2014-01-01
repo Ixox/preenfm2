@@ -22,7 +22,7 @@
 #include "usbh_msc_core.h"
 #include "usbd_core.h"
 #include "usbd_usr.h"
-#include "usbd_preenFM_desc.h"
+#include "usbd_midi_desc.h"
 #include "usbd_midi_core.h"
 #include "FMDisplay.h"
 #include "Synth.h"
@@ -210,7 +210,7 @@ void setup() {
     // HS = high speed : USB Key
     // Init core FS as a midiStreaming device
     if (synthState.fullState.midiConfigValue[MIDICONFIG_USB] != USBMIDI_OFF) {
-    	USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &preenFMDescriptor, &midiCallback, &midiStreamingUsrCallback);
+    	USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &usbdMidiDescriptor, &midiCallback, &midiStreamingUsrCallback);
     }
 
     if (usbKey.loadDefaultCombo()) {
