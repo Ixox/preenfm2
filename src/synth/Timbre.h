@@ -33,6 +33,7 @@
 
 #define NUMBER_OF_OPERATORS 6
 
+extern const float panTable[];
 
 
 class Timbre {
@@ -93,27 +94,23 @@ public:
     	mix1 = params.engineMix1.mixOsc1 + matrix.getDestination(MIX_OSC1) + matrix.getDestination(ALL_MIX);
         mix1 = (mix1 < 0) ? 0 : (mix1 >1.0f ? 1.0f : mix1);
 
-        float pan1 = params.engineMix1.panOsc1 + matrix.getDestination(PAN_OSC1) + matrix.getDestination(ALL_PAN) + 1;
-        if (pan1 < 1) {
-            pan1Left = pan1 * .80f +.2f;
-            pan1Right = 1;
-        } else {
-            pan1Right = 1.8f - pan1 * .8f;
-            pan1Left = 1;
-        }
+        float pan1 = params.engineMix1.panOsc1 + matrix.getDestination(PAN_OSC1) + matrix.getDestination(ALL_PAN);
+        // Scale from 0.0 to 2.0
+        pan1 = (pan1 < -1) ? 0.0f : (pan1 > 1.0f ? 2.0f : pan1 + 1.0f);
+        // Scale form 0 to 200
+        pan1 *= 100.0f;
+		pan1Left = panTable[(int)(200.0f - pan1)];
+		pan1Right = panTable[(int)pan1];
 
 
         mix2 = params.engineMix1.mixOsc2 + matrix.getDestination(MIX_OSC2) + matrix.getDestination(ALL_MIX);
         mix2 = (mix2 < 0) ? 0 : (mix2 >1.0f ? 1.0f : mix2);
 
-        float pan2 = params.engineMix1.panOsc2 + matrix.getDestination(PAN_OSC2) + matrix.getDestination(ALL_PAN) + 1;
-        if (pan2 < 1) {
-            pan2Left = pan2 * .80f +.2f;
-            pan2Right = 1;
-        } else {
-            pan2Right = 1.8f - pan2 * .8f;
-            pan2Left = 1;
-        }
+        float pan2 = params.engineMix1.panOsc2 + matrix.getDestination(PAN_OSC2) + matrix.getDestination(ALL_PAN);
+        pan2 = (pan2 < -1) ? 0.0f : (pan2 > 1.0f ? 2.0f : pan2 + 1.0f);
+        pan2 *= 100.0f;
+		pan2Left = panTable[(int)(200.0f - pan2)];
+		pan2Right = panTable[(int)pan2];
 
         // A bit lighter for algo with 1 or 2 mix...
         if (numberOfMixes <=2) {
@@ -123,25 +120,19 @@ public:
         mix3 = params.engineMix2.mixOsc3 + matrix.getDestination(MIX_OSC3) + matrix.getDestination(ALL_MIX);
         mix3 = (mix3 < 0) ? 0 : (mix3 >1.0f ? 1.0f : mix3);
 
-        float pan3 = params.engineMix2.panOsc3 + matrix.getDestination(PAN_OSC3) + matrix.getDestination(ALL_PAN) + 1;
-        if (pan3 < 1) {
-            pan3Left = pan3 * .80f +.2f;
-            pan3Right = 1;
-        } else {
-            pan3Right = 1.8f - pan3 * .8f;
-            pan3Left = 1;
-        }
+        float pan3 = params.engineMix2.panOsc3 + matrix.getDestination(PAN_OSC3) + matrix.getDestination(ALL_PAN);
+        pan3 = (pan3 < -1) ? 0.0f : (pan3 > 1.0f ? 2.0f : pan3 + 1.0f);
+        pan3 *= 100.0f;
+		pan3Left = panTable[(int)(200.0f - pan3)];
+		pan3Right = panTable[(int)pan3];
 
         // No matrix for mix4 and pan4
         mix4 = params.engineMix2.mixOsc4 + matrix.getDestination(ALL_MIX);
-        float pan4 = params.engineMix2.panOsc4 + matrix.getDestination(ALL_PAN) + 1;
-        if (pan4 < 1) {
-            pan4Left = pan4 * .80f +.2f;
-            pan4Right = 1;
-        } else {
-            pan4Right = 1.8f - pan4 * .8f;
-            pan4Left = 1;
-        }
+        float pan4 = params.engineMix2.panOsc4 + matrix.getDestination(ALL_PAN);
+        pan4 = (pan4 < -1) ? 0.0f : (pan4 > 1.0f ? 2.0f : pan4 + 1.0f);
+        pan4 *= 100.0f;
+		pan4Left = panTable[(int)(200.0f - pan4)];
+		pan4Right = panTable[(int)pan4];
 
 
         // A bit lighter for algo with 5 or 6 mix...
@@ -153,26 +144,18 @@ public:
 
         mix5 = params.engineMix3.mixOsc5  + matrix.getDestination(ALL_MIX);
         mix5 = (mix5 < 0) ? 0 : (mix5 >1.0f ? 1.0f : mix5);
-        float pan5 = params.engineMix3.panOsc5 + matrix.getDestination(ALL_PAN) + 1;
-        if (pan5 < 1) {
-            pan5Left = pan5 * .80f +.2f;
-            pan5Right = 1;
-        } else {
-            pan5Right = 1.8f - pan5 * .8f;
-            pan5Left = 1;
-        }
+        float pan5 = params.engineMix3.panOsc5 + matrix.getDestination(ALL_PAN);
+        pan5 = (pan5 < -1) ? 0.0f : (pan5 > 1.0f ? 2.0f : pan5 + 1.0f);
+        pan5 *= 100.0f;
+		pan5Left = panTable[(int)(200.0f - pan5)];
+		pan5Right = panTable[(int)pan5];
 
         mix6 = params.engineMix3.mixOsc6 + matrix.getDestination(ALL_MIX);
-        float pan6 = params.engineMix3.panOsc6 + matrix.getDestination(ALL_PAN) + 1;
-        if (pan6 < 1) {
-            pan6Left = pan6 * .80f +.2f;
-            pan6Right = 1;
-        } else {
-            pan6Right = 1.8f - pan6 * .8f;
-            pan6Left = 1;
-        }
-
-
+        float pan6 = params.engineMix3.panOsc6 + matrix.getDestination(ALL_PAN);
+        pan6 = (pan6 < -1) ? 0.0f : (pan6 > 1.0f ? 2.0f : pan6 + 1.0f);
+        pan6 *= 100.0f;
+		pan6Left = panTable[(int)(200.0f - pan6)];
+		pan6Right = panTable[(int)pan6];
 
     }
 
