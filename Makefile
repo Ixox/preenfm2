@@ -1,6 +1,6 @@
-PFM2_VERSION_NUMBER=0.9m
+PFM2_VERSION_NUMBER=0.9n
 PFM2_BIN_NUMBER=$(subst .,,${PFM2_VERSION_NUMBER})
-PFM2_BOOTLOADER_VERSION_NUMBER=1.02
+PFM2_BOOTLOADER_VERSION_NUMBER=1.10
 PFM2_VERSION=\"${PFM2_VERSION_NUMBER}\"
 PFM2_BOOTLOADER_VERSION=\"${PFM2_BOOTLOADER_VERSION_NUMBER}\"
 
@@ -30,7 +30,7 @@ SRC_FIRMWARE = src/PreenFM.cpp \
 	src/PreenFM_init.c \
 	src/usb/usbKey_usr.c \
 	src/usb/usbMidi_usr.c \
-	src/usb/usbd_preenFM_desc.c \
+	src/usb/usbd_midi_desc.c \
 	src/usb/usb_bsp.c \
 	src/usb/usbd_midi_core.c \
 	src/library/STM32_USB_OTG_Driver/src/usb_core.c \
@@ -85,11 +85,16 @@ SRC_FIRMWARE = src/PreenFM.cpp \
 	src/synth/Timbre.cpp \
 	src/synth/Common.cpp \
 	src/library/fat_fs/src/ff.c \
-	src/library/fat_fs/src/fattime.c \
+	src/library/fat_fs/src/fattime.c 
 	
  
 
 SRC_BOOTLOADER = src/bootloader/BootLoader.cpp \
+	src/bootloader/usb_storage_usr.c \
+	src/bootloader/usbd_storage_desc.c \
+	src/bootloader/usbd_storage.c \
+	usr/usb/usbKey_usr.c \
+	usr/usb/usb_bsp.c \
 	src/hardware/Encoders.cpp \
 	src/hardware/LiquidCrystal.cpp \
 	src/hardware/UsbKey.cpp \
@@ -100,13 +105,13 @@ SRC_BOOTLOADER = src/bootloader/BootLoader.cpp \
 	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c \
 	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.c   \
 	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c \
-	usr/usb/usbKey_usr.c \
-	usr/usb/usb_bsp.c \
 	src/library/fat_fs/src/ff.c \
 	src/library/fat_fs/src/fattime.c \
 	src/library/STM32_USB_OTG_Driver/src/usb_core.c \
 	src/library/STM32_USB_OTG_Driver/src/usb_hcd.c \
 	src/library/STM32_USB_OTG_Driver/src/usb_hcd_int.c \
+	src/library/STM32_USB_OTG_Driver/src/usb_dcd.c \
+	src/library/STM32_USB_OTG_Driver/src/usb_dcd_int.c 	\
 	src/library/STM32_USB_HOST_Library/Core/src/usbh_core.c \
 	src/library/STM32_USB_HOST_Library/Core/src/usbh_hcs.c \
 	src/library/STM32_USB_HOST_Library/Core/src/usbh_ioreq.c \
@@ -115,16 +120,22 @@ SRC_BOOTLOADER = src/bootloader/BootLoader.cpp \
 	src/library/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_bot.c \
 	src/library/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_scsi.c \
 	src/library/STM32_USB_HOST_Library/Class/MSC/src/usbh_msc_fatfs.c \
+	src/library/STM32_USB_Device_Library/Core/src/usbd_core.c \
+	src/library/STM32_USB_Device_Library/Core/src/usbd_ioreq.c \
+	src/library/STM32_USB_Device_Library/Core/src/usbd_req.c \
+	src/library/STM32_USB_Device_Library/Class/msc/src/usbd_msc_bot.c \
+	src/library/STM32_USB_Device_Library/Class/msc/src/usbd_msc_core.c \
+	src/library/STM32_USB_Device_Library/Class/msc/src/usbd_msc_data.c \
+	src/library/STM32_USB_Device_Library/Class/msc/src/usbd_msc_scsi.c \
 	src/library/STM32F4xx_StdPeriph_Driver/src/misc.c 
-
  
-INCLUDESDIR = -I./src/third/ -I./src/library/STM32_USB_HOST_Library/Class/MSC/inc -I./src/library/STM32_USB_HOST_Library/Core/inc -I./src/library/STM32_USB_OTG_Driver/inc -I./src/library/fat_fs/inc -I./src/library/STM32_USB_Device_Library/Core/inc -I./src/library/STM32_USB_Device_Library/Class/midi/inc -I./src/library/STM32F4xx_StdPeriph_Driver/inc/ -I./src/library/CMSIS/Include/ -I./src/utils/ -I./src/hardware -I./src/usb -I./src/synth -I./src/midi -I./src
+INCLUDESDIR = -I./src/third/ -I./src/library/STM32_USB_HOST_Library/Class/MSC/inc -I./src/library/STM32_USB_HOST_Library/Core/inc -I./src/library/STM32_USB_OTG_Driver/inc -I./src/library/fat_fs/inc -I./src/library/STM32_USB_Device_Library/Core/inc -I./src/library/STM32_USB_Device_Library/Class/midi/inc -I./src/library/STM32F4xx_StdPeriph_Driver/inc/ -I./src/library/CMSIS/Include/ -I./src/utils/ -I./src/hardware -I./src/usb -I./src/synth -I./src/midi -I./src -I./src/library/STM32_USB_Device_Library/Class/msc/inc
 SMALLBINOPTS = -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions  -Wl,--gc-sections  
 
 # 
 DEFINE = -DPFM2_VERSION=${PFM2_VERSION} -DPFM2_BOOTLOADER_VERSION=${PFM2_BOOTLOADER_VERSION}
-CFLAGS  =  -Os $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
-CFLAGS_NOOPTIM  =   $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
+# CFLAGS  =  -Os $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
+CFLAGS       =   $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
 AFLAGS  = -ahls -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16    
 LFLAGS  = -Tlinker/stm32f4xx.ld  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -gc-sections    --specs=nano.specs
 LFLAGS_BOOTLOADER  = -Tlinker_bootloader/stm32f4xx.ld  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -gc-sections --specs=nano.specs  
@@ -167,10 +178,10 @@ pfm2_$(PFM2_VERSION_NUMBER).zip :
 pfm: $(BIN_FIRMWARE) 
 
 pfmo: CFLAGS += -DOVERCLOCK
-pfmo: clean $(BIN_FIRMWARE_O) 
+pfmo: $(BIN_FIRMWARE_O) 
 
 boot: CFLAGS += -DBOOTLOADER -Os 
-boot: clean $(BIN_BOOTLOADER)
+boot: $(BIN_BOOTLOADER)
 
 install: $(BIN_FIRMWARE)
 	st-flash write $(BIN_FIRMWARE) 0x08040000
@@ -223,8 +234,6 @@ $(ELF_FIRMWARE): $(OBJ_FIRMWARE) $(STARTUP)
 	arm-none-eabi-readelf -S $(ELF_FIRMWARE)
 
 $(ELF_FIRMWARE_O): $(OBJ_FIRMWARE) $(STARTUP)
-	$(CC) $(CFLAGS) -DOVERCLOCK src/PreenFM.cpp -o build/PreenFM.o
-	$(CC) $(CFLAGS) -DOVERCLOCK src/system_stm32f4xx.c -o build/system_stm32f4xx.o
 	$(CC) $(LFLAGS) $^ -o $@
 	arm-none-eabi-nm -l -S -n $(ELF_FIRMWARE_O) > $(SYMBOLS_FIRMWARE_O) 
 	arm-none-eabi-readelf -S $(ELF_FIRMWARE_O)
@@ -247,13 +256,14 @@ $(STARTUP_BOOTLOADER): linker_bootloader/startup_stm32f4xx.s
 	$(AS) $(AFLAGS) -o $(STARTUP_BOOTLOADER) linker_bootloader/startup_stm32f4xx.s > linker_bootloader/startup_stm32f4xx.lst
 
 
-
-
 build/%.o: src/%.c
 	$(CC) $(CFLAGS) $< -o $@
 
 build/%.o: src/%.cpp
 	$(CC) $(CFLAGS) $< -o $@
+
+build/%.o: src/bootloader/%.c
+	$(CC) $(CFLAGS) -fpermissive $< -o $@
 
 build/%.o: src/bootloader/%.cpp
 	$(CC) $(CFLAGS) $< -o $@
@@ -262,7 +272,7 @@ build/%.o: src/usb/%.cpp
 	$(CC) $(CFLAGS) $< -o $@
 
 build/%.o: src/usb/%.c
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) -fpermissive $< -o $@
 
 build/%.o: src/third/%.c
 	$(CC) $(CFLAGS) $< -o $@
@@ -280,7 +290,7 @@ build/%.o: src/utils/%.cpp
 	$(CC) $(CFLAGS) $< -o $@
 
 build/%.o: src/library/STM32_USB_OTG_Driver/src/%.c
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) -fpermissive $< -o $@
 
 build/%.o: src/library/STM32_USB_HOST_Library/Core/src/%.c
 	$(CC) $(CFLAGS) -fpermissive $< -o $@
@@ -289,6 +299,9 @@ build/%.o: src/library/STM32_USB_HOST_Library/Class/MSC/src/%.c
 	$(CC) $(CFLAGS) -fpermissive $< -o $@
 
 build/%.o: src/library/STM32_USB_Device_Library/Core/src/%.c
+	$(CC) $(CFLAGS) -fpermissive $< -o $@
+
+build/%.o: src/library/STM32_USB_Device_Library/Class/msc/src/%.c
 	$(CC) $(CFLAGS) -fpermissive $< -o $@
 
 build/%.o: src/library/STM32F4xx_StdPeriph_Driver/src/%.c
