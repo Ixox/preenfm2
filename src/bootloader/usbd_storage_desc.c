@@ -59,7 +59,7 @@
 #define USBD_PID                   0x5720
 
 #define USBD_LANGID_STRING         0x409
-#define USBD_MANUFACTURER_STRING   "STMicroelectronics"
+#define USBD_MANUFACTURER_STRING   "Xavier Hosxe"
 
 
 #define USBD_PRODUCT_HS_STRING        "Mass Storage in HS Mode"
