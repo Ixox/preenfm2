@@ -50,6 +50,8 @@ public:
     char getNextPendingNote() { return this->nextPendingNote; }
     char getNextGlidingNote() { return this->nextGlidingNote; }
     int getCurrentTimbre() { return this->voiceTimbre; }
+    bool isHoldedByPedal() { return this->holdedByPedal; }
+    bool setHoldedByPedal(bool holded) { this->holdedByPedal = holded; }
 
 private:
     // voice status
@@ -77,6 +79,7 @@ private:
     OscState *oscState[6];
 
 
+    bool holdedByPedal;
     // Fixing the "plop" when all notes are buisy...
     bool newNotePending;
     char nextPendingNote;

@@ -76,7 +76,8 @@ void Synth::noteOn(int timbre, char note, char velocity) {
             return;
         }
 
-        if (!voices[n].isPlaying()) {
+        // unlikely because if it true, CPU is not full
+        if (unlikely(!voices[n].isPlaying())) {
             voices[n].noteOn(timbre, note, newVelocity, this->voiceIndex++);
             return;
         }
@@ -110,9 +111,6 @@ void Synth::noteOn(int timbre, char note, char velocity) {
 }
 
 void Synth::noteOff(int timbre, char note) {
-	if (holdPedal[timbre] == true) {
-		return;
-	}
 
     int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
 
@@ -122,8 +120,14 @@ void Synth::noteOff(int timbre, char note) {
 
         if (voices[n].getNextGlidingNote() == 0) {
             if (voices[n].getNote() == note) {
-                voices[n].noteOff();
-                return;
+            	if (unlikely(holdPedal[timbre])) {
+            		voices[n].setHoldedByPedal(true);
+            		return;
+            	} else {
+                	voices[n].noteOff();
+                    return;
+            	}
+
             }
         } else {
             // if gliding and releasing first note
@@ -144,7 +148,14 @@ void Synth::noteOff(int timbre, char note) {
 void Synth::setHoldPedal(int timbre, int value) {
 	if (value <64) {
 		this->holdPedal[timbre] = false;
-		allNoteOff(timbre);
+	    int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
+	    for (int k = 0; k < numberOfVoices; k++) {
+	        // voice number k of timbre
+	        int n = voiceTimbre[timbre][k];
+	        if (voices[n].isHoldedByPedal()) {
+	        	voices[n].noteOff();
+	        }
+	    }
 	} else {
 		this->holdPedal[timbre] = true;
 	}
@@ -209,7 +220,7 @@ void Synth::buildNewSampleBlock() {
 
 	for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
 		timbres[t].prepareForNextBlock();
-		if (voiceTimbre[t][0] != -1) {
+		if (likely(voiceTimbre[t][0] != -1)) {
 			// glide only happens on first voice of any
 			this->voices[voiceTimbre[t][0]].glide();
 		}
@@ -246,13 +257,13 @@ void Synth::buildNewSampleBlock() {
 		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
 	}
 
-    if (writeCursor == 192) {
+    if (unlikely(writeCursor == 192)) {
         writeCursor = 0;
+        return;
     } else {
         writeCursor += 64;
+        return;
     }
-
-
 }
 
 void Synth::beforeNewParamsLoad(int timbre) {
@@ -320,10 +331,10 @@ int Synth::getFreeVoice() {
 
 // can prevent some value change...
 void Synth::checkNewParamValue(int timbre, int currentRow, int encoder, float oldValue, float *newValue) {
-    if (currentRow == ROW_ENGINE) {
+    if (unlikely(currentRow == ROW_ENGINE)) {
 
         int freeOsc = 48 - numberOfOsc;
-        if (encoder == ENCODER_ENGINE_ALGO) {
+        if (unlikely(encoder == ENCODER_ENGINE_ALGO)) {
             // If one voice exactly and not enough free osc to change algo
         	// If more than 1 voice, it's OK, the number of voice will be reduced later.
             if (timbres[timbre].params.engine1.numberOfVoice < 1.5f && timbres[timbre].params.engine1.numberOfVoice > 0.5f
@@ -331,7 +342,8 @@ void Synth::checkNewParamValue(int timbre, int currentRow, int encoder, float ol
                 // not enough free osc
                 *newValue = oldValue;
             }
-        } else if (encoder == ENCODER_ENGINE_VOICE) {
+        }
+        if (unlikely(encoder == ENCODER_ENGINE_VOICE)) {
 
             // Increase number of voice ?
             if ((*newValue)> oldValue) {
@@ -345,7 +357,7 @@ void Synth::checkNewParamValue(int timbre, int currentRow, int encoder, float ol
 
 void Synth::newParamValue(int timbre, SynthParamType type, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
 
-    if (type == SYNTH_PARAM_TYPE_ENGINE ) {
+    if (unlikely(type == SYNTH_PARAM_TYPE_ENGINE )) {
         if (currentRow == ROW_ENGINE) {
             if (encoder == ENCODER_ENGINE_ALGO) {
                 refreshNumberOfOsc();
