@@ -39,7 +39,7 @@ public:
     void glideToNote(short newNote);
     void killNow();
     void noteOff();
-    void glideNoteOff();
+    void glideFirstNoteOff();
     void glide();
 
     bool isReleased() { return this->released; }

@@ -82,6 +82,9 @@ void Voice::glideToNote(short newNote) {
 	this->gliding = true;
 	this->glidePhase = 0.0f;
 	this->nextGlidingNote = newNote;
+	if (this->holdedByPedal) {
+		glideFirstNoteOff();
+	}
 
 	for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
 		currentTimbre->osc[k]->glideToNote(oscState[k], newNote);
@@ -93,6 +96,7 @@ void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) 
 	this->index = index;
 	if (!this->released && (int)currentTimbre->params.engine1.numberOfVoice == 1 && currentTimbre->params.engine1.glide > 0) {
 		glideToNote(newNote);
+		this->holdedByPedal = false;
 	} else {
 		// update note now so that the noteOff is triggered by the new note
 		this->note = newNote;
@@ -166,7 +170,7 @@ void Voice::endNoteOrBeginNextOne() {
 }
 
 
-void Voice::glideNoteOff() {
+void Voice::glideFirstNoteOff() {
 	// while gliding the first note was released
 	this->note = this->nextGlidingNote;
 	this->nextGlidingNote = 0;
@@ -177,6 +181,7 @@ void Voice::noteOff() {
 	this->released = true;
 	this->nextPendingNote = 0;
 	this->gliding = false;
+	this->holdedByPedal = false;
 
 	for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
 		currentTimbre->env[k]->noteOff(envState[k]);

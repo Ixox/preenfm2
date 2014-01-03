@@ -118,7 +118,7 @@ void Synth::noteOff(int timbre, char note) {
         // voice number k of timbre
         int n = voiceTimbre[timbre][k];
 
-        if (voices[n].getNextGlidingNote() == 0) {
+        if (likely(voices[n].getNextGlidingNote() == 0)) {
             if (voices[n].getNote() == note) {
             	if (unlikely(holdPedal[timbre])) {
             		voices[n].setHoldedByPedal(true);
@@ -131,14 +131,14 @@ void Synth::noteOff(int timbre, char note) {
             }
         } else {
             // if gliding and releasing first note
-            if (voices[n].getNote() == note) {
-                voices[n].glideNoteOff();
+        	if (voices[n].getNote() == note) {
+				voices[n].glideFirstNoteOff();
                 return;
             }
             // if gliding and releasing next note
             if (voices[n].getNextGlidingNote() == note) {
-                voices[n].glideToNote(voices[n].getNote());
-                voices[n].glideNoteOff();
+				voices[n].glideToNote(voices[n].getNote());
+				voices[n].glideFirstNoteOff();
                 return;
             }
         }
