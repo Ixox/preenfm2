@@ -125,17 +125,18 @@ void Timbre::prepareForNextBlock() {
     updateAllModulationIndexes();
     updateAllMixOscsAndPans();
 
-    float *sp = this->sampleBlock;
-    while (sp < this->sbMax) {
-        *sp++ = 0;
-        *sp++ = 0;
-        *sp++ = 0;
-        *sp++ = 0;
-        *sp++ = 0;
-        *sp++ = 0;
-        *sp++ = 0;
-        *sp++ = 0;
-    }
+	float *sp = this->sampleBlock;
+	while (sp < this->sbMax) {
+		*sp++ = 0;
+		*sp++ = 0;
+		*sp++ = 0;
+		*sp++ = 0;
+		*sp++ = 0;
+		*sp++ = 0;
+		*sp++ = 0;
+		*sp++ = 0;
+	}
+
 }
 
 #define GATE_INC 0.02f
@@ -143,7 +144,7 @@ void Timbre::prepareForNextBlock() {
 void Timbre::fxAfterBlock() {
     // Gate algo !!
     float gate = this->matrix.getDestination(MAIN_GATE);
-    if (gate <= 0 && currentGate <= 0) {
+    if (likely(gate <= 0 && currentGate <= 0)) {
         return;
     }
     gate *=.72547132656922730694f; // 0 < gate < 1.0

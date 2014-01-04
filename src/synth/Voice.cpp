@@ -300,7 +300,7 @@ void Voice::nextBlock() {
 			env3Value += env3Inc;
 		}
 
-		if (currentTimbre->env1.isDead(&envState1)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1))) {
 			endNoteOrBeginNextOne();
 		}
 
@@ -343,7 +343,7 @@ void Voice::nextBlock() {
 			env3Value += env3Inc;
 		}
 
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2))) {
 			endNoteOrBeginNextOne();
 		}
 	}
@@ -391,7 +391,7 @@ void Voice::nextBlock() {
 
 		}
 
-		if (currentTimbre->env1.isDead(&envState1)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1))) {
 			endNoteOrBeginNextOne();
 		}
 
@@ -437,7 +437,7 @@ void Voice::nextBlock() {
 			env4Value += env4Inc;
 		}
 
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2))) {
 			endNoteOrBeginNextOne();
 		}
 		break;
@@ -487,7 +487,7 @@ void Voice::nextBlock() {
 			env3Value += env3Inc;
 			env4Value += env4Inc;
 		}
-		if (currentTimbre->env1.isDead(&envState1)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1))) {
 			endNoteOrBeginNextOne();
 		}
 		break;
@@ -533,7 +533,7 @@ void Voice::nextBlock() {
 			env4Value += env4Inc;
 		}
 
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2)&& currentTimbre->env3.isDead(&envState3)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2)&& currentTimbre->env3.isDead(&envState3))) {
 			endNoteOrBeginNextOne();
 		}
 
@@ -594,7 +594,7 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env5.isDead(&envState5)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env5.isDead(&envState5))) {
 			endNoteOrBeginNextOne();
 		}
 	}
@@ -659,7 +659,7 @@ void Voice::nextBlock() {
 
 		}
 
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env5.isDead(&envState5)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env5.isDead(&envState5))) {
 			endNoteOrBeginNextOne();
 		}
 
@@ -727,7 +727,7 @@ void Voice::nextBlock() {
 			env6Value += env6Inc;
 		}
 
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env4.isDead(&envState4)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env4.isDead(&envState4))) {
 			endNoteOrBeginNextOne();
 		}
 
@@ -802,7 +802,7 @@ void Voice::nextBlock() {
 			env6Value += env6Inc;
 		}
 
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3))) {
 			endNoteOrBeginNextOne();
 		}
 
@@ -868,7 +868,7 @@ void Voice::nextBlock() {
 			env6Value += env6Inc;
 		}
 
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env4.isDead(&envState4)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env4.isDead(&envState4))) {
 			endNoteOrBeginNextOne();
 		}
 
@@ -930,7 +930,7 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env5.isDead(&envState5)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env5.isDead(&envState5))) {
 			endNoteOrBeginNextOne();
 		}
 	}
@@ -995,7 +995,7 @@ void Voice::nextBlock() {
 			env6Value += env6Inc;
 		}
 
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3))) {
 			endNoteOrBeginNextOne();
 		}
 
@@ -1061,7 +1061,7 @@ void Voice::nextBlock() {
 			env6Value += env6Inc;
 		}
 
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env4.isDead(&envState4)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env4.isDead(&envState4))) {
 			endNoteOrBeginNextOne();
 		}
 
@@ -1127,7 +1127,7 @@ void Voice::nextBlock() {
 			env6Value += env6Inc;
 		}
 
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env4.isDead(&envState4)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env4.isDead(&envState4))) {
 			endNoteOrBeginNextOne();
 		}
 
@@ -1195,7 +1195,7 @@ void Voice::nextBlock() {
 			env6Value += env6Inc;
 		}
 
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3))) {
 			endNoteOrBeginNextOne();
 		}
 
@@ -1261,7 +1261,7 @@ void Voice::nextBlock() {
 			env6Value += env6Inc;
 		}
 
-		if (currentTimbre->env1.isDead(&envState1)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1))) {
 			endNoteOrBeginNextOne();
 		}
 
@@ -1331,7 +1331,7 @@ void Voice::nextBlock() {
 			env6Value += env6Inc;
 		}
 
-		if (currentTimbre->env1.isDead(&envState1)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1))) {
 			endNoteOrBeginNextOne();
 		}
 
@@ -1397,7 +1397,7 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env4.isDead(&envState4) && currentTimbre->env5.isDead(&envState5)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env4.isDead(&envState4) && currentTimbre->env5.isDead(&envState5))) {
 			endNoteOrBeginNextOne();
 		}
 	}
@@ -1461,7 +1461,7 @@ void Voice::nextBlock() {
 			env6Value += env6Inc;
 		}
 
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env4.isDead(&envState4)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env4.isDead(&envState4))) {
 			endNoteOrBeginNextOne();
 		}
 	}
@@ -1517,7 +1517,7 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env4.isDead(&envState4) && currentTimbre->env5.isDead(&envState5)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env4.isDead(&envState4) && currentTimbre->env5.isDead(&envState5))) {
 			endNoteOrBeginNextOne();
 		}
 	}
@@ -1573,7 +1573,7 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env4.isDead(&envState4) && currentTimbre->env5.isDead(&envState5)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env4.isDead(&envState4) && currentTimbre->env5.isDead(&envState5))) {
 			endNoteOrBeginNextOne();
 		}
 	}
@@ -1631,7 +1631,7 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env4.isDead(&envState4) && currentTimbre->env5.isDead(&envState5)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env4.isDead(&envState4) && currentTimbre->env5.isDead(&envState5))) {
 			endNoteOrBeginNextOne();
 		}
 	}
@@ -1697,7 +1697,7 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env6.isDead(&envState6)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env6.isDead(&envState6))) {
 			endNoteOrBeginNextOne();
 		}
 	}
@@ -1760,7 +1760,7 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env5.isDead(&envState5)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env5.isDead(&envState5))) {
 			endNoteOrBeginNextOne();
 		}
 	}
@@ -1825,7 +1825,7 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
-		if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env6.isDead(&envState6)) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env6.isDead(&envState6))) {
 			endNoteOrBeginNextOne();
 		}
 	}
@@ -1887,7 +1887,7 @@ void Voice::nextBlock() {
 				env5Value += env5Inc;
 				env6Value += env6Inc;
 			}
-			if (currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env3.isDead(&envState3)  && currentTimbre->env4.isDead(&envState4) && currentTimbre->env5.isDead(&envState5) && currentTimbre->env6.isDead(&envState6)) {
+			if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env3.isDead(&envState3)  && currentTimbre->env4.isDead(&envState4) && currentTimbre->env5.isDead(&envState5) && currentTimbre->env6.isDead(&envState6))) {
 				endNoteOrBeginNextOne();
 			}
 		 }
