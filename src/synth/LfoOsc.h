@@ -42,7 +42,7 @@ public:
 
 	void valueChanged(int encoder) {
 	    if (encoder == 3) {
-            this->rampInv = 1 / lfo->keybRamp;
+            this->rampInv = 1 / (lfo->keybRamp + .00000001);
             this->ramp = lfo->keybRamp;
 	    }
 	}

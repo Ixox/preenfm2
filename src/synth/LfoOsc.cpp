@@ -27,6 +27,7 @@ void LfoOsc::init(struct LfoParams *lfoParams, Matrix *matrix, SourceEnum source
     Lfo::init(matrix, source, dest);
     this->type = LFO_SAW;
     this->ramp = 0;
+    this->rampInv = 10000000 ;
     this->currentRamp = 0;
     this->lfo = lfoParams;
     this->currentRamp =  0;
@@ -56,7 +57,7 @@ void LfoOsc::midiClock(int songPosition, bool computeStep) {
 //        }
 //    }
 
-	ticks &= 0x7fff;
+	ticks &= 0x7ff;
 
     switch ((int)(lfo->freq * 10.0f + .05f)) {
     case LFO_MIDICLOCK_MC_DIV_16:
