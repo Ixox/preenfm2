@@ -227,12 +227,24 @@ void Synth::buildNewSampleBlock() {
 	}
 
 	// render all voices in their timbre sample block...
-	for (int k = 0; k < MAX_NUMBER_OF_VOICES; ) {
-		this->voices[k++].nextBlock();
-		this->voices[k++].nextBlock();
-		this->voices[k++].nextBlock();
-		this->voices[k++].nextBlock();
-	}
+	// 16 voices
+	int k=0;
+	this->voices[k++].nextBlock();
+	this->voices[k++].nextBlock();
+	this->voices[k++].nextBlock();
+	this->voices[k++].nextBlock();
+	this->voices[k++].nextBlock();
+	this->voices[k++].nextBlock();
+	this->voices[k++].nextBlock();
+	this->voices[k++].nextBlock();
+	this->voices[k++].nextBlock();
+	this->voices[k++].nextBlock();
+	this->voices[k++].nextBlock();
+	this->voices[k++].nextBlock();
+	this->voices[k++].nextBlock();
+	this->voices[k++].nextBlock();
+	this->voices[k++].nextBlock();
+	this->voices[k++].nextBlock();
 
 
 	// Add timbre per timbre because gate and eventual other effect are per timbre
@@ -245,17 +257,79 @@ void Synth::buildNewSampleBlock() {
 	float *sampleFromTimbre3 = timbres[2].getSampleBlock();
 	float *sampleFromTimbre4 = timbres[3].getSampleBlock();
 	float *cb = &samples[writeCursor];
-	float *cbMax = &cb[64];
-	while (cb < cbMax) {
-		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-		*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
-	}
+	// 64 adress to copy
+	// 8
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	// 8
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	// 8
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	// 8
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	// 8
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	// 8
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	// 8
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	// 8
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
+	*cb++ = (*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) * nvi + toAdd;
 
     if (unlikely(writeCursor == 192)) {
         writeCursor = 0;
