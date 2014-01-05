@@ -91,6 +91,7 @@ public:
   void print(char c);
   void print(const char str[]);
   void print(int n);
+  void print(unsigned int n);
   void print(float f);
   void realTimeAction(LCDAction *action, void (*callback)());
 

@@ -313,6 +313,30 @@ void LiquidCrystal::print(int n) {
 	}
 }
 
+void LiquidCrystal::print(unsigned int n) {
+	unsigned char buf[12];
+	unsigned long i = 0;
+
+	if (n == 0) {
+	    print('0');
+	    return;
+	}
+
+	if (n < 0) {
+	    print('-');
+	    n = -n;
+	}
+
+	while (n > 0) {
+	    buf[i++] = n % 10;
+	    n /= 10;
+	}
+
+	for (; i > 0; i--) {
+	    print((char)('0' + buf[i - 1]));
+	}
+}
+
 void LiquidCrystal::print(float f) {
     if (f < 0.0) {
         print((char)2);
