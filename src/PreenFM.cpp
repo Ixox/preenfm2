@@ -52,8 +52,8 @@ UsbKey             usbKey ;
 Hexter             hexter;
 
 
-struct sampleForSPI samples;
-int spiState ;
+struct sampleForSPI samples  __attribute__ ((section(".ccmnoload")));
+int spiState  __attribute__ ((section(".ccmnoload")));
 
 void fillSoundBuffer() {
     int cpt = 0;
@@ -272,14 +272,17 @@ void loop(void) {
 	}
 	*/
 
+
+	// Comment following line for debug....
+	lcd.setRealTimeAction(false);
+
+	// newByte can display visual info
     while (usartBufferIn.getCount() > 0) {
         fillSoundBuffer();
 		midiDecoder.newByte(usartBufferIn.remove());
 	}
 
-	// Comment following line for debug....
-	lcd.setRealTimeAction(false);
-    if ((newMicros - encoderMicros) > 80) {
+	if ((newMicros - encoderMicros) > 80) {
         fillSoundBuffer();
         encoders.checkStatus(synthState.fullState.midiConfigValue[MIDICONFIG_ENCODER]);
         encoderMicros = newMicros;
@@ -297,7 +300,7 @@ void loop(void) {
 
     lcd.setRealTimeAction(true);
     while (lcd.hasActions()) {
-        if (usartBufferIn.getCount() > 50) {
+        if (usartBufferIn.getCount() > 20) {
             while (usartBufferIn.getCount() > 0) {
                 fillSoundBuffer();
                 midiDecoder.newByte(usartBufferIn.remove());
