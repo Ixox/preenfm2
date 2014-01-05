@@ -868,12 +868,18 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 	//	voice->lfo_wave     = limit(edit_buffer[142], 0, 5);
 	float delay = (float)limit(patch[138], 0, 99)/ 15.0f;
 	params->lfoOsc1.freq = dx7_voice_lfo_frequency[limit(patch[137], 0, 99)];
+	if (params->lfoOsc1.freq > 24.0) {
+		params->lfoOsc1.freq = 24.0;
+	}
 	params->lfoOsc1.keybRamp = delay;
 	params->lfoOsc1.shape = LFO_SIN;
 	params->lfoOsc1.bias = 0;
 
 	// lfo2 for mix
 	params->lfoOsc2.freq = dx7_voice_lfo_frequency[limit(patch[137], 0, 99)];
+	if (params->lfoOsc2.freq > 24.0) {
+		params->lfoOsc2.freq = 24.0;
+	}
 	params->lfoOsc2.keybRamp = delay;
 	params->lfoOsc2.shape = LFO_SIN;
 	// To avoid mix to overload...

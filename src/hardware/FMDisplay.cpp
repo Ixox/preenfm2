@@ -230,12 +230,22 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
     switch (param->displayType) {
 	case DISPLAY_TYPE_STRINGS :
 	    lcd->setCursor(encoder*5, 3);
+	    // TO REMOVE
+	    if (unlikely(newValue > param->maxValue)) {
+			lcd->print("#ER#");
+			break;
+	    }
 		lcd->print(param->valueName[newValue]);
 		break;
     case DISPLAY_TYPE_FLOAT_LFO_FREQUENCY:
     	if (newFloatValue*10.0f > 240.0) {
-    	    lcd->setCursor(encoder*5, 3);
-    		lcd->print(lfoOscMidiClock[(int)(newFloatValue*10.0f-241)]);
+    	    int stringIndex = newFloatValue * 10;
+    		lcd->setCursor(encoder*5, 3);
+    		if (likely(stringIndex <= LFO_MIDICLOCK_MC_TIME_8)) {
+    			lcd->print(lfoOscMidiClock[stringIndex-241]);
+    		} else {
+    			lcd->print("#ER#");
+    		}
     		break;
     	}
         lcd->setCursor(encoder*5 - 1, 3);
@@ -243,7 +253,11 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
         break;
     case DISPLAY_TYPE_STEP_SEQ_BPM:
         lcd->setCursor(encoder*5, 3);
-    	if (newValue > 240) {
+    	if (unlikely(newValue > LFO_SEQ_MIDICLOCK_TIME_4)) {
+			lcd->print("#ER#");
+			break;
+    	}
+        if (newValue > 240) {
     		lcd->print(lfoSeqMidiClock[newValue-241]);
     		break;
     	}
@@ -857,7 +871,7 @@ void FMDisplay::menuBack(enum MenuState oldMenuState, FullState* fullState) {
 
 
 void FMDisplay::midiClock(bool show) {
-	if (this->synthState->fullState.synthMode  == SYNTH_MODE_EDIT) {
+	if (this->synthState->fullState.synthMode  == SYNTH_MODE_EDIT && algoCounter == 0) {
 		lcd->setCursor(19,1);
 		if (show) {
 			lcd->print((char)7);
@@ -876,11 +890,14 @@ void FMDisplay::midiClock(bool show) {
 
 void FMDisplay::noteOn(int timbre, bool show) {
 	if (this->synthState->fullState.synthMode  == SYNTH_MODE_EDIT && algoCounter == 0) {
-        lcd->setCursor(16+timbre, 0);
 		if (show) {
+		    if (noteOnCounter[timbre] == 0) {
+		    	lcd->setCursor(16+timbre, 0);
+		    	lcd->print((char)('0'+ timbre+1));
+		    }
 		    noteOnCounter[timbre] = 2;
-	        lcd->print((char)('0'+ timbre+1));
 		} else {
+	        lcd->setCursor(16+timbre, 0);
 			lcd->print(' ');
 		}
 	}
