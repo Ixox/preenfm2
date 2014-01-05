@@ -18,7 +18,8 @@
 #include "PreenFM.h"
 #include "usb_hcd_int.h"
 #include "usb_dcd_int.h"
-
+#include "LiquidCrystal.h"
+extern LiquidCrystal lcd;
 
 RingBuffer<uint8_t, 200> usartBufferIn  __attribute__ ((section(".ccmnoload")));
 RingBuffer<uint8_t, 100> usartBufferOut  __attribute__ ((section(".ccmnoload")));
@@ -33,7 +34,7 @@ extern "C" {
 #endif
 
 
-void nmi_handler(void) {
+void blink(void) {
 	while (1) {
 		strobePin(2, 0x150000);
 		strobePin(8, 0x60000);
@@ -41,13 +42,100 @@ void nmi_handler(void) {
 	return;
 }
 
-void hardfault_handler(void) {
-	while (1) {
-		strobePin(2, 0x150000);
-		strobePin(8, 0x60000);
-	}
-	return;
+void NMI_Handler() {
+	lcd.setRealTimeAction(true);
+	lcd.setCursor(0,0);
+	lcd.print("NMI_Handler");
+	blink();
 }
+
+void printHex32bits(unsigned int dec) {
+	char hexChars[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+	for (int pos = 7; pos >= 0; pos --) {
+		int value = (dec >> (pos * 4)) & 0xF;
+		lcd.print(hexChars[value]);
+	}
+
+}
+
+
+void StackDebug(unsigned int * hardfault_args) {
+	lcd.setRealTimeAction(true);
+	lcd.clear();
+	lcd.setCursor(0,0);
+	lcd.print("HrdFlt  LR:");
+	printHex32bits(hardfault_args[5]);
+	lcd.setCursor(0,1);
+	printHex32bits(hardfault_args[6]);
+	lcd.print("   ");
+	printHex32bits(hardfault_args[7]);
+	lcd.setCursor(0,2);
+	printHex32bits(hardfault_args[0]);
+	lcd.print("   ");
+	printHex32bits(hardfault_args[1]);
+	lcd.setCursor(0,3);
+	printHex32bits(hardfault_args[2]);
+	lcd.print("   ");
+	printHex32bits(hardfault_args[3]);
+
+/*stacked_r0 = ((unsigned long) hardfault_args[0]);
+stacked_r1 = ((unsigned long) hardfault_args[1]);
+stacked_r2 = ((unsigned long) hardfault_args[2]);
+stacked_r3 = ((unsigned long) hardfault_args[3]);
+
+stacked_r12 = ((unsigned long) hardfault_args[4]);
+stacked_lr = ((unsigned long) hardfault_args[5]);
+stacked_pc = ((unsigned long) hardfault_args[6]);
+stacked_psr = ((unsigned long) hardfault_args[7]);
+*/
+
+	blink();
+}
+
+
+void HardFault_Handler() {
+
+	// hard fault handler wrapper in assembly
+	// it extract the location of stack frame and pass it
+	// to handler in C as pointer.
+	int address;
+	void *jmp = (void*)StackDebug;
+
+	asm volatile (
+			"TST LR, #4\n\t"
+			"ITE EQ\n\t"
+			"MRSEQ R0, MSP\n\t"
+			"MRSNE R0, PSP\n\t"
+			"BX %0\n\t"
+			:
+			: "r" (jmp)
+			:
+	);
+}
+
+
+
+void MemManage_Handler() {
+	lcd.setRealTimeAction(true);
+	lcd.setCursor(0,0);
+	lcd.print("Mem Manage");
+	blink();
+}
+
+void BusFault_Handler() {
+	lcd.setRealTimeAction(true);
+	lcd.setCursor(0,0);
+	lcd.print("Bus Fault");
+	blink();
+}
+
+void UsageFault_Handler() {
+	lcd.setRealTimeAction(true);
+	lcd.setCursor(0,0);
+	lcd.print("Usage Fault");
+	blink();
+}
+
 
 void USART3_IRQHandler(void) {
 	uint8_t data;
