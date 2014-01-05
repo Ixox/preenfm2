@@ -20,13 +20,6 @@
 
 #include "Lfo.h"
 
-enum {
-	LFO_SEQ_MIDICLOCK_DIV_4 = 241,
-	LFO_SEQ_MIDICLOCK_DIV_2,
-	LFO_SEQ_MIDICLOCK,
-	LFO_SEQ_MIDICLOCK_TIME_2,
-	LFO_SEQ_MIDICLOCK_TIME_4,
-};
 
 
 class LfoStepSeq: public Lfo {
