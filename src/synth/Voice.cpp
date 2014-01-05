@@ -379,10 +379,10 @@ void Voice::nextBlock() {
 			float freq4 = currentTimbre->osc4.getNextSample(&oscState4) * env4Value * oscState4.frequency;
 
 			oscState1.frequency =  freq2 * currentTimbre->modulationIndex1 + freq3 * currentTimbre->modulationIndex2 + freq4 * currentTimbre->modulationIndex3 + oscState1.mainFrequencyPlusMatrix;
-			float currentSample = currentTimbre->osc1.getNextSample(&oscState1) * env1Value * this->velocity;
+			float currentSample = currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 *  this->velocity;
 
-			*sample++  += currentSample * currentTimbre->pan2Left;
-			*sample++  += currentSample * currentTimbre->pan2Right;
+			*sample++  += currentSample * currentTimbre->pan1Left;
+			*sample++  += currentSample * currentTimbre->pan1Right;
 
 			env1Value += env1Inc;
 			env2Value += env2Inc;
