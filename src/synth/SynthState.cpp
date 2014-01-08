@@ -40,11 +40,46 @@ struct ParameterRowDisplay engine1ParameterRow  = {
         { "Algo", "Velo", "Voic", "Glid" },
         {
                 {ALGO1, ALGO_END-1, ALGO_END, DISPLAY_TYPE_STRINGS, algoNames, nullNamesOrder, nullNamesOrder},
-                {0, 16, 17, DISPLAY_TYPE_INT, nullNames,nullNamesOrder, nullNamesOrder },
-                {0, 16, 17, DISPLAY_TYPE_VOICES, nullNames, nullNamesOrder, nullNamesOrder },
+                {9, 240, 232, DISPLAY_TYPE_INT, nullNames,nullNamesOrder, nullNamesOrder },
+                {0, 16, 17, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder },
                 {0, 10, 11, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
+
+
+const char* clockName[] = { "Off ", "Int ", "Ext " };
+const char* dirName[] = { "Up  ", "Down", "U&D ", "Rand" };
+
+
+struct ParameterRowDisplay engineArp1ParameterRow  = {
+        "Arpeggiator" ,
+        { "Clk ", "BPM ", "Dire" , "Octv"},
+        {
+                {0, 2, 3, DISPLAY_TYPE_STRINGS, clockName, nullNamesOrder, nullNamesOrder },
+                {10, 240, 231, DISPLAY_TYPE_INT, nullNames,nullNamesOrder, nullNamesOrder },
+                {0, 3, 4, DISPLAY_TYPE_STRINGS, dirName, nullNamesOrder, nullNamesOrder },
+                {1, 3, 3, DISPLAY_TYPE_INT, nullNames,nullNamesOrder, nullNamesOrder }
+        }
+};
+
+//   192, 144, 96, 72, 64, 48, 36, 32, 24, 16, 12, 8, 6, 4, 3, 2, 1
+
+const char* divNames[] = { "2/1 ", "3/2 ", "1/1 ", "3/4 ", "2/3 ", "1/2 ", "3/8 ", "1/3 ", "1/4 ", "1/6 ", "1/8 ",
+		"1/12", "1/16", "1/24", "1/32", "1/48", "1/96"};
+const char* activeName[] = { "Off ", "On  " };
+
+struct ParameterRowDisplay engineArp2ParameterRow  = {
+        "Arpeggiator 2" ,
+        { "Ptrn", "Divi", "Dura", "Latc" },
+        {
+                {1, 22, 22, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder},
+                {0, 16, 17, DISPLAY_TYPE_STRINGS, divNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 17, DISPLAY_TYPE_STRINGS, divNames, nullNamesOrder, nullNamesOrder },
+                {0, 1, 2, DISPLAY_TYPE_STRINGS, activeName, nullNamesOrder, nullNamesOrder },
+        }
+};
+
+
 
 struct ParameterRowDisplay engineIM1ParameterRow = {
         "Modulation" ,
@@ -223,6 +258,8 @@ struct ParameterRowDisplay lfoStepParameterRow = {
 struct AllParameterRowsDisplay allParameterRows = {
         {
                 &engine1ParameterRow,
+                &engineArp1ParameterRow,
+                &engineArp2ParameterRow,
                 &engineIM1ParameterRow,
                 &engineIM2ParameterRow,
                 &engineMix1ParameterRow,

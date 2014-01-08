@@ -58,10 +58,8 @@ void Storage::saveDefaultCombo() {
     // delete to be sure the size is OK...
     remove(DEFAULT_COMBO);
     for (int timbre = 0; timbre < 4; timbre++)  {
-        for (int k=0; k<PFM_PATCH_SIZE; k++) {
-            ((uint8_t*)&reachableParam)[k] = this->timbre[timbre][k];
-        }
-        save(DEFAULT_COMBO, ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableParam, PFM_PATCH_SIZE);
+    	convertParamsToMemory(this->timbre[timbre], (uint8_t*)&reachableParam);
+    	save(DEFAULT_COMBO, ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableParam, PFM_PATCH_SIZE);
     }
 }
 
@@ -76,9 +74,7 @@ bool Storage::loadDefaultCombo() {
         int result = load(DEFAULT_COMBO,  ALIGNED_PATCH_SIZE * timbre ,  (void*)&reachableParam, PFM_PATCH_SIZE);
 
         if (result == 0) {
-            for (int k=0; k<PFM_PATCH_SIZE; k++) {
-               this->timbre[timbre][k] = ((uint8_t*)&reachableParam)[k];
-            }
+        	convertMemoryToParams((uint8_t*)&reachableParam, this->timbre[timbre]);
         }
     }
     return true;
@@ -92,9 +88,7 @@ void Storage::createPatchBank(const char* name) {
 	if (newBank == 0) {
 		return;
 	}
-    for (int k=0; k<PFM_PATCH_SIZE; k++) {
-        ((uint8_t*)&reachableParam)[k] = ((uint8_t*)&preenMainPreset)[k];
-    }
+	convertParamsToMemory((uint8_t*)&preenMainPreset, (uint8_t*)&reachableParam);
     // back up name
     copy(reachableParam.presetName, "Preset 0\0\0\0\0\0", 12);
 	for (int k=0; k<128; k++) {
@@ -113,9 +107,9 @@ void Storage::createComboBank(const char* name) {
 	if (newBank == 0) {
 		return;
 	}
-    for (int k=0; k<PFM_PATCH_SIZE; k++) {
-        ((uint8_t*)&reachableParam)[k] = ((uint8_t*)&preenMainPreset)[k];
-    }
+
+	convertParamsToMemory((uint8_t*)&preenMainPreset, (uint8_t*)&reachableParam);
+
 	char comboName[12];
     copy(comboName,  "Combo \0\0\0\0\0\0", 12);
     copy(reachableParam.presetName, "Preset 0\0\0\0\0\0", 12);
@@ -186,15 +180,13 @@ void Storage::loadPreenFMPatch(const struct BankFile* bank, int patchNumber, str
     int result = load(fullBankName, patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableParam, PFM_PATCH_SIZE);
 
     if (result == 0) {
-        for (int k=0; k<PFM_PATCH_SIZE; k++) {
-           ((uint8_t*)params)[k] = ((uint8_t*)&reachableParam)[k];
-        }
+    	convertMemoryToParams((uint8_t*)&reachableParam, (uint8_t*)params);
     }
 }
 
 const char* Storage::loadPreenFMPatchName(const struct BankFile* bank, int patchNumber) {
 	const char* fullBankName = getPreenFMFullName(bank->name);
-    int result = load(fullBankName, ALIGNED_PATCH_SIZE * patchNumber + PFM_PATCH_SIZE - 16,  (void*)presetName, 12);
+    int result = load(fullBankName, ALIGNED_PATCH_SIZE * patchNumber + PFM_PATCH_SIZE - 16 - 32,  (void*)presetName, 12);
     presetName[12] = 0;
     return presetName;
 }
@@ -206,9 +198,7 @@ void Storage::savePreenFMPatch(const struct BankFile* bank, int patchNumber, str
     for (int k=0; k<ALIGNED_PATCH_ZERO;k++) {
         zeros[k] = 0;
     }
-    for (int k=0; k<PFM_PATCH_SIZE; k++) {
-        ((uint8_t*)&reachableParam)[k] = ((uint8_t*)params)[k];
-    }
+	convertParamsToMemory((uint8_t*)&params, (uint8_t*)&reachableParam);
 
     // Save patch
     save(fullBankName, patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableParam, PFM_PATCH_SIZE);
@@ -223,9 +213,7 @@ void Storage::loadPreenFMCombo(const struct BankFile* combo, int comboNumber) {
         int result = load(fullBankName,  (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre ,  (void*)&reachableParam, PFM_PATCH_SIZE);
 
         if (result == 0) {
-            for (int k=0; k<PFM_PATCH_SIZE; k++) {
-               this->timbre[timbre][k] = ((uint8_t*)&reachableParam)[k];
-            }
+        	convertMemoryToParams((uint8_t*)&reachableParam, this->timbre[timbre]);
         }
     }
 }
@@ -241,9 +229,7 @@ void Storage::savePreenFMCombo(const struct BankFile* combo, int comboNumber, ch
     save(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber ,  (void*)comboName, 12);
 
     for (int timbre = 0; timbre < 4; timbre++)  {
-        for (int k=0; k<PFM_PATCH_SIZE; k++) {
-            ((uint8_t*)&reachableParam)[k] = this->timbre[timbre][k];
-        }
+    	convertParamsToMemory(this->timbre[timbre], (uint8_t*)&reachableParam);
         save(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableParam, PFM_PATCH_SIZE);
     }
 }
@@ -331,3 +317,43 @@ bool Storage::comboNameExist(const char* comboName) {
 	return false;
 }
 
+
+void Storage::convertParamsToMemory(uint8_t* params, uint8_t* memory) {
+	// First engine line
+	for (int k = 0; k < 16; k++) {
+        memory[k] = params[k];
+    }
+	// Skip Arps
+    for (int k = 16; k < PFM_PATCH_SIZE - 32; k++) {
+        memory[k] = params[k + 32];
+    }
+	// Copy arp at the end of memory
+    for (int k = PFM_PATCH_SIZE - 32; k<PFM_PATCH_SIZE; k++) {
+        memory[k] = params[k - (PFM_PATCH_SIZE - 32) + 16];
+    }
+}
+
+
+void Storage::convertMemoryToParams(uint8_t* memory, uint8_t* params) {
+	// First engine line
+	for (int k = 0; k < 16; k++) {
+		params[k] = memory[k];
+    }
+	// Skip Arps
+    for (int k = 16; k < 48; k++) {
+    	params[k] = memory[(k - 16) + PFM_PATCH_SIZE - 32];
+    }
+	// Copy arp at the end of memory
+    for (int k = 48; k<PFM_PATCH_SIZE; k++) {
+    	params[k] = memory[ k - 32];
+    }
+
+    OneSynthParams *toCheck = (OneSynthParams *) params;
+    if (toCheck->engineApr1.BPM < 10) {
+    	toCheck->engineApr1.BPM = 90;
+    	toCheck->engineApr1.octave = 1;
+    	toCheck->engineApr2.pattern = 1;
+    	toCheck->engineApr2.division = 12;
+    	toCheck->engineApr2.duration = 14;
+    }
+}

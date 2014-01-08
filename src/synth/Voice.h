@@ -18,9 +18,13 @@
 #ifndef VOICE_H_
 #define VOICE_H_
 
-#include "SynthState.h"
-#include "Timbre.h"
 #include "Common.h"
+#include "Env.h"
+#include "Osc.h"
+
+
+class Timbre;
+
 
 class Voice
 {

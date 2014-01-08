@@ -495,6 +495,9 @@ void UsbKey::sortBankFile(struct BankFile* bankFiles, int numberOfFiles) {
 	}
 }
 
+
+
+
 #ifdef BOOTLOADER
 
 unsigned int UsbKey::diskioGetSectorNumber() {

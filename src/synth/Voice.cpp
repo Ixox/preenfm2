@@ -16,11 +16,11 @@
  */
 
 #include "Voice.h"
+#include "Timbre.h"
 
-#include "LiquidCrystal.h"
-extern LiquidCrystal lcd;
 
 float Voice::glidePhaseInc[10];
+
 
 Voice::Voice(void)
 {

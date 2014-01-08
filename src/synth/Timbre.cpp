@@ -17,9 +17,26 @@
 
 
 #include "Timbre.h"
+#include "Voice.h"
 
-#include "LiquidCrystal.h"
-extern LiquidCrystal lcd;
+enum ArpeggiatorDirection {
+  ARPEGGIO_DIRECTION_UP = 0,
+  ARPEGGIO_DIRECTION_DOWN,
+  ARPEGGIO_DIRECTION_UP_DOWN,
+  ARPEGGIO_DIRECTION_RANDOM,
+};
+uint16_t lut_res_arpeggiator_patterns[]  = {
+   21845,  62965,  46517,  54741,  43861,  22869,  38293,   2313,
+   37449,  21065,  18761,  54553,  27499,  23387,  30583,  28087,
+   22359,  28527,  30431,  43281,  28609,  53505,
+};
+
+const uint8_t midi_clock_tick_per_step[17]  = {
+  192, 144, 96, 72, 64, 48, 36, 32, 24, 16, 12, 8, 6, 4, 3, 2, 1
+};
+
+extern float noise[32];
+
 
 float panTable[] = {
 		0.0000, 0.0007, 0.0020, 0.0036, 0.0055, 0.0077, 0.0101, 0.0128, 0.0156, 0.0186,
@@ -50,6 +67,10 @@ float panTable[] = {
 		1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000
 } ;
 
+// Static to all 4 timbres
+unsigned int voiceIndex  __attribute__ ((section(".ccmnoload")));
+
+
 Timbre::Timbre() {
     osc[0] = &osc1;
     osc[1] = &osc2;
@@ -77,12 +98,21 @@ Timbre::Timbre() {
     this->recomputeNext = true;
     this->currentGate = 0;
     this->sbMax = &this->sampleBlock[64];
+    this->holdPedal = false;
+
+    // arpegiator
+    arpegiatorStep = 0.0;
+    idle_ticks_ = 96;
+    note_stack.Init();
+    event_scheduler.Init();
+    // Arpeggiator start
+    Start();
 }
 
 Timbre::~Timbre() {
 }
 
-void Timbre::init() {
+void Timbre::init(int timbreNumber) {
     struct EnvelopeParamsA* envParamsA[] = { &params.env1a, &params.env2a, &params.env3a, &params.env4a, &params.env5a, &params.env6a};
     struct EnvelopeParamsB* envParamsB[] = { &params.env1b, &params.env2b, &params.env3b, &params.env4b, &params.env5b, &params.env6b};
     struct OscillatorParams* oscParams[] = { &params.osc1, &params.osc2, &params.osc3, &params.osc4, &params.osc5, &params.osc6};
@@ -109,9 +139,162 @@ void Timbre::init() {
     for (int k = 0; k< NUMBER_OF_LFO_STEP; k++) {
         lfoStepSeq[k].init(stepseqparams[k], stepseqs[k], &matrix, (SourceEnum)(MATRIX_SOURCE_LFOSEQ1+k), (DestinationEnum)(LFOSEQ1_GATE+k));
     }
+    this->timbreNumber = timbreNumber;
 }
 
+void Timbre::initVoicePointer(int n, Voice* voice) {
+	voices[n] = voice;
+}
+
+void Timbre::noteOn(char note, char velocity) {
+	if (params.engineApr1.clock) {
+
+		//	  if (clk_mode_ == CLOCK_MODE_INTERNAL) {
+		if (idle_ticks_ >= 96) {
+			Start();
+			//	      app.SendNow(0xfa);
+		}
+		idle_ticks_ = 0;
+		//	  }
+
+		note_stack.NoteOn(note, velocity);
+	} else {
+		realNoteOn(note, velocity);
+	}
+}
+
+void Timbre::noteOff(char note) {
+	if (params.engineApr1.clock) {
+		note_stack.NoteOff(note);
+	} else {
+		realNoteOff(note);
+	}
+}
+
+
+void Timbre::realNoteOn(char note, char velocity) {
+	if (params.engine1.numberOfVoice == 0) {
+		return;
+	}
+
+	int zeroVelo = (16 - params.engine1.velocity) * 8;
+	int newVelocity = zeroVelo + velocity * (128 - zeroVelo) / 128;
+
+	unsigned int indexMin = (unsigned int)2147483647;
+	int voiceToUse = -1;
+
+
+	for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+		// voice number k of timbre
+		int n = voiceNumber[k];
+
+		// same note.... ?
+		if (voices[n]->getNote() == note) {
+			voices[n]->noteOnWithoutPop(note, newVelocity, voiceIndex++);
+			return;
+		}
+
+		// unlikely because if it true, CPU is not full
+		if (unlikely(!voices[n]->isPlaying())) {
+			voices[n]->noteOn(timbreNumber, note, newVelocity, voiceIndex++);
+			return;
+		}
+
+		if (voices[n]->isReleased()) {
+			int indexVoice = voices[n]->getIndex();
+			if (indexVoice < indexMin) {
+				indexMin = indexVoice;
+				voiceToUse = n;
+				// NO break... We must take the elder one
+			}
+		}
+	}
+
+	if (voiceToUse == -1) {
+		for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+			// voice number k of timbre
+			int n = voiceNumber[k];
+			int indexVoice = voices[n]->getIndex();
+			if (indexVoice < indexMin && !voices[n]->isNewNotePending()) {
+				indexMin = indexVoice;
+				voiceToUse = n;
+				// NO break... We must take the elder one
+			}
+		}
+	}
+	// All voices in newnotepending state ?
+	if (voiceToUse != -1) {
+		voices[voiceToUse]->noteOnWithoutPop(note, newVelocity, voiceIndex++);
+	}
+}
+
+
+void Timbre::realNoteOff(char note) {
+  for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+        // voice number k of timbre
+        int n = voiceNumber[k];
+
+        if (likely(voices[n]->getNextGlidingNote() == 0)) {
+            if (voices[n]->getNote() == note) {
+            	if (unlikely(holdPedal)) {
+            		voices[n]->setHoldedByPedal(true);
+            		return;
+            	} else {
+                	voices[n]->noteOff();
+                    return;
+            	}
+
+            }
+        } else {
+            // if gliding and releasing first note
+        	if (voices[n]->getNote() == note) {
+				voices[n]->glideFirstNoteOff();
+                return;
+            }
+            // if gliding and releasing next note
+            if (voices[n]->getNextGlidingNote() == note) {
+				voices[n]->glideToNote(voices[n]->getNote());
+				voices[n]->glideFirstNoteOff();
+                return;
+            }
+        }
+    }
+
+}
+
+
+void Timbre::setHoldPedal(int value) {
+	if (value <64) {
+		holdPedal = false;
+	    int numberOfVoices = params.engine1.numberOfVoice;
+	    for (int k = 0; k < numberOfVoices; k++) {
+	        // voice number k of timbre
+	        int n = voiceNumber[k];
+	        if (voices[n]->isHoldedByPedal()) {
+	        	voices[n]->noteOff();
+	        }
+	    }
+	} else {
+		holdPedal = true;
+	}
+}
+
+
+float bpm = 108.0f;
+float ticksPerSecond = bpm * 24.0f / 60.0f;
+const float calledPerSecond = PREENFM_FREQUENCY / 32.0f;
+
+float ticksEveryNCalls = calledPerSecond / ticksPerSecond;
+int ticksEveyNCallsInteger = (int)ticksEveryNCalls;
+
+
 void Timbre::prepareForNextBlock() {
+	arpegiatorStep+=1.0f;
+	if ((arpegiatorStep) > ticksEveryNCalls) {
+		arpegiatorStep -= ticksEveyNCallsInteger;
+		ticks();
+	}
+
     this->lfo[0]->nextValueInMatrix();
     this->lfo[1]->nextValueInMatrix();
     this->lfo[2]->nextValueInMatrix();
@@ -138,6 +321,7 @@ void Timbre::prepareForNextBlock() {
 	}
 
 }
+
 
 #define GATE_INC 0.02f
 
@@ -197,3 +381,166 @@ void Timbre::setNewValue(int index, struct ParameterDisplay* param, float newVal
     }
     ((float*)&params)[index] = newValue;
 }
+
+
+// Code bellowed have been adapted by Xavier Hosxe for PreenFM2
+// It come from Muteable Instrument midiPAL
+
+/////////////////////////////////////////////////////////////////////////////////
+// Copyright 2011 Olivier Gillet.
+//
+// Author: Olivier Gillet (ol.gillet@gmail.com)
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// -----------------------------------------------------------------------------
+//
+// Arpeggiator app.
+
+
+
+
+void Timbre::SendLater(uint8_t note, uint8_t velocity, uint8_t when, uint8_t tag) {
+	event_scheduler.Schedule(note, velocity, when, tag);
+}
+
+
+void Timbre::SendScheduledNotes() {
+  uint8_t current = event_scheduler.root();
+  while (current) {
+    const SchedulerEntry& entry = event_scheduler.entry(current);
+    if (entry.when) {
+      break;
+    }
+    if (entry.note != kZombieSlot) {
+      if (entry.velocity == 0) {
+    	  realNoteOff(entry.note);
+      } else {
+    	  realNoteOn(entry.note, entry.velocity);
+      }
+    }
+    current = entry.next;
+  }
+  event_scheduler.Tick();
+}
+
+
+void Timbre::FlushQueue() {
+  while (event_scheduler.size()) {
+    SendScheduledNotes();
+  }
+}
+
+
+
+void Timbre::ticks() {
+	++tick_;
+
+	if (note_stack.size()) {
+		idle_ticks_ = 0;
+	}
+	++idle_ticks_;
+	if (idle_ticks_ >= 96) {
+		idle_ticks_ = 96;
+	}
+
+	SendScheduledNotes();
+
+	if (tick_ >= midi_clock_tick_per_step[(int)params.engineApr2.division]) {
+		tick_ = 0;
+		uint16_t pattern = lut_res_arpeggiator_patterns[(int)params.engineApr2.pattern - 1];
+		uint8_t has_arpeggiator_note = (bitmask_ & pattern) ? 255 : 0;
+		if (note_stack.size() && has_arpeggiator_note) {
+			uint8_t note = note_stack.sorted_note(current_step_).note;
+			uint8_t velocity = note_stack.sorted_note(current_step_).velocity;
+			note += 12 * current_octave_;
+			while (note > 127) {
+				note -= 12;
+			}
+			// If there are some Note Off messages for the note about to be triggeered
+			// remove them from the queue and process them now.
+			if (event_scheduler.Remove(note, 0)) {
+				realNoteOff(note);
+			}
+			// Send a note on and schedule a note off later.
+			realNoteOn(note, velocity);
+			event_scheduler.Schedule(note, 0, midi_clock_tick_per_step[(int)params.engineApr2.duration] - 1, 0);
+
+			StepArpeggio();
+		}
+		bitmask_ <<= 1;
+		if (!bitmask_) {
+			bitmask_ = 1;
+		}
+	}
+}
+
+
+
+void Timbre::StepArpeggio() {
+	uint8_t num_notes = note_stack.size();
+	if (params.engineApr1.direction == ARPEGGIO_DIRECTION_RANDOM) {
+		uint8_t random_byte = *(uint8_t*)noise;
+		current_octave_ = random_byte & 0xf;
+		current_step_ = (random_byte & 0xf0) >> 4;
+		while (current_octave_ >= params.engineApr1.octave) {
+			current_octave_ -= params.engineApr1.octave;
+		}
+		while (current_step_ >= num_notes) {
+			current_step_ -= num_notes;
+		}
+	} else {
+		current_step_ += current_direction_;
+		uint8_t change_octave = 0;
+		if (current_step_ >= num_notes) {
+			current_step_ = 0;
+			change_octave = 1;
+		} else if (current_step_ < 0) {
+			current_step_ = num_notes - 1;
+			change_octave = 1;
+		}
+		if (change_octave) {
+			current_octave_ += current_direction_;
+			if (current_octave_ >= params.engineApr1.octave || current_octave_ < 0) {
+				if (params.engineApr1.direction == ARPEGGIO_DIRECTION_UP_DOWN) {
+					current_direction_ = -current_direction_;
+					StartArpeggio();
+					if (num_notes > 1 || params.engineApr1.octave > 1) {
+						StepArpeggio();
+					}
+				} else {
+					StartArpeggio();
+				}
+			}
+		}
+	}
+}
+
+void Timbre::StartArpeggio() {
+  if (current_direction_ == 1) {
+    current_octave_ = 0;
+    current_step_ = 0;
+  } else {
+    current_step_ = note_stack.size() - 1;
+    current_octave_ = params.engineApr1.octave - 1;
+  }
+}
+
+void Timbre::Start() {
+	bitmask_ = 1;
+	tick_ = midi_clock_tick_per_step[(int)params.engineApr2.division] - 1;
+	current_direction_ = (params.engineApr1.direction == ARPEGGIO_DIRECTION_DOWN ? -1 : 1);
+	StartArpeggio();
+}
+
+
+

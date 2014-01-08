@@ -25,6 +25,11 @@
 
 #define BLOCK_SIZE 32
 
+#define MAX_NUMBER_OF_VOICES 16
+#define NUMBER_OF_TIMBRES 4
+#define NUMBER_OF_OPERATORS 6
+
+
 #ifndef OVERCLOCK
 #define PREENFM_FREQUENCY 39000.0f
 #else
@@ -63,6 +68,8 @@ struct AlgoInformation {
 enum {
     ROW_ENGINE_FIRST = 0,
     ROW_ENGINE = ROW_ENGINE_FIRST,
+    ROW_ARPEGGIATOR1 ,
+    ROW_ARPEGGIATOR2 ,
     ROW_MODULATION1 ,
     ROW_MODULATION2 ,
     ROW_OSC_MIX1,
@@ -171,6 +178,24 @@ struct Engine1Params {
     float glide;
 };
 
+//{ "Acti", "Clk ", "BPM ", "Dire" },
+//{ "Ptrn", "Divi", "Dura", "Latc" },
+
+struct EngineArp1 {
+    float clock;
+    float BPM;
+    float direction;
+    float octave;
+};
+
+struct EngineArp2 {
+    float pattern;
+    float division;
+    float duration;
+    float latche;
+};
+
+
 struct EngineIm1 {
     float modulationIndex1;
     float modulationIndex2;
@@ -270,6 +295,8 @@ struct StepSequencerSteps {
 
 struct OneSynthParams {
     struct Engine1Params engine1;
+    struct EngineArp1 engineApr1;
+    struct EngineArp2 engineApr2;
     struct EngineIm1 engineIm1;
     struct EngineIm2 engineIm2;
     struct EngineMix1 engineMix1;

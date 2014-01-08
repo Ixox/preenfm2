@@ -20,10 +20,10 @@
 #include "Menu.h"
 #include "stm32f4xx_rng.h"
 
+
 extern float noise[32];
 
 Synth::Synth(void) {
-	this->voiceIndex = 0;
 }
 
 Synth::~Synth(void) {
@@ -36,8 +36,10 @@ void Synth::init() {
             ((float*)&timbres[t].params)[k] = ((float*)&preenMainPreset)[k];
         }
         timbres[t].params.engine1.numberOfVoice = numberOfVoices[t];
-        timbres[t].init();
-        holdPedal[t] = false;
+        timbres[t].init(t);
+        for (int v=0; v<MAX_NUMBER_OF_VOICES; v++) {
+        	timbres[t].initVoicePointer(v, &voices[v]);
+        }
     }
 
     newTimbre(0);
@@ -50,9 +52,12 @@ void Synth::init() {
     refreshNumberOfOsc();
 }
 
-int noCpt = 0;
 
 void Synth::noteOn(int timbre, char note, char velocity) {
+	timbres[timbre].noteOn(note, velocity);
+}
+
+/*
 	int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
 
     if (numberOfVoices == 0) {
@@ -110,8 +115,12 @@ void Synth::noteOn(int timbre, char note, char velocity) {
     }
 }
 
-void Synth::noteOff(int timbre, char note) {
+*/
 
+void Synth::noteOff(int timbre, char note) {
+	timbres[timbre].noteOff(note);
+}
+/*
     int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
 
     for (int k = 0; k < numberOfVoices; k++) {
@@ -144,28 +153,17 @@ void Synth::noteOff(int timbre, char note) {
         }
     }
 }
+*/
 
 void Synth::setHoldPedal(int timbre, int value) {
-	if (value <64) {
-		this->holdPedal[timbre] = false;
-	    int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
-	    for (int k = 0; k < numberOfVoices; k++) {
-	        // voice number k of timbre
-	        int n = voiceTimbre[timbre][k];
-	        if (voices[n].isHoldedByPedal()) {
-	        	voices[n].noteOff();
-	        }
-	    }
-	} else {
-		this->holdPedal[timbre] = true;
-	}
+	timbres[timbre].setHoldPedal(value);
 }
 
 void Synth::allNoteOff(int timbre) {
     int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
     for (int k = 0; k < numberOfVoices; k++) {
         // voice number k of timbre
-        int n = voiceTimbre[timbre][k];
+        int n = timbres[timbre].voiceNumber[k];
         voices[n].noteOff();
     }
 }
@@ -174,7 +172,7 @@ void Synth::allSoundOff(int timbre) {
     int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
     for (int k = 0; k < numberOfVoices; k++) {
         // voice number k of timbre
-        int n = voiceTimbre[timbre][k];
+        int n = timbres[timbre].voiceNumber[k];
         voices[n].killNow();
     }
 }
@@ -218,11 +216,12 @@ void Synth::buildNewSampleBlock() {
 		noise[noiseIndex++] = value2 * ratioValue - 1.0f; // value between -1 and 1.
 	}
 
+
 	for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
 		timbres[t].prepareForNextBlock();
-		if (likely(voiceTimbre[t][0] != -1)) {
+		if (likely(timbres[t].voiceNumber[0] != -1)) {
 			// glide only happens on first voice of any
-			this->voices[voiceTimbre[t][0]].glide();
+			this->voices[timbres[t].voiceNumber[0]].glide();
 		}
 	}
 
@@ -343,7 +342,7 @@ void Synth::buildNewSampleBlock() {
 void Synth::beforeNewParamsLoad(int timbre) {
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
         for (int v=0; v<MAX_NUMBER_OF_VOICES; v++) {
-            voiceTimbre[t][v] = -1;
+        	timbres[t].voiceNumber[v] = -1;
         }
     }
     // Stop all voices
@@ -390,7 +389,7 @@ int Synth::getFreeVoice() {
         for (int t=0; t<NUMBER_OF_TIMBRES && !used; t++) {
             int interVoice = 0;
             for (int v=0; v<MAX_NUMBER_OF_VOICES && interVoice!=-1 && !used; v++) {
-                interVoice = voiceTimbre[t][v];
+                interVoice = timbres[t].voiceNumber[v];
                 if (interVoice == voice) {
                     used = true;
                 }
@@ -439,15 +438,15 @@ void Synth::newParamValue(int timbre, SynthParamType type, int currentRow, int e
             } else if (encoder == ENCODER_ENGINE_VOICE) {
                 if (newValue > oldValue) {
                     for (int v=(int)oldValue; v < (int)newValue; v++) {
-                        voiceTimbre[timbre][v] = getFreeVoice();
+                    	timbres[timbre].voiceNumber[v] = getFreeVoice();
                         this->numberOfVoices ++;
                     }
                     this->numberOfVoiceInverse =  131071.0f / this->numberOfVoices;
                     refreshNumberOfOsc();
                 } else {
                     for (int v=(int)newValue; v < (int)oldValue; v++) {
-                        voices[voiceTimbre[timbre][v]].killNow();
-                        voiceTimbre[timbre][v] = -1;
+                        voices[timbres[timbre].voiceNumber[v]].killNow();
+                        timbres[timbre].voiceNumber[v] = -1;
                         this->numberOfVoices --;
                     }
                     if (this->numberOfVoices > 0) {
@@ -582,10 +581,10 @@ void Synth::rebuidVoiceTimbre() {
         int nv = timbres[t].params.engine1.numberOfVoice;
 
         for (int v=0; v < nv; v++) {
-            voiceTimbre[t][v] = voices++;
+        	timbres[t].voiceNumber[v] = voices++;
         }
         for (int v=nv; v < NUMBER_OF_TIMBRES;  v++) {
-            voiceTimbre[t][v] = -1;
+        	timbres[t].voiceNumber[v] = -1;
         }
     }
 
@@ -601,14 +600,6 @@ void Synth::refreshNumberOfOsc() {
         int nv = timbres[t].params.engine1.numberOfVoice + .0001f;
 		this->numberOfOsc += algoInformation[(int)timbres[t].params.engine1.algo].osc * nv;
     }
-/*
-    int freeOsc = 48 - this->numberOfOsc;
-    lcd.setCursor(18,1);
-    if (freeOsc < 10) {
-        lcd.print(' ');
-    }
-    lcd.print(freeOsc);
-*/
 }
 
 
@@ -622,6 +613,8 @@ void Synth::setNewValueFromMidi(int timbre, int row, int encoder, float newValue
 }
 
 
+
+// ========================== DEBUG ========================
 void Synth::debugVoice() {
 
 	lcd.setRealTimeAction(true);
@@ -632,7 +625,7 @@ void Synth::debugVoice() {
 
     for (int k = 0; k < numberOfVoices && k < 4; k++) {
         // voice number k of timbre
-        int n = voiceTimbre[0][k];
+        int n = timbres[0].voiceNumber[k];
 
         lcd.setCursor(0, k);
         lcd.print((int)voices[n].getNote());

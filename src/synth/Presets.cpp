@@ -18,9 +18,17 @@
 #include "Common.h"
 #include "SynthState.h"
 
+//    	toCheck->engineApr1.BPM = 90;
+//    	toCheck->engineApr1.octave = 1;
+//    	toCheck->engineApr2.pattern = 1;
+//    	toCheck->engineApr2.division = 12;
+//    	toCheck->engineApr2.duration = 14;
+
 
 const struct OneSynthParams defaultPreset  = {
         { ALGO7, 7, 3, 4} ,
+        { 0.0, 90.0, 0.0, 1.0} ,
+        { 1.0, 12.0, 14.0, 0.0} ,
         { 0.0, 0.0, 0.0, 0.0} ,
         { 0.0, 0.0, 0.0, 0.0} ,
         { 1, 0, 1, 0} ,
@@ -76,6 +84,8 @@ const struct OneSynthParams preenMainPreset  = {
 		// patch name : 'Preen 2.0'
 		// Engine
 		{ ALGO9, 7, 2, 4} ,
+        { 0.0, 90.0, 0.0, 1.0} ,
+        { 1.0, 12.0, 14.0, 0.0} ,
 		{ 1.5,1.9,1.8,0.7} ,
 		{ 1, 0, 1, 0} ,
 		{ 1, 0, 1, 0} ,

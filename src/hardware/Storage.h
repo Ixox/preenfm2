@@ -98,6 +98,10 @@ private:
     void addNumber(char* name, int offset, int number);
     void copy(char* dest, const char* source, int length);
 
+    void convertParamsToMemory(uint8_t* params, uint8_t* memory);
+    void convertMemoryToParams(uint8_t* memory, uint8_t* params);
+
+
     char presetName[13];
     uint8_t* timbre[4];
 };

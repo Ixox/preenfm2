@@ -18,17 +18,15 @@
 #ifndef SYNTH_H_
 #define SYNTH_H_
 
+#include "Timbre.h"
 #include "Voice.h"
-#include "Matrix.h"
 #include "LfoOsc.h"
 #include "LfoEnv.h"
 #include "LfoStepSeq.h"
-#include "Env.h"
+
 #include "SynthParamListener.h"
 #include "SynthStateAware.h"
 
-#define MAX_NUMBER_OF_VOICES 16
-#define NUMBER_OF_TIMBRES 4
 
 #define UINT_MAX  4294967295
 
@@ -152,17 +150,11 @@ private:
     // Called by setSynthState
     void init();
 
-    unsigned int voiceIndex;
-    Voice voices[MAX_NUMBER_OF_VOICES];
     float numberOfVoices;
     float numberOfVoiceInverse;
     int numberOfOsc;
-
+    Voice voices[MAX_NUMBER_OF_VOICES];
     Timbre timbres[NUMBER_OF_TIMBRES];
-    bool holdPedal[NUMBER_OF_TIMBRES];
-    // voiceTimbre
-    char voiceTimbre[NUMBER_OF_TIMBRES][MAX_NUMBER_OF_VOICES];
-
 
     // 4 buffer or 32 stero int = 64*4 = 256
     // sample Buffer

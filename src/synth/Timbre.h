@@ -21,6 +21,7 @@
 #define TIMBRE_H_
 
 #include "Common.h"
+
 #include "Osc.h"
 #include "Env.h"
 #include "Lfo.h"
@@ -30,10 +31,12 @@
 #include "LfoStepSeq.h"
 #include "Matrix.h"
 #include "core_cmInstr.h"
+#include "note_stack.h"
+#include "event_scheduler.h"
 
-#define NUMBER_OF_OPERATORS 6
 
 extern float panTable[];
+class Voice;
 
 
 class Timbre {
@@ -42,12 +45,22 @@ class Timbre {
 public:
     Timbre();
     virtual ~Timbre();
-    void init();
-
+    void init(int timbreNumber);
+    void initVoicePointer(int n, Voice* voice);
     void prepareForNextBlock();
     void fxAfterBlock();
     void afterNewParamsLoad();
     void setNewValue(int index, struct ParameterDisplay* param, float newValue);
+    void ticks();
+    void StartArpeggio();
+    void StepArpeggio();
+    void Start();
+
+    void noteOn(char note, char velocity);
+    void noteOff(char note);
+
+    void realNoteOn(char note, char velocity);
+    void realNoteOff(char note);
 
     void noteOn() {
         for (int k=0; k<NUMBER_OF_LFO; k++) {
@@ -164,6 +177,8 @@ public:
 
     }
 
+    void setHoldPedal(int value);
+
     Matrix* getMatrix() {
         return &matrix;
     }
@@ -209,10 +224,20 @@ public:
     float pan1Right, pan2Right, pan3Right, pan4Right, pan5Right, pan6Right ;
 
 private:
+
+    void SendLater(uint8_t note, uint8_t velocity, uint8_t when, uint8_t tag);
+    void SendScheduledNotes();
+    void FlushQueue();
+
+    int timbreNumber;
     struct OneSynthParams params;
     Matrix matrix;
     float sampleBlock[BLOCK_SIZE * 2];
     float *sbMax;
+
+    Voice *voices[MAX_NUMBER_OF_VOICES];
+    char voiceNumber[MAX_NUMBER_OF_VOICES];
+    bool holdPedal;
 
     LfoOsc lfoOsc[NUMBER_OF_LFO_OSC];
     LfoEnv lfoEnv[NUMBER_OF_LFO_ENV];
@@ -241,6 +266,32 @@ private:
     bool recomputeNext;
 
     float currentGate;
+
+    // Arpeggiator
+    float arpegiatorStep;
+    NoteStack note_stack;
+    EventScheduler event_scheduler;
+//
+//    uint8_t running_;
+//
+//    uint8_t clk_mode_;
+//    uint8_t groove_template_;
+//    uint8_t groove_amount_;
+//    uint8_t channel_;
+//    uint8_t pattern_;
+//    uint8_t latch_;
+//
+
+
+    uint8_t tick_;
+    uint8_t idle_ticks_;
+    uint16_t bitmask_;
+    int8_t current_direction_;
+    int8_t current_octave_;
+    int8_t current_step_;
+//
+//    uint8_t ignore_note_off_messages_;
+//    uint8_t recording_;
 
 };
 
