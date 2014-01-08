@@ -183,16 +183,16 @@ void SysTick_Handler(void)
 
         sample = (int)synth.rightSampleAtReadCursor();
         samples.sampleLeftMSB = 0x3000;
-        samples.sampleLeftMSB |= sample >> 6;
+        samples.sampleLeftMSB |= (sample >> 6);
 
         samples.sampleLeftLSB = 0xB000;
-        samples.sampleLeftLSB |= sample & 0x3f;
+        samples.sampleLeftLSB |= (sample & 0x3f);
 
         // LATCH HIGH
         GPIO_SetBits(GPIOC, GPIO_Pin_12);
 
 		SPI_I2S_SendData(SPI1, samples.sampleLeftMSB );
-		spiState = 1;
+		spiState++;
 
 		break;
 	case 1:
@@ -203,12 +203,12 @@ void SysTick_Handler(void)
 		sample = (int)synth.leftSampleAtReadCursor();
 
         samples.sampleRightMSB = 0x3000;
-        samples.sampleRightMSB |= sample >> 6;
+        samples.sampleRightMSB |= (sample >> 6);
 
         samples.sampleRightLSB = 0xB000;
-        samples.sampleRightLSB |= sample & 0x3f;
+        samples.sampleRightLSB |= (sample & 0x3f);
 
-        spiState = 2;
+        spiState++;
 
 		SPI_I2S_SendData(SPI1, samples.sampleRightMSB );
 		break;
@@ -217,7 +217,7 @@ void SysTick_Handler(void)
 		GPIO_ResetBits(GPIOB, GPIO_Pin_4);
 		GPIO_SetBits(GPIOB, GPIO_Pin_9);
 
-		spiState = 3;
+		spiState+;
 
         SPI_I2S_SendData(SPI1, samples.sampleLeftLSB);
 		break;
