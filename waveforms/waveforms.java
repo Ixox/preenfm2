@@ -92,11 +92,11 @@ class waveforms {
     	System.out.println("};");
 	System.out.println("");
     	System.out.println("float sinPosTable[] __attribute__ ((section(\".ccm\"))) = {");    	
-    	System.out.println(getWaveFormData(WaveForm.SINPOS, numberOfSteps /2, order));
+    	System.out.println(getWaveFormData(WaveForm.SINPOS, numberOfSteps /4, order));
     	System.out.println("};");
 	System.out.println("");
     	System.out.println("float sinOrZeroTable[] __attribute__ ((section(\".ccm\"))) = {"); 
-    	System.out.println(getWaveFormData(WaveForm.SINORZERO, numberOfSteps /2, order));
+    	System.out.println(getWaveFormData(WaveForm.SINORZERO, numberOfSteps /4, order));
     	System.out.println("};");
 	System.out.println("");
     	System.out.println("float sinSquareTable[] __attribute__ ((section(\".ccm\"))) = {"); 
