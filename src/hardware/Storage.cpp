@@ -198,7 +198,7 @@ void Storage::savePreenFMPatch(const struct BankFile* bank, int patchNumber, str
     for (int k=0; k<ALIGNED_PATCH_ZERO;k++) {
         zeros[k] = 0;
     }
-	convertParamsToMemory((uint8_t*)&params, (uint8_t*)&reachableParam);
+	convertParamsToMemory((uint8_t*)params, (uint8_t*)&reachableParam);
 
     // Save patch
     save(fullBankName, patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableParam, PFM_PATCH_SIZE);
