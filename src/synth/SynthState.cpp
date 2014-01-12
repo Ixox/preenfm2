@@ -428,7 +428,7 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
     	case BUTTON_MENUSELECT:
     		propagateNoteOff();
     		propagateBeforeNewParamsLoad();
-    		propagateAfterNewParamsLoad();
+    		propagateAfterNewComboLoad();
     		break;
 		}
 	} else if (button1 == BUTTON_SYNTH) {

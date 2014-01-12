@@ -386,9 +386,18 @@ void Timbre::afterNewParamsLoad() {
         	this->lfo[k]->valueChanged(j);
         }
     }
-    setArpeggiatorClock(params.engineApr1.clock);
-    setLatchMode(params.engineApr2.latche);
+    resetArpeggiator();
 }
+
+
+void Timbre::resetArpeggiator() {
+	// Reset Arpeggiator
+	FlushQueue();
+	note_stack.Clear();
+	setArpeggiatorClock(params.engineApr1.clock);
+	setLatchMode(params.engineApr2.latche);
+}
+
 
 void Timbre::setNewValue(int index, struct ParameterDisplay* param, float newValue) {
     if (newValue > param->maxValue) {

@@ -275,7 +275,6 @@ void Synth::afterNewParamsLoad(int timbre) {
     }
     // Refresh again so that the value is up to date
     refreshNumberOfOsc();
-
     rebuidVoiceTimbre();
 }
 

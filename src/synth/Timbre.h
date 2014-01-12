@@ -66,6 +66,7 @@ public:
     void setLatchMode(uint8_t value);
     void setNewBPMValue(float bpm);
     void setArpeggiatorClock(float bpm);
+    void resetArpeggiator();
 
     void noteOn(char note, char velocity);
     void noteOff(char note);
