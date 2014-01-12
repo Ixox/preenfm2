@@ -123,7 +123,7 @@ void USBH_USR_DeviceSpeedDetected(uint8_t DeviceSpeed) {
 	if ((DeviceSpeed != HPRT0_PRTSPD_FULL_SPEED)
 			&& (DeviceSpeed != HPRT0_PRTSPD_LOW_SPEED)) {
 		/* Toggle Red LED in infinite loop: USB device disconnected */
-	    Fail_Handler("#Speed");
+	    Fail_Handler("#Speed#");
 	}
 }
 
@@ -384,8 +384,8 @@ void USBH_USR_DeInit(void) {
  * @retval None
  */
 void Fail_Handler(const char*msg) {
-/*	lcd.setCursor(0, 0);
-	lcd.print(msg);*/
+	lcd.setCursor(0, 0);
+	lcd.print(msg);
 	while (1) {	}
 }
 
