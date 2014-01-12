@@ -217,7 +217,7 @@ void SysTick_Handler(void)
 		GPIO_ResetBits(GPIOB, GPIO_Pin_4);
 		GPIO_SetBits(GPIOB, GPIO_Pin_9);
 
-		spiState+;
+		spiState++;
 
         SPI_I2S_SendData(SPI1, samples.sampleLeftLSB);
 		break;

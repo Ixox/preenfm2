@@ -150,7 +150,7 @@ void Voice::noteOn(short timbre, short newNote, short velo, unsigned int index) 
 		currentTimbre->env[k]->noteOn(envState[k]);
 	}
 
-	currentTimbre->noteOn();
+	currentTimbre->startNewNote();
 }
 
 void Voice::endNoteOrBeginNextOne() {

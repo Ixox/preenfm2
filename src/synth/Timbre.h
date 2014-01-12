@@ -38,6 +38,11 @@
 extern float panTable[];
 class Voice;
 
+enum {  CLOCK_OFF,
+		CLOCK_INTERNAL,
+		CLOCK_EXTERNAL
+};
+
 
 class Timbre {
     friend class Synth;
@@ -51,22 +56,29 @@ public:
     void fxAfterBlock();
     void afterNewParamsLoad();
     void setNewValue(int index, struct ParameterDisplay* param, float newValue);
-    void ticks();
+    // Arpegiator
+    void arpeggiatorNoteOn(char note, char velocity);
+    void arpeggiatorNoteOff(char note);
     void StartArpeggio();
     void StepArpeggio();
     void Start();
+    void arpeggiatorSetHoldPedal(uint8_t value);
+    void setLatchMode(uint8_t value);
+    void setNewBPMValue(float bpm);
+    void setArpeggiatorClock(float bpm);
 
     void noteOn(char note, char velocity);
     void noteOff(char note);
 
-    void realNoteOn(char note, char velocity);
-    void realNoteOff(char note);
+    void preenNoteOn(char note, char velocity);
+    void preenNoteOff(char note);
 
-    void noteOn() {
+    void startNewNote() {
         for (int k=0; k<NUMBER_OF_LFO; k++) {
             lfo[k]->noteOn();
         }
     }
+
 
     void calculateFrequencyWithMatrix(struct OscState* oscState[NUMBER_OF_OPERATORS]) {
         for (int k=0; k<algoInformation[(int)params.engine1.algo].osc; k++) {
@@ -188,6 +200,7 @@ public:
             lfo[k]->midiClock(songPosition, false);
         }
         this->recomputeNext = ((songPosition&0x1)==0);
+        OnMidiContinue();
     }
 
 
@@ -196,9 +209,12 @@ public:
             lfo[k]->midiContinue();
         }
         this->recomputeNext = true;
+        OnMidiStart();
     }
 
+
     void midiClockStop() {
+    	OnMidiStop();
     }
 
     void midiClockSongPositionStep(int songPosition) {
@@ -225,9 +241,16 @@ public:
 
 private:
 
+    // MiniPal Arpegiator
     void SendLater(uint8_t note, uint8_t velocity, uint8_t when, uint8_t tag);
     void SendScheduledNotes();
     void FlushQueue();
+    void Tick();
+    void OnMidiContinue();
+    void OnMidiStart();
+    void OnMidiStop();
+    void OnMidiClock();
+
 
     int timbreNumber;
     struct OneSynthParams params;
@@ -268,30 +291,39 @@ private:
     float currentGate;
 
     // Arpeggiator
+
+    // TO REFACTOR
+    float ticksPerSecond;
+    const float calledPerSecond = PREENFM_FREQUENCY / 32.0f;
+    float ticksEveryNCalls;
+    int ticksEveyNCallsInteger;
+
+
+
     float arpegiatorStep;
     NoteStack note_stack;
     EventScheduler event_scheduler;
 //
-//    uint8_t running_;
 //
 //    uint8_t clk_mode_;
 //    uint8_t groove_template_;
 //    uint8_t groove_amount_;
 //    uint8_t channel_;
 //    uint8_t pattern_;
-//    uint8_t latch_;
 //
 
 
+    uint8_t running_;
+    uint8_t latch_;
     uint8_t tick_;
     uint8_t idle_ticks_;
     uint16_t bitmask_;
     int8_t current_direction_;
     int8_t current_octave_;
     int8_t current_step_;
+    uint8_t ignore_note_off_messages_;
+    uint8_t recording_;
 //
-//    uint8_t ignore_note_off_messages_;
-//    uint8_t recording_;
 
 };
 

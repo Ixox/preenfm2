@@ -40,7 +40,7 @@ struct ParameterRowDisplay engine1ParameterRow  = {
         { "Algo", "Velo", "Voic", "Glid" },
         {
                 {ALGO1, ALGO_END-1, ALGO_END, DISPLAY_TYPE_STRINGS, algoNames, nullNamesOrder, nullNamesOrder},
-                {9, 240, 232, DISPLAY_TYPE_INT, nullNames,nullNamesOrder, nullNamesOrder },
+                {0, 16, 17, DISPLAY_TYPE_INT, nullNames,nullNamesOrder, nullNamesOrder },
                 {0, 16, 17, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder },
                 {0, 10, 11, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder }
         }

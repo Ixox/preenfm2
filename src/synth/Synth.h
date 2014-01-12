@@ -102,6 +102,15 @@ public:
     }
 
     void midiClockStop() {
+        for (int t = 0; t < NUMBER_OF_TIMBRES; t++) {
+            timbres[t].midiClockStop();
+        }
+    }
+
+    void midiTick() {
+        for (int t = 0; t < NUMBER_OF_TIMBRES; t++) {
+            timbres[t].OnMidiClock();
+        }
     }
 
     void midiClockSongPositionStep(int songPosition) {

@@ -95,6 +95,7 @@ void MidiDecoder::newByte(unsigned char byte) {
         switch (byte) {
         case MIDI_CLOCK:
             this->midiClockCpt++;
+            this->synth->midiTick();
             if (this->midiClockCpt == 6) {
                 if (this->isSequencerPlaying) {
                     this->songPosition++;

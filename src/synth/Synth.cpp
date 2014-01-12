@@ -57,103 +57,9 @@ void Synth::noteOn(int timbre, char note, char velocity) {
 	timbres[timbre].noteOn(note, velocity);
 }
 
-/*
-	int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
-
-    if (numberOfVoices == 0) {
-        return;
-    }
-
-    int zeroVelo = (16 - timbres[timbre].params.engine1.velocity) * 8;
-    int newVelocity = zeroVelo + velocity * (128 - zeroVelo) / 128;
-
-    unsigned int indexMin = (unsigned int)2147483647;
-    int voiceToUse = -1;
-
-
-    for (int k = 0; k < numberOfVoices; k++) {
-        // voice number k of timbre
-        int n = voiceTimbre[timbre][k];
-
-        // same note.... ?
-        if (voices[n].getNote() == note) {
-            voices[n].noteOnWithoutPop(note, newVelocity, this->voiceIndex++);
-            return;
-        }
-
-        // unlikely because if it true, CPU is not full
-        if (unlikely(!voices[n].isPlaying())) {
-            voices[n].noteOn(timbre, note, newVelocity, this->voiceIndex++);
-            return;
-        }
-
-        if (voices[n].isReleased()) {
-            int indexVoice = voices[n].getIndex();
-            if (indexVoice < indexMin) {
-                indexMin = indexVoice;
-                voiceToUse = n;
-                // NO break... We must take the elder one
-            }
-        }
-    }
-
-    if (voiceToUse == -1) {
-        for (int k = 0; k < numberOfVoices; k++) {
-            // voice number k of timbre
-            int n = voiceTimbre[timbre][k];
-            int indexVoice = voices[n].getIndex();
-            if (indexVoice < indexMin && !voices[n].isNewNotePending()) {
-                indexMin = indexVoice;
-                voiceToUse = n;
-                // NO break... We must take the elder one
-            }
-        }
-    }
-    // All voices in newnotepending state ?
-    if (voiceToUse != -1) {
-    	voices[voiceToUse].noteOnWithoutPop(note, newVelocity, this->voiceIndex++);
-    }
-}
-
-*/
-
 void Synth::noteOff(int timbre, char note) {
 	timbres[timbre].noteOff(note);
 }
-/*
-    int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
-
-    for (int k = 0; k < numberOfVoices; k++) {
-        // voice number k of timbre
-        int n = voiceTimbre[timbre][k];
-
-        if (likely(voices[n].getNextGlidingNote() == 0)) {
-            if (voices[n].getNote() == note) {
-            	if (unlikely(holdPedal[timbre])) {
-            		voices[n].setHoldedByPedal(true);
-            		return;
-            	} else {
-                	voices[n].noteOff();
-                    return;
-            	}
-
-            }
-        } else {
-            // if gliding and releasing first note
-        	if (voices[n].getNote() == note) {
-				voices[n].glideFirstNoteOff();
-                return;
-            }
-            // if gliding and releasing next note
-            if (voices[n].getNextGlidingNote() == note) {
-				voices[n].glideToNote(voices[n].getNote());
-				voices[n].glideFirstNoteOff();
-                return;
-            }
-        }
-    }
-}
-*/
 
 void Synth::setHoldPedal(int timbre, int value) {
 	timbres[timbre].setHoldPedal(value);
@@ -469,6 +375,17 @@ void Synth::newParamValue(int timbre, SynthParamType type, int currentRow, int e
             	}
             }
             */
+        } else if (currentRow == ROW_ARPEGGIATOR1) {
+        	if (encoder == ENCODER_ARPEGGIATOR_CLOCK) {
+        		timbres[timbre].setArpeggiatorClock((uint8_t) newValue);
+        	}
+        	if (encoder == ENCODER_ARPEGGIATOR_BPM) {
+        		timbres[timbre].setNewBPMValue((uint8_t) newValue);
+        	}
+        } else if (currentRow == ROW_ARPEGGIATOR2) {
+        	if (encoder == ENCODER_ARPEGGIATOR_LATCH) {
+        		timbres[timbre].setLatchMode((uint8_t) newValue);
+        	}
         }
     } else if (type == SYNTH_PARAM_TYPE_ENV) {
         switch (currentRow) {
