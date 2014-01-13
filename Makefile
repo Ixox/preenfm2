@@ -1,4 +1,4 @@
-PFM2_VERSION_NUMBER=0.9o
+PFM2_VERSION_NUMBER=0.9p
 PFM2_BIN_NUMBER=$(subst .,,${PFM2_VERSION_NUMBER})
 PFM2_BOOTLOADER_VERSION_NUMBER=1.10
 PFM2_VERSION=\"${PFM2_VERSION_NUMBER}\"
@@ -85,8 +85,9 @@ SRC_FIRMWARE = src/PreenFM.cpp \
 	src/synth/Timbre.cpp \
 	src/synth/Common.cpp \
 	src/library/fat_fs/src/ff.c \
-	src/library/fat_fs/src/fattime.c 
-	
+	src/library/fat_fs/src/fattime.c  \
+	src/midipal/note_stack.cpp \
+	src/midipal/event_scheduler.cpp 
  
 
 SRC_BOOTLOADER = src/bootloader/BootLoader.cpp \
@@ -129,7 +130,7 @@ SRC_BOOTLOADER = src/bootloader/BootLoader.cpp \
 	src/library/STM32_USB_Device_Library/Class/msc/src/usbd_msc_scsi.c \
 	src/library/STM32F4xx_StdPeriph_Driver/src/misc.c 
  
-INCLUDESDIR = -I./src/third/ -I./src/library/STM32_USB_HOST_Library/Class/MSC/inc -I./src/library/STM32_USB_HOST_Library/Core/inc -I./src/library/STM32_USB_OTG_Driver/inc -I./src/library/fat_fs/inc -I./src/library/STM32_USB_Device_Library/Core/inc -I./src/library/STM32_USB_Device_Library/Class/midi/inc -I./src/library/STM32F4xx_StdPeriph_Driver/inc/ -I./src/library/CMSIS/Include/ -I./src/utils/ -I./src/hardware -I./src/usb -I./src/synth -I./src/midi -I./src -I./src/library/STM32_USB_Device_Library/Class/msc/inc
+INCLUDESDIR = -I./src/third/ -I./src/library/STM32_USB_HOST_Library/Class/MSC/inc -I./src/library/STM32_USB_HOST_Library/Core/inc -I./src/library/STM32_USB_OTG_Driver/inc -I./src/library/fat_fs/inc -I./src/library/STM32_USB_Device_Library/Core/inc -I./src/library/STM32_USB_Device_Library/Class/midi/inc -I./src/library/STM32F4xx_StdPeriph_Driver/inc/ -I./src/library/CMSIS/Include/ -I./src/utils/ -I./src/hardware -I./src/usb -I./src/synth -I./src/midi -I./src/midipal -I./src -I./src/library/STM32_USB_Device_Library/Class/msc/inc
 SMALLBINOPTS = -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions  -Wl,--gc-sections  
 
 # 
@@ -310,6 +311,8 @@ build/%.o: src/library/STM32F4xx_StdPeriph_Driver/src/%.c
 build/%.o: src/library/fat_fs/src/%.c
 	$(CC) $(CFLAGS) -fpermissive $< -o $@
 
+build/%.o: src/midipal/%.cpp
+	$(CC) $(CFLAGS)  $< -o $@
 
 
 clean:
