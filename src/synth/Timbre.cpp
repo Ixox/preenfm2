@@ -166,7 +166,10 @@ void Timbre::noteOff(char note) {
 	}
 }
 
+int cptHighNote = 0;
+
 void Timbre::preenNoteOn(char note, char velocity) {
+
 	if (params.engine1.numberOfVoice == 0) {
 		return;
 	}
@@ -292,8 +295,6 @@ void Timbre::setArpeggiatorClock(float clockValue) {
 	if (clockValue == CLOCK_INTERNAL) {
 	    setNewBPMValue(params.engineApr1.BPM);
 	}
-	lcd.setCursor(12,1);
-	lcd.print((int)clockValue);
 }
 
 
@@ -549,10 +550,12 @@ void Timbre::Tick() {
 		uint16_t pattern = lut_res_arpeggiator_patterns[(int)params.engineApr2.pattern - 1];
 		uint8_t has_arpeggiator_note = (bitmask_ & pattern) ? 255 : 0;
 		if (note_stack.size() && has_arpeggiator_note) {
+			StepArpeggio();
 			uint8_t note = note_stack.sorted_note(current_step_).note;
 			uint8_t velocity = note_stack.sorted_note(current_step_).velocity;
 			note += 12 * current_octave_;
-			while (note > 127) {
+
+	    	while (note > 127) {
 				note -= 12;
 			}
 			// If there are some Note Off messages for the note about to be triggeered
@@ -563,8 +566,6 @@ void Timbre::Tick() {
 			// Send a note on and schedule a note off later.
 			preenNoteOn(note, velocity);
 			event_scheduler.Schedule(note, 0, midi_clock_tick_per_step[(int)params.engineApr2.duration] - 1, 0);
-
-			StepArpeggio();
 		}
 		bitmask_ <<= 1;
 		if (!bitmask_) {
@@ -576,6 +577,12 @@ void Timbre::Tick() {
 
 
 void Timbre::StepArpeggio() {
+
+	if (current_octave_ == 127) {
+		StartArpeggio();
+		return;
+	}
+
 	uint8_t num_notes = note_stack.size();
 	if (params.engineApr1.direction == ARPEGGIO_DIRECTION_RANDOM) {
 		uint8_t random_byte = *(uint8_t*)noise;
@@ -615,6 +622,7 @@ void Timbre::StepArpeggio() {
 }
 
 void Timbre::StartArpeggio() {
+
   if (current_direction_ == 1) {
     current_octave_ = 0;
     current_step_ = 0;
@@ -629,8 +637,8 @@ void Timbre::Start() {
 	recording_ = 0;
 	running_ = 1;
 	tick_ = midi_clock_tick_per_step[(int)params.engineApr2.division] - 1;
+    current_octave_ = 127;
 	current_direction_ = (params.engineApr1.direction == ARPEGGIO_DIRECTION_DOWN ? -1 : 1);
-	StartArpeggio();
 }
 
 
