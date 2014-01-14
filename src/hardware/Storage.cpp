@@ -327,9 +327,15 @@ void Storage::convertParamsToMemory(uint8_t* params, uint8_t* memory) {
     for (int k = 16; k < PFM_PATCH_SIZE - 32; k++) {
         memory[k] = params[k + 32];
     }
-	// Copy arp at the end of memory
-    for (int k = PFM_PATCH_SIZE - 32; k<PFM_PATCH_SIZE; k++) {
-        memory[k] = params[k - (PFM_PATCH_SIZE - 32) + 16];
+    if ((*arpeggiatorPartOfThePreset) > 0) {
+		// Copy arp at the end of memory
+		for (int k = PFM_PATCH_SIZE - 32; k<PFM_PATCH_SIZE; k++) {
+			memory[k] = params[k - (PFM_PATCH_SIZE - 32) + 16];
+		}
+    } else {
+		for (int k = PFM_PATCH_SIZE - 32; k<PFM_PATCH_SIZE; k++) {
+			memory[k] = 0;
+		}
     }
 }
 
@@ -339,10 +345,12 @@ void Storage::convertMemoryToParams(uint8_t* memory, uint8_t* params) {
 	for (int k = 0; k < 16; k++) {
 		params[k] = memory[k];
     }
-	// Skip Arps
-    for (int k = 16; k < 48; k++) {
-    	params[k] = memory[(k - 16) + PFM_PATCH_SIZE - 32];
+    if ((*arpeggiatorPartOfThePreset) > 0) {
+    	for (int k = 16; k < 48; k++) {
+    		params[k] = memory[(k - 16) + PFM_PATCH_SIZE - 32];
+    	}
     }
+
 	// Copy arp at the end of memory
     for (int k = 48; k<PFM_PATCH_SIZE; k++) {
     	params[k] = memory[ k - 32];

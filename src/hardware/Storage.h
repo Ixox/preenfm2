@@ -48,6 +48,10 @@ struct BankFile {
 class Storage {
 public:
     virtual ~Storage() {}
+    virtual void init(uint8_t*timbre1, uint8_t*timbre2, uint8_t*timbre3, uint8_t*timbre4);
+    void setArpeggiatorPartOfThePreset(char *pointer) { arpeggiatorPartOfThePreset = pointer; }
+
+
     void saveDefaultCombo();
     bool loadDefaultCombo();
     void removeDefaultCombo();
@@ -77,8 +81,6 @@ public:
     virtual int renameBank(const struct BankFile* bank, const char* newName) = 0;
     virtual int renameCombo(const struct BankFile* bank, const char* newName) = 0;
 
-    // Virtual
-    virtual void init(uint8_t*timbre1, uint8_t*timbre2, uint8_t*timbre3, uint8_t*timbre4);
 
 
 private:
@@ -101,7 +103,7 @@ private:
     void convertParamsToMemory(uint8_t* params, uint8_t* memory);
     void convertMemoryToParams(uint8_t* memory, uint8_t* params);
 
-
+    char *arpeggiatorPartOfThePreset;
     char presetName[13];
     uint8_t* timbre[4];
 };

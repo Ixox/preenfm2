@@ -44,6 +44,7 @@ extern const dx7_patch_t friendly_patches[FRIENDLY_PATCH_COUNT];
 class Hexter {
 public:
 	Hexter();
+    void setArpeggiatorPartOfThePreset(char *pointer) { arpeggiatorPartOfThePreset = pointer; }
 	virtual ~Hexter() {}
 	void loadHexterPatch(uint8_t* packedPatch, struct OneSynthParams *params);
 
@@ -51,6 +52,7 @@ protected:
 	void patchUnpack(uint8_t *packed_patch, uint8_t *unpacked_patch);
 	int limit(int x, int min, int max);
 	void setIM(struct OneSynthParams *params, int im, uint8_t *patch, int op);
+	void setIMWithMax(struct OneSynthParams *params, int im, uint8_t *patch, int op, float max);
 	void setMix(struct OneSynthParams *params, int im, uint8_t *patch, int op);
 	float getPreenFMIM(int lvl);
 	void voiceSetData(struct OneSynthParams *params, uint8_t *voice);
@@ -60,6 +62,7 @@ protected:
 
 	char patchName[11];
     uint8_t unpackedData[DX7_VOICE_SIZE_UNPACKED];
+    char *arpeggiatorPartOfThePreset;
 };
 
 

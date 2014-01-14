@@ -112,6 +112,11 @@ const struct MidiConfig midiConfig[]  = {
                 2,
                 yesNo
         },
+        {
+                "Arp in Preset: ",
+                2,
+                yesNo
+        },
         // Don't count in MIDICONFIG_SIZE
         {
                 "Firmware: ",

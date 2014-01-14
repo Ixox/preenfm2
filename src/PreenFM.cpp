@@ -124,6 +124,9 @@ void setup() {
     synthState.setHexter(&hexter);
 
     usbKey.init(synth.getTimbre(0)->getParamRaw(), synth.getTimbre(1)->getParamRaw(), synth.getTimbre(2)->getParamRaw(), synth.getTimbre(3)->getParamRaw());
+    // usbKey and hexter needs to know if arpeggiator must be loaded and saved
+    usbKey.setArpeggiatorPartOfThePreset(&synthState.fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET]);
+    hexter.setArpeggiatorPartOfThePreset(&synthState.fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET]);
     usbKey.loadConfig(synthState.fullState.midiConfigValue);
 
     // launch the engine !!
