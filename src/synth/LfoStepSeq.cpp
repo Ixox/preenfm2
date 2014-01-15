@@ -34,7 +34,7 @@ void LfoStepSeq::init(struct StepSequencerParams* stepSeqParam, struct StepSeque
 
 void LfoStepSeq::midiClock(int songPosition, bool computeStep) {
 
-	ticks &= 0x7fff;
+	ticks &= 0x7ff;
 
     switch ((int)seqParams->bpm)  {
 	case LFO_SEQ_MIDICLOCK_DIV_4:
