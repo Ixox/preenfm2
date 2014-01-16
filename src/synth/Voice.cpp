@@ -1861,7 +1861,7 @@ void Voice::nextBlock() {
 			freq5 *=  oscState5.frequency;
 
 			oscState1.frequency = freq2 * voiceIm1 + freq3 * voiceIm2 + freq5 * voiceIm4 +  oscState1.mainFrequencyPlusMatrix;
-			float car1 = currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1;
+			float car1 = currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1  * velocity;
 
 			*sample++ += car1  * currentTimbre->pan1Left;
 			*sample++ += car1  * currentTimbre->pan1Right;
@@ -1974,7 +1974,7 @@ void Voice::nextBlock() {
 
 
 			oscState1.frequency = freq2 * voiceIm1 + freq3 * voiceIm2 + freq4 * voiceIm3 +  oscState1.mainFrequencyPlusMatrix;
-			float car1 = currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1;
+			float car1 = currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 * velocity;
 
 			*sample++ += car1  * currentTimbre->pan1Left;
 			*sample++ += car1  * currentTimbre->pan1Right;
