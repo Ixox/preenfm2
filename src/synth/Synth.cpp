@@ -265,7 +265,7 @@ void Synth::afterNewParamsLoad(int timbre) {
     // refresh a first time with numberofvoice = 0
     refreshNumberOfOsc();
 
-    int freeOsc = 48 - this->numberOfOsc;
+    int freeOsc = MAX_NUMBER_OF_OPERATORS - this->numberOfOsc;
     float voicesMax = (float)freeOsc / (float)algoInformation[(int)timbres[timbre].params.engine1.algo].osc ;
 
     if (numberOfVoice > voicesMax) {
@@ -311,7 +311,7 @@ int Synth::getFreeVoice() {
 void Synth::checkNewParamValue(int timbre, int currentRow, int encoder, float oldValue, float *newValue) {
     if (unlikely(currentRow == ROW_ENGINE)) {
 
-        int freeOsc = 48 - numberOfOsc;
+        int freeOsc = MAX_NUMBER_OF_OPERATORS - numberOfOsc;
         if (unlikely(encoder == ENCODER_ENGINE_ALGO)) {
             // If one voice exactly and not enough free osc to change algo
         	// If more than 1 voice, it's OK, the number of voice will be reduced later.
@@ -473,7 +473,7 @@ void Synth::newMidiConfig(int menuSelect, char newValue) {
  *
  */
 bool Synth::fixMaxNumberOfVoices(int timbre) {
-    int freeOsc = 48 - this->numberOfOsc;
+    int freeOsc = MAX_NUMBER_OF_OPERATORS - this->numberOfOsc;
 
     float voicesMax = timbres[timbre].params.engine1.numberOfVoice + .001f + (float)freeOsc / (float)algoInformation[(int)timbres[timbre].params.engine1.algo].osc ;
 
