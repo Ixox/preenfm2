@@ -44,11 +44,64 @@ struct BankFile {
 #define DX7_PACKED_PATCH_SIZED 128
 #define DX7_UNPACKED_PATCH_SIZED 155
 
+struct FlashSynthParams {
+    struct Engine1Params engine1;
+    struct FlashEngineIm1 flashEngineIm1;
+    struct FlashEngineIm2 flashEngineIm2;
+    struct EngineMix1 engineMix1;
+    struct EngineMix2 engineMix2;
+    struct EngineMix3 engineMix3;
+    struct OscillatorParams osc1;
+    struct OscillatorParams osc2;
+    struct OscillatorParams osc3;
+    struct OscillatorParams osc4;
+    struct OscillatorParams osc5;
+    struct OscillatorParams osc6;
+    struct EnvelopeParamsA env1a;
+    struct EnvelopeParamsB env1b;
+    struct EnvelopeParamsA env2a;
+    struct EnvelopeParamsB env2b;
+    struct EnvelopeParamsA env3a;
+    struct EnvelopeParamsB env3b;
+    struct EnvelopeParamsA env4a;
+    struct EnvelopeParamsB env4b;
+    struct EnvelopeParamsA env5a;
+    struct EnvelopeParamsB env5b;
+    struct EnvelopeParamsA env6a;
+    struct EnvelopeParamsB env6b;
+    struct MatrixRowParams matrixRowState1;
+    struct MatrixRowParams matrixRowState2;
+    struct MatrixRowParams matrixRowState3;
+    struct MatrixRowParams matrixRowState4;
+    struct MatrixRowParams matrixRowState5;
+    struct MatrixRowParams matrixRowState6;
+    struct MatrixRowParams matrixRowState7;
+    struct MatrixRowParams matrixRowState8;
+    struct MatrixRowParams matrixRowState9;
+    struct MatrixRowParams matrixRowState10;
+    struct MatrixRowParams matrixRowState11;
+    struct MatrixRowParams matrixRowState12;
+    struct LfoParams lfoOsc1;
+    struct LfoParams lfoOsc2;
+    struct LfoParams lfoOsc3;
+    struct EnvelopeParams lfoEnv1;
+    struct Envelope2Params lfoEnv2;
+    struct StepSequencerParams lfoSeq1;
+    struct StepSequencerParams lfoSeq2;
+    struct StepSequencerSteps lfoSteps1;
+    struct StepSequencerSteps lfoSteps2;
+    char presetName[13];
+    struct EngineArp1 engineApr1;
+    struct EngineArp2 engineApr2;
+    struct FlashEngineVeloIm1 flashEngineVeloIm1;
+    struct FlashEngineVeloIm2 flashEngineVeloIm2;
+};
+
 
 class Storage {
 public:
     virtual ~Storage() {}
-    virtual void init(uint8_t*timbre1, uint8_t*timbre2, uint8_t*timbre3, uint8_t*timbre4);
+    virtual void init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4);
     void setArpeggiatorPartOfThePreset(char *pointer) { arpeggiatorPartOfThePreset = pointer; }
 
 
@@ -71,7 +124,7 @@ public:
     virtual const struct BankFile* getPreenFMBank(int bankNumber) = 0;
     void loadPreenFMPatch(const struct BankFile* bank, int patchNumber, struct OneSynthParams *params);
     const char* loadPreenFMPatchName(const struct BankFile* bank, int patchNumber);
-    void savePreenFMPatch(const struct BankFile* bank, int patchNumber, struct OneSynthParams *params);
+    void savePreenFMPatch(const struct BankFile* bank, int patchNumber, const struct OneSynthParams *params);
 
     virtual const struct BankFile* getPreenFMCombo(int comboNumber) = 0;
     void loadPreenFMCombo(const struct BankFile* combo, int comboNumber);
@@ -81,7 +134,9 @@ public:
     virtual int renameBank(const struct BankFile* bank, const char* newName) = 0;
     virtual int renameCombo(const struct BankFile* bank, const char* newName) = 0;
 
-
+#ifdef DEBUG
+    void testMemoryPreset();
+#endif
 
 private:
     // Pure Virtual
@@ -100,12 +155,14 @@ private:
     void addNumber(char* name, int offset, int number);
     void copy(char* dest, const char* source, int length);
 
-    void convertParamsToMemory(uint8_t* params, uint8_t* memory);
-    void convertMemoryToParams(uint8_t* memory, uint8_t* params);
+
+    void  __attribute__ ((noinline)) copyFloat(float* source, float* dest, int n);
+    void  __attribute__ ((noinline)) convertParamsToMemory(const struct OneSynthParams* params, struct FlashSynthParams* memory);
+    void  __attribute__ ((noinline)) convertMemoryToParams(const struct FlashSynthParams* memory, struct OneSynthParams* params);
 
     char *arpeggiatorPartOfThePreset;
     char presetName[13];
-    uint8_t* timbre[4];
+    struct OneSynthParams* timbre[4];
 };
 
 #endif /*__STORAGE_H__*/

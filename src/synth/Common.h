@@ -72,6 +72,7 @@ enum {
     ROW_ARPEGGIATOR2 ,
     ROW_MODULATION1 ,
     ROW_MODULATION2 ,
+    ROW_MODULATION3 ,
     ROW_OSC_MIX1,
     ROW_OSC_MIX2,
     ROW_OSC_MIX3,
@@ -195,20 +196,55 @@ struct EngineArp2 {
     float latche;
 };
 
-
 struct EngineIm1 {
+    float modulationIndex1;
+    float modulationIndexVelo1;
+    float modulationIndex2;
+    float modulationIndexVelo2;
+};
+
+struct EngineIm2 {
+    float modulationIndex3;
+    float modulationIndexVelo3;
+    float modulationIndex4;
+    float modulationIndexVelo4;
+};
+
+struct EngineIm3 {
+    float modulationIndex5;
+    float modulationIndexVelo5;
+    float modulationIndex6;
+    float modulationIndexVelo6;
+};
+
+struct FlashEngineIm1 {
     float modulationIndex1;
     float modulationIndex2;
     float modulationIndex3;
     float modulationIndex4;
 };
 
-struct EngineIm2 {
+struct FlashEngineIm2 {
     float modulationIndex5;
     float modulationIndex6;
     float notUsed1;
     float notUsed2;
 };
+
+struct FlashEngineVeloIm1 {
+    float modulationIndexVelo1;
+    float modulationIndexVelo2;
+    float modulationIndexVelo3;
+    float modulationIndexVelo4;
+};
+
+struct FlashEngineVeloIm2 {
+    float modulationIndexVelo5;
+    float modulationIndexVelo6;
+    float notUsed1;
+    float notUsed2;
+};
+
 
 struct EngineMix1 {
     float mixOsc1;
@@ -299,6 +335,7 @@ struct OneSynthParams {
     struct EngineArp2 engineApr2;
     struct EngineIm1 engineIm1;
     struct EngineIm2 engineIm2;
+    struct EngineIm3 engineIm3;
     struct EngineMix1 engineMix1;
     struct EngineMix2 engineMix2;
     struct EngineMix3 engineMix3;

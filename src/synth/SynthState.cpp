@@ -35,6 +35,7 @@ const unsigned char* nullNamesOrder = NULL;
 const char* algoNames [] = { "alg1", "alg2", "alg3", "alg4", "alg5", "alg6", "alg7", "alg8", "alg9",
 		"al10", "al11", "al12", "al13", "al14", "al15", "al16", "al17", "al18", "al19",
 		"al20", "al21", "al22", "al23", "al24", "al25", "al26", "al27", "al28"  };
+
 struct ParameterRowDisplay engine1ParameterRow  = {
         "Engine" ,
         { "Algo", "Velo", "Voic", "Glid" },
@@ -69,7 +70,7 @@ const char* divNames[] = { "2/1 ", "3/2 ", "1/1 ", "3/4 ", "2/3 ", "1/2 ", "3/8 
 const char* activeName[] = { "Off ", "On  " };
 
 struct ParameterRowDisplay engineArp2ParameterRow  = {
-        "Arpeggiator 2" ,
+        "Arpeggiator" ,
         { "Ptrn", "Divi", "Dura", "Latc" },
         {
                 {1, 22, 22, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder},
@@ -83,7 +84,7 @@ struct ParameterRowDisplay engineArp2ParameterRow  = {
 
 struct ParameterRowDisplay engineIM1ParameterRow = {
         "Modulation" ,
-        { "IM1 ", "IM2 ", "IM3 ", "IM4 "},
+        { "IM1 ", "v   ", "IM2 ", "v   "},
         {
                 {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
@@ -94,7 +95,7 @@ struct ParameterRowDisplay engineIM1ParameterRow = {
 
 struct ParameterRowDisplay engineIM2ParameterRow = {
         "Modulation" ,
-        { "IM5 ", "IM6 ", "IM7 ", "IM8 "},
+        { "IM3 ", "v   ", "IM4 ", "v   "},
         {
                 {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
@@ -102,6 +103,18 @@ struct ParameterRowDisplay engineIM2ParameterRow = {
                 {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
+
+struct ParameterRowDisplay engineIM3ParameterRow = {
+        "Modulation" ,
+        { "IM5 ", "v   ", "IM6 ", "v   "},
+        {
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
+        }
+};
+
 
 
 struct ParameterRowDisplay engineMix1ParameterRow = {
@@ -262,6 +275,7 @@ struct AllParameterRowsDisplay allParameterRows = {
                 &engineArp2ParameterRow,
                 &engineIM1ParameterRow,
                 &engineIM2ParameterRow,
+                &engineIM3ParameterRow,
                 &engineMix1ParameterRow,
                 &engineMix2ParameterRow,
                 &engineMix3ParameterRow,
@@ -435,11 +449,17 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
 		if (fullState.synthMode  == SYNTH_MODE_EDIT) {
 			propagateShowAlgo();
 		}
-	} else if (button1 == BUTTON_LFO) {
+	}
+#ifdef DEBUG
+	else if (button1 == BUTTON_LFO) {
 		if (button2 == BUTTON_MATRIX) {
 			synth.debugVoice();
 		}
+		if (button2 == BUTTON_MENUSELECT) {
+			storage->testMemoryPreset();
+		}
 	}
+#endif
 }
 
 
@@ -737,8 +757,13 @@ bool SynthState::isCurrentRowAvailable() {
 			return false;
 		}
 	}
-	if (algoInformation[(int)params->engine1.algo].im <= 4) {
+	if (algoInformation[(int)params->engine1.algo].im <= 2) {
 		if (currentRow == ROW_MODULATION2 ) {
+			return false;
+		}
+	}
+	if (algoInformation[(int)params->engine1.algo].im <= 4) {
+		if (currentRow == ROW_MODULATION3 ) {
 			return false;
 		}
 	}
@@ -931,13 +956,6 @@ void SynthState::buttonPressed(int button) {
 			propagateMenuBack(oldState);
 			break;
 		}
-#ifdef DEBUG
-		case BUTTON_DUMP:
-		{
-			PresetUtil::dumpPatch();
-			break;
-		}
-#endif
 		case BUTTON_LFO:
 		{
             if (isEnterNameState(fullState.currentMenuItem->menuState)) {

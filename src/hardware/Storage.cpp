@@ -21,11 +21,13 @@
 #include "Menu.h"
 #include "PresetUtil.h"
 
+
 // Set param in memmory reachable with USB : static is OK
+struct FlashSynthParams reachableFlashParam;
 struct OneSynthParams reachableParam;
 uint8_t dx7PackedPatch[DX7_PACKED_PATCH_SIZED];
 
-void Storage::init(uint8_t*timbre1, uint8_t*timbre2, uint8_t*timbre3, uint8_t*timbre4) {
+void Storage::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4) {
     timbre[0] = timbre1;
     timbre[1] = timbre2;
     timbre[2] = timbre3;
@@ -58,8 +60,8 @@ void Storage::saveDefaultCombo() {
     // delete to be sure the size is OK...
     remove(DEFAULT_COMBO);
     for (int timbre = 0; timbre < 4; timbre++)  {
-    	convertParamsToMemory(this->timbre[timbre], (uint8_t*)&reachableParam);
-    	save(DEFAULT_COMBO, ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableParam, PFM_PATCH_SIZE);
+    	convertParamsToMemory(this->timbre[timbre], &reachableFlashParam);
+    	save(DEFAULT_COMBO, ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableFlashParam, PFM_PATCH_SIZE);
     }
 }
 
@@ -71,10 +73,10 @@ bool Storage::loadDefaultCombo() {
     }
 
     for (int timbre = 0; timbre < 4; timbre++)  {
-        int result = load(DEFAULT_COMBO,  ALIGNED_PATCH_SIZE * timbre ,  (void*)&reachableParam, PFM_PATCH_SIZE);
+        int result = load(DEFAULT_COMBO,  ALIGNED_PATCH_SIZE * timbre ,  (void*)&reachableFlashParam, PFM_PATCH_SIZE);
 
         if (result == 0) {
-        	convertMemoryToParams((uint8_t*)&reachableParam, this->timbre[timbre]);
+        	convertMemoryToParams(&reachableFlashParam, this->timbre[timbre]);
         }
     }
     return true;
@@ -88,12 +90,11 @@ void Storage::createPatchBank(const char* name) {
 	if (newBank == 0) {
 		return;
 	}
-	convertParamsToMemory((uint8_t*)&preenMainPreset, (uint8_t*)&reachableParam);
     // back up name
-    copy(reachableParam.presetName, "Preset 0\0\0\0\0\0", 12);
+    copy(reachableFlashParam.presetName, "Preset 0\0\0\0\0\0", 12);
 	for (int k=0; k<128; k++) {
-        addNumber(reachableParam.presetName, 7, k + 1);
-		savePreenFMPatch(newBank, k, &reachableParam);
+        addNumber(reachableFlashParam.presetName, 7, k + 1);
+		savePreenFMPatch(newBank, k, &preenMainPreset);
 	}
 #endif
 }
@@ -108,19 +109,19 @@ void Storage::createComboBank(const char* name) {
 		return;
 	}
 
-	convertParamsToMemory((uint8_t*)&preenMainPreset, (uint8_t*)&reachableParam);
+	convertParamsToMemory(&preenMainPreset, &reachableFlashParam);
 
 	char comboName[12];
     copy(comboName,  "Combo \0\0\0\0\0\0", 12);
-    copy(reachableParam.presetName, "Preset 0\0\0\0\0\0", 12);
+    copy(reachableFlashParam.presetName, "Preset 0\0\0\0\0\0", 12);
 	for (int comboNumber=0; comboNumber<128; comboNumber++) {
 
         addNumber(comboName, 6, comboNumber + 1);
 		save(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber , comboName, 12);
 
         for (int timbre = 0; timbre < 4; timbre++)  {
-            addNumber(reachableParam.presetName, 7, timbre + 1);
-            save(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableParam, PFM_PATCH_SIZE);
+            addNumber(reachableFlashParam.presetName, 7, timbre + 1);
+            save(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableFlashParam, PFM_PATCH_SIZE);
         }
 	}
 
@@ -137,7 +138,7 @@ void Storage::createComboBank(const char* name) {
 }
 
 void Storage::loadConfig(char* midiConfig) {
-    char* reachableProperties = (char*)&reachableParam;
+    char* reachableProperties = (char*)&reachableFlashParam;
     if (checkSize(PROPERTIES) != MIDICONFIG_SIZE) {
         return;
     }
@@ -151,7 +152,7 @@ void Storage::loadConfig(char* midiConfig) {
 }
 
 void Storage::saveConfig(const char* midiConfig) {
-    char* reachableProperties = (char*)&reachableParam;
+    char* reachableProperties = (char*)&reachableFlashParam;
     for (int k=0; k<MIDICONFIG_SIZE; k++) {
         reachableProperties[k] = midiConfig[k];
     }
@@ -177,31 +178,33 @@ void Storage::loadPreenFMPatch(const struct BankFile* bank, int patchNumber, str
 	const char* fullBankName = getPreenFMFullName(bank->name);
 
     // Don't load in params directly because params is in CCM memory
-    int result = load(fullBankName, patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableParam, PFM_PATCH_SIZE);
+    int result = load(fullBankName, patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableFlashParam, PFM_PATCH_SIZE);
 
     if (result == 0) {
-    	convertMemoryToParams((uint8_t*)&reachableParam, (uint8_t*)params);
+    	convertMemoryToParams(&reachableFlashParam, params);
     }
 }
 
 const char* Storage::loadPreenFMPatchName(const struct BankFile* bank, int patchNumber) {
+	// Get name position
+	int namePosition = (int)(((unsigned int) reachableFlashParam.presetName) - (unsigned int)&reachableFlashParam);
 	const char* fullBankName = getPreenFMFullName(bank->name);
-    int result = load(fullBankName, ALIGNED_PATCH_SIZE * patchNumber + PFM_PATCH_SIZE - 16 - 32,  (void*)presetName, 12);
+    int result = load(fullBankName, ALIGNED_PATCH_SIZE * patchNumber + namePosition,  (void*)presetName, 12);
     presetName[12] = 0;
     return presetName;
 }
 
-void Storage::savePreenFMPatch(const struct BankFile* bank, int patchNumber, struct OneSynthParams *params) {
+void Storage::savePreenFMPatch(const struct BankFile* bank, int patchNumber, const struct OneSynthParams *params) {
 	const char* fullBankName = getPreenFMFullName(bank->name);
 
     char zeros[ALIGNED_PATCH_ZERO];
     for (int k=0; k<ALIGNED_PATCH_ZERO;k++) {
         zeros[k] = 0;
     }
-	convertParamsToMemory((uint8_t*)params, (uint8_t*)&reachableParam);
+	convertParamsToMemory(params, &reachableFlashParam);
 
     // Save patch
-    save(fullBankName, patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableParam, PFM_PATCH_SIZE);
+    save(fullBankName, patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableFlashParam, PFM_PATCH_SIZE);
 
     // Add zeros
     save(fullBankName, patchNumber * ALIGNED_PATCH_SIZE  + PFM_PATCH_SIZE,  (void*)zeros, ALIGNED_PATCH_ZERO);
@@ -210,10 +213,10 @@ void Storage::savePreenFMPatch(const struct BankFile* bank, int patchNumber, str
 void Storage::loadPreenFMCombo(const struct BankFile* combo, int comboNumber) {
 	const char* fullBankName = getPreenFMFullName(combo->name);
     for (int timbre = 0; timbre < 4; timbre++)  {
-        int result = load(fullBankName,  (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre ,  (void*)&reachableParam, PFM_PATCH_SIZE);
+        int result = load(fullBankName,  (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre ,  (void*)&reachableFlashParam, PFM_PATCH_SIZE);
 
         if (result == 0) {
-        	convertMemoryToParams((uint8_t*)&reachableParam, this->timbre[timbre]);
+        	convertMemoryToParams(&reachableFlashParam, this->timbre[timbre]);
         }
     }
 }
@@ -229,8 +232,8 @@ void Storage::savePreenFMCombo(const struct BankFile* combo, int comboNumber, ch
     save(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber ,  (void*)comboName, 12);
 
     for (int timbre = 0; timbre < 4; timbre++)  {
-    	convertParamsToMemory(this->timbre[timbre], (uint8_t*)&reachableParam);
-        save(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableParam, PFM_PATCH_SIZE);
+    	convertParamsToMemory(this->timbre[timbre], &reachableFlashParam);
+        save(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableFlashParam, PFM_PATCH_SIZE);
     }
 }
 
@@ -318,50 +321,137 @@ bool Storage::comboNameExist(const char* comboName) {
 }
 
 
-void Storage::convertParamsToMemory(uint8_t* params, uint8_t* memory) {
+void  Storage::copyFloat(float* source, float* dest, int n) {
+	for (int k=0; k<n; k++) {
+		dest[k] = source[k];
+	}
+}
+
+
+void Storage::convertParamsToMemory(const struct OneSynthParams* params, struct FlashSynthParams* memory) {
 	// First engine line
-	for (int k = 0; k < 16; k++) {
-        memory[k] = params[k];
-    }
-	// Skip Arps
-    for (int k = 16; k < PFM_PATCH_SIZE - 32; k++) {
-        memory[k] = params[k + 32];
-    }
-    if ((*arpeggiatorPartOfThePreset) > 0) {
-		// Copy arp at the end of memory
-		for (int k = PFM_PATCH_SIZE - 32; k<PFM_PATCH_SIZE; k++) {
-			memory[k] = params[k - (PFM_PATCH_SIZE - 32) + 16];
-		}
-    } else {
-		for (int k = PFM_PATCH_SIZE - 32; k<PFM_PATCH_SIZE; k++) {
-			memory[k] = 0;
-		}
+	copyFloat((float*)&params->engine1, (float*)&memory->engine1, 4);
+	copyFloat((float*)&params->engineApr1, (float*)&memory->engineApr1, 4 * 2);
+
+	memory->flashEngineIm1.modulationIndex1 = params->engineIm1.modulationIndex1;
+	memory->flashEngineIm1.modulationIndex2 = params->engineIm1.modulationIndex2;
+	memory->flashEngineIm1.modulationIndex3 = params->engineIm2.modulationIndex3;
+	memory->flashEngineIm1.modulationIndex4 = params->engineIm2.modulationIndex4;
+	memory->flashEngineIm2.modulationIndex5 = params->engineIm3.modulationIndex5;
+	memory->flashEngineIm2.modulationIndex6 = params->engineIm3.modulationIndex6;
+	memory->flashEngineIm2.notUsed1 = 0.0f;
+	memory->flashEngineIm2.notUsed2 = 0.0f;
+
+	memory->flashEngineVeloIm1.modulationIndexVelo1 = params->engineIm1.modulationIndexVelo1;
+	memory->flashEngineVeloIm1.modulationIndexVelo2 = params->engineIm1.modulationIndexVelo2;
+	memory->flashEngineVeloIm1.modulationIndexVelo3 = params->engineIm2.modulationIndexVelo3;
+	memory->flashEngineVeloIm1.modulationIndexVelo4 = params->engineIm2.modulationIndexVelo4;
+	memory->flashEngineVeloIm2.modulationIndexVelo5 = params->engineIm3.modulationIndexVelo5;
+	memory->flashEngineVeloIm2.modulationIndexVelo6 = params->engineIm3.modulationIndexVelo6;
+	memory->flashEngineVeloIm2.notUsed1 = 0.0f;
+	memory->flashEngineVeloIm2.notUsed1 = 0.0f;
+
+	copyFloat((float*)&params->engineMix1,(float*)&memory->engineMix1 , 4 * 3);
+	copyFloat((float*)&params->osc1,(float*)&memory->osc1 , 4 * 6);
+	copyFloat((float*)&params->env1a, (float*)&memory->env1a, 4 * 6 * 2);
+	copyFloat((float*)&params->matrixRowState1, (float*)&memory->matrixRowState1, 4 * 12);
+	copyFloat((float*)&params->lfoOsc1, (float*)&memory->lfoOsc1, 4 * 3);
+	copyFloat((float*)&params->lfoEnv1, (float*)&memory->lfoEnv1, 4);
+	copyFloat((float*)&params->lfoEnv2, (float*)&memory->lfoEnv2, 4);
+	copyFloat((float*)&params->lfoSeq1, (float*)&memory->lfoSeq1, 4 * 2);
+	for (int s=0; s<16; s++) {
+		memory->lfoSteps1.steps[s] = params->lfoSteps1.steps[s];
+		memory->lfoSteps2.steps[s] = params->lfoSteps2.steps[s];
+	}
+	for (int s=0; s<13; s++) {
+		memory->presetName[s] = params->presetName[s];
+	}
+}
+
+
+void Storage::convertMemoryToParams(const struct FlashSynthParams* memory, struct OneSynthParams* params) {
+	// First engine line
+	copyFloat((float*)&memory->engine1, (float*)&params->engine1, 4);
+	copyFloat((float*)&memory->engineApr1, (float*)&params->engineApr1, 4 * 2);
+
+	params->engineIm1.modulationIndex1 = memory->flashEngineIm1.modulationIndex1;
+	params->engineIm1.modulationIndex2 = memory->flashEngineIm1.modulationIndex2;
+	params->engineIm2.modulationIndex3 = memory->flashEngineIm1.modulationIndex3;
+	params->engineIm2.modulationIndex4 = memory->flashEngineIm1.modulationIndex4;
+	params->engineIm3.modulationIndex5 = memory->flashEngineIm2.modulationIndex5;
+	params->engineIm3.modulationIndex6 = memory->flashEngineIm2.modulationIndex6;
+	params->engineIm1.modulationIndexVelo1 = memory->flashEngineVeloIm1.modulationIndexVelo1;
+	params->engineIm1.modulationIndexVelo2 = memory->flashEngineVeloIm1.modulationIndexVelo2;
+	params->engineIm2.modulationIndexVelo3 = memory->flashEngineVeloIm1.modulationIndexVelo3;
+	params->engineIm2.modulationIndexVelo4 = memory->flashEngineVeloIm1.modulationIndexVelo4;
+	params->engineIm3.modulationIndexVelo5 = memory->flashEngineVeloIm2.modulationIndexVelo5;
+	params->engineIm3.modulationIndexVelo6 = memory->flashEngineVeloIm2.modulationIndexVelo6;
+
+	copyFloat((float*)&memory->engineMix1,(float*)&params->engineMix1 , 4 * 3);
+	copyFloat((float*)&memory->osc1,(float*)&params->osc1 , 4 * 6);
+	copyFloat((float*)&memory->env1a, (float*)&params->env1a, 4 * 6 * 2);
+	copyFloat((float*)&memory->matrixRowState1, (float*)&params->matrixRowState1, 4 * 12);
+	copyFloat((float*)&memory->lfoOsc1, (float*)&params->lfoOsc1, 4 * 3);
+	copyFloat((float*)&memory->lfoEnv1, (float*)&params->lfoEnv1, 4);
+	copyFloat((float*)&memory->lfoEnv2, (float*)&params->lfoEnv2, 4);
+	copyFloat((float*)&memory->lfoSeq1, (float*)&params->lfoSeq1, 4 * 2);
+	for (int s=0; s<16; s++) {
+		params->lfoSteps1.steps[s] = memory->lfoSteps1.steps[s];
+		params->lfoSteps2.steps[s] = memory->lfoSteps2.steps[s];
+	}
+	for (int s=0; s<13; s++) {
+		params->presetName[s] = memory->presetName[s];
+	}
+
+    if (params->engineApr1.BPM < 10) {
+    	params->engineApr1.BPM = 90;
+    	params->engineApr1.octave = 1;
+    	params->engineApr2.pattern = 1;
+    	params->engineApr2.division = 12;
+    	params->engineApr2.duration = 14;
     }
 }
 
 
-void Storage::convertMemoryToParams(uint8_t* memory, uint8_t* params) {
-	// First engine line
-	for (int k = 0; k < 16; k++) {
-		params[k] = memory[k];
-    }
-    if ((*arpeggiatorPartOfThePreset) > 0) {
-    	for (int k = 16; k < 48; k++) {
-    		params[k] = memory[(k - 16) + PFM_PATCH_SIZE - 32];
-    	}
-    }
 
-	// Copy arp at the end of memory
-    for (int k = 48; k<PFM_PATCH_SIZE; k++) {
-    	params[k] = memory[ k - 32];
-    }
 
-    OneSynthParams *toCheck = (OneSynthParams *) params;
-    if (toCheck->engineApr1.BPM < 10) {
-    	toCheck->engineApr1.BPM = 90;
-    	toCheck->engineApr1.octave = 1;
-    	toCheck->engineApr2.pattern = 1;
-    	toCheck->engineApr2.division = 12;
-    	toCheck->engineApr2.duration = 14;
-    }
+#ifdef DEBUG
+#include "LiquidCrystal.h"
+extern LiquidCrystal lcd;
+
+extern unsigned int preenTimer;
+
+
+void Storage::testMemoryPreset() {
+	lcd.setRealTimeAction(true);
+	struct OneSynthParams tmpParam;
+	unsigned char* test = (unsigned char*)&tmpParam;
+	for (int k=0; k< sizeof(struct OneSynthParams); k++) {
+		test[k] = ((k + preenTimer) % 200) + 34;
+	}
+
+	tmpParam.engineApr1.BPM = (preenTimer % 200) + 15;
+	convertParamsToMemory(&tmpParam, &reachableFlashParam);
+	convertMemoryToParams(&reachableFlashParam, &reachableParam);
+
+	lcd.clear();
+	for (int k=0; k< sizeof(struct OneSynthParams); k++) {
+		unsigned char c1 = ((unsigned char*)&reachableParam)[k];
+		unsigned char c2 = test[k];
+		lcd.setCursor(0,1);
+		lcd.print(k);
+		lcd.print(":");
+		lcd.print((int)c1);
+		lcd.print("=");
+		lcd.print((int)c2);
+		lcd.print("?    ");
+		if (c1 != c2) {
+			lcd.setCursor(2,8);
+			lcd.print("NO !!(");
+			lcd.print((int)((unsigned char*)&reachableFlashParam)[k]);
+			lcd.print(")");
+			break;
+		}
+	}
 }
+#endif

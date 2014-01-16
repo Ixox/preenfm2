@@ -65,6 +65,7 @@ private:
     unsigned int index;
     char note;
     float velocity;
+    float im1, im2, im3, im4, im5;
 
     EnvData envState1;
     EnvData envState2;

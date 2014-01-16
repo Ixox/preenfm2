@@ -98,26 +98,23 @@ public:
     		modulationIndex2 = 0.0f;
     	}
 
-        modulationIndex3 = params.engineIm1.modulationIndex3 + matrix.getDestination(INDEX_MODULATION3) + matrix.getDestination(INDEX_ALL_MODULATION);
+        modulationIndex3 = params.engineIm2.modulationIndex3 + matrix.getDestination(INDEX_MODULATION3) + matrix.getDestination(INDEX_ALL_MODULATION);
     	if (unlikely(modulationIndex3 < 0.0f)) {
     		modulationIndex3 = 0.0f;
     	}
-        modulationIndex4 = params.engineIm1.modulationIndex4 + matrix.getDestination(INDEX_MODULATION4) + matrix.getDestination(INDEX_ALL_MODULATION);
+
+    	if (likely(numberOfIMs < 3)) {
+        	return;
+        }
+
+    	modulationIndex4 = params.engineIm2.modulationIndex4 + matrix.getDestination(INDEX_MODULATION4) + matrix.getDestination(INDEX_ALL_MODULATION);
     	if (unlikely(modulationIndex4 < 0.0f)) {
     		modulationIndex4 = 0.0f;
     	}
 
-        if (likely(numberOfIMs < 4)) {
-        	return;
-        }
-
-        modulationIndex5 = params.engineIm2.modulationIndex5 + matrix.getDestination(INDEX_ALL_MODULATION);;
+        modulationIndex5 = params.engineIm3.modulationIndex5 + matrix.getDestination(INDEX_ALL_MODULATION);;
     	if (unlikely(modulationIndex5 < 0.0f)) {
     		modulationIndex5 = 0.0f;
-    	}
-        modulationIndex6 = params.engineIm2.modulationIndex6 + matrix.getDestination(INDEX_ALL_MODULATION);
-    	if (unlikely(modulationIndex6 < 0.0f)) {
-    		modulationIndex6 = 0.0f;
     	}
 
     }
@@ -226,8 +223,8 @@ public:
             this->recomputeNext = true;
         }
     }
-    uint8_t* getParamRaw() {
-        return (uint8_t*)&params;
+    struct OneSynthParams * getParamRaw() {
+        return &params;
     }
 
     float* getSampleBlock() {
@@ -235,7 +232,7 @@ public:
     }
 
     // optimization
-    float modulationIndex1, modulationIndex2, modulationIndex3, modulationIndex4, modulationIndex5, modulationIndex6;
+    float modulationIndex1, modulationIndex2, modulationIndex3, modulationIndex4, modulationIndex5;
     float mix1, mix2, mix3, mix4, mix5, mix6;
     float pan1Left, pan2Left, pan3Left, pan4Left, pan5Left, pan6Left  ;
     float pan1Right, pan2Right, pan3Right, pan4Right, pan5Right, pan6Right ;

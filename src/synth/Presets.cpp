@@ -26,9 +26,10 @@
 
 
 const struct OneSynthParams defaultPreset  = {
-        { ALGO7, 7, 3, 4} ,
+        { ALGO7, 14, 3, 4} ,
         { 0.0, 90.0, 0.0, 1.0} ,
         { 1.0, 12.0, 14.0, 0.0} ,
+        { 0.0, 0.0, 0.0, 0.0} ,
         { 0.0, 0.0, 0.0, 0.0} ,
         { 0.0, 0.0, 0.0, 0.0} ,
         { 1, 0, 1, 0} ,
@@ -83,11 +84,14 @@ const struct OneSynthParams defaultPreset  = {
 const struct OneSynthParams preenMainPreset  = {
 		// patch name : 'Preen 2.0'
 		// Engine
-		{ ALGO9, 7, 2, 4} ,
+		{ ALGO9, 12, 2, 4} ,
         { 0.0, 90.0, 0.0, 1.0} ,
         { 1.0, 12.0, 14.0, 0.0} ,
-		{ 1.5,1.9,1.8,0.7} ,
-		{ 1, 0, 1, 0} ,
+
+		{ 1.5, 0, 1.9, 0 },
+		{ 1.8, 0, 0.7, 0 } ,
+		{ 0,0,0,0} ,
+
 		{ 1, 0, 1, 0} ,
 		{ 1, 0, 1, 0} ,
 		{ 1, 0, 1, 0} ,

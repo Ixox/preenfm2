@@ -174,9 +174,6 @@ void Timbre::preenNoteOn(char note, char velocity) {
 		return;
 	}
 
-	int zeroVelo = (16 - params.engine1.velocity) * 8;
-	int newVelocity = zeroVelo + ((velocity * (128 - zeroVelo)) >> 7);
-
 	unsigned int indexMin = (unsigned int)2147483647;
 	int voiceToUse = -1;
 
@@ -187,13 +184,13 @@ void Timbre::preenNoteOn(char note, char velocity) {
 
 		// same note.... ?
 		if (voices[n]->getNote() == note) {
-			voices[n]->noteOnWithoutPop(note, newVelocity, voiceIndex++);
+			voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++);
 			return;
 		}
 
 		// unlikely because if it true, CPU is not full
 		if (unlikely(!voices[n]->isPlaying())) {
-			voices[n]->noteOn(timbreNumber, note, newVelocity, voiceIndex++);
+			voices[n]->noteOn(timbreNumber, note, velocity, voiceIndex++);
 			return;
 		}
 
@@ -221,7 +218,7 @@ void Timbre::preenNoteOn(char note, char velocity) {
 	}
 	// All voices in newnotepending state ?
 	if (voiceToUse != -1) {
-		voices[voiceToUse]->noteOnWithoutPop(note, newVelocity, voiceIndex++);
+		voices[voiceToUse]->noteOnWithoutPop(note, velocity, voiceIndex++);
 	}
 }
 

@@ -529,6 +529,7 @@ void Synth::setNewValueFromMidi(int timbre, int row, int encoder, float newValue
 }
 
 
+#ifdef DEBUG
 
 // ========================== DEBUG ========================
 void Synth::debugVoice() {
@@ -558,3 +559,4 @@ void Synth::debugVoice() {
     }
 	lcd.setRealTimeAction(false);
 }
+#endif

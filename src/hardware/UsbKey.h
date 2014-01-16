@@ -49,7 +49,7 @@ extern USBH_HOST                    usbHost;
 
 class UsbKey : public Storage {
 public:
-    void init(uint8_t*timbre1, uint8_t*timbre2, uint8_t*timbre3, uint8_t*timbre4);
+    void init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4);
 
     // get firmware name available on disk
     // not in storage.. specific to USB

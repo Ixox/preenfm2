@@ -152,8 +152,9 @@ public:
     void setHoldPedal(int timbre, int value);
 
 
-
+#ifdef DEBUG
     void debugVoice();
+#endif
 
 private:
     // Called by setSynthState
