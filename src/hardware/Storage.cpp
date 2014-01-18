@@ -352,6 +352,7 @@ void Storage::convertParamsToMemory(const struct OneSynthParams* params, struct 
 	memory->flashEngineVeloIm2.notUsed1 = 0.0f;
 
 	copyFloat((float*)&params->engineMix1,(float*)&memory->engineMix1 , 4 * 3);
+	copyFloat((float*)&params->effect,(float*)&memory->effect , 4);
 	copyFloat((float*)&params->osc1,(float*)&memory->osc1 , 4 * 6);
 	copyFloat((float*)&params->env1a, (float*)&memory->env1a, 4 * 6 * 2);
 	copyFloat((float*)&params->matrixRowState1, (float*)&memory->matrixRowState1, 4 * 12);
@@ -388,6 +389,7 @@ void Storage::convertMemoryToParams(const struct FlashSynthParams* memory, struc
 	params->engineIm3.modulationIndexVelo6 = memory->flashEngineVeloIm2.modulationIndexVelo6;
 
 	copyFloat((float*)&memory->engineMix1,(float*)&params->engineMix1 , 4 * 3);
+	copyFloat((float*)&memory->effect,(float*)&params->effect , 4);
 	copyFloat((float*)&memory->osc1,(float*)&params->osc1 , 4 * 6);
 	copyFloat((float*)&memory->env1a, (float*)&params->env1a, 4 * 6 * 2);
 	copyFloat((float*)&memory->matrixRowState1, (float*)&params->matrixRowState1, 4 * 12);
@@ -410,6 +412,13 @@ void Storage::convertMemoryToParams(const struct FlashSynthParams* memory, struc
     	params->engineApr2.division = 12;
     	params->engineApr2.duration = 14;
     }
+
+//    if (params->effect.param3 == 0.0f) {
+//    	params->effect.param1 = 0.5f;
+//    	params->effect.param2 = 0.5f;
+//    	params->effect.param3 = 0.5f;
+//    }
+
 }
 
 

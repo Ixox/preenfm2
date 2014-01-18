@@ -385,6 +385,8 @@ void Synth::newParamValue(int timbre, SynthParamType type, int currentRow, int e
         	if (encoder == ENCODER_ARPEGGIATOR_LATCH) {
         		timbres[timbre].setLatchMode((uint8_t) newValue);
         	}
+        } else if (currentRow == ROW_EFFECT) {
+        	timbres[timbre].setNewEffecParam(encoder);
         }
     } else if (type == SYNTH_PARAM_TYPE_ENV) {
         switch (currentRow) {

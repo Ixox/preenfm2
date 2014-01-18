@@ -16,6 +16,7 @@
  */
 
 
+#include <math.h>
 #include "Timbre.h"
 #include "Voice.h"
 
@@ -67,6 +68,8 @@ float panTable[] = {
 		1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000
 } ;
 
+
+
 // Static to all 4 timbres
 unsigned int voiceIndex  __attribute__ ((section(".ccmnoload")));
 
@@ -111,6 +114,9 @@ Timbre::Timbre() {
     event_scheduler.Init();
     // Arpeggiator start
     Start();
+
+    // Init FX variables
+    v0L = v1L = v0R = v1R = 0.0f;
 }
 
 Timbre::~Timbre() {
@@ -341,32 +347,289 @@ void Timbre::prepareForNextBlock() {
 void Timbre::fxAfterBlock() {
     // Gate algo !!
     float gate = this->matrix.getDestination(MAIN_GATE);
-    if (likely(gate <= 0 && currentGate <= 0)) {
-        return;
-    }
-    gate *=.72547132656922730694f; // 0 < gate < 1.0
-    if (gate > 1.0f) {
-        gate = 1.0f;
-    }
-    float incGate = (gate - currentGate) * .03125f; // ( *.03125f = / 32)
-    // limit the speed.
-    if (incGate > 0.002f) {
-        incGate = 0.002f;
-    } else if (incGate < -0.002f) {
-        incGate = -0.002f;
+    if (unlikely(gate > 0 || currentGate > 0)) {
+		gate *=.72547132656922730694f; // 0 < gate < 1.0
+		if (gate > 1.0f) {
+			gate = 1.0f;
+		}
+		float incGate = (gate - currentGate) * .03125f; // ( *.03125f = / 32)
+		// limit the speed.
+		if (incGate > 0.002f) {
+			incGate = 0.002f;
+		} else if (incGate < -0.002f) {
+			incGate = -0.002f;
+		}
+
+		float *sp = this->sampleBlock;
+		float coef;
+		while (sp < this->sbMax) {
+			currentGate += incGate;
+			coef = 1.0f - currentGate;
+			*sp = *sp * coef;
+			sp++;
+			*sp = *sp * coef;
+			sp++;
+		}
+    //    currentGate = gate;
     }
 
-    float *sp = this->sampleBlock;
-    float coef;
-    while (sp < this->sbMax) {
-        currentGate += incGate;
-        coef = 1.0f - currentGate;
-        *sp = *sp * coef;
-        sp++;
-        *sp = *sp * coef;
-        sp++;
+    // LP Algo
+    int effectType = params.effect.type;
+
+    switch (effectType) {
+    case FILTER_LP:
+    {
+    	float gain =  params.effect.param3;
+
+    	float fxParamTmp = params.effect.param1 + matrix.getDestination(FILTER_FREQUENCY);
+    	fxParamTmp *= fxParamTmp;
+
+    	// Low pass... on the Frequency
+    	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+    	if (unlikely(fxParam1 > 1.0f)) {
+    		fxParam1 = 1.0f;
+    	}
+    	if (unlikely(fxParam1 < 0.0f)) {
+    		fxParam1 = 0.0f;
+    	}
+
+    	float pattern = (1 - fxParam2 * fxParam1);
+
+    	float *sp = this->sampleBlock;
+    	while (sp < this->sbMax) {
+
+    		// Left voice
+    		v0L =  pattern * v0L  -  (fxParam1) * v1L  + (fxParam1)* (*sp);
+    		v1L =  pattern * v1L  +  (fxParam1)*v0L;
+
+    		*sp = v1L * gain;
+
+    		if (unlikely(*sp > params.engine1.numberOfVoice)) {
+    			*sp = params.engine1.numberOfVoice;
+    		}
+    		if (unlikely(*sp < -params.engine1.numberOfVoice)) {
+    			*sp = -params.engine1.numberOfVoice;
+    		}
+
+    		sp++;
+
+    		// Right voice
+    		v0R =  pattern * v0R  -  (fxParam1)*v1R  + (fxParam1)* (*sp);
+    		v1R =  pattern * v1R  +  (fxParam1)*v0R;
+
+    		*sp = v1R * gain;
+
+    		if (unlikely(*sp > params.engine1.numberOfVoice)) {
+    			*sp = params.engine1.numberOfVoice;
+    		}
+    		if (unlikely(*sp < -params.engine1.numberOfVoice)) {
+    			*sp = -params.engine1.numberOfVoice;
+    		}
+
+    		sp++;
+    	}
     }
-    //    currentGate = gate;
+    break;
+    case FILTER_HP:
+    {
+
+    	float gain =  params.effect.param3;
+
+    	float fxParamTmp = params.effect.param1 + matrix.getDestination(FILTER_FREQUENCY);
+    	fxParamTmp *= fxParamTmp;
+
+    	// Low pass... on the Frequency
+    	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+    	if (unlikely(fxParam1 > 1.0)) {
+    		fxParam1 = 1.0;
+    	}
+    	float pattern = (1 - fxParam2 * fxParam1);
+
+    	float *sp = this->sampleBlock;
+    	while (sp < this->sbMax) {
+
+    		// Left voice
+    		v0L =  pattern * v0L  -  (fxParam1) * v1L  + (fxParam1) * (*sp);
+    		v1L =  pattern * v1L  +  (fxParam1) * v0L;
+
+    		*sp = (*sp - v1L) * gain;
+
+    		if (unlikely(*sp > params.engine1.numberOfVoice)) {
+    			*sp = params.engine1.numberOfVoice;
+    		}
+    		if (unlikely(*sp < -params.engine1.numberOfVoice)) {
+    			*sp = -params.engine1.numberOfVoice;
+    		}
+
+    		sp++;
+
+    		// Right voice
+    		v0R =  pattern * v0R  -  (fxParam1) * v1R  + (fxParam1) * (*sp);
+    		v1R =  pattern * v1R  +  (fxParam1) * v0R;
+
+    		*sp = (*sp - v1R) * gain;
+
+    		if (unlikely(*sp > params.engine1.numberOfVoice)) {
+    			*sp = params.engine1.numberOfVoice;
+    		}
+    		if (unlikely(*sp < -params.engine1.numberOfVoice)) {
+    			*sp = -params.engine1.numberOfVoice;
+    		}
+
+    		sp++;
+    	}
+    }
+	break;
+    case FILTER_BASS:
+    {
+    	// From musicdsp.com
+    	//    	Bass Booster
+    	//
+    	//    	Type : LP and SUM
+    	//    	References : Posted by Johny Dupej
+    	//
+    	//    	Notes :
+    	//    	This function adds a low-passed signal to the original signal. The low-pass has a quite wide response.
+    	//
+    	//    	selectivity - frequency response of the LP (higher value gives a steeper one) [70.0 to 140.0 sounds good]
+    	//    	ratio - how much of the filtered signal is mixed to the original
+    	//    	gain2 - adjusts the final volume to handle cut-offs (might be good to set dynamically)
+
+    	//static float selectivity, gain1, gain2, ratio, cap;
+    	//gain1 = 1.0/(selectivity + 1.0);
+    	//
+    	//cap= (sample + cap*selectivity )*gain1;
+    	//sample = saturate((sample + cap*ratio)*gain2);
+
+    	float *sp = this->sampleBlock;
+
+    	while (sp < this->sbMax) {
+
+    		static float selectivity, gain1, gain2, ratio, cap;
+
+
+    		v0L = ((*sp) + v0L * fxParam1) * fxParam3;
+    		(*sp) = ((*sp) + v0L * fxParam2) * params.effect.param3;
+
+    		if (unlikely(*sp > params.engine1.numberOfVoice)) {
+    			*sp = params.engine1.numberOfVoice;
+    		}
+    		if (unlikely(*sp < -params.engine1.numberOfVoice)) {
+    			*sp = -params.engine1.numberOfVoice;
+    		}
+
+    		sp++;
+
+    		v0R = ((*sp) + v0R * fxParam1) * fxParam3;
+    		(*sp) = ((*sp) + v0R * fxParam2) * params.effect.param3;
+
+    		if (unlikely(*sp > params.engine1.numberOfVoice)) {
+    			*sp = params.engine1.numberOfVoice;
+    		}
+    		if (unlikely(*sp < -params.engine1.numberOfVoice)) {
+    			*sp = -params.engine1.numberOfVoice;
+    		}
+
+    		sp++;
+    	}
+    }
+    break;
+    case FILTER_MONO:
+    {
+    	float pan2 = 1 - params.effect.param3;
+    	float *sp = this->sampleBlock;
+    	while (sp < this->sbMax) {
+    		float sample = *sp + *(sp+1) * .5f;
+
+    		*sp = sample * params.effect.param3;
+    		sp++;
+
+    		*sp = sample * pan2 ;
+    		sp++;
+    	}
+    }
+    break;
+    case FILTER_LP4:
+    {
+    	// musicdsp.org
+    	//
+		//    	Perfect LP4 filter
+		//
+		//    	Type : LP
+		//    	References : Posted by azertopia at free dot fr
+		//
+		//    	Notes :
+		//    	hacked from the exemple of user script in FL Edison
+
+//    	float Frq = params.effect.param1 * PREENFM_FREQUENCY / 2;
+//    	float res = params.effect.param2;
+//    	float SR = PREENFM_FREQUENCY;
+//    	float f = (Frq+Frq) / SR;
+//    	float p = f * (1.8 - 0.8 * f);
+//    	float k=p+p-1.0;
+//    	float t=(1.0-p)*1.386249;
+//    	float t2=12.0+t*t;
+//    	float r = res*(t2+6.0*t)/(t2-6.0*t);
+//
+//    	float *sp = this->sampleBlock;
+
+
+//    	while (sp < this->sbMax) {
+//    		  f := (Frq+Frq) / SR;
+//    		  p:=f*(1.8-0.8*f);
+//    		  k:=p+p-1.0;
+//    		  t:=(1.0-p)*1.386249;
+//    		  t2:=12.0+t*t;
+//    		  r := res*(t2+6.0*t)/(t2-6.0*t);
+
+//    		  x := inp - r*y4;
+//    		  y1:=x*p + oldx*p - k*y1;
+//    		  y2:=y1*p+oldy1*p - k*y2;
+//    		  y3:=y2*p+oldy2*p - k*y3;
+//    		  y4:=y3*p+oldy3*p - k*y4;
+//    		  y4 := y4 - ((y4*y4*y4)/6.0);
+//    		  oldx := x;
+//    		  oldy1 := y1+_kd;
+//    		  oldy2 := y2+_kd;;
+//    		  oldy3 := y3+_kd;;
+//    		  outlp := y4;
+
+//    		float x = (*sp) - r * v4L;
+//    		v5L= x * p + v0L * p - k * v5L;
+//    		v6L= v5L * p + v1L * p - k * v6L;
+//    		v7L= v6L * p + v2L * p - k * v7L;
+//    		v4L= v7L * p + v3L * p - k * v4L;
+//    		v4L = v4L - ((v4L*v4L*v4L)/6.0);
+//    		v0L = x;
+//        	v1L = v5L;
+//        	v2L = v6L;
+//        	v3L = v7L;
+//        	*sp = v4L;
+//    		sp++;
+//
+//    		x = (*sp) - r * v4R;
+//    		v5R= x * p + v0R * p - k * v5R;
+//    		v6R= v5R * p + v1R * p - k * v6R;
+//    		v7R= v6R * p + v2R * p - k * v7R;
+//    		v4R= v7R * p + v3R * p - k * v4R;
+//    		v4R = v4R - ((v4R*v4R*v4R)/6.0);
+//    		v0R = x;
+//        	v1R = v5R;
+//        	v2R = v6R;
+//        	v3R = v7R;
+//        	*sp = v4R;
+//    		sp++;
+
+
+//    	}
+    }
+    break;
+
+    default:
+    	// NO EFFECT
+   	break;
+    }
+
 }
 
 
@@ -385,6 +648,11 @@ void Timbre::afterNewParamsLoad() {
         }
     }
     resetArpeggiator();
+    v0L = v1L = v2L = v3L = 0.0f;
+    v0R = v1R = v2R = v3R = 0.0f;
+    for (int k=0; k<NUMBER_OF_ENCODERS; k++) {
+    	setNewEffecParam(k);
+    }
 }
 
 
@@ -404,6 +672,41 @@ void Timbre::setNewValue(int index, struct ParameterDisplay* param, float newVal
         newValue= param->minValue;
     }
     ((float*)&params)[index] = newValue;
+}
+
+void Timbre::setNewEffecParam(int encoder) {
+	if (encoder == 0) {
+	    v0L = v1L = v2L = v3L = 0.0f;
+	    v0R = v1R = v2R = v3R = 0.0f;
+	}
+	switch ((int)params.effect.type) {
+	case FILTER_BASS:
+		// Selectivity = fxParam1
+		// ratio = fxParam2
+		// gain1 = fxParam3
+		fxParam1 = 50 + 200 * params.effect.param1;
+		fxParam2 = params.effect.param2 * 4;
+		fxParam3 = 1.0/(fxParam1 + 1.0);
+		break;
+	case FILTER_HP:
+	case FILTER_LP:
+		switch (encoder) {
+		case ENCODER_EFFECT_TYPE:
+			fxParam2 = 0.3f - params.effect.param2 * 0.3f;
+			break;
+		case ENCODER_EFFECT_PARAM1:
+			// Done in every loop
+			// fxParam1 = pow(0.5, (128- (params.effect.param1 * 128))   / 16.0);
+			break;
+		case ENCODER_EFFECT_PARAM2:
+	    	// fxParam2 = pow(0.5, ((params.effect.param2 * 127)+24) / 16.0);
+			// => value from 0.35 to 0.0
+			fxParam2 = 0.27f - params.effect.param2 * 0.27f;
+			break;
+		}
+    	break;
+	}
+
 }
 
 

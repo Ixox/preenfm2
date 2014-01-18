@@ -32,9 +32,11 @@
 
 
 #ifndef OVERCLOCK
-#define PREENFM_FREQUENCY 39000.0f
+// 168000000 / 1076 / 4
+#define PREENFM_FREQUENCY 39033.45725f
 #else
-#define PREENFM_FREQUENCY 44000.0f
+// 168000000 / 954 / 4
+#define PREENFM_FREQUENCY 44025.15723f
 #endif
 
 #define PREENFM_FREQUENCY_INVERSED 1.0f/PREENFM_FREQUENCY
@@ -77,7 +79,8 @@ enum {
     ROW_OSC_MIX1,
     ROW_OSC_MIX2,
     ROW_OSC_MIX3,
-    ROW_ENGINE_LAST = ROW_OSC_MIX3
+    ROW_EFFECT,
+    ROW_ENGINE_LAST = ROW_EFFECT
 };
 
 enum {
@@ -329,6 +332,14 @@ struct StepSequencerSteps {
     char steps[16];
 };
 
+struct EffectRowParams {
+    float type;
+    float param1;
+    float param2;
+    float param3;
+};
+
+
 
 struct OneSynthParams {
     struct Engine1Params engine1;
@@ -340,6 +351,7 @@ struct OneSynthParams {
     struct EngineMix1 engineMix1;
     struct EngineMix2 engineMix2;
     struct EngineMix3 engineMix3;
+    struct EffectRowParams effect;
     struct OscillatorParams osc1;
     struct OscillatorParams osc2;
     struct OscillatorParams osc3;
@@ -443,6 +455,7 @@ enum DestinationEnum {
     LFOENV2_SILENCE,
     LFOSEQ1_GATE,
     LFOSEQ2_GATE,
+    FILTER_FREQUENCY,
     DESTINATION_MAX
 };
 

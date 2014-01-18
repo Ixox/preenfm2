@@ -151,6 +151,19 @@ struct ParameterRowDisplay engineMix3ParameterRow = {
 };
 
 
+const char* fxName []=  { "Off ", "LP  ", "HP  ", "Bass", "Mono" } ;
+
+struct ParameterRowDisplay effectParameterRow = {
+        "FX  " ,
+        { "Type", "Freq", "Res ", "Gain" },
+        {
+                {0, FILTER_LAST - 1, FILTER_LAST, DISPLAY_TYPE_STRINGS, fxName, nullNamesOrder, nullNamesOrder },
+                {0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
+        }
+};
+
 
 const char* oscShapeNames []=  {"sin ", "saw ", "squa", "s^2 ", "szer", "spos", "rand", "off "} ;
 
@@ -222,7 +235,8 @@ const char* matrixDestNames [] = {
         "o1Fq", "o2Fq", "o3Fq", "o4Fq", "o5Fq", "o6Fq", "o*Fq",
         "Att1", "Att2", "Att3", "Att4", "Att5", "Att6", "Att*", "Rel*",
 	    "mx01", "mx02", "mx03", "mx04",
-        "l1Fq", "l2Fq", "l3Fq", "e2si", "s1ga", "s2ga"
+        "l1Fq", "l2Fq", "l3Fq", "e2si", "s1ga", "s2ga",
+        "FlHz"
 	   } ;
 
 
@@ -279,6 +293,7 @@ struct AllParameterRowsDisplay allParameterRows = {
                 &engineMix1ParameterRow,
                 &engineMix2ParameterRow,
                 &engineMix3ParameterRow,
+                &effectParameterRow,
                 &oscParameterRow,
                 &oscParameterRow,
                 &oscParameterRow,
@@ -422,6 +437,8 @@ void SynthState::encoderTurnedForStepSequencer(int row, int encoder, int ticks) 
 
 
 void SynthState::twoButtonsPressed(int button1, int button2) {
+	int oldCurrentRow = currentRow;
+
 	if (button1 == BUTTON_BACK) {
 		switch (button2) {
     	case BUTTON_SYNTH:
@@ -446,12 +463,71 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
     		break;
 		}
 	} else if (button1 == BUTTON_SYNTH) {
-		if (fullState.synthMode  == SYNTH_MODE_EDIT) {
-			propagateShowAlgo();
+		int oldCurrentRow = currentRow;
+		switch (button2) {
+		case BUTTON_MENUSELECT:
+			if (fullState.synthMode  == SYNTH_MODE_EDIT) {
+				propagateShowAlgo();
+			}
+			break;
+		case BUTTON_OSC:
+			currentRow = ROW_ENGINE;
+			break;
+		case BUTTON_ENV:
+			currentRow = ROW_ARPEGGIATOR1;
+			break;
+		case BUTTON_MATRIX:
+			currentRow = ROW_MODULATION1;
+			break;
+		case BUTTON_LFO:
+			currentRow = ROW_OSC_MIX1;
+			break;
 		}
+	} else if (button1 == BUTTON_MATRIX) {
+		switch (button2) {
+		case BUTTON_SYNTH:
+			currentRow = ROW_MATRIX1;
+			break;
+		case BUTTON_OSC:
+			currentRow = ROW_MATRIX3;
+			break;
+		case BUTTON_ENV:
+			currentRow = ROW_MATRIX6;
+			break;
+		case BUTTON_LFO:
+			currentRow = ROW_MATRIX9;
+			break;
+		}
+
+		if (oldCurrentRow != currentRow) {
+	        propagateNewCurrentRow(currentRow);
+	    }
+	} else if (button1 == BUTTON_LFO) {
+		int oldCurrentRow = currentRow;
+		switch (button2) {
+		case BUTTON_SYNTH:
+			currentRow = ROW_LFOOSC1;
+			break;
+		case BUTTON_OSC:
+			currentRow = ROW_LFOENV1;
+			break;
+		case BUTTON_ENV:
+			currentRow = ROW_LFOENV2;
+			break;
+		case BUTTON_MATRIX:
+			currentRow = ROW_LFOSEQ1;
+			break;
+		}
+
+		if (oldCurrentRow != currentRow) {
+	        propagateNewCurrentRow(currentRow);
+	    }
 	}
+
+
+
 #ifdef DEBUG
-	else if (button1 == BUTTON_LFO) {
+	if (button1 == BUTTON_LFO) {
 		if (button2 == BUTTON_MATRIX) {
 			synth.debugVoice();
 		}
@@ -460,6 +536,11 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
 		}
 	}
 #endif
+
+	if (oldCurrentRow != currentRow) {
+        propagateNewCurrentRow(currentRow);
+    }
+
 }
 
 

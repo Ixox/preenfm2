@@ -35,6 +35,10 @@ const struct OneSynthParams defaultPreset  = {
         { 1, 0, 1, 0} ,
         { 1, 0, 1, 0} ,
         { 1, 0, 1, 0} ,
+
+        // FX
+        { 0, 0.5, 0.5, 1.0} ,
+
         // Oscillator
         { OSC_SHAPE_SIN,  OSC_FT_KEYBOARD , 1.0, 0} ,
         { OSC_SHAPE_SIN,  OSC_FT_KEYBOARD , 1.0, 0} ,
@@ -95,6 +99,11 @@ const struct OneSynthParams preenMainPreset  = {
 		{ 1, 0, 1, 0} ,
 		{ 1, 0, 1, 0} ,
 		{ 1, 0, 1, 0} ,
+
+        // FX
+        { 0, 0.5, 0.5, 1.0} ,
+
+
 		// Oscillator
 		{ OSC_SHAPE_SAW,  OSC_FT_KEYBOARD , 1.0, 0} ,
 		{ OSC_SHAPE_SQUARE, OSC_FT_KEYBOARD , .5, 0} ,

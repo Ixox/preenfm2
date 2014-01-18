@@ -56,6 +56,7 @@ public:
     void fxAfterBlock();
     void afterNewParamsLoad();
     void setNewValue(int index, struct ParameterDisplay* param, float newValue);
+    void setNewEffecParam(int encoder);
     // Arpegiator
     void arpeggiatorNoteOn(char note, char velocity);
     void arpeggiatorNoteOff(char note);
@@ -321,7 +322,10 @@ private:
     int8_t current_step_;
     uint8_t ignore_note_off_messages_;
     uint8_t recording_;
-//
+    // Low pass filter
+	float fxParam1, fxParam2, fxParam3, fxParam4;
+    float v0L, v1L, v2L, v3L;
+    float v0R, v1R, v2R, v3R;
 
 };
 

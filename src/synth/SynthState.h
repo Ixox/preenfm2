@@ -65,6 +65,13 @@ enum {
 };
 
 enum {
+    ENCODER_EFFECT_TYPE = 0,
+    ENCODER_EFFECT_PARAM1,
+    ENCODER_EFFECT_PARAM2,
+    ENCODER_EFFECT_PARAM3
+};
+
+enum {
     ENCODER_ENGINE_IM1 = 0,
     ENCODER_ENGINE_IM2,
     ENCODER_ENGINE_IM3,
@@ -208,6 +215,15 @@ enum OscEnv2Loop {
 };
 
 
+enum FILTER_TYPE {
+	FILTER_OFF = 0,
+	FILTER_LP,
+	FILTER_HP,
+	FILTER_BASS,
+	FILTER_MONO,
+	FILTER_LAST,
+	FILTER_LP4
+};
 
 // Display information
 

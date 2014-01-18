@@ -36,10 +36,6 @@ struct BankFile {
 };
 
 
-#define PFM_PATCH_SIZE sizeof(struct OneSynthParams)
-#define ALIGNED_PATCH_SIZE 1024
-#define ALIGNED_PATCH_ZERO ALIGNED_PATCH_SIZE-PFM_PATCH_SIZE
-#define ALIGNED_COMBO_SIZE ALIGNED_PATCH_SIZE*4+13
 
 #define DX7_PACKED_PATCH_SIZED 128
 #define DX7_UNPACKED_PATCH_SIZED 155
@@ -95,8 +91,14 @@ struct FlashSynthParams {
     struct EngineArp2 engineApr2;
     struct FlashEngineVeloIm1 flashEngineVeloIm1;
     struct FlashEngineVeloIm2 flashEngineVeloIm2;
+    struct EffectRowParams effect;
 };
 
+
+#define PFM_PATCH_SIZE sizeof(struct FlashSynthParams)
+#define ALIGNED_PATCH_SIZE 1024
+#define ALIGNED_PATCH_ZERO ALIGNED_PATCH_SIZE-PFM_PATCH_SIZE
+#define ALIGNED_COMBO_SIZE ALIGNED_PATCH_SIZE*4+13
 
 class Storage {
 public:
