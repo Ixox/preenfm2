@@ -243,7 +243,6 @@ public:
     static void dumpPatch();
     static void dumpLine(const char *enums1[], int a, const char *enums2[], int b, const char *enums3[], int c, const char *enums4[], int d) ;
 
-    static void resetConfigAndSaveToEEPROM();
     static unsigned short getShortFromParamFloat(int row, int encoder, float value);
     static float getParamFloatFromShort(int row, int encoder, short value);
 

@@ -59,6 +59,8 @@ protected:
 	int  bulkDumpChecksum(uint8_t *data, int length);
 	void voiceCopyName(char *name, uint8_t *patch);
 	int abs(int value);
+	float abs(float value);
+	float getRounded(float r);
 
 	char patchName[11];
     uint8_t unpackedData[DX7_VOICE_SIZE_UNPACKED];

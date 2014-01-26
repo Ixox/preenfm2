@@ -159,8 +159,8 @@ private:
 
 
     void  __attribute__ ((noinline)) copyFloat(float* source, float* dest, int n);
-    void  __attribute__ ((noinline)) convertParamsToMemory(const struct OneSynthParams* params, struct FlashSynthParams* memory);
-    void  __attribute__ ((noinline)) convertMemoryToParams(const struct FlashSynthParams* memory, struct OneSynthParams* params);
+    void  __attribute__ ((noinline)) convertParamsToMemory(const struct OneSynthParams* params, struct FlashSynthParams* memory, bool saveArp);
+    void  __attribute__ ((noinline)) convertMemoryToParams(const struct FlashSynthParams* memory, struct OneSynthParams* params, bool loadArp);
 
     char *arpeggiatorPartOfThePreset;
     char presetName[13];

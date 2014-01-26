@@ -30,7 +30,6 @@ void LfoOsc::init(struct LfoParams *lfoParams, Matrix *matrix, SourceEnum source
     this->rampInv = 10000000 ;
     this->currentRamp = 0;
     this->lfo = lfoParams;
-    this->currentRamp =  0;
     valueChanged(3);
     this->destination = dest;
     this->currentRandomValue = 0.0f;
@@ -217,4 +216,18 @@ void LfoOsc::nextValueInMatrix() {
 }
 
 
+void LfoOsc::noteOn() {
+    if (ramp >= 0.0f) {
+        currentRamp = (ramp == 0.0) * 1.0f;
+        if ((lfo->freq * 10.0f) < LFO_MIDICLOCK_MC_DIV_16) {
+    		phase = 0;
+    	}
+        // Retriger value if random...
+        if (unlikely(lfo->shape == LFO_RANDOM)) {
+            currentRandomValue = noise[0];
+        }
+    } else {
+        currentRamp = 1; // greater than 0 :
+    }
+}
 

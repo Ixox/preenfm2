@@ -125,6 +125,9 @@ public:
    		float freq = oscState->frequency * waveTables[shape].precomputedValue + waveTables[shape].floatToAdd;
    		float fIndex = oscState->index;
    		int iIndex;
+   		float* oscValuesToFill = oscValues[oscValuesCpt];
+    	oscValuesCpt++;
+    	oscValuesCpt &= 0x3;
 
    		for (int k=0; k<32; ) {
             fIndex +=  freq;
@@ -132,32 +135,32 @@ public:
             fIndex -= iIndex;
             iIndex &=  max;
             fIndex += iIndex;
-            oscValues[k++] = wave[iIndex];
+            oscValuesToFill[k++] = wave[iIndex];
 
             fIndex +=  freq;
             iIndex = fIndex;
             fIndex -= iIndex;
             iIndex &=  max;
             fIndex += iIndex;
-            oscValues[k++] = wave[iIndex];
+            oscValuesToFill[k++] = wave[iIndex];
 
             fIndex +=  freq;
             iIndex = fIndex;
             fIndex -= iIndex;
             iIndex &=  max;
             fIndex += iIndex;
-            oscValues[k++] = wave[iIndex];
+            oscValuesToFill[k++] = wave[iIndex];
 
             fIndex +=  freq;
             iIndex = fIndex;
             fIndex -= iIndex;
             iIndex &=  max;
             fIndex += iIndex;
-            oscValues[k++] = wave[iIndex];
+            oscValuesToFill[k++] = wave[iIndex];
 
    		}
     	oscState->index = fIndex;
-    	return oscValues;
+    	return oscValuesToFill;
     };
 
    	float* getNextBlockHQ(struct OscState *oscState)  {
@@ -168,6 +171,9 @@ public:
    		float fIndex = oscState->index;
    		int iIndex;
    		float fp;
+   		float* oscValuesToFill = oscValues[oscValuesCpt];
+    	oscValuesCpt++;
+    	oscValuesCpt &= 0x3;
    		for (int k=0; k<32; ) {
             fIndex +=  freq;
             iIndex = fIndex;
@@ -175,7 +181,7 @@ public:
             fp = fIndex;
             iIndex &=  max;
             fIndex += iIndex;
-            oscValues[k++] = wave[iIndex] * (1-fp) + wave[iIndex]* fp;
+            oscValuesToFill[k++] = wave[iIndex] * (1-fp) + wave[iIndex]* fp;
 
             fIndex +=  freq;
             iIndex = fIndex;
@@ -183,7 +189,7 @@ public:
             fp = fIndex;
             iIndex &=  max;
             fIndex += iIndex;
-            oscValues[k++] = wave[iIndex] * (1-fp) + wave[iIndex]* fp;
+            oscValuesToFill[k++] = wave[iIndex] * (1-fp) + wave[iIndex]* fp;
 
             fIndex +=  freq;
             iIndex = fIndex;
@@ -191,7 +197,7 @@ public:
             fp = fIndex;
             iIndex &=  max;
             fIndex += iIndex;
-            oscValues[k++] = wave[iIndex] * (1-fp) + wave[iIndex]* fp;
+            oscValuesToFill[k++] = wave[iIndex] * (1-fp) + wave[iIndex]* fp;
 
             fIndex +=  freq;
             iIndex = fIndex;
@@ -199,16 +205,17 @@ public:
             fp = fIndex;
             iIndex &=  max;
             fIndex += iIndex;
-            oscValues[k++] = wave[iIndex] * (1-fp) + wave[iIndex]* fp;
+            oscValuesToFill[k++] = wave[iIndex] * (1-fp) + wave[iIndex]* fp;
    		}
     	oscState->index = fIndex;
-    	return oscValues;
+    	return oscValuesToFill;
     };
 
 private:
     DestinationEnum destFreq;
     Matrix* matrix;
-    float oscValues[32];
+    static float* oscValues[4];
+    static int oscValuesCpt;
     OscillatorParams* oscillator;
 };
 

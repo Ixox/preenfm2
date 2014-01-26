@@ -87,7 +87,22 @@ void setup() {
 	USART_Config();
 	MCP4922_Config();
 	RNG_Config();
+	// Set flush to zero mode...
+	// FPU will treat denormal value as 0
 
+	//	You can avoid some of these support code requirements by:
+	//enabling flush-to-zero mode, by setting the FZ bit, FPSCR[24], to 1
+	//enabling default NaN mode, by setting the DN bit, FPSCR[25], to 1.
+	//Some of the other support code requirements only occur when the appropriate feature is enabled. You enable:
+	//Inexact exceptions by setting the IXE bit, FPSCR[12], to 1
+	//Overflow exceptions by setting the OFE bit, FPSCR[10], to 1
+	//Invalid Operation exceptions by setting the IOE bit, FPSCR[8], to 1.
+	// Fast mode
+	FPU->FPDSCR |= FPU_FPDSCR_FZ_Msk;
+	FPU->FPDSCR |= FPU_FPDSCR_DN_Msk;
+	FPU->FPDSCR &= ~(1UL << 12);
+	FPU->FPDSCR &= ~(1UL << 10);
+	FPU->FPDSCR &= ~(1UL << 8);
     // ---------------------------------------
     // Dependencies Injection
 
@@ -252,16 +267,16 @@ void setup() {
 
 }
 
-unsigned int ledMicros = 0;
-unsigned int encoderMicros = 0;
-unsigned int tempoMicros = 0;
+unsigned int ledTimer = 0;
+unsigned int encoderTimer = 0;
+unsigned int tempoTimer = 0;
 
 bool ledOn = false;
 
 void loop(void) {
     fillSoundBuffer();
 
-    unsigned int newMicros = preenTimer;
+    unsigned int newPreenTimer = preenTimer;
 
     /*
     if ((newMicros - ledMicros) > 10000) {
@@ -285,20 +300,20 @@ void loop(void) {
 		midiDecoder.newByte(usartBufferIn.remove());
 	}
 
-	if ((newMicros - encoderMicros) > 80) {
+	if ((newPreenTimer - encoderTimer) > 80) {
         fillSoundBuffer();
         encoders.checkStatus(synthState.fullState.midiConfigValue[MIDICONFIG_ENCODER]);
-        encoderMicros = newMicros;
+        encoderTimer = newPreenTimer;
     } else if (fmDisplay.needRefresh()) {
         fillSoundBuffer();
         fmDisplay.refreshAllScreenByStep();
     }
 
-    if ((newMicros - tempoMicros) > 10000) {
+    if ((newPreenTimer - tempoTimer) > 10000) {
          fillSoundBuffer();
          synthState.tempoClick();
          fmDisplay.tempoClick();
-         tempoMicros = newMicros;
+         tempoTimer = newPreenTimer;
      }
 
     lcd.setRealTimeAction(true);

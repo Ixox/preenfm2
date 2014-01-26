@@ -66,6 +66,9 @@ private:
     char note;
     float velocity;
     float im1, im2, im3, im4, im5;
+    //
+    float freqAi, freqAo;
+    float freqBi, freqBo;
 
     EnvData envState1;
     EnvData envState2;
@@ -73,7 +76,6 @@ private:
     EnvData envState4;
     EnvData envState5;
     EnvData envState6;
-    EnvData *envState[6];
 
     OscState oscState1;
     OscState oscState2;
@@ -81,8 +83,6 @@ private:
     OscState oscState4;
     OscState oscState5;
     OscState oscState6;
-    OscState *oscState[6];
-
 
     bool holdedByPedal;
     // Fixing the "plop" when all notes are buisy...

@@ -24,7 +24,7 @@
 extern LiquidCrystal lcd;
 
 enum EnvState {
-    ENV_STATE_ON_A,
+    ENV_STATE_ON_A = 0,
     ENV_STATE_ON_D,
     ENV_STATE_ON_S,
     ENV_STATE_ON_REAL_S,
@@ -136,29 +136,39 @@ public:
         env->currentPhase = 0;
     }
 
-    inline float getNextAmp(struct EnvData* env) {
-		env->currentPhase += stateInc[env->envState];
-
-		if (env->currentPhase  >= 1.0f) {
-			// Next state
-			env->currentValue = env->nextStateValue;
-			newState(env);
-		} else if (stateInc[env->envState] > 0) {
-			env->currentValue = env->previousStateValue * (1- env->currentPhase) + env->nextStateValue * env->currentPhase;
-		}
-        return env->currentValue;
-      }
-
 
     inline float getNextAmpExp(struct EnvData* env) {
 		env->currentPhase += stateInc[env->envState];
 
-		if (env->currentPhase  >= 1.0f) {
-			// Next state
+		if (unlikely(env->currentPhase  >= 1.0f)) {
 			env->currentValue = env->nextStateValue;
 			env->envState = nextState[env->envState];
 			newState(env);
-		} else if (stateInc[env->envState] > 0) {
+
+			if (unlikely(stateInc[env->envState] == 1.0f)) {
+				// Means time is 0 : Move forward
+				// If D or S have 0 timing
+				if (unlikely(env->envState <= ENV_STATE_ON_S)) {
+					if (env->envState != ENV_STATE_ON_S) {
+						env->envState = nextState[env->envState];
+						newState(env);
+					} else {
+						// If sustain jum directly to Release
+						noteOff(env);
+					}
+					// If D was 0 AND S is also 0
+					if (unlikely(stateInc[env->envState] == 1.0f)) {
+						// Means time is 0 : Move forward
+						if (unlikely(env->envState == ENV_STATE_ON_S)) {
+							noteOff(env);
+						}
+					}
+				}
+			}
+	        return env->currentValue;
+		}
+
+		if (likely(stateInc[env->envState] > 0)) {
 			float fIndex = env->currentPhase * tables[env->envState].size;
 			int index = (int)fIndex;
 
@@ -170,8 +180,10 @@ public:
 			// When table value is 1 => previous value
 			// see table
 			env->currentValue = tmpValue * (env->nextStateValue - env->previousStateValue) + env->previousStateValue;
+			return env->currentValue;
 		}
-        return env->currentValue;
+
+		return env->currentValue;
       }
 
 

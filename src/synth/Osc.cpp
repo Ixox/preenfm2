@@ -23,6 +23,12 @@ float noise[32] __attribute__ ((section(".ccmnoload")));
 #include "../waveforms/waves.c"
 
 
+float* Osc::oscValues[4] __attribute__ ((section(".ccmnoload")));
+float oscValues1[32] __attribute__ ((section(".ccmnoload")));
+float oscValues2[32] __attribute__ ((section(".ccmnoload")));
+float oscValues3[32] __attribute__ ((section(".ccmnoload")));
+float oscValues4[32] __attribute__ ((section(".ccmnoload")));
+int Osc::oscValuesCpt = 1;
 
 struct WaveTable waveTables[NUMBER_OF_WAVETABLES] __attribute__ ((section(".ccm"))) = {
 		//		OSC_SHAPE_SIN = 0,
@@ -103,6 +109,13 @@ void Osc::init(Matrix* matrix, struct OscillatorParams *oscParams, DestinationEn
 		for (int k=0; k<NUMBER_OF_WAVETABLES; k++) {
 			waveTables[k].precomputedValue = (waveTables[k].max + 1) * waveTables[k].useFreq * PREENFM_FREQUENCY_INVERSED;
 		}
+	}
+	if (oscValuesCpt == 1) {
+		oscValues[0] = oscValues1;
+		oscValues[1] = oscValues2;
+		oscValues[2] = oscValues3;
+		oscValues[3] = oscValues4;
+		oscValuesCpt = 0;
 	}
 }
 

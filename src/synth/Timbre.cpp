@@ -75,27 +75,6 @@ unsigned int voiceIndex  __attribute__ ((section(".ccmnoload")));
 
 
 Timbre::Timbre() {
-    osc[0] = &osc1;
-    osc[1] = &osc2;
-    osc[2] = &osc3;
-    osc[3] = &osc4;
-    osc[4] = &osc5;
-    osc[5] = &osc6;
-
-    env[0] = &env1;
-    env[1] = &env2;
-    env[2] = &env3;
-    env[3] = &env4;
-    env[4] = &env5;
-    env[5] = &env6;
-
-    lfo[0] = &lfoOsc[0];
-    lfo[1] = &lfoOsc[1];
-    lfo[2] = &lfoOsc[2];
-    lfo[3] = &lfoEnv[0];
-    lfo[4] = &lfoEnv2[0];
-    lfo[5] = &lfoStepSeq[0];
-    lfo[6] = &lfoStepSeq[1];
 
 
     this->recomputeNext = true;
@@ -123,19 +102,26 @@ Timbre::~Timbre() {
 }
 
 void Timbre::init(int timbreNumber) {
-    struct EnvelopeParamsA* envParamsA[] = { &params.env1a, &params.env2a, &params.env3a, &params.env4a, &params.env5a, &params.env6a};
-    struct EnvelopeParamsB* envParamsB[] = { &params.env1b, &params.env2b, &params.env3b, &params.env4b, &params.env5b, &params.env6b};
-    struct OscillatorParams* oscParams[] = { &params.osc1, &params.osc2, &params.osc3, &params.osc4, &params.osc5, &params.osc6};
     struct LfoParams* lfoParams[] = { &params.lfoOsc1, &params.lfoOsc2, &params.lfoOsc3};
     struct StepSequencerParams* stepseqparams[] = { &params.lfoSeq1, &params.lfoSeq2};
     struct StepSequencerSteps* stepseqs[] = { &params.lfoSteps1, &params.lfoSteps2};
 
     matrix.init(&params.matrixRowState1);
 
-    for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
-        env[k]->init(&matrix, envParamsA[k],  envParamsB[k], (DestinationEnum)(ENV1_ATTACK + k));
-        osc[k]->init(&matrix, oscParams[k], (DestinationEnum)(OSC1_FREQ + k));
-    }
+	env1.init(&matrix, &params.env1a,  &params.env1b, ENV1_ATTACK);
+	env2.init(&matrix, &params.env2a,  &params.env2b, ENV2_ATTACK);
+	env3.init(&matrix, &params.env3a,  &params.env3b, ENV3_ATTACK);
+	env4.init(&matrix, &params.env4a,  &params.env4b, ENV4_ATTACK);
+	env5.init(&matrix, &params.env5a,  &params.env5b, ENV5_ATTACK);
+	env6.init(&matrix, &params.env6a,  &params.env6b, ENV6_ATTACK);
+
+	osc1.init(&matrix, &params.osc1, OSC1_FREQ);
+	osc2.init(&matrix, &params.osc2, OSC2_FREQ);
+	osc3.init(&matrix, &params.osc3, OSC3_FREQ);
+	osc4.init(&matrix, &params.osc4, OSC4_FREQ);
+	osc5.init(&matrix, &params.osc5, OSC5_FREQ);
+	osc6.init(&matrix, &params.osc6, OSC6_FREQ);
+
     // OSC
     for (int k = 0; k < NUMBER_OF_LFO_OSC; k++) {
         lfoOsc[k].init(lfoParams[k], &this->matrix, (SourceEnum)(MATRIX_SOURCE_LFO1 + k), (DestinationEnum)(LFO1_FREQ + k));
@@ -298,35 +284,41 @@ void Timbre::setArpeggiatorClock(float clockValue) {
 	if (clockValue == CLOCK_INTERNAL) {
 	    setNewBPMValue(params.engineApr1.BPM);
 	}
+	if (clockValue == CLOCK_EXTERNAL) {
+		// Let's consider we're running
+		running_ = 1;
+	}
 }
 
 
-
-
 void Timbre::prepareForNextBlock() {
+
 	// Apeggiator clock : internal
 	if (params.engineApr1.clock == CLOCK_INTERNAL) {
 		arpegiatorStep+=1.0f;
-		if ((arpegiatorStep) > ticksEveryNCalls) {
+		if (unlikely((arpegiatorStep) > ticksEveryNCalls)) {
 			arpegiatorStep -= ticksEveyNCallsInteger;
-			// control by internal clock
+
 			Tick();
 		}
 	}
 
-    this->lfo[0]->nextValueInMatrix();
-    this->lfo[1]->nextValueInMatrix();
-    this->lfo[2]->nextValueInMatrix();
-    this->lfo[3]->nextValueInMatrix();
-    this->lfo[4]->nextValueInMatrix();
-    this->lfo[5]->nextValueInMatrix();
-    this->lfo[6]->nextValueInMatrix();
+	this->lfoOsc[0].nextValueInMatrix();
+	this->lfoOsc[1].nextValueInMatrix();
+	this->lfoOsc[2].nextValueInMatrix();
+	this->lfoEnv[0].nextValueInMatrix();
+	this->lfoEnv2[0].nextValueInMatrix();
+	this->lfoStepSeq[0].nextValueInMatrix();
+	this->lfoStepSeq[1].nextValueInMatrix();
 
     this->matrix.computeAllFutureDestintationAndSwitch();
 
     updateAllModulationIndexes();
     updateAllMixOscsAndPans();
 
+}
+
+void Timbre::cleanNextBlock() {
 	float *sp = this->sampleBlock;
 	while (sp < this->sbMax) {
 		*sp++ = 0;
@@ -338,13 +330,13 @@ void Timbre::prepareForNextBlock() {
 		*sp++ = 0;
 		*sp++ = 0;
 	}
-
 }
+
 
 
 #define GATE_INC 0.02f
 
-void Timbre::fxAfterBlock() {
+void Timbre::fxAfterBlock(float ratioTimbres) {
     // Gate algo !!
     float gate = this->matrix.getDestination(MAIN_GATE);
     if (unlikely(gate > 0 || currentGate > 0)) {
@@ -362,7 +354,7 @@ void Timbre::fxAfterBlock() {
 
 		float *sp = this->sampleBlock;
 		float coef;
-		while (sp < this->sbMax) {
+    	for (int k=0 ; k< BLOCK_SIZE ; k++) {
 			currentGate += incGate;
 			coef = 1.0f - currentGate;
 			*sp = *sp * coef;
@@ -375,12 +367,12 @@ void Timbre::fxAfterBlock() {
 
     // LP Algo
     int effectType = params.effect.type;
+    float gainTmp =  params.effect.param3 * numberOfVoiceInverse * ratioTimbres;
+    mixerGain = 0.02f * gainTmp + .98  * mixerGain;
 
     switch (effectType) {
     case FILTER_LP:
     {
-    	float gain =  params.effect.param3;
-
     	float fxParamTmp = params.effect.param1 + matrix.getDestination(FILTER_FREQUENCY);
     	fxParamTmp *= fxParamTmp;
 
@@ -396,19 +388,19 @@ void Timbre::fxAfterBlock() {
     	float pattern = (1 - fxParam2 * fxParam1);
 
     	float *sp = this->sampleBlock;
-    	while (sp < this->sbMax) {
+    	for (int k=0 ; k<BLOCK_SIZE  ; k++) {
 
     		// Left voice
     		v0L =  pattern * v0L  -  (fxParam1) * v1L  + (fxParam1)* (*sp);
-    		v1L =  pattern * v1L  +  (fxParam1)*v0L;
+    		v1L =  pattern * v1L  +  (fxParam1) * v0L;
 
-    		*sp = v1L * gain;
+    		*sp = v1L * mixerGain;
 
-    		if (unlikely(*sp > params.engine1.numberOfVoice)) {
-    			*sp = params.engine1.numberOfVoice;
+    		if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
     		}
-    		if (unlikely(*sp < -params.engine1.numberOfVoice)) {
-    			*sp = -params.engine1.numberOfVoice;
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
     		}
 
     		sp++;
@@ -417,13 +409,13 @@ void Timbre::fxAfterBlock() {
     		v0R =  pattern * v0R  -  (fxParam1)*v1R  + (fxParam1)* (*sp);
     		v1R =  pattern * v1R  +  (fxParam1)*v0R;
 
-    		*sp = v1R * gain;
+    		*sp = v1R * mixerGain;
 
-    		if (unlikely(*sp > params.engine1.numberOfVoice)) {
-    			*sp = params.engine1.numberOfVoice;
+    		if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
     		}
-    		if (unlikely(*sp < -params.engine1.numberOfVoice)) {
-    			*sp = -params.engine1.numberOfVoice;
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
     		}
 
     		sp++;
@@ -432,9 +424,6 @@ void Timbre::fxAfterBlock() {
     break;
     case FILTER_HP:
     {
-
-    	float gain =  params.effect.param3;
-
     	float fxParamTmp = params.effect.param1 + matrix.getDestination(FILTER_FREQUENCY);
     	fxParamTmp *= fxParamTmp;
 
@@ -446,19 +435,19 @@ void Timbre::fxAfterBlock() {
     	float pattern = (1 - fxParam2 * fxParam1);
 
     	float *sp = this->sampleBlock;
-    	while (sp < this->sbMax) {
+    	for (int k=0 ; k<BLOCK_SIZE ; k++) {
 
     		// Left voice
     		v0L =  pattern * v0L  -  (fxParam1) * v1L  + (fxParam1) * (*sp);
     		v1L =  pattern * v1L  +  (fxParam1) * v0L;
 
-    		*sp = (*sp - v1L) * gain;
+    		*sp = (*sp - v1L) * mixerGain;
 
-    		if (unlikely(*sp > params.engine1.numberOfVoice)) {
-    			*sp = params.engine1.numberOfVoice;
+    		if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
     		}
-    		if (unlikely(*sp < -params.engine1.numberOfVoice)) {
-    			*sp = -params.engine1.numberOfVoice;
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
     		}
 
     		sp++;
@@ -467,13 +456,13 @@ void Timbre::fxAfterBlock() {
     		v0R =  pattern * v0R  -  (fxParam1) * v1R  + (fxParam1) * (*sp);
     		v1R =  pattern * v1R  +  (fxParam1) * v0R;
 
-    		*sp = (*sp - v1R) * gain;
+    		*sp = (*sp - v1R) * mixerGain;
 
-    		if (unlikely(*sp > params.engine1.numberOfVoice)) {
-    			*sp = params.engine1.numberOfVoice;
+    		if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
     		}
-    		if (unlikely(*sp < -params.engine1.numberOfVoice)) {
-    			*sp = -params.engine1.numberOfVoice;
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
     		}
 
     		sp++;
@@ -503,50 +492,74 @@ void Timbre::fxAfterBlock() {
 
     	float *sp = this->sampleBlock;
 
-    	while (sp < this->sbMax) {
-
-    		static float selectivity, gain1, gain2, ratio, cap;
-
+    	for (int k=0 ; k<BLOCK_SIZE ; k++) {
 
     		v0L = ((*sp) + v0L * fxParam1) * fxParam3;
-    		(*sp) = ((*sp) + v0L * fxParam2) * params.effect.param3;
+    		(*sp) = ((*sp) + v0L * fxParam2) * mixerGain;
 
-    		if (unlikely(*sp > params.engine1.numberOfVoice)) {
-    			*sp = params.engine1.numberOfVoice;
+    		if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
     		}
-    		if (unlikely(*sp < -params.engine1.numberOfVoice)) {
-    			*sp = -params.engine1.numberOfVoice;
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
     		}
 
     		sp++;
 
     		v0R = ((*sp) + v0R * fxParam1) * fxParam3;
-    		(*sp) = ((*sp) + v0R * fxParam2) * params.effect.param3;
+    		(*sp) = ((*sp) + v0R * fxParam2) * mixerGain;
 
-    		if (unlikely(*sp > params.engine1.numberOfVoice)) {
-    			*sp = params.engine1.numberOfVoice;
+    		if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
     		}
-    		if (unlikely(*sp < -params.engine1.numberOfVoice)) {
-    			*sp = -params.engine1.numberOfVoice;
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
     		}
 
     		sp++;
     	}
     }
     break;
-    case FILTER_MONO:
+    case FILTER_MIXER:
     {
-    	float pan2 = 1 - params.effect.param3;
+    	float pan = params.effect.param1 * 2 - 1.0f ;
     	float *sp = this->sampleBlock;
-    	while (sp < this->sbMax) {
-    		float sample = *sp + *(sp+1) * .5f;
+    	float sampleR, sampleL;
+    	if (pan <= 0) {
+        	float onePlusPan = 1 + pan;
+        	float minusPan = - pan;
+        	for (int k=0 ; k<BLOCK_SIZE  ; k++) {
+				sampleL = *(sp);
+				sampleR = *(sp + 1);
 
-    		*sp = sample * params.effect.param3;
-    		sp++;
+				*sp = (sampleL + sampleR * minusPan) * mixerGain;
+				sp++;
+				*sp = sampleR * onePlusPan * mixerGain;
+				sp++;
+			}
+    	} else if (pan > 0) {
+        	float oneMinusPan = 1 - pan;
+        	float adjustedmixerGain = (pan * .5) * mixerGain;
+        	for (int k=0 ; k<BLOCK_SIZE ; k++) {
+				sampleL = *(sp);
+				sampleR = *(sp + 1);
 
-    		*sp = sample * pan2 ;
-    		sp++;
+				*sp = sampleL * oneMinusPan * mixerGain;
+				sp++;
+				*sp = (sampleR + sampleL * pan) * mixerGain;
+				sp++;
+			}
     	}
+    }
+    break;
+    case FILTER_OFF:
+    {
+    	// Filter off has gain...
+    	float *sp = this->sampleBlock;
+    	for (int k=0 ; k<BLOCK_SIZE ; k++) {
+			*sp++ = (*sp) * mixerGain;
+			*sp++ = (*sp) * mixerGain;
+		}
     }
     break;
     case FILTER_LP4:
@@ -636,17 +649,25 @@ void Timbre::fxAfterBlock() {
 void Timbre::afterNewParamsLoad() {
     this->matrix.resetSources();
     this->matrix.resetAllDestination();
-    for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
-        for (int j=0; j<NUMBER_OF_ENCODERS; j++) {
-        	this->env[k]->reloadADSR(j);
-        	this->env[k]->reloadADSR(j+4);
-        }
-    }
-    for (int k=0; k<NUMBER_OF_LFO; k++) {
-        for (int j=0; j<NUMBER_OF_ENCODERS; j++) {
-        	this->lfo[k]->valueChanged(j);
-        }
-    }
+	 for (int j=0; j<NUMBER_OF_ENCODERS * 2; j++) {
+		this->env1.reloadADSR(j);
+		this->env2.reloadADSR(j);
+		this->env3.reloadADSR(j);
+		this->env4.reloadADSR(j);
+		this->env5.reloadADSR(j);
+		this->env6.reloadADSR(j);
+	}
+
+	for (int j=0; j<NUMBER_OF_ENCODERS; j++) {
+		this->lfoOsc[0].valueChanged(j);
+		this->lfoOsc[1].valueChanged(j);
+		this->lfoOsc[2].valueChanged(j);
+		this->lfoEnv[0].valueChanged(j);
+		this->lfoEnv2[0].valueChanged(j);
+		this->lfoStepSeq[0].valueChanged(j);
+		this->lfoStepSeq[1].valueChanged(j);
+	}
+
     resetArpeggiator();
     v0L = v1L = v2L = v3L = 0.0f;
     v0R = v1R = v2R = v3R = 0.0f;
@@ -738,7 +759,7 @@ void Timbre::setNewEffecParam(int encoder) {
 void Timbre::arpeggiatorNoteOn(char note, char velocity) {
 	// CLOCK_MODE_INTERNAL
 	if (params.engineApr1.clock == CLOCK_INTERNAL) {
-		if (idle_ticks_ >= 96) {
+		if (idle_ticks_ >= 96 || !running_) {
 			Start();
 		}
 		idle_ticks_ = 0;
@@ -781,7 +802,7 @@ void Timbre::OnMidiStart() {
 void Timbre::OnMidiStop() {
 	if (params.engineApr1.clock == CLOCK_EXTERNAL) {
 		running_ = 0;
-		SendScheduledNotes();
+		FlushQueue();
 	}
 }
 
@@ -960,3 +981,28 @@ void Timbre::setLatchMode(uint8_t value) {
     }
 }
 
+void Timbre::setDirection(uint8_t value) {
+	// When changing the arpeggio direction, reset the pattern.
+	current_direction_ = (value == ARPEGGIO_DIRECTION_DOWN ? -1 : 1);
+	StartArpeggio();
+}
+
+void Timbre::lfoValueChange(int currentRow, int encoder, float newValue) {
+	switch (currentRow) {
+	case ROW_LFOOSC1:
+	case ROW_LFOOSC2:
+	case ROW_LFOOSC3:
+		lfoOsc[currentRow - ROW_LFOOSC1].valueChanged(encoder);
+		break;
+	case ROW_LFOENV1:
+		lfoEnv[0].valueChanged(encoder);
+		break;
+	case ROW_LFOENV2:
+		lfoEnv2[0].valueChanged(encoder);
+		break;
+	case ROW_LFOSEQ1:
+	case ROW_LFOSEQ2:
+		lfoStepSeq[currentRow - ROW_LFOSEQ1].valueChanged(encoder);
+		break;
+	}
+}

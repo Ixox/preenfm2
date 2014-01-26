@@ -31,8 +31,8 @@ public:
 
 	void valueChanged(int encoder) {
 	    if (encoder == 3) {
-            this->rampInv = 1 / (lfo->keybRamp + .00000001);
-            this->ramp = lfo->keybRamp;
+			this->rampInv = 50 * invTab[(int)(lfo->keybRamp * 50.0f)];
+			this->ramp = lfo->keybRamp;
 	    }
 	}
 
@@ -40,17 +40,7 @@ public:
 
 	void nextValueInMatrix();
 
-
-	void noteOn() {
-        if (ramp > 0) {
-            currentRamp = 0;
-            if ((lfo->freq * 10.0f) < LFO_MIDICLOCK_MC_DIV_16) {
-        		phase = 0;
-        	}
-        } else {
-            currentRamp = 1; // greater than 0
-        }
-	}
+	inline void noteOn();
 
 	void noteOff() {
 		// Nothing to do

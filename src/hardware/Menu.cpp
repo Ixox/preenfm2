@@ -35,6 +35,8 @@ const char* encoderType [] = { "12", "24" };
 const char* usbMidi[] = { "Off", "In", "In/Out" };
 const char* operatorButton[] = { "New", "Old" };
 const char* version[] = { PFM2_VERSION" "OVERCLOCK_STRING };
+const char* oledSaver[] = { "Off", "2m", "5m", "10m", "1h" };
+
 
 const struct MidiConfig midiConfig[]  = {
 		{
@@ -116,6 +118,11 @@ const struct MidiConfig midiConfig[]  = {
                 "Arp in Preset: ",
                 2,
                 yesNo
+        },
+        {
+                "Oled Saver: ",
+                5,
+                oledSaver,
         },
         // Don't count in MIDICONFIG_SIZE
         {

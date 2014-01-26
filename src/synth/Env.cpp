@@ -44,9 +44,11 @@ void Env::init(Matrix* matrix, struct EnvelopeParamsA *envParamsA, struct Envelo
 
     if (initTab == 0) {
         initTab = 1;
-        for (float k=0; k<1601; k += 1.0f) {
+        for (float k=1.0f; k<1601; k += 1.0f) {
             incTab[(int)(k + .005f)] = BLOCK_SIZE / PREENFM_FREQUENCY / (k / 100.0f);
         }
+        // 1.0 to recognize it...
+        incTab[0] = 1.0f;
     }
 
     // Init All ADSR

@@ -24,20 +24,6 @@ float Voice::glidePhaseInc[10];
 
 Voice::Voice(void)
 {
-	this->envState[0] = &envState1;
-	this->envState[1] = &envState2;
-	this->envState[2] = &envState3;
-	this->envState[3] = &envState4;
-	this->envState[4] = &envState5;
-	this->envState[5] = &envState6;
-
-	this->oscState[0] = &oscState1;
-	this->oscState[1] = &oscState2;
-	this->oscState[2] = &oscState3;
-	this->oscState[3] = &oscState4;
-	this->oscState[4] = &oscState5;
-	this->oscState[5] = &oscState6;
-
 
 	if (glidePhaseInc[0] != .2f) {
 		float tmp[] = {
@@ -56,6 +42,8 @@ Voice::Voice(void)
 			glidePhaseInc[k] = 1.0f/tmp[k];
 		}
 	}
+	freqAi = freqAo = 0.0f;
+	freqBi = freqBo = 0.0f;
 }
 
 
@@ -86,9 +74,12 @@ void Voice::glideToNote(short newNote) {
 		glideFirstNoteOff();
 	}
 
-	for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
-		currentTimbre->osc[k]->glideToNote(oscState[k], newNote);
-	}
+	currentTimbre->osc1.glideToNote(&oscState1, newNote);
+	currentTimbre->osc2.glideToNote(&oscState2, newNote);
+	currentTimbre->osc3.glideToNote(&oscState3, newNote);
+	currentTimbre->osc4.glideToNote(&oscState4, newNote);
+	currentTimbre->osc5.glideToNote(&oscState5, newNote);
+	currentTimbre->osc6.glideToNote(&oscState6, newNote);
 }
 
 void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) {
@@ -106,9 +97,13 @@ void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) 
 		this->nextPendingNote = newNote;
 		// Not release anymore... not available for new notes...
 		this->released = false;
-		for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
-			this->currentTimbre->env[k]->noteOffQuick(envState[k]);
-		}
+
+		this->currentTimbre->env1.noteOffQuick(&envState1);
+		this->currentTimbre->env2.noteOffQuick(&envState2);
+		this->currentTimbre->env3.noteOffQuick(&envState3);
+		this->currentTimbre->env4.noteOffQuick(&envState4);
+		this->currentTimbre->env5.noteOffQuick(&envState5);
+		this->currentTimbre->env6.noteOffQuick(&envState6);
 	}
 }
 
@@ -119,14 +114,21 @@ void Voice::glide() {
 	this->glidePhase += glidePhaseInc[(int)(currentTimbre->params.engine1.glide - .95f)];
 	if (glidePhase < 1.0f) {
 
-		for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
-			currentTimbre->osc[k]->glideStep(oscState[k], this->glidePhase);
-		}
+		currentTimbre->osc1.glideStep(&oscState1, this->glidePhase);
+		currentTimbre->osc2.glideStep(&oscState2, this->glidePhase);
+		currentTimbre->osc3.glideStep(&oscState3, this->glidePhase);
+		currentTimbre->osc4.glideStep(&oscState4, this->glidePhase);
+		currentTimbre->osc5.glideStep(&oscState5, this->glidePhase);
+		currentTimbre->osc6.glideStep(&oscState6, this->glidePhase);
+
 	} else {
 		// last with phase set to 1 to have exact frequencry
-		for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
-			currentTimbre->osc[k]->glideStep(oscState[k], 1.0f);
-		}
+		currentTimbre->osc1.glideStep(&oscState1, 1);
+		currentTimbre->osc2.glideStep(&oscState2, 1);
+		currentTimbre->osc3.glideStep(&oscState3, 1);
+		currentTimbre->osc4.glideStep(&oscState4, 1);
+		currentTimbre->osc5.glideStep(&oscState5, 1);
+		currentTimbre->osc6.glideStep(&oscState6, 1);
 		this->gliding = false;
 	}
 }
@@ -153,13 +155,21 @@ void Voice::noteOn(short timbre, short newNote, short velocity, unsigned int ind
 	int newVelocity = zeroVelo + ((velocity * (128 - zeroVelo)) >> 7);
 	this->velocity = newVelocity * .0078125f; // divide by 127
 
+	currentTimbre->osc1.newNote(&oscState1, newNote);
+	currentTimbre->osc2.newNote(&oscState2, newNote);
+	currentTimbre->osc3.newNote(&oscState3, newNote);
+	currentTimbre->osc4.newNote(&oscState4, newNote);
+	currentTimbre->osc5.newNote(&oscState5, newNote);
+	currentTimbre->osc6.newNote(&oscState6, newNote);
 
-	for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
-		currentTimbre->osc[k]->newNote(oscState[k], newNote);
-		currentTimbre->env[k]->noteOn(envState[k]);
-	}
+	currentTimbre->env1.noteOn(&envState1);
+	currentTimbre->env2.noteOn(&envState2);
+	currentTimbre->env3.noteOn(&envState3);
+	currentTimbre->env4.noteOn(&envState4);
+	currentTimbre->env5.noteOn(&envState5);
+	currentTimbre->env6.noteOn(&envState6);
 
-	currentTimbre->startNewNote();
+	currentTimbre->lfoNoteOn();
 }
 
 void Voice::endNoteOrBeginNextOne() {
@@ -192,12 +202,14 @@ void Voice::noteOff() {
 	this->gliding = false;
 	this->holdedByPedal = false;
 
-	for (int k=0; k<NUMBER_OF_OPERATORS; k++) {
-		currentTimbre->env[k]->noteOff(envState[k]);
-	}
-	for (int k=0; k<NUMBER_OF_LFO; k++) {
-		currentTimbre->lfo[k]->noteOff();
-	}
+	currentTimbre->env1.noteOff(&envState1);
+	currentTimbre->env2.noteOff(&envState2);
+	currentTimbre->env3.noteOff(&envState3);
+	currentTimbre->env4.noteOff(&envState4);
+	currentTimbre->env5.noteOff(&envState5);
+	currentTimbre->env6.noteOff(&envState6);
+
+	currentTimbre->lfoNoteOff();
 }
 
 void Voice::killNow() {
@@ -286,11 +298,17 @@ void Voice::nextBlock() {
 		oscState3.frequency =  oscState3.mainFrequencyPlusMatrix;
 		float* osc3Values = currentTimbre->osc3.getNextBlock(&oscState3);
 
+	    float f2x;
+	    float f2xm1 = freqAi;
+	    float freq2 = freqAo;
+
 		for (int k = 0; k < BLOCK_SIZE; k++) {
 			float freq3 = osc3Values[k] * env3Value * oscState3.frequency;
 
 			oscState2.frequency =  freq3 * voiceIm3 + oscState2.mainFrequencyPlusMatrix;
-			float freq2 = currentTimbre->osc2.getNextSample(&oscState2) * env2Value * oscState2.frequency;
+			f2x = currentTimbre->osc2.getNextSample(&oscState2) * env2Value * oscState2.frequency;
+			freq2 = f2x - f2xm1 + 0.99525f * freq2;
+			f2xm1 = f2x;
 
 			oscState1.frequency =  oscState1.mainFrequencyPlusMatrix + voiceIm1 * freq2 + voiceIm2 * freq3;
 			float currentSample = currentTimbre->osc1.getNextSample(&oscState1)  * this->velocity * env1Value * currentTimbre->mix1;
@@ -303,6 +321,9 @@ void Voice::nextBlock() {
 			env3Value += env3Inc;
 		}
 
+		freqAi = f2xm1;
+		freqAo = freq2;
+
 		if (unlikely(currentTimbre->env1.isDead(&envState1))) {
 			endNoteOrBeginNextOne();
 		}
@@ -310,7 +331,7 @@ void Voice::nextBlock() {
 		break;
 	}
 
-	case ALGO2:
+		case ALGO2:
 		/*
 				 .---.
 				 | 3 |
@@ -426,6 +447,9 @@ void Voice::nextBlock() {
 		oscState3.frequency = oscState3.mainFrequencyPlusMatrix;
 		float* osc3Values = currentTimbre->osc3.getNextBlock(&oscState3);
 
+	    float f4x;
+	    float f4xm1 = freqAi;
+	    float freq4 = freqAo;
 
 		for (int k =0; k< BLOCK_SIZE; k++) {
 			float freq2 = osc2Values[k] * env2Value * oscState2.frequency;
@@ -433,7 +457,10 @@ void Voice::nextBlock() {
 			float freq3 = osc3Values[k] * env3Value * oscState3.frequency;
 
 			oscState4.frequency =  freq3 * voiceIm4 + oscState4.mainFrequencyPlusMatrix;
-			float freq4 = currentTimbre->osc4.getNextSample(&oscState4) * env4Value * oscState4.frequency;
+
+			f4x = currentTimbre->osc4.getNextSample(&oscState4) * env4Value * oscState4.frequency;
+			freq4 = f4x - f4xm1 + 0.99525f * freq4;
+			f4xm1 = f4x;
 
 			oscState1.frequency =  freq2 * voiceIm1 + freq3 * voiceIm2 + freq4 * voiceIm3 + oscState1.mainFrequencyPlusMatrix;
 			float currentSample = currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 *  this->velocity;
@@ -447,6 +474,9 @@ void Voice::nextBlock() {
 			env4Value += env4Inc;
 
 		}
+
+		freqAi = f4xm1;
+		freqAo = freq4;
 
 		if (unlikely(currentTimbre->env1.isDead(&envState1))) {
 			endNoteOrBeginNextOne();
@@ -504,11 +534,17 @@ void Voice::nextBlock() {
 
 		float div2TimesVelocity = this->velocity * .5f;
 
+		float f3x;
+	    float f3xm1 = freqAi;
+	    float freq3 = freqAo;
+
 		for (int k = 0; k< BLOCK_SIZE; k++) {
 			float freq4 = osc4Values[k] * env4Value * oscState4.frequency;
 
 			oscState3.frequency =  freq4 * voiceIm4 + oscState3.mainFrequencyPlusMatrix;
-			float freq3 = currentTimbre->osc3.getNextSample(&oscState3) * env3Value * oscState3.frequency;
+			f3x = currentTimbre->osc3.getNextSample(&oscState3) * env3Value * oscState3.frequency;
+			freq3 = f3x - f3xm1 + 0.99525f * freq3;
+			f3xm1 = f3x;
 
 			oscState2.frequency =  freq4 * voiceIm2 +  freq3 * voiceIm3 + oscState2.mainFrequencyPlusMatrix;
 			float car2 = currentTimbre->osc2.getNextSample(&oscState2) *  env2Value *  currentTimbre->mix2 * div2TimesVelocity;
@@ -524,6 +560,9 @@ void Voice::nextBlock() {
 			env3Value += env3Inc;
 			env4Value += env4Inc;
 		}
+
+		freqAi = f3xm1;
+		freqAo = freq3;
 
 		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2))) {
 			endNoteOrBeginNextOne();
@@ -585,16 +624,26 @@ void Voice::nextBlock() {
 		oscState4.frequency = oscState4.mainFrequencyPlusMatrix;
 		float* osc4Values = currentTimbre->osc4.getNextBlock(&oscState4);
 
+	    float f2x;
+	    float f2xm1 = freqAi;
+	    float freq2 = freqAo;
+		float f3x;
+		float f3xm1 = freqBi;
+		float freq3 = freqBo;
 
 		for (int k =0; k< BLOCK_SIZE; k++) {
 
 			float freq4 = osc4Values[k] * env4Value * oscState4.frequency;
 
 			oscState3.frequency =  freq4 * voiceIm3  + oscState3.mainFrequencyPlusMatrix;
-			float freq3 = currentTimbre->osc3.getNextSample(&oscState3) * env3Value * oscState3.frequency;
+			f3x = currentTimbre->osc3.getNextSample(&oscState3) * env3Value * oscState3.frequency;
+			freq3 = f3x - f3xm1 + 0.99535f * freq3;
+			f3xm1 = f3x;
 
 			oscState2.frequency =  freq3 * voiceIm2 + freq4 * voiceIm4 + oscState2.mainFrequencyPlusMatrix;
-			float freq2 = currentTimbre->osc2.getNextSample(&oscState2) * env2Value * oscState2.frequency;
+			f2x = currentTimbre->osc2.getNextSample(&oscState2) * env2Value * oscState2.frequency;
+			freq2 = f2x - f2xm1 + 0.99525f * freq2;
+			f2xm1 = f2x;
 
 			oscState1.frequency =  freq2 * voiceIm1 + oscState1.mainFrequencyPlusMatrix;
 			float car1 = currentTimbre->osc1.getNextSample(&oscState1) * env1Value * this->velocity * currentTimbre->mix1;
@@ -607,6 +656,10 @@ void Voice::nextBlock() {
 			env3Value += env3Inc;
 			env4Value += env4Inc;
 		}
+		freqAi = f2xm1;
+		freqAo = freq2;
+		freqBi = f3xm1;
+		freqBo = freq3;
 		if (unlikely(currentTimbre->env1.isDead(&envState1))) {
 			endNoteOrBeginNextOne();
 		}
@@ -757,6 +810,11 @@ void Voice::nextBlock() {
 
 		float div3TimesVelocity =   .33f * this->velocity;
 
+		// F2 will be for OP6
+	    float f6x;
+	    float f6xm1 = freqAi;
+	    float freq6 = freqAo;
+
 		for (int k =0; k< BLOCK_SIZE; k++) {
 
 			float freq4 = osc4Values[k] * env4Value;
@@ -766,7 +824,9 @@ void Voice::nextBlock() {
 			freq2 *=  oscState2.frequency;
 
 			oscState6.frequency = freq4 * voiceIm4 +  oscState6.mainFrequencyPlusMatrix;
-			float freq6 = currentTimbre->osc6.getNextSample(&oscState6) * env6Value * oscState6.frequency;
+			f6x = currentTimbre->osc6.getNextSample(&oscState6) * env6Value * oscState6.frequency;
+			freq6 = f6x - f6xm1 + 0.99525f * freq6;
+			f6xm1 = f6x;
 
 			oscState1.frequency = freq2 * voiceIm1 +  oscState1.mainFrequencyPlusMatrix;
 			float car1= currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 * div3TimesVelocity;
@@ -787,6 +847,10 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
+
+		freqAi = f6xm1;
+		freqAo = freq6;
+
 		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env5.isDead(&envState5))) {
 			endNoteOrBeginNextOne();
 		}
@@ -972,6 +1036,12 @@ void Voice::nextBlock() {
 
 		float div2TimesVelocity =   .5f * this->velocity;
 
+		// F2 will be for OP5
+	    float f5x;
+	    float f5xm1 = freqAi;
+	    float freq5 = freqAo;
+
+
 		for (int k =0; k< BLOCK_SIZE; k++) {
 
 			float freq6 = osc6Values[k] * env6Value;
@@ -987,8 +1057,9 @@ void Voice::nextBlock() {
 			float car1 =  currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 * div2TimesVelocity;
 
 			oscState5.frequency =  freq6 * voiceIm4 + oscState5.mainFrequencyPlusMatrix;
-			float freq5 = currentTimbre->osc5.getNextSample(&oscState5) * env5Value;
-			freq5 *=  oscState5.frequency;
+			f5x = currentTimbre->osc5.getNextSample(&oscState5) * env5Value * oscState5.frequency;
+			freq5 = f5x - f5xm1 + 0.99525f * freq5;
+			f5xm1 = f5x;
 
 			oscState4.frequency = freq5 * voiceIm3 +  oscState4.mainFrequencyPlusMatrix;
 			float car4 = currentTimbre->osc4.getNextSample(&oscState4) * env4Value * currentTimbre->mix2 * div2TimesVelocity;
@@ -1003,6 +1074,8 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
+	    freqAi = f5xm1;
+	    freqAo = freq5;
 
 		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env4.isDead(&envState4))) {
 			endNoteOrBeginNextOne();
@@ -1085,7 +1158,16 @@ void Voice::nextBlock() {
 
 		float div2TimesVelocity =   .5f * this->velocity;
 
-		for (int k =0; k< BLOCK_SIZE; k++) {
+
+	    float f4x;
+	    float f4xm1 = freqAi;
+	    float freq4 = freqAo;
+
+	    float f5x;
+	    float f5xm1 = freqBi;
+	    float freq5 = freqBo;
+
+	    for (int k =0; k< BLOCK_SIZE; k++) {
 
 
 			float freq2 = osc2Values[k] * env2Value;
@@ -1098,12 +1180,14 @@ void Voice::nextBlock() {
 			freq6 *=  oscState6.frequency;
 
 			oscState5.frequency =  freq6 * voiceIm4 + oscState5.mainFrequencyPlusMatrix;
-			float freq5 = currentTimbre->osc5.getNextSample(&oscState5) * env5Value;
-			freq5 *=  oscState5.frequency;
+			f5x = currentTimbre->osc5.getNextSample(&oscState5) * env5Value *  oscState5.frequency;
+			freq5 = f5x - f5xm1 + 0.99525f * freq5;
+			f5xm1 = f5x;
 
 			oscState4.frequency =  freq5 * voiceIm3 + oscState4.mainFrequencyPlusMatrix;
-			float freq4 = currentTimbre->osc4.getNextSample(&oscState4) * env4Value;
-			freq4 *=  oscState4.frequency;
+			f4x = currentTimbre->osc4.getNextSample(&oscState4) * env4Value * oscState4.frequency;
+			freq4 = f4x - f4xm1 + 0.99525f * freq4;
+			f4xm1 = f4x;
 
 			oscState3.frequency = freq4 * voiceIm2 +  oscState3.mainFrequencyPlusMatrix;
 			float car3 = currentTimbre->osc3.getNextSample(&oscState3) * env3Value * currentTimbre->mix2 * div2TimesVelocity;
@@ -1121,7 +1205,13 @@ void Voice::nextBlock() {
 			env6Value += env6Inc;
 		}
 
-		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3))) {
+	    freqBi = f5xm1;
+	    freqBo = freq5;
+
+	    freqAi = f4xm1;
+	    freqAo = freq4;
+
+	    if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3))) {
 			endNoteOrBeginNextOne();
 		}
 
@@ -1196,14 +1286,24 @@ void Voice::nextBlock() {
 
 		float div2TimesVelocity =   .5f * this->velocity;
 
+		float f2x;
+	    float f2xm1 = freqAi;
+	    float freq2 = freqAo;
+
+		float f5x;
+	    float f5xm1 = freqBi;
+	    float freq5 = freqBo;
+
+
 		for (int k =0; k< BLOCK_SIZE; k++) {
 
 			float freq3 = osc3Values[k] * env3Value;
 			freq3 *=  oscState3.frequency;
 
 			oscState2.frequency =  freq3 * voiceIm2 + oscState2.mainFrequencyPlusMatrix;
-			float freq2 = currentTimbre->osc2.getNextSample(&oscState2) * env2Value;
-			freq2 *=  oscState2.frequency;
+			f2x = currentTimbre->osc2.getNextSample(&oscState2) * env2Value * oscState2.frequency;
+			freq2 = f2x - f2xm1 + 0.99525f * freq2;
+			f2xm1 = f2x;
 
 			oscState1.frequency =  freq2 * voiceIm1 + oscState1.mainFrequencyPlusMatrix;
 			float car1 =  currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 * div2TimesVelocity;
@@ -1212,8 +1312,9 @@ void Voice::nextBlock() {
 			freq6 *=  oscState6.frequency;
 
 			oscState5.frequency =  freq6 * voiceIm4 + oscState5.mainFrequencyPlusMatrix;
-			float freq5 = currentTimbre->osc5.getNextSample(&oscState5) * env5Value;
-			freq5 *=  oscState5.frequency;
+			f5x = currentTimbre->osc5.getNextSample(&oscState5) * env5Value * oscState5.frequency;
+			freq5 = f5x - f5xm1 + 0.99525f * freq5;
+			f5xm1 = f5x;
 
 			oscState4.frequency = freq5 * voiceIm3 +  oscState4.mainFrequencyPlusMatrix;
 			float car4 = currentTimbre->osc4.getNextSample(&oscState4) * env4Value * currentTimbre->mix2 * div2TimesVelocity;
@@ -1228,6 +1329,12 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
+
+	    freqAi = f2xm1;
+	    freqAo = freq2;
+
+	    freqBi = f5xm1;
+		freqBo = freq5;
 
 		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env4.isDead(&envState4))) {
 			endNoteOrBeginNextOne();
@@ -1407,6 +1514,10 @@ void Voice::nextBlock() {
 
 		float div2TimesVelocity = this->velocity * .5f;
 
+		float f5x;
+	    float f5xm1 = freqAi;
+	    float freq5 = freqAo;
+
 		for (int k =0; k< BLOCK_SIZE; k++) {
 
 			float freq6 = osc6Values[k] * env6Value;
@@ -1422,8 +1533,9 @@ void Voice::nextBlock() {
 			float car1 = currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 * div2TimesVelocity;
 
 			oscState5.frequency =  freq6 * voiceIm4 + oscState5.mainFrequencyPlusMatrix;
-			float freq5 = currentTimbre->osc5.getNextSample(&oscState5) * env5Value;
-			freq5 *=  oscState5.frequency;
+			f5x = currentTimbre->osc5.getNextSample(&oscState5) * env5Value * oscState5.frequency;
+			freq5 = f5x - f5xm1 + 0.99525f * freq5;
+			f5xm1 = f5x;
 
 			oscState3.frequency = freq4 * voiceIm2 + freq5 * voiceIm3 +  oscState3.mainFrequencyPlusMatrix;
 			float car3 = currentTimbre->osc3.getNextSample(&oscState3) * env3Value * currentTimbre->mix2 * div2TimesVelocity;
@@ -1438,6 +1550,9 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
+
+		freqAi = f5xm1;
+		freqAo = freq5;
 
 		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3))) {
 			endNoteOrBeginNextOne();
@@ -1515,6 +1630,10 @@ void Voice::nextBlock() {
 
 		float div2TimesVelocity =   .5f * this->velocity;
 
+	    float f2x;
+	    float f2xm1 = freqAi;
+	    float freq2 = freqAo;
+
 		for (int k =0; k< BLOCK_SIZE; k++) {
 
 			float freq3 = osc3Values[k] * env3Value;
@@ -1527,8 +1646,9 @@ void Voice::nextBlock() {
 			freq6 *=  oscState6.frequency;
 
 			oscState2.frequency =  freq3 * voiceIm2 + oscState2.mainFrequencyPlusMatrix;
-			float freq2 = currentTimbre->osc2.getNextSample(&oscState2) * env2Value;
-			freq2 *=  oscState2.frequency;
+			f2x = currentTimbre->osc2.getNextSample(&oscState2) * env2Value * oscState2.frequency;
+			freq2 = f2x - f2xm1 + 0.99525f * freq2;
+			f2xm1 = f2x;
 
 			oscState1.frequency =  freq2  *voiceIm1 + oscState1.mainFrequencyPlusMatrix;
 			float car1 =  currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 * div2TimesVelocity;
@@ -1546,6 +1666,9 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
+
+	    freqAi = f2xm1;
+	    freqAo = freq2;
 
 		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env4.isDead(&envState4))) {
 			endNoteOrBeginNextOne();
@@ -1731,6 +1854,10 @@ void Voice::nextBlock() {
 
 		float div2TimesVelocity =   .5f * this->velocity;
 
+	    float f4x;
+	    float f4xm1 = freqAi;
+	    float freq4 = freqAo;
+
 		for (int k =0; k< BLOCK_SIZE; k++) {
 
 
@@ -1747,8 +1874,9 @@ void Voice::nextBlock() {
 			freq5 *=  oscState5.frequency;
 
 			oscState4.frequency =  freq5 * voiceIm3 + freq6 * voiceIm4 + oscState4.mainFrequencyPlusMatrix;
-			float freq4 = currentTimbre->osc4.getNextSample(&oscState4) * env4Value;
-			freq4 *=  oscState4.frequency;
+			f4x = currentTimbre->osc4.getNextSample(&oscState4) * env4Value * oscState4.frequency;
+			freq4 = f4x - f4xm1 + 0.99525f * freq4;
+			f4xm1 = f4x;
 
 			oscState3.frequency = freq4 * voiceIm2 +  oscState3.mainFrequencyPlusMatrix;
 			float car3 = currentTimbre->osc3.getNextSample(&oscState3) * env3Value * currentTimbre->mix2 * div2TimesVelocity;
@@ -1768,6 +1896,9 @@ void Voice::nextBlock() {
 		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3))) {
 			endNoteOrBeginNextOne();
 		}
+
+		freqAi = f4xm1;
+		freqAo = freq4;
 
 		break;
 	}
@@ -1841,6 +1972,14 @@ void Voice::nextBlock() {
 		oscState6.frequency = oscState6.mainFrequencyPlusMatrix;
 		float* osc6Values = currentTimbre->osc6.getNextBlock(&oscState6);
 
+	    float f3x;
+	    float f3xm1 = freqAi;
+	    float freq3 = freqAo;
+
+	    float f5x;
+	    float f5xm1 = freqBi;
+	    float freq5 = freqBo;
+
 		for (int k =0; k< BLOCK_SIZE; k++) {
 
 			float freq6 = osc6Values[k] * env6Value;
@@ -1853,12 +1992,14 @@ void Voice::nextBlock() {
 			freq2 *=  oscState2.frequency;
 
 			oscState3.frequency =  freq4 * voiceIm3 + oscState3.mainFrequencyPlusMatrix;
-			float freq3 = currentTimbre->osc3.getNextSample(&oscState3) * env3Value;
-			freq3 *=  oscState3.frequency;
+			f3x = currentTimbre->osc3.getNextSample(&oscState3) * env3Value * oscState3.frequency;
+			freq3 = f3x - f3xm1 + 0.99525f * freq3;
+			f3xm1 = f3x;
 
 			oscState5.frequency =  freq6 * voiceIm5 + oscState5.mainFrequencyPlusMatrix;
-			float freq5 = currentTimbre->osc5.getNextSample(&oscState5) * env5Value;
-			freq5 *=  oscState5.frequency;
+			f5x = currentTimbre->osc5.getNextSample(&oscState5) * env5Value * oscState5.frequency;
+			freq5 = f5x - f5xm1 + 0.99525f * freq5;
+			f5xm1 = f5x;
 
 			oscState1.frequency = freq2 * voiceIm1 + freq3 * voiceIm2 + freq5 * voiceIm4 +  oscState1.mainFrequencyPlusMatrix;
 			float car1 = currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1  * velocity;
@@ -1873,6 +2014,12 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
+
+		freqAi = f3xm1;
+		freqAo = freq3;
+
+		freqBi = f5xm1;
+		freqBo = freq5;
 
 		if (unlikely(currentTimbre->env1.isDead(&envState1))) {
 			endNoteOrBeginNextOne();
@@ -1953,6 +2100,14 @@ void Voice::nextBlock() {
 		oscState6.frequency = oscState6.mainFrequencyPlusMatrix;
 		float* osc6Values = currentTimbre->osc6.getNextBlock(&oscState6);
 
+	    float f4x;
+	    float f4xm1 = freqAi;
+	    float freq4 = freqAo;
+
+	    float f5x;
+	    float f5xm1 = freqBi;
+	    float freq5 = freqBo;
+
 		for (int k =0; k< BLOCK_SIZE; k++) {
 
 			float freq6 = osc6Values[k] * env6Value;
@@ -1965,13 +2120,14 @@ void Voice::nextBlock() {
 			freq2 *=  oscState2.frequency;
 
 			oscState5.frequency =  freq6 * voiceIm5 + oscState5.mainFrequencyPlusMatrix;
-			float freq5 = currentTimbre->osc5.getNextSample(&oscState5) * env5Value;
-			freq5 *=  oscState5.frequency;
+			f5x = currentTimbre->osc5.getNextSample(&oscState5) * env5Value * oscState5.frequency;
+			freq5 = f5x - f5xm1 + 0.99525f * freq5;
+			f5xm1 = f5x;
 
 			oscState4.frequency =  freq5 * voiceIm4 + oscState4.mainFrequencyPlusMatrix;
-			float freq4 = currentTimbre->osc4.getNextSample(&oscState4) * env4Value;
-			freq4 *=  oscState4.frequency;
-
+			f4x = currentTimbre->osc4.getNextSample(&oscState4) * env4Value * oscState4.frequency;
+			freq4 = f4x - f4xm1 + 0.99525f * freq4;
+			f4xm1 = f4x;
 
 			oscState1.frequency = freq2 * voiceIm1 + freq3 * voiceIm2 + freq4 * voiceIm3 +  oscState1.mainFrequencyPlusMatrix;
 			float car1 = currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 * velocity;
@@ -1986,6 +2142,12 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
+
+		freqAi = f4xm1;
+		freqAo = freq4;
+
+		freqBi = f5xm1;
+		freqBo = freq5;
 
 		if (unlikely(currentTimbre->env1.isDead(&envState1))) {
 			endNoteOrBeginNextOne();
@@ -2572,6 +2734,11 @@ void Voice::nextBlock() {
 
 		float div3TimesVelocity =   .33f * this->velocity;
 
+	    float f4x;
+	    float f4xm1 = freqAi;
+	    float freq4 = freqAo;
+
+
 		for (int k =0; k< BLOCK_SIZE; k++) {
 
 			float freq2 = osc2Values[k] * env2Value;
@@ -2581,8 +2748,9 @@ void Voice::nextBlock() {
 			freq5 *=  oscState5.frequency;
 
 			oscState4.frequency =  freq5 * voiceIm3 + oscState4.mainFrequencyPlusMatrix;
-			float freq4 = currentTimbre->osc4.getNextSample(&oscState4) * env4Value;
-			freq4 *=  oscState4.frequency;
+			f4x = currentTimbre->osc4.getNextSample(&oscState4) * env4Value * oscState4.frequency;
+			freq4 = f4x - f4xm1 + 0.99525f * freq4;
+			f4xm1 = f4x;
 
 			oscState1.frequency = freq2 * voiceIm1 +  oscState1.mainFrequencyPlusMatrix;
 			float car1= currentTimbre->osc1.getNextSample(&oscState1) * env1Value * currentTimbre->mix1 * div3TimesVelocity;
@@ -2602,6 +2770,10 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
+
+		freqAi = f4xm1;
+		freqAo = freq4;
+
 		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env6.isDead(&envState6))) {
 			endNoteOrBeginNextOne();
 		}
@@ -2783,6 +2955,11 @@ void Voice::nextBlock() {
 
 		float div4TimesVelocity =   .25f * this->velocity;
 
+	    float f4x;
+	    float f4xm1 = freqAi;
+	    float freq4 = freqAo;
+
+
 		for (int k =0; k< BLOCK_SIZE; k++) {
 
 			float freq5 = osc5Values[k] * env5Value;
@@ -2793,7 +2970,9 @@ void Voice::nextBlock() {
 			float car2 = osc2Values[k] * env2Value * currentTimbre->mix2 * div4TimesVelocity;
 
 			oscState4.frequency =  freq5 * voiceIm2 + oscState4.mainFrequencyPlusMatrix;
-			float freq4 = currentTimbre->osc4.getNextSample(&oscState4) * env4Value * oscState4.frequency;
+			f4x = currentTimbre->osc4.getNextSample(&oscState4) * env4Value * oscState4.frequency;
+			freq4 = f4x - f4xm1 + 0.99525f * freq4;
+			f4xm1 = f4x;
 
 			oscState3.frequency =  freq4 * voiceIm1 + oscState3.mainFrequencyPlusMatrix;
 			float car3 = currentTimbre->osc3.getNextSample(&oscState3) * env3Value * currentTimbre->mix3 * div4TimesVelocity;
@@ -2810,6 +2989,10 @@ void Voice::nextBlock() {
 			env5Value += env5Inc;
 			env6Value += env6Inc;
 		}
+
+		freqAi = f4xm1;
+		freqAo = freq4;
+
 		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env3.isDead(&envState3) && currentTimbre->env6.isDead(&envState6))) {
 			endNoteOrBeginNextOne();
 		}

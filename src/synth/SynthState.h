@@ -217,15 +217,18 @@ enum OscEnv2Loop {
 
 enum FILTER_TYPE {
 	FILTER_OFF = 0,
+	FILTER_MIXER,
 	FILTER_LP,
 	FILTER_HP,
 	FILTER_BASS,
-	FILTER_MONO,
 	FILTER_LAST,
 	FILTER_LP4
 };
 
 // Display information
+struct FilterRowDisplay {
+	const char* paramName[3];
+};
 
 
 struct ParameterRowDisplay {
@@ -515,6 +518,7 @@ private:
 
 // Global structure used all over the code
 extern struct AllParameterRowsDisplay allParameterRows;
+extern struct FilterRowDisplay filterRowDisplay[];
 
 
 #endif /* SYNTHSTATUS_H_ */

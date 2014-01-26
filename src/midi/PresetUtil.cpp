@@ -265,23 +265,23 @@ int PresetUtil::readSysexPatch(unsigned char* params) {
     return sentChecksum;
 }
 
-void PresetUtil::resetConfigAndSaveToEEPROM() {
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_USB] = 0;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL1] = 1;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL2] = 2;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL3] = 3;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL4] = 4;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_THROUGH] = 0;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_RECEIVES] = 3;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_SENDS] = 1;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_REALTIME_SYSEX] = 0;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] = 60;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY] = 120;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_ENCODER] = 0;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_OP_OPTION] = 0;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_LED_CLOCK] = 0;
-    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET] = 0;
-}
+//void PresetUtil::resetConfigAndSaveToEEPROM() {
+//    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_USB] = 2;
+//    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL1] = 1;
+//    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL2] = 2;
+//    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL3] = 3;
+//    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL4] = 4;
+//    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_THROUGH] = 0;
+//    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_RECEIVES] = 3;
+//    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_SENDS] = 1;
+//    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_REALTIME_SYSEX] = 0;
+//    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] = 60;
+//    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY] = 120;
+//    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_ENCODER] = 0;
+//    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_OP_OPTION] = 0;
+//    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_LED_CLOCK] = 1;
+//    PresetUtil::synthState->fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET] = 1;
+//}
 
 
 

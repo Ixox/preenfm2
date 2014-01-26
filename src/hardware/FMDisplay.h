@@ -34,12 +34,12 @@ public:
 	void init(LiquidCrystal* lcd, Storage* storage);
 	void customCharsInit();
 
-	inline void updateEncoderValue(int row, int encoder, ParameterDisplay* param, float newValue);
-	inline void updateEncoderName(int row, int encoder);
-	inline void printValueWithSpace(int value);
-    inline void printFloatWithSpace(float value);
-	inline bool shouldThisValueShowUp(int row, int encoder);
-	inline void updateEncoderValue(int refreshStatus);
+	void updateEncoderValue(int row, int encoder, ParameterDisplay* param, float newValue);
+	void updateEncoderName(int row, int encoder);
+	void printValueWithSpace(int value);
+    void printFloatWithSpace(float value);
+	bool shouldThisValueShowUp(int row, int encoder);
+	void updateEncoderValue(int refreshStatus);
 	void newTimbre(int timbre);
 
 	// VisualInfo
@@ -151,6 +151,8 @@ public:
     	this->refreshStatus = refreshStatus;
     }
 
+    bool wakeUpFromScreenSaver();
+
     void displayAlgo(int algo);
 private:
 	LiquidCrystal* lcd;
@@ -165,6 +167,8 @@ private:
 	// Midi info
 	int noteOnCounter[4];
 	int algoCounter;
+	unsigned screenSaveTimer;
+	bool screenSaverMode;
 };
 
 #endif /* FMDISPLAY_H_ */

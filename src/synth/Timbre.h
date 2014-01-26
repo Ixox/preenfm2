@@ -53,7 +53,8 @@ public:
     void init(int timbreNumber);
     void initVoicePointer(int n, Voice* voice);
     void prepareForNextBlock();
-    void fxAfterBlock();
+    void cleanNextBlock();
+    void fxAfterBlock(float ratioTimbres);
     void afterNewParamsLoad();
     void setNewValue(int index, struct ParameterDisplay* param, float newValue);
     void setNewEffecParam(int encoder);
@@ -65,6 +66,7 @@ public:
     void Start();
     void arpeggiatorSetHoldPedal(uint8_t value);
     void setLatchMode(uint8_t value);
+    void setDirection(uint8_t value);
     void setNewBPMValue(float bpm);
     void setArpeggiatorClock(float bpm);
     void resetArpeggiator();
@@ -74,19 +76,45 @@ public:
 
     void preenNoteOn(char note, char velocity);
     void preenNoteOff(char note);
-
-    void startNewNote() {
-        for (int k=0; k<NUMBER_OF_LFO; k++) {
-            lfo[k]->noteOn();
-        }
+    void numberOfVoicesChanged() {
+    	if (params.engine1.numberOfVoice > 0) {
+    		numberOfVoiceInverse = 1.0f / params.engine1.numberOfVoice;
+    	} else {
+    		numberOfVoiceInverse = 1.0f;
+    	}
     }
 
+    void lfoNoteOn() {
+    	lfoOsc[0].noteOn();
+    	lfoOsc[1].noteOn();
+    	lfoOsc[2].noteOn();
+    	lfoEnv[0].noteOn();
+    	lfoEnv2[0].noteOn();
+    	lfoStepSeq[0].noteOn();
+    	lfoStepSeq[1].noteOn();
+    }
 
+    void lfoNoteOff() {
+    	lfoOsc[0].noteOff();
+    	lfoOsc[1].noteOff();
+    	lfoOsc[2].noteOff();
+    	lfoEnv[0].noteOff();
+    	lfoEnv2[0].noteOff();
+    	lfoStepSeq[0].noteOff();
+    	lfoStepSeq[1].noteOff();
+    }
+
+    void lfoValueChange(int currentRow, int encoder, float newValue);
+    // timbres[timbre].lfo[currentRow - ROW_LFOOSC1]->valueChanged(encoder);
+
+/*
     void calculateFrequencyWithMatrix(struct OscState* oscState[NUMBER_OF_OPERATORS]) {
         for (int k=0; k<algoInformation[(int)params.engine1.algo].osc; k++) {
-            osc[k]->calculateFrequencyWithMatrix(oscState[k]);
+            osc1.calculateFrequencyWithMatrix(oscState[0]);
         }
     }
+*/
+
 
     void updateAllModulationIndexes() {
     	int numberOfIMs = algoInformation[(int)(params.engine1.algo)].im;
@@ -195,18 +223,28 @@ public:
     }
 
     void midiClockContinue(int songPosition) {
-        for (int k=0; k<NUMBER_OF_LFO; k++) {
-            lfo[k]->midiClock(songPosition, false);
-        }
+    	lfoOsc[0].midiClock(songPosition, false);
+    	lfoOsc[1].midiClock(songPosition, false);
+    	lfoOsc[2].midiClock(songPosition, false);
+    	lfoEnv[0].midiClock(songPosition, false);
+    	lfoEnv2[0].midiClock(songPosition, false);
+    	lfoStepSeq[0].midiClock(songPosition, false);
+    	lfoStepSeq[1].midiClock(songPosition, false);
+
+
         this->recomputeNext = ((songPosition&0x1)==0);
         OnMidiContinue();
     }
 
 
     void midiClockStart() {
-        for (int k=0; k<NUMBER_OF_LFO; k++) {
-            lfo[k]->midiContinue();
-        }
+    	lfoOsc[0].midiContinue();
+    	lfoOsc[1].midiContinue();
+    	lfoOsc[2].midiContinue();
+    	lfoEnv[0].midiContinue();
+    	lfoEnv2[0].midiContinue();
+    	lfoStepSeq[0].midiContinue();
+    	lfoStepSeq[1].midiContinue();
         this->recomputeNext = true;
         OnMidiStart();
     }
@@ -217,9 +255,14 @@ public:
     }
 
     void midiClockSongPositionStep(int songPosition) {
-        for (int k=0; k<NUMBER_OF_LFO; k++) {
-            lfo[k]->midiClock(songPosition, this->recomputeNext);
-        }
+    	lfoOsc[0].midiClock(songPosition, this->recomputeNext);
+    	lfoOsc[1].midiClock(songPosition, this->recomputeNext);
+    	lfoOsc[2].midiClock(songPosition, this->recomputeNext);
+    	lfoEnv[0].midiClock(songPosition, this->recomputeNext);
+    	lfoEnv2[0].midiClock(songPosition, this->recomputeNext);
+    	lfoStepSeq[0].midiClock(songPosition, this->recomputeNext);
+    	lfoStepSeq[1].midiClock(songPosition, this->recomputeNext);
+
         if ((songPosition & 0x1)==0) {
             this->recomputeNext = true;
         }
@@ -256,7 +299,8 @@ private:
     Matrix matrix;
     float sampleBlock[BLOCK_SIZE * 2];
     float *sbMax;
-
+    float numberOfVoiceInverse;
+    float mixerGain;
     Voice *voices[MAX_NUMBER_OF_VOICES];
     char voiceNumber[MAX_NUMBER_OF_VOICES];
     bool holdPedal;
@@ -265,7 +309,6 @@ private:
     LfoEnv lfoEnv[NUMBER_OF_LFO_ENV];
     LfoEnv2 lfoEnv2[NUMBER_OF_LFO_ENV2];
     LfoStepSeq lfoStepSeq[NUMBER_OF_LFO_STEP];
-    Lfo* lfo[NUMBER_OF_LFO];
 
     // 6 oscillators Max
     Osc osc1;
@@ -274,7 +317,7 @@ private:
     Osc osc4;
     Osc osc5;
     Osc osc6;
-    Osc *osc[NUMBER_OF_OPERATORS];
+
     // And their 6 envelopes
     Env env1;
     Env env2;
@@ -282,13 +325,11 @@ private:
     Env env4;
     Env env5;
     Env env6;
-    Env *env[NUMBER_OF_OPERATORS];
+
 
     // Must recompute LFO steps ?
     bool recomputeNext;
-
     float currentGate;
-
     // Arpeggiator
 
     // TO REFACTOR

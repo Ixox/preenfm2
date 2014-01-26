@@ -81,6 +81,7 @@ public:
     void beforeNewParamsLoad(int timbre);
     void afterNewParamsLoad(int timbre);
     void afterNewComboLoad();
+    void updateNumberOfActiveTimbres();
     void showAlgo() { }
     void newMidiConfig(int menuSelect, char newValue);
 
@@ -147,6 +148,7 @@ public:
         return &timbres[timbre];
     }
 
+    void setTimbreMatrixSource(int timbre, enum SourceEnum source, float newValue);
     void setNewValueFromMidi(int timbre, int row, int encoder, float newValue);
 
     void setHoldPedal(int timbre, int value);
@@ -160,8 +162,7 @@ private:
     // Called by setSynthState
     void init();
 
-    float numberOfVoices;
-    float numberOfVoiceInverse;
+    float ratioTimbre;
     int numberOfOsc;
     Voice voices[MAX_NUMBER_OF_VOICES];
     Timbre timbres[NUMBER_OF_TIMBRES];

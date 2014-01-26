@@ -23,6 +23,13 @@ extern const char* lfoOscMidiClock[];
 
 const char* stepChars  = "_123456789ABCDEF";
 
+
+// = / 10000
+#define TMP_FLOAT PREENFM_FREQUENCY * .0001
+
+unsigned int screenSaverGoal[] = { 2*60 * TMP_FLOAT, 5*60*TMP_FLOAT, 10*60*TMP_FLOAT, 60*60*TMP_FLOAT };
+
+
 FMDisplay::FMDisplay() {
 }
 
@@ -41,6 +48,9 @@ void FMDisplay::init(LiquidCrystal* lcd, Storage* storage) {
 	algoCounter = 0;
 	currentTimbre = 0;
 	customCharsInit();
+	screenSaveTimer = 0;
+	screenSaverMode = false;
+
 	lcd->clear();
 }
 
@@ -195,17 +205,36 @@ void FMDisplay::printFloatWithSpace(float value) {
 
 bool FMDisplay::shouldThisValueShowUp(int row, int encoder) {
     int algo = this->synthState->params->engine1.algo;
-    if (row == ROW_MODULATION2 && encoder >= 2 && algoInformation[algo].im == 3) {
+
+    if (unlikely(row == ROW_MODULATION2 && encoder >= 2 && algoInformation[algo].im == 3)) {
     	return false;
-    } else if (row == ROW_MODULATION3 && encoder >= 2 && algoInformation[algo].im == 5) {
+    }
+
+    if (unlikely(row == ROW_MODULATION3 && encoder >= 2 && algoInformation[algo].im == 5)) {
     	return false;
-    } else if (row == ROW_OSC_MIX2) {
-        if ((encoder>>1) >= (algoInformation[algo].mix-2)) {
-            return false;
-        }
-    } else if (row == ROW_ENGINE && encoder == ENCODER_ENGINE_GLIDE) {
+    }
+
+    if (unlikely(row == ROW_OSC_MIX1 && encoder >= 2 && algoInformation[algo].mix == 1)) {
+    	return false;
+    }
+
+    if (unlikely(row == ROW_OSC_MIX2 && encoder >= 2 && algoInformation[algo].mix == 3)) {
+    	return false;
+    }
+
+    if (unlikely(row == ROW_ENGINE && encoder == ENCODER_ENGINE_GLIDE)) {
     	if (this->synthState->params->engine1.numberOfVoice != 1) {
             return false;
+    	}
+    }
+
+    if (unlikely(row == ROW_EFFECT)) {
+    	if (unlikely(encoder == 0)) {
+    		return true;
+    	}
+    	int effect = this->synthState->params->effect.type;
+    	if (filterRowDisplay[effect].paramName[encoder -1] == NULL) {
+    		return false;
     	}
     }
 
@@ -258,6 +287,15 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
     		break;
     	}
         printValueWithSpace(newValue);
+        break;
+    case DISPLAY_TYPE_LFO_KSYN:
+        if (newFloatValue < 0.0f) {
+            lcd->setCursor(encoder*5, 3);
+    		lcd->print("Off ");
+    		break;
+    	}
+        lcd->setCursor(encoder*5 - 1, 3);
+        printFloatWithSpace(newFloatValue);
         break;
     case DISPLAY_TYPE_INT_OR_NONE:
     	if (newFloatValue != 4.0f) {
@@ -362,11 +400,19 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
 
 void FMDisplay::updateEncoderName(int row, int encoder) {
     lcd->setCursor(encoder*5, 2);
+
     if (!shouldThisValueShowUp(row, encoder)) {
         lcd->print("    ");
         return;
     }
-	const struct ParameterRowDisplay* paramRow = allParameterRows.row[row];
+
+    if (unlikely(row == ROW_EFFECT && encoder > 0)) {
+    	int effect = this->synthState->params->effect.type;
+    	lcd->print(filterRowDisplay[effect].paramName[encoder -1]);
+    	return;
+    }
+
+    const struct ParameterRowDisplay* paramRow = allParameterRows.row[row];
 	lcd->print(paramRow->paramName[encoder]);
 }
 
@@ -476,6 +522,9 @@ void FMDisplay::displayPreset() {
 
 void FMDisplay::newTimbre(int timbre) {
     currentTimbre = timbre;
+	if (unlikely(wakeUpFromScreenSaver())) {
+		return;
+	}
     if (this->synthState->fullState.synthMode == SYNTH_MODE_EDIT) {
         lcd->clearActions();
         lcd->clear();
@@ -490,6 +539,9 @@ void FMDisplay::newTimbre(int timbre) {
 
 
 void FMDisplay::newParamValueFromExternal(int timbre, SynthParamType type, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
+	if (unlikely(screenSaverMode)) {
+		return;
+	}
     if (timbre == currentTimbre) {
         checkPresetModified(timbre);
         if (this->synthState->getSynthMode() == SYNTH_MODE_EDIT && currentRow == this->displayedRow) {
@@ -532,36 +584,44 @@ void FMDisplay::updateStepSequencer(int currentRow, int encoder, int oldValue, i
 }
 
 void FMDisplay::newParamValue(int timbre, SynthParamType type, int currentRow, int encoder, ParameterDisplay* param,  float oldValue, float newValue) {
+	if (wakeUpFromScreenSaver()) {
+		return;
+	}
     checkPresetModified(timbre);
 	if (this->synthState->getSynthMode() == SYNTH_MODE_EDIT) {
-		if (currentRow != this->displayedRow) {
+		if (unlikely(currentRow != this->displayedRow)) {
 			newcurrentRow(timbre, currentRow);
 			return;
 		}
 		// if we change ROW_LFO5 it's a bit special
-		if (currentRow >= ROW_LFOSEQ1 && encoder>1) {
+		if (unlikely(currentRow >= ROW_LFOSEQ1 && encoder>1)) {
 			updateStepSequencer(currentRow, encoder, oldValue, newValue);
 			return;
 		}
 
 		// If we change frequency type of OScillator rows, it's a bit special too....
-		if (SynthState::getListenerType(currentRow)==SYNTH_PARAM_TYPE_OSC) {
-			if (encoder == ENCODER_OSC_FTYPE) {
-				if (newValue == OSC_FT_FIXE) {
-					lcd->setCursor(ENCODER_OSC_FREQ * 5 + 1, 3);
-					lcd->print("        ");
-				}
-				refreshStatus = 4;
-				return;
+		if (unlikely(SynthState::getListenerType(currentRow)==SYNTH_PARAM_TYPE_OSC && encoder == ENCODER_OSC_FTYPE)) {
+			if (newValue == OSC_FT_FIXE) {
+				lcd->setCursor(ENCODER_OSC_FREQ * 5 + 1, 3);
+				lcd->print("        ");
 			}
+			refreshStatus = 4;
+			return;
 		}
 
 		// display algo if algo changed else if algo shows erase it...
-		if (currentRow == ROW_ENGINE && encoder == ENCODER_ENGINE_ALGO) {
+		if (unlikely(currentRow == ROW_ENGINE && encoder == ENCODER_ENGINE_ALGO)) {
 			displayAlgo(newValue);
-		} else if (algoCounter > 0) {
+		} else if (unlikely(algoCounter > 0)) {
+			// New value with Algo on screen so we must redraw the full screen
 			algoCounter = 0;
+			// Refresh
 			newTimbre(this->currentTimbre);
+		}
+
+		if (unlikely(currentRow == ROW_EFFECT && encoder == ENCODER_EFFECT_TYPE)) {
+			refreshStatus = 8;
+			return;
 		}
 
 		updateEncoderValue(currentRow, encoder, param, newValue);
@@ -569,12 +629,15 @@ void FMDisplay::newParamValue(int timbre, SynthParamType type, int currentRow, i
 }
 
 void FMDisplay::newcurrentRow(int timbre, int newcurrentRow) {
+	this->displayedRow = newcurrentRow;
+	if (unlikely(wakeUpFromScreenSaver())) {
+		return;
+	}
 	if (algoCounter > 0) {
         displayPreset();
 		algoCounter = 0;
 	}
 	refreshStatus = 12;
-	this->displayedRow = newcurrentRow;
 }
 
 
@@ -583,6 +646,10 @@ void FMDisplay::newcurrentRow(int timbre, int newcurrentRow) {
  */
 
 void FMDisplay::newSynthMode(FullState* fullState)  {
+	if (unlikely(screenSaverMode)) {
+		screenSaverMode = false;
+		screenSaveTimer = 0;
+	}
     lcd->clearActions();
 	lcd->clear();
 	if (fullState->synthMode == SYNTH_MODE_EDIT) {
@@ -867,7 +934,7 @@ void FMDisplay::menuBack(enum MenuState oldMenuState, FullState* fullState) {
 
 
 void FMDisplay::midiClock(bool show) {
-	if (this->synthState->fullState.synthMode  == SYNTH_MODE_EDIT && algoCounter == 0) {
+	if (this->synthState->fullState.synthMode  == SYNTH_MODE_EDIT && algoCounter == 0 && !screenSaverMode) {
 		lcd->setCursor(19,1);
 		if (show) {
 			lcd->print((char)7);
@@ -885,7 +952,7 @@ void FMDisplay::midiClock(bool show) {
 }
 
 void FMDisplay::noteOn(int timbre, bool show) {
-	if (this->synthState->fullState.synthMode  == SYNTH_MODE_EDIT && algoCounter == 0) {
+	if (this->synthState->fullState.synthMode  == SYNTH_MODE_EDIT && algoCounter == 0 && !screenSaverMode) {
 		if (show) {
 		    if (noteOnCounter[timbre] == 0) {
 		    	lcd->setCursor(16+timbre, 0);
@@ -915,6 +982,34 @@ void FMDisplay::tempoClick() {
     		newTimbre(this->currentTimbre);
     	}
     }
+	if (unlikely(synthState->fullState.midiConfigValue[MIDICONFIG_OLED_SAVER] > 0)) {
+		if (!screenSaverMode) {
+			if (this->synthState->fullState.synthMode == SYNTH_MODE_EDIT) {
+				screenSaveTimer ++;
+				if (screenSaveTimer > screenSaverGoal[synthState->fullState.midiConfigValue[MIDICONFIG_OLED_SAVER] - 1]) {
+					lcd->clearActions();
+					lcd->clear();
+					screenSaverMode = true;
+					screenSaveTimer = 0;
+				}
+			} else {
+				screenSaveTimer = 0;
+			}
+		}
+	}
+}
+
+
+bool FMDisplay::wakeUpFromScreenSaver() {
+	if (unlikely(screenSaverMode)) {
+		screenSaverMode = false;
+		screenSaveTimer = 0;
+        displayPreset();
+        refreshStatus = 12;
+        return true;
+	}
+	screenSaveTimer = 0;
+	return false;
 }
 
 void FMDisplay::displayAlgo(int algo) {
@@ -1052,7 +1147,7 @@ void FMDisplay::displayAlgo(int algo) {
 	case ALG24:
 		da[0] = "   5   ";
 		da[1] = " 2 4   ";
-		da[2] = " | | | ";
+		da[2] = " | |   ";
 		da[3] = " 1 3 6 ";
 		break;
 	case ALG25:
@@ -1061,7 +1156,7 @@ void FMDisplay::displayAlgo(int algo) {
 		da[3] = "1 2 3 5";
 		break;
 	case ALG26:
-		da[1] = "    5  ";
+		da[0] = "    5  ";
 		da[1] = "    4  ";
 		da[2] = "    |  ";
 		da[3] = "1 2 3 6";

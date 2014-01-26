@@ -42,7 +42,7 @@ struct ParameterRowDisplay engine1ParameterRow  = {
         {
                 {ALGO1, ALGO_END-1, ALGO_END, DISPLAY_TYPE_STRINGS, algoNames, nullNamesOrder, nullNamesOrder},
                 {0, 16, 17, DISPLAY_TYPE_INT, nullNames,nullNamesOrder, nullNamesOrder },
-                {0, 16, 17, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 16, 17, DISPLAY_TYPE_VOICES, nullNames, nullNamesOrder, nullNamesOrder },
                 {0, 10, 11, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
@@ -151,17 +151,25 @@ struct ParameterRowDisplay engineMix3ParameterRow = {
 };
 
 
-const char* fxName []=  { "Off ", "LP  ", "HP  ", "Bass", "Mono" } ;
+const char* fxName []=  { "Off ", "Mix ", "LP  ", "HP  ", "Bass" } ;
 
 struct ParameterRowDisplay effectParameterRow = {
-        "FX  " ,
-        { "Type", "Freq", "Res ", "Gain" },
+        "Filter" ,
+        { "Type", "    ", "    ", "Gain" },
         {
                 {0, FILTER_LAST - 1, FILTER_LAST, DISPLAY_TYPE_STRINGS, fxName, nullNamesOrder, nullNamesOrder },
                 {0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 {0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
+                {0, 2, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
         }
+};
+
+struct FilterRowDisplay filterRowDisplay[FILTER_LAST] = {
+	{ NULL, NULL, "Gain" },
+	{ "Pan ", NULL, "Gain" },
+	{ "Freq", "Res ", "Gain" },
+	{ "Freq", "Res ", "Gain" },
+	{ "LoFr", "Boos", "Gain" }
 };
 
 
@@ -227,7 +235,7 @@ struct ParameterRowDisplay lfoEnv2ParameterRow = {
 };
 
 const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "env2", "seq1", "seq2",
-		"ModW", "PitB", "AftT",  "Velo", "Key " } ;
+		"ModW", "PitB", "AftT",  "Velo", "Key ", "CC1 ", "CC2 ", "CC3 ", "CC4 " } ;
 
 const char* matrixDestNames [] = {
         "None", "Gate", "IM1 ", "IM2 ", "IM3 ", "IM4 ", "IM* ",
@@ -263,7 +271,7 @@ struct ParameterRowDisplay lfoParameterRow = {
                 { LFO_SIN, LFO_TYPE_MAX-1, LFO_TYPE_MAX, DISPLAY_TYPE_STRINGS,  lfoShapeNames, nullNamesOrder, nullNamesOrder},
                 { 0, 24.9, 250, DISPLAY_TYPE_FLOAT_LFO_FREQUENCY, nullNames, nullNamesOrder, nullNamesOrder },
                 { -1, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { 0, 4, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
+                { -0.02f, 4, 202, DISPLAY_TYPE_LFO_KSYN, nullNames, nullNamesOrder, nullNamesOrder },
         }
 };
 
@@ -285,14 +293,14 @@ struct ParameterRowDisplay lfoStepParameterRow = {
 struct AllParameterRowsDisplay allParameterRows = {
         {
                 &engine1ParameterRow,
-                &engineArp1ParameterRow,
-                &engineArp2ParameterRow,
                 &engineIM1ParameterRow,
                 &engineIM2ParameterRow,
                 &engineIM3ParameterRow,
                 &engineMix1ParameterRow,
                 &engineMix2ParameterRow,
                 &engineMix3ParameterRow,
+                &engineArp1ParameterRow,
+                &engineArp2ParameterRow,
                 &effectParameterRow,
                 &oscParameterRow,
                 &oscParameterRow,
@@ -356,7 +364,7 @@ SynthState::SynthState() {
     fullState.dx7PresetNumber = 0;
     fullState.loadWhat = 0;
     fullState.saveWhat = 0;
-    fullState.midiConfigValue[MIDICONFIG_USB] = 0;
+    fullState.midiConfigValue[MIDICONFIG_USB] = 2;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL1] = 1;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL2] = 2;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL3] = 3;
@@ -370,7 +378,9 @@ SynthState::SynthState() {
     fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY] = 120;
     fullState.midiConfigValue[MIDICONFIG_ENCODER] = 0;
     fullState.midiConfigValue[MIDICONFIG_OP_OPTION] = 0;
-    fullState.midiConfigValue[MIDICONFIG_LED_CLOCK] = 0;
+    fullState.midiConfigValue[MIDICONFIG_LED_CLOCK] = 1;
+    fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET] = 0;
+    fullState.midiConfigValue[MIDICONFIG_OLED_SAVER] = 0;
     fullState.firstMenu = 0;
 
     for (int k=0; k<12; k++) {
@@ -480,7 +490,7 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
 			currentRow = ROW_MODULATION1;
 			break;
 		case BUTTON_LFO:
-			currentRow = ROW_OSC_MIX1;
+			currentRow = ROW_EFFECT;
 			break;
 		}
 	} else if (button1 == BUTTON_MATRIX) {

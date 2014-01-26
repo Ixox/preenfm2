@@ -63,7 +63,7 @@ void debug(char *l, int i1, int i2) {
 MidiDecoder::MidiDecoder() {
     currentEventState.eventState = MIDI_EVENT_WAITING;
     currentEventState.index = 0;
-    this->isSequencerPlaying = false;
+    this->isSequencerPlaying = true;
     this->midiClockCpt = 0;
     this->runningStatus = 0;
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
@@ -436,6 +436,16 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
             // cc.value[1] = newValue * 100.0f + .1f;
             this->synth->setNewValueFromMidi(timbre, ROW_LFOSEQ1 + midiEvent.value[0] - CC_STEPSEQ5_GATE, ENCODER_STEPSEQ_GATE,
                     (float)midiEvent.value[1] * .01f);
+            break;
+        case CC_MATRIX_SOURCE_CC1:
+        case CC_MATRIX_SOURCE_CC2:
+        case CC_MATRIX_SOURCE_CC3:
+        case CC_MATRIX_SOURCE_CC4:
+            // cc.value[1] = newValue * 5.0f + 50.1f;
+            this->synth->setTimbreMatrixSource(timbre, (enum SourceEnum)(MATRIX_SOURCE_CC1 + midiEvent.value[0] - CC_MATRIX_SOURCE_CC1),
+            		(float) midiEvent.value[1] * INV127);
+            break;
+
             break;
         }
     }

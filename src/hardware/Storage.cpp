@@ -60,7 +60,7 @@ void Storage::saveDefaultCombo() {
     // delete to be sure the size is OK...
     remove(DEFAULT_COMBO);
     for (int timbre = 0; timbre < 4; timbre++)  {
-    	convertParamsToMemory(this->timbre[timbre], &reachableFlashParam);
+    	convertParamsToMemory(this->timbre[timbre], &reachableFlashParam, true);
     	save(DEFAULT_COMBO, ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableFlashParam, PFM_PATCH_SIZE);
     }
 }
@@ -76,7 +76,7 @@ bool Storage::loadDefaultCombo() {
         int result = load(DEFAULT_COMBO,  ALIGNED_PATCH_SIZE * timbre ,  (void*)&reachableFlashParam, PFM_PATCH_SIZE);
 
         if (result == 0) {
-        	convertMemoryToParams(&reachableFlashParam, this->timbre[timbre]);
+        	convertMemoryToParams(&reachableFlashParam, this->timbre[timbre], true);
         }
     }
     return true;
@@ -109,7 +109,7 @@ void Storage::createComboBank(const char* name) {
 		return;
 	}
 
-	convertParamsToMemory(&preenMainPreset, &reachableFlashParam);
+	convertParamsToMemory(&preenMainPreset, &reachableFlashParam, true);
 
 	char comboName[12];
     copy(comboName,  "Combo \0\0\0\0\0\0", 12);
@@ -181,7 +181,7 @@ void Storage::loadPreenFMPatch(const struct BankFile* bank, int patchNumber, str
     int result = load(fullBankName, patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableFlashParam, PFM_PATCH_SIZE);
 
     if (result == 0) {
-    	convertMemoryToParams(&reachableFlashParam, params);
+    	convertMemoryToParams(&reachableFlashParam, params, *arpeggiatorPartOfThePreset > 0);
     }
 }
 
@@ -201,7 +201,7 @@ void Storage::savePreenFMPatch(const struct BankFile* bank, int patchNumber, con
     for (int k=0; k<ALIGNED_PATCH_ZERO;k++) {
         zeros[k] = 0;
     }
-	convertParamsToMemory(params, &reachableFlashParam);
+	convertParamsToMemory(params, &reachableFlashParam, *arpeggiatorPartOfThePreset > 0);
 
     // Save patch
     save(fullBankName, patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableFlashParam, PFM_PATCH_SIZE);
@@ -216,7 +216,7 @@ void Storage::loadPreenFMCombo(const struct BankFile* combo, int comboNumber) {
         int result = load(fullBankName,  (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre ,  (void*)&reachableFlashParam, PFM_PATCH_SIZE);
 
         if (result == 0) {
-        	convertMemoryToParams(&reachableFlashParam, this->timbre[timbre]);
+        	convertMemoryToParams(&reachableFlashParam, this->timbre[timbre], true);
         }
     }
 }
@@ -232,7 +232,7 @@ void Storage::savePreenFMCombo(const struct BankFile* combo, int comboNumber, ch
     save(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber ,  (void*)comboName, 12);
 
     for (int timbre = 0; timbre < 4; timbre++)  {
-    	convertParamsToMemory(this->timbre[timbre], &reachableFlashParam);
+    	convertParamsToMemory(this->timbre[timbre], &reachableFlashParam, true);
         save(fullBankName, (ALIGNED_PATCH_SIZE * 4 + 12) * comboNumber +  12 + ALIGNED_PATCH_SIZE * timbre,  (void*)&reachableFlashParam, PFM_PATCH_SIZE);
     }
 }
@@ -328,10 +328,21 @@ void  Storage::copyFloat(float* source, float* dest, int n) {
 }
 
 
-void Storage::convertParamsToMemory(const struct OneSynthParams* params, struct FlashSynthParams* memory) {
+void Storage::convertParamsToMemory(const struct OneSynthParams* params, struct FlashSynthParams* memory, bool saveArp) {
 	// First engine line
+
 	copyFloat((float*)&params->engine1, (float*)&memory->engine1, 4);
-	copyFloat((float*)&params->engineApr1, (float*)&memory->engineApr1, 4 * 2);
+	if (saveArp) {
+		copyFloat((float*)&params->engineApr1, (float*)&memory->engineApr1, 4 * 2);
+	} else {
+		memory->engineApr1.clock = 0;
+		memory->engineApr1.BPM = 90;
+		memory->engineApr1.octave = 1;
+		memory->engineApr2.pattern = 2;
+		memory->engineApr2.division = 12;
+		memory->engineApr2.duration = 14;
+		memory->engineApr2.latche = 0;
+	}
 
 	memory->flashEngineIm1.modulationIndex1 = params->engineIm1.modulationIndex1;
 	memory->flashEngineIm1.modulationIndex2 = params->engineIm1.modulationIndex2;
@@ -370,10 +381,12 @@ void Storage::convertParamsToMemory(const struct OneSynthParams* params, struct 
 }
 
 
-void Storage::convertMemoryToParams(const struct FlashSynthParams* memory, struct OneSynthParams* params) {
+void Storage::convertMemoryToParams(const struct FlashSynthParams* memory, struct OneSynthParams* params, bool loadArp) {
 	// First engine line
 	copyFloat((float*)&memory->engine1, (float*)&params->engine1, 4);
-	copyFloat((float*)&memory->engineApr1, (float*)&params->engineApr1, 4 * 2);
+	if (loadArp) {
+		copyFloat((float*)&memory->engineApr1, (float*)&params->engineApr1, 4 * 2);
+	}
 
 	params->engineIm1.modulationIndex1 = memory->flashEngineIm1.modulationIndex1;
 	params->engineIm1.modulationIndex2 = memory->flashEngineIm1.modulationIndex2;
@@ -406,11 +419,13 @@ void Storage::convertMemoryToParams(const struct FlashSynthParams* memory, struc
 	}
 
     if (params->engineApr1.BPM < 10) {
+		params->engineApr1.clock = 0;
     	params->engineApr1.BPM = 90;
     	params->engineApr1.octave = 1;
-    	params->engineApr2.pattern = 1;
+    	params->engineApr2.pattern = 2;
     	params->engineApr2.division = 12;
     	params->engineApr2.duration = 14;
+    	params->engineApr2.latche = 0;
     }
 
     if (params->effect.type == 0.0f && params->effect.param1 == 0.0f && params->effect.param2 == 0.0f && params->effect.param3 == 0.0f) {
@@ -440,8 +455,8 @@ void Storage::testMemoryPreset() {
 	}
 
 	tmpParam.engineApr1.BPM = (preenTimer % 200) + 15;
-	convertParamsToMemory(&tmpParam, &reachableFlashParam);
-	convertMemoryToParams(&reachableFlashParam, &reachableParam);
+	convertParamsToMemory(&tmpParam, &reachableFlashParam, true);
+	convertMemoryToParams(&reachableFlashParam, &reachableParam, true);
 
 	lcd.clear();
 	for (int k=0; k< sizeof(struct OneSynthParams); k++) {

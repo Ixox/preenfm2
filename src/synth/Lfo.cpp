@@ -36,5 +36,6 @@ void Lfo::init(Matrix *matrix, SourceEnum source, DestinationEnum dest) {
         for (float k=1; k<2048; k += 1.0f) {
             invTab[(int)(k + .005f)] = 1 / k;
         }
+        invTab[0] = 10000;
     }
 }

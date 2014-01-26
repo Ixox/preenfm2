@@ -32,11 +32,12 @@
 
 
 #ifndef OVERCLOCK
-// 168000000 / 1076 / 4
-#define PREENFM_FREQUENCY 39033.45725f
+// 168000000 / 1105 / 4
+// #define PREENFM_FREQUENCY 39033.45f
+#define PREENFM_FREQUENCY 38009.04f
 #else
-// 168000000 / 954 / 4
-#define PREENFM_FREQUENCY 44025.15723f
+// 192000000 / 1116 / 4  :
+#define PREENFM_FREQUENCY 43010.75f
 #endif
 
 #define PREENFM_FREQUENCY_INVERSED 1.0f/PREENFM_FREQUENCY
@@ -71,14 +72,14 @@ struct AlgoInformation {
 enum {
     ROW_ENGINE_FIRST = 0,
     ROW_ENGINE = ROW_ENGINE_FIRST,
-    ROW_ARPEGGIATOR1 ,
-    ROW_ARPEGGIATOR2 ,
     ROW_MODULATION1 ,
     ROW_MODULATION2 ,
     ROW_MODULATION3 ,
     ROW_OSC_MIX1,
     ROW_OSC_MIX2,
     ROW_OSC_MIX3,
+    ROW_ARPEGGIATOR1 ,
+    ROW_ARPEGGIATOR2 ,
     ROW_EFFECT,
     ROW_ENGINE_LAST = ROW_EFFECT
 };
@@ -343,14 +344,14 @@ struct EffectRowParams {
 
 struct OneSynthParams {
     struct Engine1Params engine1;
-    struct EngineArp1 engineApr1;
-    struct EngineArp2 engineApr2;
     struct EngineIm1 engineIm1;
     struct EngineIm2 engineIm2;
     struct EngineIm3 engineIm3;
     struct EngineMix1 engineMix1;
     struct EngineMix2 engineMix2;
     struct EngineMix3 engineMix3;
+    struct EngineArp1 engineApr1;
+    struct EngineArp2 engineApr2;
     struct EffectRowParams effect;
     struct OscillatorParams osc1;
     struct OscillatorParams osc2;
@@ -408,6 +409,10 @@ enum SourceEnum {
     MATRIX_SOURCE_AFTERTOUCH,
     MATRIX_SOURCE_VELOCITY,
     MATRIX_SOURCE_KEY,
+    MATRIX_SOURCE_CC1,
+    MATRIX_SOURCE_CC2,
+    MATRIX_SOURCE_CC3,
+    MATRIX_SOURCE_CC4,
     MATRIX_SOURCE_MAX
 };
 

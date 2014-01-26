@@ -323,7 +323,7 @@ void Hexter::setIM(struct OneSynthParams *params, int im, uint8_t *patch, int op
 	op--;
 	uint8_t *eb_op = patch + ((5 - op) * 21);
 
-	((float*)&params->engineIm1.modulationIndex1)[im] = getPreenFMIM(limit(eb_op[16], 0, 99));
+	((float*)&params->engineIm1.modulationIndex1)[im * 2] = getPreenFMIM(limit(eb_op[16], 0, 99));
 }
 
 void Hexter::setIMWithMax(struct OneSynthParams *params, int im, uint8_t *patch, int op, float max) {
@@ -331,9 +331,9 @@ void Hexter::setIMWithMax(struct OneSynthParams *params, int im, uint8_t *patch,
 	op--;
 	uint8_t *eb_op = patch + ((5 - op) * 21);
 
-	((float*)&params->engineIm1.modulationIndex1)[im] = getPreenFMIM(limit(eb_op[16], 0, 99));
-	if (((float*)&params->engineIm1.modulationIndex1)[im] > max) {
-		((float*)&params->engineIm1.modulationIndex1)[im] = max;
+	((float*)&params->engineIm1.modulationIndex1)[im * 2] = getPreenFMIM(limit(eb_op[16], 0, 99));
+	if (((float*)&params->engineIm1.modulationIndex1)[im * 2] > max) {
+		((float*)&params->engineIm1.modulationIndex1)[im * 2] = max;
 	}
 }
 
@@ -370,6 +370,25 @@ float Hexter::getPreenFMIM(int lvl) {
 int Hexter::abs(int value) {
 	return value < 0 ? -value : value;
 }
+
+float Hexter::abs(float value) {
+	return value < 0 ? -value : value;
+}
+
+
+float Hexter::getRounded(float r) {
+	float t = r*2;
+
+	int ti = t + .5;
+	// Round 1.46, 2.02 to close half decimal number
+	if (abs(t -ti ) < 0.12f) {
+		return ((float)ti) / 2.0f;
+	}
+
+	return r;
+}
+
+
 /*
  * dx7_voice_set_data
  */
@@ -411,7 +430,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		oscParam->frequencyType = eb_op[17] & 0x01;
 
 		// voice->op[i].detune        = limit(eb_op[20], 0, 14);
-		oscParam->detune = ((float)limit(eb_op[20], 0, 14) - 7.0f) / 100.0f / 2.0f;
+		oscParam->detune = ((float)limit(eb_op[20], 0, 14) - 7.0f) / 100.0f / 4.0f;
 
 		// Keyboard
 		if ((eb_op[17] & 0x01) == 0) {
@@ -471,6 +490,9 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		if (envB->releaseTime > 8.0) {
 			envB->releaseTime = 8.0;
 		}
+		if (envB->releaseTime < 0.04) {
+			envB->releaseTime = 0.04;
+		}
 
 		envA->attackLevel = dx7_voice_eg_rate_rise_percent[ limit(eb_op[4], 0, 99)];
 		envA->decayLevel = dx7_voice_eg_rate_decay_percent[limit(eb_op[5], 0, 99)];
@@ -500,8 +522,8 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		preenAlgo = ALG10;
 		setIM(params, 1, patch, 2);
 		setIM(params, 2, patch, 4);
-		setIMWithMax(params, 3, patch, 5, 2);
-		setIMWithMax(params, 4, patch, 6, 1);
+		setIMWithMax(params, 3, patch, 5, 4);
+		setIMWithMax(params, 4, patch, 6, 2);
 		setMix(params, 1, patch, 1);
 		setMix(params, 2, patch, 3);
 		if (fb > 4) {
@@ -517,8 +539,8 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		preenAlgo = ALG11;
 		setIM(params, 1, patch, 2);
 		setIM(params, 2, patch, 3);
-		setIMWithMax(params, 3, patch, 5, 2);
-		setIMWithMax(params, 4, patch, 6, 2);
+		setIMWithMax(params, 3, patch, 5, 4);
+		setIMWithMax(params, 4, patch, 6, 4);
 		setMix(params, 1, patch, 1);
 		setMix(params, 2, patch, 4);
 		if (fb > 4) {
@@ -552,7 +574,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setIM(params, 1, patch, 2);
 		setIM(params, 2, patch, 4);
 		setIM(params, 3, patch, 5);
-		setIMWithMax(params, 4, patch, 6, 2);
+		setIMWithMax(params, 4, patch, 6, 4);
 		setMix(params, 1, patch, 1);
 		setMix(params, 2, patch, 3);
 		if (fb > 4) {
@@ -570,7 +592,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 	case 11:
 		preenAlgo = ALG14;
 		setIM(params, 1, patch, 2);
-		setIMWithMax(params, 2, patch, 3, 2);
+		setIMWithMax(params, 2, patch, 3, 4);
 		setIM(params, 3, patch, 5);
 		setIM(params, 4, patch, 6);
 		setMix(params, 1, patch, 1);
@@ -606,8 +628,8 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		preenAlgo = ALG16;
 		setIM(params, 1, patch, 2);
 		setIM(params, 2, patch, 4);
-		setIMWithMax(params, 3, patch, 5, 1.5);
-		setIMWithMax(params, 4, patch, 6, 1.5);
+		setIMWithMax(params, 3, patch, 5, 4);
+		setIMWithMax(params, 4, patch, 6, 4);
 		setMix(params, 1, patch, 1);
 		setMix(params, 2, patch, 3);
 		if (fb > 4) {
@@ -624,9 +646,9 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		preenAlgo = ALG17;
 		setIM(params, 1, patch, 2);
 		setIM(params, 2, patch, 3);
-		setIMWithMax(params, 3, patch, 4, 2.0);
+		setIMWithMax(params, 3, patch, 4, 4);
 		setIM(params, 4, patch, 5);
-		setIMWithMax(params, 5, patch, 6, 2.0);
+		setIMWithMax(params, 5, patch, 6, 4);
 
 		setMix(params, 1, patch, 1);
 		if (fb > 4) {
@@ -644,8 +666,8 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		setIM(params, 1, patch, 2);
 		setIM(params, 2, patch, 3);
 		setIM(params, 3, patch, 4);
-		setIMWithMax(params, 4, patch, 5, 2.0);
-		setIMWithMax(params, 5, patch, 6, 0.5);
+		setIMWithMax(params, 4, patch, 5, 4);
+		setIMWithMax(params, 5, patch, 6, 2);
 
 		setMix(params, 1, patch, 1);
 		if (fb > 4) {
@@ -656,7 +678,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 	case 19:
 		preenAlgo = ALG19;
 		setIM(params, 1, patch, 2);
-		setIM(params, 2, patch, 3);
+		setIMWithMax(params, 2, patch, 3, 4);
 		setIM(params, 3, patch, 6);
 		setIM(params, 4, patch, 6);
 
@@ -672,7 +694,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		preenAlgo = ALG20;
 		setIM(params, 1, patch, 3);
 		setIM(params, 2, patch, 3);
-		setIMWithMax(params, 3, patch, 5, 2.0);
+		setIM(params, 3, patch, 5);
 		setIM(params, 4, patch, 6);
 		setMix(params, 1, patch, 1);
 		setMix(params, 2, patch, 2);
@@ -768,7 +790,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		preenAlgo = ALG24;
 		setIM(params, 1, patch, 2);
 		setIM(params, 2, patch, 4);
-		setIMWithMax(params, 3, patch, 5, 2.0);
+		setIMWithMax(params, 3, patch, 5, 4);
 		setMix(params, 1, patch, 1);
 		setMix(params, 2, patch, 3);
 		setMix(params, 3, patch, 6);
@@ -868,6 +890,10 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 	}
 
 
+	/*
+
+	XH : not use anymore after DC filter in FM algo
+
 	for (int k=0; algoWithSensibleOp6[k] != ALGO_END; k++) {
 		if (preenAlgo == algoWithSensibleOp6[k]) {
 			while (params->osc6.frequencyMul > 2) {
@@ -898,9 +924,14 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		}
 	}
 
+*/
 
-
-
+	params->osc1.frequencyMul = getRounded(params->osc1.frequencyMul);
+	params->osc2.frequencyMul = getRounded(params->osc2.frequencyMul);
+	params->osc3.frequencyMul = getRounded(params->osc3.frequencyMul);
+	params->osc4.frequencyMul = getRounded(params->osc4.frequencyMul);
+	params->osc5.frequencyMul = getRounded(params->osc5.frequencyMul);
+	params->osc6.frequencyMul = getRounded(params->osc6.frequencyMul);
 //
 
 	/* the "99.0" here is because we're also using this multiplier to scale the
