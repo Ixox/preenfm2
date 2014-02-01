@@ -41,92 +41,110 @@ const char* oledSaver[] = { "Off", "2m", "5m", "10m", "1h" };
 const struct MidiConfig midiConfig[]  = {
 		{
 				"Usb Midi: ",
+				"usbmidi",
 				3,
 				usbMidi
 		},
         {
                 "Midi ch. 1: ",
+                "midi1",
                 17,
                 midiChannels
         },
         {
                 "Midi ch. 2: ",
+                "midi2",
                 17,
                 midiChannels
         },
         {
                 "Midi ch. 3: ",
+                "midi3",
                 17,
                 midiChannels
         },
         {
                 "Midi ch. 4: ",
+                "midi3",
                 17,
                 midiChannels
         },
         {
                 "Midi thru: ",
+                "miditrhu",
                 2,
                 yesNo
         },
         {
                 "Receives: ",
+                "midireceives",
                 4,
                 midiReceives
         },
         {
                 "Send: ",
+                "midisend",
                 3,
                 midiSends
         },
         {
                 "R.Time SysEx: ",
+                "realtimesysex",
                 2,
                 yesNo
         },
         {
                 "Boot: ",
+                "boot",
                 4,
                 bootOptions
         },
         {
                 "Op Buttons: ",
+                "opbuttons",
                 2,
                 operatorButton
         },
         {
                 "Rot. Enc.: ",
+                "encoders",
                 2,
                 encoderType
         },
         {
                 "Test Note: ",
+                "testnote",
                 127,
                 0
         },
         {
                 "Test Velocity: ",
+                "testvelocity",
                 127,
                 0
         },
         {
                 "Clock Led: ",
+                "clockled",
                 2,
                 yesNo
         },
         {
                 "Arp in Preset: ",
+                "arpinpreset",
                 2,
                 yesNo
         },
         {
                 "Oled Saver: ",
+                "screensaver",
                 5,
                 oledSaver,
         },
         // Don't count in MIDICONFIG_SIZE
         {
                 "Firmware: ",
+                "",
                 1,
                 version
         }

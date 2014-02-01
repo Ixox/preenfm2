@@ -28,15 +28,6 @@
 #define LEDPIN GPIO_Pin_6
 
 
-struct sampleForSPI {
-    uint16_t sampleLeftMSB ;
-    uint16_t sampleLeftLSB;
-    uint16_t sampleRightMSB;
-    uint16_t sampleRightLSB;
-
-};
-
-extern struct sampleForSPI samples;
 extern int spiState ;
 
 extern LiquidCrystal lcd;

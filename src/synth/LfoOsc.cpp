@@ -179,13 +179,21 @@ void LfoOsc::nextValueInMatrix() {
         break;
     }
     case LFO_RAMP:
-        phase -= (phase >= 1.0f) * 1.0f;
+    	if (unlikely(phase >= 1.0f)) {
+    		phase -= 1;
+    	}
         lfoValue = -1.0f + phase * 2.0f;
         break;
     case LFO_SIN:
-        phase -= (phase >= 1.0f) * 1.0f;
-        lfoValue = sinTable[ (int) (phase * waveTables[0].max) ];
+    {
+    	if (unlikely(phase >= 1.0f)) {
+    		phase -= 1;
+    	}
+        int sinIndex = (int) (phase * waveTables[0].max);
+        sinIndex &= waveTables[0].max;
+        lfoValue = sinTable[sinIndex];
         break;
+    }
     case LFO_SQUARE:
         phase -= (phase >= 1.0f) * 1.0f;
         if (phase < .5) {
@@ -195,7 +203,7 @@ void LfoOsc::nextValueInMatrix() {
         }
         break;
     case LFO_RANDOM:
-        if (phase >= 1.0f) {
+        if (unlikely(phase >= 1.0f)) {
             phase -= 1.0f;
             currentRandomValue = noise[0];
         }

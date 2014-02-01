@@ -142,6 +142,7 @@ struct FullState {
 
 struct MidiConfig {
     const char* title;
+    const char* nameInFile;
     unsigned char maxValue;
     const char** valueName;
 };

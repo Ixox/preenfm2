@@ -112,8 +112,10 @@ public:
     void removeDefaultCombo();
     void createPatchBank(const char* name);
     void createComboBank(const char* name);
-    void loadConfig(char* midiConfig);
-    void saveConfig(const char* midiConfig);
+#ifndef BOOTLOADER
+    void loadConfig(char* midiConfigBytes);
+    void saveConfig(const char* midiConfigBytes);
+#endif
 
     void saveBank(const char* newBankName, const uint8_t* sysexTmpMem);
     bool bankNameExist(const char* bankName);
@@ -154,9 +156,9 @@ private:
     virtual int remove(FILE_ENUM file) = 0;
     // checkSize must return -1 if file does not exist
     virtual int checkSize(FILE_ENUM file) = 0;
+
     void addNumber(char* name, int offset, int number);
     void copy(char* dest, const char* source, int length);
-
 
     void  __attribute__ ((noinline)) copyFloat(float* source, float* dest, int n);
     void  __attribute__ ((noinline)) convertParamsToMemory(const struct OneSynthParams* params, struct FlashSynthParams* memory, bool saveArp);
@@ -165,6 +167,18 @@ private:
     char *arpeggiatorPartOfThePreset;
     char presetName[13];
     struct OneSynthParams* timbre[4];
+
+    // String util to read setting file
+#ifndef BOOTLOADER
+    int getLine(char* file, char* line);
+    int fillMidiConfig(char* midiConfig, char* line);
+    int copy_string(char *target, const char *source);
+    int getPositionOfEqual(char *line);
+    void getKey(char * line, char* key);
+    int toInt(char *str);
+    void getValue(char * line, char *value);
+    int str_cmp(const char*s1, const char*s2);
+#endif
 };
 
 #endif /*__STORAGE_H__*/

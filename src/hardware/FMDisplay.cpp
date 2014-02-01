@@ -205,38 +205,52 @@ void FMDisplay::printFloatWithSpace(float value) {
 
 bool FMDisplay::shouldThisValueShowUp(int row, int encoder) {
     int algo = this->synthState->params->engine1.algo;
-
-    if (unlikely(row == ROW_MODULATION2 && encoder >= 2 && algoInformation[algo].im == 3)) {
-    	return false;
-    }
-
-    if (unlikely(row == ROW_MODULATION3 && encoder >= 2 && algoInformation[algo].im == 5)) {
-    	return false;
-    }
-
-    if (unlikely(row == ROW_OSC_MIX1 && encoder >= 2 && algoInformation[algo].mix == 1)) {
-    	return false;
-    }
-
-    if (unlikely(row == ROW_OSC_MIX2 && encoder >= 2 && algoInformation[algo].mix == 3)) {
-    	return false;
-    }
-
-    if (unlikely(row == ROW_ENGINE && encoder == ENCODER_ENGINE_GLIDE)) {
-    	if (this->synthState->params->engine1.numberOfVoice != 1) {
-            return false;
+    switch (row) {
+    	case ROW_MODULATION2:
+			if (unlikely(encoder >= 2 && algoInformation[algo].im == 3)) {
+				return false;
+			}
+    	break;
+    	case ROW_MODULATION3:
+    	    if (unlikely(encoder >= 2 && algoInformation[algo].im == 5)) {
+    	    	return false;
+    	    }
+       	break;
+    	case ROW_OSC_MIX1:
+    	    if (unlikely(encoder >= 2 && algoInformation[algo].mix == 1)) {
+    	    	return false;
+    	    }
+       	break;
+    	case ROW_OSC_MIX2:
+    	    if (unlikely(encoder >= 2 && algoInformation[algo].mix == 3)) {
+    	    	return false;
+    	    }
+       	break;
+    	case ROW_OSC_MIX3:
+    	    if (unlikely(encoder >= 2 && algoInformation[algo].mix == 5)) {
+    	    	return false;
+    	    }
+       	break;
+    	case ROW_ENGINE:
+        	if (unlikely(this->synthState->params->engine1.numberOfVoice != 1 && encoder == ENCODER_ENGINE_GLIDE)) {
+                return false;
+        	}
+       	break;
+    	case ROW_EFFECT:
+    	{
+        	if (unlikely(encoder == 0)) {
+        		return true;
+        	}
+        	int effect = this->synthState->params->effect.type;
+        	if (filterRowDisplay[effect].paramName[encoder -1] == NULL) {
+        		return false;
+        	}
     	}
+        break;
+    	default:
+    		break;
     }
 
-    if (unlikely(row == ROW_EFFECT)) {
-    	if (unlikely(encoder == 0)) {
-    		return true;
-    	}
-    	int effect = this->synthState->params->effect.type;
-    	if (filterRowDisplay[effect].paramName[encoder -1] == NULL) {
-    		return false;
-    	}
-    }
 
     return true;
 }

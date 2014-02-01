@@ -30,12 +30,7 @@ extern USBH_HOST                    usbHost;
 
 
 #define DEFAULT_COMBO_NAME       "0:/pfm2/DfltCmbo.pfm"
-#define PATCH_BANK1_NAME         "0:/pfm2/Bank1.pfm"
-#define PATCH_BANK2_NAME         "0:/pfm2/Bank2.pfm"
-#define PATCH_BANK3_NAME         "0:/pfm2/Bank3.pfm"
-#define PATCH_BANK4_NAME         "0:/pfm2/Bank4.pfm"
-#define COMBO_BANK_NAME          "0:/pfm2/Combo1.pfm"
-#define PROPERTIES_NAME          "0:/pfm2/Settings.pfm"
+#define PROPERTIES_NAME          "0:/pfm2/Settings.txt"
 
 #define FIRMWARE_DIR             "0:/pfm2"
 #define DX7_DIR                  "0:/pfm2/dx7"

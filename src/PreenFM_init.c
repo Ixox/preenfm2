@@ -147,6 +147,12 @@ void MCP4922_Config() {
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
 
+	// CONFIG  PB8 to know if we have PCB 4f or 4g
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+
 	/* SPI configuration -------------------------------------------------------*/
 	SPI_I2S_DeInit(SPI1);
 

@@ -20,11 +20,18 @@
 #include "Storage.h"
 #include "Menu.h"
 #include "PresetUtil.h"
+#include "Menu.h"
 
+#ifdef DEBUG
+#include "LiquidCrystal.h"
+extern LiquidCrystal lcd;
+#endif
 
 // Set param in memmory reachable with USB : static is OK
 struct FlashSynthParams reachableFlashParam;
 struct OneSynthParams reachableParam;
+#define PROPERTY_FILE_SIZE 2048
+char propertyFile [PROPERTY_FILE_SIZE];
 uint8_t dx7PackedPatch[DX7_PACKED_PATCH_SIZED];
 
 void Storage::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4) {
@@ -137,29 +144,72 @@ void Storage::createComboBank(const char* name) {
 #endif
 }
 
-void Storage::loadConfig(char* midiConfig) {
+#ifndef BOOTLOADER
+
+
+
+void Storage::loadConfig(char* midiConfigBytes) {
+	char line[64];
     char* reachableProperties = (char*)&reachableFlashParam;
-    if (checkSize(PROPERTIES) != MIDICONFIG_SIZE) {
-        return;
+    int size = checkSize(PROPERTIES);
+    if (size >= PROPERTY_FILE_SIZE || size == -1) {
+    	// ERROR
+    	return;
     }
-    // Don't load in params directly because params is in CCM memory
-    int result = load(PROPERTIES, 0,  reachableProperties, MIDICONFIG_SIZE);
-    if (result == 0) {
-        for (int k=0; k<MIDICONFIG_SIZE; k++) {
-           midiConfig[k] = reachableProperties[k];
-        }
+    reachableProperties[size] = 0;
+
+    int result = load(PROPERTIES, 0,  reachableProperties, size);
+    int loop = 0;
+    char *readProperties = reachableProperties;
+    while (loop !=-1 && (readProperties - reachableProperties) < size) {
+    	loop = getLine(readProperties, line);
+    	if (line[0] != '#') {
+    		fillMidiConfig(midiConfigBytes, line);
+    	}
+    	readProperties += loop;
     }
 }
 
-void Storage::saveConfig(const char* midiConfig) {
-    char* reachableProperties = (char*)&reachableFlashParam;
+
+void Storage::saveConfig(const char* midiConfigBytes) {
+    int wptr = 0;
     for (int k=0; k<MIDICONFIG_SIZE; k++) {
-        reachableProperties[k] = midiConfig[k];
+    	propertyFile[wptr++] = '#';
+    	propertyFile[wptr++] = ' ';
+    	wptr += copy_string((char*)propertyFile + wptr, midiConfig[k].title);
+    	propertyFile[wptr++] = '\n';
+    	if (midiConfig[k].maxValue < 10 && midiConfig[k].valueName != 0) {
+	    	wptr += copy_string((char*)propertyFile + wptr, "#   0=");
+			for (int o=0; o<midiConfig[k].maxValue; o++) {
+		    	wptr += copy_string((char*)propertyFile + wptr, midiConfig[k].valueName[o]);
+				if ( o != midiConfig[k].maxValue - 1) {
+			    	wptr += copy_string((char*)propertyFile + wptr, ", ");
+				} else {
+			    	propertyFile[wptr++] = '\n';
+				}
+			}
+    	}
+    	wptr += copy_string((char*)propertyFile + wptr, midiConfig[k].nameInFile);
+    	propertyFile[wptr++] = '=';
+    	if (midiConfigBytes[k] < 10) {
+    		propertyFile[wptr++] = '0' + midiConfigBytes[k];
+    	} else if (midiConfigBytes[k] < 100) {
+    		propertyFile[wptr++] = '0' + (midiConfigBytes[k] / 10);
+    		propertyFile[wptr++] = '0' + (midiConfigBytes[k] % 10);
+    	} else {
+    		propertyFile[wptr++] = '0' + (midiConfigBytes[k] / 100);
+    		propertyFile[wptr++] = '0' + ((midiConfigBytes[k] % 100) / 10);
+    		propertyFile[wptr++] = '0' + (midiConfigBytes[k] % 10);
+    	}
+    	propertyFile[wptr++] = '\n';
+    	propertyFile[wptr++] = '\n';
     }
     // delete it so that we're sure the new one has the right size...
     remove(PROPERTIES);
-    save(PROPERTIES, 0,  reachableProperties, MIDICONFIG_SIZE);
+    save(PROPERTIES, 0,  propertyFile, wptr);
 }
+
+#endif
 
 // NEW mechanism ===
 
@@ -440,8 +490,6 @@ void Storage::convertMemoryToParams(const struct FlashSynthParams* memory, struc
 
 
 #ifdef DEBUG
-#include "LiquidCrystal.h"
-extern LiquidCrystal lcd;
 
 extern unsigned int preenTimer;
 
@@ -479,3 +527,115 @@ void Storage::testMemoryPreset() {
 	}
 }
 #endif
+
+#ifndef BOOTLOADER
+
+int Storage::fillMidiConfig(char* midiConfigBytes, char* line) {
+	char key[21];
+	char value[21];
+
+	int equalPos = getPositionOfEqual(line);
+	if (equalPos == -1) {
+		return 0;
+	}
+	getKey(line, key);
+	getValue(line + equalPos+1, value);
+
+
+	for (int k=0; k < MIDICONFIG_SIZE; k++) {
+		if (str_cmp(key, midiConfig[k].nameInFile) == 0) {
+			midiConfigBytes[k] = toInt(value);
+		}
+	}
+	return 0;
+}
+
+
+int Storage::copy_string(char *target, const char *source)
+{
+	int written = 0;
+	while(*source)
+	{
+		*target = *source;
+		written ++;
+		source++;
+		target++;
+	}
+	*target = '\0';
+	return written;
+}
+
+
+int Storage::getPositionOfEqual(char *line) {
+	for (int k=0; k < 20; k++) {
+		if (line[k] == '=') {
+			return k;
+		}
+	}
+	return -1;
+}
+
+void Storage::getKey(char * line, char* key) {
+	int k;
+	for (k=0; k < 20 && line[k] != ' ' && line[k] != '='; k++) {
+		key[k] = line[k];
+	}
+	key[k] = 0;
+}
+
+int Storage::toInt(char *str) {
+	int           result;
+	int           puiss;
+
+	result = 0;
+	while ((*str >= '0') && (*str <= '9'))
+	{
+		result = (result * 10) + ((*str) - '0');
+		str++;
+	}
+	return result;
+}
+
+void Storage::getValue(char * line, char *value) {
+	int kk;
+	for (int kk=0; kk < 20 && line[kk] == ' '; kk++);
+	int k;
+	for (k=kk; k < 20 && line[k] != ' ' && line[k] != '\r' && line[k] != '\n'; k++) {
+		value[k-kk] = line[k];
+	}
+	value[k-kk] = 0;
+}
+
+int Storage::str_cmp(const char*s1, const char*s2) {
+	int ret = 0;
+	while (!(ret = *(unsigned char *) s1 - *(unsigned char *) s2) && *s2)
+		++s1, ++s2;
+
+	if (ret < 0) {
+		ret = -1;
+	} else if (ret > 0) {
+		ret = 1 ;
+	}
+
+	return ret;
+}
+
+int Storage::getLine(char* file, char* line) {
+	int k;
+	for (k=0; k <64 && file[k] != '\n' && file[k] != '\r'; k++) {
+		line[k] = file[k];
+	}
+	line[k] = 0;
+	while (file[k]=='\n' || file[k]=='\r' || file[k]=='\t' || file[k]==' ') {
+		k++;
+	}
+	// Let's continue...
+	if (file[k] == 0) {
+		return -1;
+	}
+	return k;
+}
+
+#endif
+
+

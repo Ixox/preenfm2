@@ -52,7 +52,6 @@ UsbKey             usbKey ;
 Hexter             hexter;
 
 
-struct sampleForSPI samples  __attribute__ ((section(".ccmnoload")));
 int spiState  __attribute__ ((section(".ccmnoload")));
 
 void fillSoundBuffer() {
@@ -87,6 +86,7 @@ void setup() {
 	USART_Config();
 	MCP4922_Config();
 	RNG_Config();
+
 	// Set flush to zero mode...
 	// FPU will treat denormal value as 0
 
@@ -144,12 +144,6 @@ void setup() {
     hexter.setArpeggiatorPartOfThePreset(&synthState.fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET]);
     usbKey.loadConfig(synthState.fullState.midiConfigValue);
 
-    // launch the engine !!
-    // Init DAC number
-    samples.sampleLeftMSB = 0x3 << 12;
-    samples.sampleLeftLSB = 0xB << 12;
-    samples.sampleRightMSB = 0x3 << 12;
-    samples.sampleRightLSB = 0xB << 12;
 
 
     SysTick_Config();
@@ -215,6 +209,15 @@ void setup() {
     }
 
 
+    // launch the engine !!
+    // Init DAC number
+//    if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_8) == Bit_SET) {
+//		lcd.setCursor(17,3);
+//		lcd.print("R4g");
+//    } else {
+//		lcd.setCursor(17,3);
+//		lcd.print("R4f");
+//    }
 
 
     for (int i=0; i<4000; i++) {

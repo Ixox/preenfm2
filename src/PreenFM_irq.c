@@ -179,19 +179,11 @@ void SysTick_Handler(void)
 		// DAC 1 - MSB
 		GPIO_ResetBits(GPIOB, GPIO_Pin_4);
 		GPIO_SetBits(GPIOB, GPIO_Pin_9);
-
-
         sample = (int)synth.rightSampleAtReadCursor();
-        samples.sampleLeftMSB = 0x3000;
-        samples.sampleLeftMSB |= (sample >> 6);
-
-        samples.sampleLeftLSB = 0xB000;
-        samples.sampleLeftLSB |= (sample & 0x3f);
-
+        sample >>= 6;
         // LATCH HIGH
         GPIO_SetBits(GPIOC, GPIO_Pin_12);
-
-		SPI_I2S_SendData(SPI1, samples.sampleLeftMSB );
+		SPI_I2S_SendData(SPI1, 0x3000 | sample );
 		spiState++;
 
 		break;
@@ -199,37 +191,28 @@ void SysTick_Handler(void)
 		// DAC 2 - MSB
 		GPIO_ResetBits(GPIOB, GPIO_Pin_9);
 		GPIO_SetBits(GPIOB, GPIO_Pin_4);
-
 		sample = (int)synth.leftSampleAtReadCursor();
-
-        samples.sampleRightMSB = 0x3000;
-        samples.sampleRightMSB |= (sample >> 6);
-
-        samples.sampleRightLSB = 0xB000;
-        samples.sampleRightLSB |= (sample & 0x3f);
-
+        sample >>= 6;
+		SPI_I2S_SendData(SPI1, 0x3000 | sample);
         spiState++;
-
-		SPI_I2S_SendData(SPI1, samples.sampleRightMSB );
 		break;
 	case 2:
 		// DAC 1 - LSB
 		GPIO_ResetBits(GPIOB, GPIO_Pin_4);
 		GPIO_SetBits(GPIOB, GPIO_Pin_9);
-
+		sample = (int)synth.rightSampleAtReadCursor() & 0x3f;
+        SPI_I2S_SendData(SPI1, 0xb000 | sample);
 		spiState++;
-
-        SPI_I2S_SendData(SPI1, samples.sampleLeftLSB);
 		break;
 	case 3:
 		// DAC 2 - LSB
 		GPIO_ResetBits(GPIOB, GPIO_Pin_9);
 		GPIO_SetBits(GPIOB, GPIO_Pin_4);
+		sample = (int)synth.leftSampleAtReadCursor() & 0x3f;
+		SPI_I2S_SendData(SPI1, 0xb000 | sample);
         spiState = 0;
         synth.incReadCursor();
-
-		SPI_I2S_SendData(SPI1, samples.sampleRightLSB);
-        break;
+		break;
 	}
 }
 
