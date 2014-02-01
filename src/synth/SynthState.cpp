@@ -499,13 +499,13 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
 			currentRow = ROW_MATRIX1;
 			break;
 		case BUTTON_OSC:
-			currentRow = ROW_MATRIX3;
+    		changeSynthModeRow(BUTTON_MATRIX , -3);
 			break;
 		case BUTTON_ENV:
-			currentRow = ROW_MATRIX6;
+    		changeSynthModeRow(BUTTON_MATRIX , -1);
 			break;
 		case BUTTON_LFO:
-			currentRow = ROW_MATRIX9;
+			currentRow = ROW_MATRIX6;
 			break;
 		}
 
