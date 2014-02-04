@@ -202,7 +202,7 @@ void Encoders::checkStatus(int encoderType) {
 				}
 				if (buttonPreviousState[k] && !buttonUsedFromSomethingElse[k]) {
 					// Just released
-					if (buttonTimer[k] > 7) {
+					if (buttonTimer[k] > 20) {
 						buttonPressed(k);
 					}
 				}

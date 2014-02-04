@@ -27,6 +27,7 @@
 
 
 
+int outputLevelValues[] = { 0, 5, 9, 13, 17, 20, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 42, 43, 45, 46 } ;
 
 float dx7_voice_eg_rate_rise_duration[128] = {  /* generated from my f04new */
 
@@ -315,7 +316,7 @@ int Hexter::limit(int x, int min, int max)
 {
     if (x < min) return min;
     if (x > max) return max;
-    return (float)x;
+    return x;
 }
 
 void Hexter::setIM(struct OneSynthParams *params, int im, uint8_t *patch, int op) {
@@ -324,6 +325,7 @@ void Hexter::setIM(struct OneSynthParams *params, int im, uint8_t *patch, int op
 	uint8_t *eb_op = patch + ((5 - op) * 21);
 
 	((float*)&params->engineIm1.modulationIndex1)[im * 2] = getPreenFMIM(limit(eb_op[16], 0, 99));
+	((float*)&params->engineIm1.modulationIndexVelo1)[im * 2] = (eb_op[15] & 0x07) / 2.0f;
 }
 
 void Hexter::setIMWithMax(struct OneSynthParams *params, int im, uint8_t *patch, int op, float max) {
@@ -335,6 +337,7 @@ void Hexter::setIMWithMax(struct OneSynthParams *params, int im, uint8_t *patch,
 	if (((float*)&params->engineIm1.modulationIndex1)[im * 2] > max) {
 		((float*)&params->engineIm1.modulationIndex1)[im * 2] = max;
 	}
+	((float*)&params->engineIm1.modulationIndexVelo1)[im * 2] = (eb_op[15] & 0x07) / 2.0f;
 }
 
 void Hexter::setMix(struct OneSynthParams *params, int im, uint8_t *patch, int op) {
@@ -381,7 +384,7 @@ float Hexter::getRounded(float r) {
 
 	int ti = t + .5;
 	// Round 1.46, 2.02 to close half decimal number
-	if (abs(t -ti ) < 0.12f) {
+	if (abs(t -ti ) < 0.25f || r > 3) {
 		return ((float)ti) / 2.0f;
 	}
 
@@ -417,7 +420,6 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
         transposeMultiply = .25f;
     }
 
-
 	for (int i = 0; i < 6; i++) {
 		uint8_t *eb_op = patch + ((5 - i) * 21);
 		struct OscillatorParams* oscParam = oscParams[i];
@@ -446,8 +448,8 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 			float freq = exp(M_LN10 * ((double)(eb_op[18] & 3) + (double)eb_op[19] / 100.0f));
 			oscParam->frequencyMul = freq / 1000.0f;
 
+			// Low frequency does not work at all with PreenFM
 			if (oscParam->frequencyMul < 40) {
-				// Low frequency does not work at all with PreenFM
 				oscParam->frequencyType = 0;
 				oscParam->frequencyMul = 1.0f;
 				oscParam->detune = 0.0;
@@ -473,22 +475,36 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 //			voice->op[i].eg.base_level[j] = limit(eb_op[4 + j], 0, 99);
 		// Use base_rate[0]
 
-		envA->attackTime = dx7_voice_eg_rate_rise_duration[limit(eb_op[0], 0, 99)] ;
-		envA->decayTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[1], 0, 99)]  / 4.0f * abs(eb_op[4] - eb_op[5]) / 99.0f;
-		envB->sustainTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[2], 0, 99)] / 4.0f * abs(eb_op[6] - eb_op[5]) / 99.0f;
-		envB->releaseTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[3], 0, 99)] / 4.0f;
 
-		if (envA->attackTime > 4.0) {
-			envA->attackTime = 4.0;
+
+		envA->attackTime = getChangeTime(limit(eb_op[16], 0, 99), limit(eb_op[0], 0, 99), 0, limit(eb_op[4], 0, 99));
+		envA->decayTime = getChangeTime(limit(eb_op[16], 0, 99), limit(eb_op[1], 0, 99), limit(eb_op[4], 0, 99), limit(eb_op[5], 0, 99));
+		envB->sustainTime = getChangeTime(limit(eb_op[16], 0, 99), limit(eb_op[2], 0, 99), limit(eb_op[5], 0, 99), limit(eb_op[6], 0, 99));
+		// Take previous value if the release one is 0
+		int releaseFromValue = limit(eb_op[6] != 0 ? eb_op[6] : (eb_op[5] != 0 ? eb_op[5] : eb_op[4]), 0, 99);
+		envB->releaseTime = getChangeTime(limit(eb_op[16], 0, 99), limit(eb_op[3], 0, 99), releaseFromValue, 0);
+
+
+//		envA->attackTime = dx7_voice_eg_rate_rise_duration[limit(eb_op[0], 0, 99)] * eb_op[0] / ;
+//		if (eb_op[5] >= eb_op[4]) {
+//			envA->decayTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[1], 0, 99)]  / 4.0f * abs(eb_op[4] - eb_op[5]) / 99.0f;
+//		} else {
+//			envA->decayTime = dx7_voice_eg_rate_rise_duration[limit(eb_op[1], 0, 99)]  / 4.0f * abs(eb_op[4] - eb_op[5]) / 99.0f;
+//		}
+//		envB->sustainTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[2], 0, 99)] / 4.0f * abs(eb_op[6] - eb_op[5]) / 99.0f;
+//		envB->releaseTime = dx7_voice_eg_rate_decay_duration[limit(eb_op[3], 0, 99)] / 4.0f;
+
+		if (envA->attackTime > 16.0) {
+			envA->attackTime = 16.0;
 		}
-		if (envA->decayTime > 8.0) {
-			envA->decayTime = 8.0;
+		if (envA->decayTime > 16.0) {
+			envA->decayTime = 16.0;
 		}
-		if (envB->sustainTime > 8.0) {
-			envB->sustainTime = 8.0;
+		if (envB->sustainTime > 16.0) {
+			envB->sustainTime = 16.0;
 		}
-		if (envB->releaseTime > 8.0) {
-			envB->releaseTime = 8.0;
+		if (envB->releaseTime > 16.0) {
+			envB->releaseTime = 16.0;
 		}
 		if (envB->releaseTime < 0.04) {
 			envB->releaseTime = 0.04;
@@ -498,6 +514,7 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		envA->decayLevel = dx7_voice_eg_rate_decay_percent[limit(eb_op[5], 0, 99)];
 		envB->sustainLevel = dx7_voice_eg_rate_decay_percent[limit(eb_op[6], 0, 99)];
 		envB->releaseLevel = dx7_voice_eg_rate_decay_percent[limit(eb_op[7], 0, 99)];
+
 
 
 		//		}
@@ -826,24 +843,25 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 		break;
 
 	case 31:
-		preenAlgo = ALG23;
+		preenAlgo = ALG28;
 
 		params->engineIm1.modulationIndex1 = 0;
 		params->engineIm1.modulationIndex2 = 0;
-		setIM(params, 3, patch, 6);
+		setIM(params, 1, patch, 5);
 
 		setMix(params, 1, patch, 1);
 		setMix(params, 2, patch, 2);
 		setMix(params, 3, patch, 3);
 		setMix(params, 4, patch, 4);
-		setMix(params, 5, patch, 5);
+		setMix(params, 5, patch, 6);
+
 		if (fb > 4) {
 			params->osc6.shape = OSC_SHAPE_SAW;
 		}
 		break;
 
 	case 32:
-		preenAlgo = ALG14;
+		preenAlgo = ALG27;
 		setMix(params, 1, patch, 1);
 		setMix(params, 2, patch, 2);
 		setMix(params, 3, patch, 3);
@@ -867,8 +885,9 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 	}
 
     int algoWithSensibleOp6[] = { ALG10, ALG11, ALG13, ALG16, ALG17, ALG18, ALGO_END } ;
-    int algoWithSensibleOp5[] = {ALG10, ALG16, ALG18, ALG24, ALGO_END } ;
-    int algoWithSensibleOp3[] = {ALG11, ALG14 , ALG19, ALGO_END } ;
+    int algoWithSensibleOp5[] = { ALG10, ALG16, ALG18, ALG24, ALG26, ALGO_END } ;
+    int algoWithSensibleOp4[] = { ALG17, ALGO_END } ;
+    int algoWithSensibleOp3[] = { ALG11, ALG14 , ALG19, ALGO_END } ;
 
 	while (params->osc1.frequencyMul > 8) {
 		params->osc1.frequencyMul /= 2;
@@ -890,15 +909,14 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 	}
 
 
-	/*
-
-	XH : not use anymore after DC filter in FM algo
 
 	for (int k=0; algoWithSensibleOp6[k] != ALGO_END; k++) {
 		if (preenAlgo == algoWithSensibleOp6[k]) {
 			while (params->osc6.frequencyMul > 2) {
 				params->osc6.frequencyMul /= 2;
 			}
+			// Let's round it 0.5
+			params->osc6.frequencyMul = ((int)(params->osc6.frequencyMul * 2 + 1)) / 2.0f;
 			params->osc6.detune = 0;
 			params->osc6.shape = OSC_SHAPE_SIN;
 		}
@@ -909,8 +927,22 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 			while (params->osc5.frequencyMul > 2) {
 				params->osc5.frequencyMul /= 2;
 			}
+			// Let's round it 0.5
+			params->osc5.frequencyMul = ((int)(params->osc5.frequencyMul * 2 + 1)) / 2.0f;
 			params->osc5.detune = 0;
 			params->osc5.shape = OSC_SHAPE_SIN;
+		}
+	}
+
+	for (int k=0; algoWithSensibleOp4[k] != ALGO_END; k++) {
+		if (preenAlgo == algoWithSensibleOp4[k]) {
+			while (params->osc4.frequencyMul > 2) {
+				params->osc4.frequencyMul /= 2;
+			}
+			// Let's round it 0.5
+			params->osc4.frequencyMul = ((int)(params->osc4.frequencyMul * 2 + 1)) / 2.0f;
+			params->osc4.detune = 0;
+			params->osc4.shape = OSC_SHAPE_SIN;
 		}
 	}
 
@@ -919,12 +951,12 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 			while (params->osc3.frequencyMul > 2) {
 				params->osc3.frequencyMul /= 2;
 			}
+			// Let's round it 0.5
+			params->osc3.frequencyMul = ((int)(params->osc3.frequencyMul * 2 + 1)) / 2.0f;
 			params->osc3.detune = 0;
 			params->osc3.shape = OSC_SHAPE_SIN;
 		}
 	}
-
-*/
 
 	params->osc1.frequencyMul = getRounded(params->osc1.frequencyMul);
 	params->osc2.frequencyMul = getRounded(params->osc2.frequencyMul);
@@ -999,11 +1031,11 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 
 	params->matrixRowState10.source = MATRIX_SOURCE_AFTERTOUCH;
 	params->matrixRowState10.mul = 2.0f;
-	params->matrixRowState10.destination = INDEX_MODULATION2;
+	params->matrixRowState10.destination = INDEX_ALL_MODULATION;
 
 	params->matrixRowState11.source = MATRIX_SOURCE_MODWHEEL;
 	params->matrixRowState11.mul = 4.0f;
-	params->matrixRowState11.destination = INDEX_MODULATION1;
+	params->matrixRowState11.destination = INDEX_ALL_MODULATION;
 
 	params->matrixRowState12.source = MATRIX_SOURCE_PITCHBEND;
 	params->matrixRowState12.mul = 2.0f;
@@ -1049,5 +1081,95 @@ void Hexter::voiceCopyName(char *name, uint8_t *patch)
     name[10] = 0;
 }
 
+float Hexter::getAttackRatio(int outputLevel, int value1, int value2) {
+	if (value1 < 32 && value2 > 32) {
+		return 12.0f;
+	}
+	return 8;
+//	int multipliers = 0;
+//	int ol = getActualOutputLevel(outputLevel) * 32;
+//	for (int k=value1; k< value2 ; k++) {
+//		multipliers += 2 + (8096 - (ol + getActualLevel(k) * 64)) / 256;
+//	}
+//	return multipliers / (value2 - value1);
+}
+
+
+#define FP_DIVIDE_CEIL(n, d)  (((n) + (d) - 1) / (d))
+
+float Hexter::getChangeTime(int outputLevel, int time, int value1, int value2) {
+//	float duration;
+//	int need_compensation = 0;
+//    if (value1 <= 31) {
+//        if (value2 > 31) {
+//            /* rise quickly to 31, then continue normally */
+//            need_compensation = 1;
+//            duration = dx7_voice_eg_rate_rise_duration[time] *
+//                       (dx7_voice_eg_rate_rise_percent[value2] -
+//                        dx7_voice_eg_rate_rise_percent[value1]);
+//        } else if (value2 - value1 > 9) {
+//            /* these seem to take zero time */
+//            need_compensation = 0;
+//            duration = 0.0f;
+//        } else {
+//            /* these are the exploited delays */
+//            need_compensation = 0;
+//            /* -FIX- this doesn't make WATER GDN work? */
+//            duration = dx7_voice_eg_rate_rise_duration[time] *
+//                       (float)(value2 - value1) / 100.0f;
+//        }
+//    } else {
+//        need_compensation = 0;
+//        duration = dx7_voice_eg_rate_rise_duration[time] *
+//                   (dx7_voice_eg_rate_rise_percent[value2] -
+//                    dx7_voice_eg_rate_rise_percent[value1]);
+//    }
+//
+//    duration *= PREENFM_FREQUENCY;
+//
+//    float duration = dx7_voice_eg_rate_rise_duration[99] *
+//      (dx7_voice_eg_rate_rise_percent[99] - dx7_voice_eg_rate_rise_percent[0]);
+//    float dx7_eg_max_slew = 99.0f / duration * PREENFM_FREQUENCY;
+//
+//    int32_t precomp_duration = FP_DIVIDE_CEIL(31 - value1, dx7_eg_max_slew);
+
+	float value1InDb = .0235f * getActualLevel(value1) * 64;
+	float value2InDb = .0235f * getActualLevel(value2) * 64;
+	float diffBetweenBaluesInDb = abs(value1InDb - value2InDb);
+
+	int qtime = time * 41 / 64;
+	float dbPerS = .5 * pow(2, (float)qtime * .25f);
+
+	if (value2 > value1) {
+		dbPerS *= getAttackRatio(outputLevel, value1, value2);
+	}
+
+	return diffBetweenBaluesInDb / dbPerS;
+
+}
+int Hexter::getActualLevel(int value) {
+	// FROM : https://code.google.com/p/music-synthesizer-for-android/wiki/Dx7Envelope
+	//	Level 0..5 -> actual level = 2 * l
+	//	Level 5..16 -> actual level = 5 + l
+	//	Level 17..20 -> actual level = 4 + l
+	//	Level 20..99 -> actual level = 14 + (l >> 1)
+	if (value < 5) {
+		return 2 * value;
+	} else if (value < 16) {
+		return 5 + value;
+	} else if (value < 20) {
+		return 4 + value;
+	} else {
+		return 14 + (value >> 1);
+	}
+}
+
+int Hexter::getActualOutputLevel(int value) {
+	if (value < 20) {
+		return outputLevelValues[value];
+	} else {
+		return 28 + value;
+	}
+}
 
 

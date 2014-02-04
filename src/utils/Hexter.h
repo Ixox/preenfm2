@@ -61,6 +61,10 @@ protected:
 	int abs(int value);
 	float abs(float value);
 	float getRounded(float r);
+	float getChangeTime(int outputLevel, int time, int value1, int value2);
+	int getActualLevel(int value);
+	int getActualOutputLevel(int value);
+	float getAttackRatio(int outputLevel, int value1, int value2);
 
 	char patchName[11];
     uint8_t unpackedData[DX7_VOICE_SIZE_UNPACKED];

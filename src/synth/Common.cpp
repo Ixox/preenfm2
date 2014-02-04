@@ -45,6 +45,7 @@ struct AlgoInformation  algoInformation[] = {
         { 6, 2, 4},   // ALG25
         { 6, 2, 4},   // ALG26
         { 6, 0, 6},   // ALG27
+        { 6, 1, 5},   // ALG28
 };
 
 

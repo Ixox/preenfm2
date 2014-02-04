@@ -145,6 +145,7 @@ public:
 			env->envState = nextState[env->envState];
 			newState(env);
 
+			/* NO !!! not DX7 compatible !!!
 			if (unlikely(stateInc[env->envState] == 1.0f)) {
 				// Means time is 0 : Move forward
 				// If D or S have 0 timing
@@ -165,6 +166,7 @@ public:
 					}
 				}
 			}
+			*/
 	        return env->currentValue;
 		}
 

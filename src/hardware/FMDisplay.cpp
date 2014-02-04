@@ -1178,6 +1178,11 @@ void FMDisplay::displayAlgo(int algo) {
 	case ALG27:
 		da[3] = "123456 ";
 		break;
+	case ALG28:
+		da[1] = "     6 ";
+		da[2] = "     | ";
+		da[3] = " 12345 ";
+		break;
 	}
 
 	for (int y=0; y<4; y++) {

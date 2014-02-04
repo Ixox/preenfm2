@@ -1778,7 +1778,7 @@ void Voice::nextBlock() {
 			env6Value += env6Inc;
 		}
 
-		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env4.isDead(&envState4))) {
+		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3))) {
 			endNoteOrBeginNextOne();
 		}
 
@@ -3085,6 +3085,104 @@ void Voice::nextBlock() {
 
 				*sample++ += car1 * currentTimbre->pan1Left + car2 * currentTimbre->pan2Left + car3 * currentTimbre->pan3Left + car4 * currentTimbre->pan4Left + car5 * currentTimbre->pan5Left + car6 * currentTimbre->pan6Left;
 				*sample++ += car1 * currentTimbre->pan1Right + car2 * currentTimbre->pan2Right + car3 * currentTimbre->pan3Right + car4 * currentTimbre->pan4Right + car5 * currentTimbre->pan5Right + car6 * currentTimbre->pan6Right;
+
+				env1Value += env1Inc;
+				env2Value += env2Inc;
+				env3Value += env3Inc;
+				env4Value += env4Inc;
+				env5Value += env5Inc;
+				env6Value += env6Inc;
+			}
+			if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env3.isDead(&envState3)  && currentTimbre->env4.isDead(&envState4) && currentTimbre->env5.isDead(&envState5) && currentTimbre->env6.isDead(&envState6))) {
+				endNoteOrBeginNextOne();
+			}
+		 }
+		 break;
+	case ALG28:
+		/*
+		 * DX ALGO 31
+
+		    				               .---.
+							               | 6 |
+                						   '---'
+							                 |IM1
+			  .---.  .---.  .---.  .---.   .---.
+			  | 1 |  | 2 |  | 3 |  | 4 |   | 5 |
+			  '---'  '---'  '---'  '---'   '---'
+				|Mix1  |Mix2  |Mix3  |Mix4   |Mix5
+
+		 */
+		 {
+			currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1);
+			currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2);
+			currentTimbre->osc3.calculateFrequencyWithMatrix(&oscState3);
+			currentTimbre->osc4.calculateFrequencyWithMatrix(&oscState4);
+			currentTimbre->osc5.calculateFrequencyWithMatrix(&oscState5);
+			currentTimbre->osc6.calculateFrequencyWithMatrix(&oscState6);
+
+			float voiceIm1 = this->im1 + currentTimbre->modulationIndex1;
+
+			env1Value = this->env1ValueMem;
+			envNextValue = currentTimbre->env1.getNextAmpExp(&envState1);
+			env1Inc = (envNextValue - env1Value) * inv32;  // divide by 32
+			this->env1ValueMem = envNextValue;
+
+			env2Value = this->env2ValueMem;
+			envNextValue = currentTimbre->env2.getNextAmpExp(&envState2);
+			env2Inc = (envNextValue - env2Value) * inv32;
+			this->env2ValueMem = envNextValue;
+
+			env3Value = this->env3ValueMem;
+			envNextValue = currentTimbre->env3.getNextAmpExp(&envState3);
+			env3Inc = (envNextValue - env3Value) * inv32;
+			this->env3ValueMem = envNextValue;
+
+			env4Value = this->env4ValueMem;
+			envNextValue = currentTimbre->env4.getNextAmpExp(&envState4);
+			env4Inc = (envNextValue - env4Value) * inv32;
+			this->env4ValueMem = envNextValue;
+
+			env5Value = this->env5ValueMem;
+			envNextValue = currentTimbre->env5.getNextAmpExp(&envState5);
+			env5Inc = (envNextValue - env5Value) * inv32;
+			this->env5ValueMem = envNextValue;
+
+			env6Value = this->env6ValueMem;
+			envNextValue = currentTimbre->env6.getNextAmpExp(&envState6);
+			env6Inc = (envNextValue - env6Value) * inv32;
+			this->env6ValueMem = envNextValue;
+
+			oscState1.frequency = oscState1.mainFrequencyPlusMatrix;
+			float* osc1Values = currentTimbre->osc1.getNextBlock(&oscState1);
+
+			oscState2.frequency = oscState2.mainFrequencyPlusMatrix;
+			float* osc2Values = currentTimbre->osc2.getNextBlock(&oscState2);
+
+			oscState3.frequency = oscState3.mainFrequencyPlusMatrix;
+			float* osc3Values = currentTimbre->osc3.getNextBlock(&oscState3);
+
+			oscState4.frequency = oscState4.mainFrequencyPlusMatrix;
+			float* osc4Values = currentTimbre->osc4.getNextBlock(&oscState4);
+
+			oscState6.frequency = oscState6.mainFrequencyPlusMatrix;
+
+			float div5TimesVelocity =   .2f * this->velocity;
+
+			for (int k =0; k< BLOCK_SIZE; k++) {
+
+
+				float car1 = osc1Values[k] * env1Value * currentTimbre->mix1 * div5TimesVelocity;
+				float car2 = osc2Values[k] * env2Value * currentTimbre->mix2 * div5TimesVelocity;
+				float car3 = osc3Values[k] * env3Value * currentTimbre->mix3 * div5TimesVelocity;
+				float car4 = osc4Values[k] * env4Value * currentTimbre->mix4 * div5TimesVelocity;
+
+				float freq6 = currentTimbre->osc6.getNextSample(&oscState6) * env6Value * oscState6.frequency;
+
+				oscState5.frequency = freq6 * voiceIm1 + oscState5.mainFrequencyPlusMatrix;
+				float car5 = currentTimbre->osc5.getNextSample(&oscState5) * env5Value * currentTimbre->mix5 * div5TimesVelocity;
+
+				*sample++ += car1 * currentTimbre->pan1Left + car2 * currentTimbre->pan2Left + car3 * currentTimbre->pan3Left + car4 * currentTimbre->pan4Left + car5 * currentTimbre->pan5Left;
+				*sample++ += car1 * currentTimbre->pan1Right + car2 * currentTimbre->pan2Right + car3 * currentTimbre->pan3Right + car4 * currentTimbre->pan4Right + car5 * currentTimbre->pan5Right;
 
 				env1Value += env1Inc;
 				env2Value += env2Inc;
