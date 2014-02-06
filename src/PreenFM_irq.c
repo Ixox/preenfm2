@@ -63,20 +63,16 @@ void StackDebug(unsigned int * hardfault_args) {
 	lcd.setRealTimeAction(true);
 	lcd.clear();
 	lcd.setCursor(0,0);
-	lcd.print("HrdFlt  LR:");
-	printHex32bits(hardfault_args[5]);
+	lcd.print("PFM2 v"PFM2_VERSION" "OVERCLOCK_STRING);
 	lcd.setCursor(0,1);
-	printHex32bits(hardfault_args[6]);
-	lcd.print("   ");
-	printHex32bits(hardfault_args[7]);
+	lcd.print("LR: 0x");
+	printHex32bits(hardfault_args[5]);
 	lcd.setCursor(0,2);
-	printHex32bits(hardfault_args[0]);
-	lcd.print("   ");
-	printHex32bits(hardfault_args[1]);
+	lcd.print("PC: 0x");
+	printHex32bits(hardfault_args[6]);
 	lcd.setCursor(0,3);
-	printHex32bits(hardfault_args[2]);
-	lcd.print("   ");
-	printHex32bits(hardfault_args[3]);
+	lcd.print("r0: 0x");
+	printHex32bits(hardfault_args[0]);
 
 /*stacked_r0 = ((unsigned long) hardfault_args[0]);
 stacked_r1 = ((unsigned long) hardfault_args[1]);

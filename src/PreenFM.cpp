@@ -33,11 +33,6 @@
 
 #include "ff.h"
 
-#ifndef OVERCLOCK
-#define OVERCLOCK_STRING
-#else
-#define OVERCLOCK_STRING "o"
-#endif
 
 SynthState         synthState __attribute__ ((section(".ccmnoload")));
 Synth              synth __attribute__ ((section(".ccmnoload")));

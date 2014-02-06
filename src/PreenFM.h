@@ -25,6 +25,13 @@
 #ifndef _PreenFM_H_
 #define _PreenFM_H_
 
+
+#ifndef OVERCLOCK
+#define OVERCLOCK_STRING
+#else
+#define OVERCLOCK_STRING "o"
+#endif
+
 #define LEDPIN GPIO_Pin_6
 
 
