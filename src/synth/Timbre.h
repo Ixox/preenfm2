@@ -281,6 +281,8 @@ public:
     float pan1Left, pan2Left, pan3Left, pan4Left, pan5Left, pan6Left  ;
     float pan1Right, pan2Right, pan3Right, pan4Right, pan5Right, pan6Right ;
 
+    // Needed for debuging
+    char voiceNumber[MAX_NUMBER_OF_VOICES];
 private:
 
     // MiniPal Arpegiator
@@ -302,7 +304,6 @@ private:
     float numberOfVoiceInverse;
     float mixerGain;
     Voice *voices[MAX_NUMBER_OF_VOICES];
-    char voiceNumber[MAX_NUMBER_OF_VOICES];
     bool holdPedal;
 
     LfoOsc lfoOsc[NUMBER_OF_LFO_OSC];

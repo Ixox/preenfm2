@@ -94,6 +94,7 @@ Timbre::Timbre() {
     // Arpeggiator start
     Start();
 
+
     // Init FX variables
     v0L = v1L = v0R = v1R = 0.0f;
 }
@@ -169,10 +170,33 @@ void Timbre::preenNoteOn(char note, char velocity) {
 	unsigned int indexMin = (unsigned int)2147483647;
 	int voiceToUse = -1;
 
-
-	for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+	int iNov = (int) params.engine1.numberOfVoice;
+	for (int k = 0; k < iNov; k++) {
 		// voice number k of timbre
 		int n = voiceNumber[k];
+
+    	if (unlikely(n<0)) {
+    		lcd.setRealTimeAction(true);
+    		lcd.clear();
+    		lcd.setCursor(0,0);
+    		lcd.print("Timbre::NoteOn");
+			lcd.setCursor(0,1);
+			lcd.print("nov: ");
+			lcd.print((int)params.engine1.numberOfVoice);
+			lcd.setCursor(10,1);
+			lcd.print("k: ");
+			lcd.print(k);
+			lcd.setCursor(0,2);
+			lcd.print("n: ");
+			lcd.print(n);
+			lcd.setCursor(10,2);
+			lcd.print("t: ");
+			lcd.print(timbreNumber);
+			lcd.setCursor(0,3);
+			lcd.print("nov*1000: ");
+			lcd.print((int)params.engine1.numberOfVoice * 1000.0f);
+			while (1);
+    	}
 
 		// same note.... ?
 		if (voices[n]->getNote() == note) {
@@ -197,7 +221,7 @@ void Timbre::preenNoteOn(char note, char velocity) {
 	}
 
 	if (voiceToUse == -1) {
-		for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+		for (int k = 0; k < iNov; k++) {
 			// voice number k of timbre
 			int n = voiceNumber[k];
 			int indexVoice = voices[n]->getIndex();
@@ -216,36 +240,39 @@ void Timbre::preenNoteOn(char note, char velocity) {
 
 
 void Timbre::preenNoteOff(char note) {
-  for (int k = 0; k < params.engine1.numberOfVoice; k++) {
-        // voice number k of timbre
-        int n = voiceNumber[k];
+	int iNov = (int) params.engine1.numberOfVoice;
+	for (int k = 0; k < iNov; k++) {
+		// voice number k of timbre
+		int n = voiceNumber[k];
+		if (unlikely(n==-1)) {
+			return;
+		}
 
-        if (likely(voices[n]->getNextGlidingNote() == 0)) {
-            if (voices[n]->getNote() == note) {
-            	if (unlikely(holdPedal)) {
-            		voices[n]->setHoldedByPedal(true);
-            		return;
-            	} else {
-                	voices[n]->noteOff();
-                    return;
-            	}
+		if (likely(voices[n]->getNextGlidingNote() == 0)) {
+			if (voices[n]->getNote() == note) {
+				if (unlikely(holdPedal)) {
+					voices[n]->setHoldedByPedal(true);
+					return;
+				} else {
+					voices[n]->noteOff();
+					return;
+				}
 
-            }
-        } else {
-            // if gliding and releasing first note
-        	if (voices[n]->getNote() == note) {
+			}
+		} else {
+			// if gliding and releasing first note
+			if (voices[n]->getNote() == note) {
 				voices[n]->glideFirstNoteOff();
-                return;
-            }
-            // if gliding and releasing next note
-            if (voices[n]->getNextGlidingNote() == note) {
+				return;
+			}
+			// if gliding and releasing next note
+			if (voices[n]->getNextGlidingNote() == note) {
 				voices[n]->glideToNote(voices[n]->getNote());
 				voices[n]->glideFirstNoteOff();
-                return;
-            }
-        }
-    }
-
+				return;
+			}
+		}
+	}
 }
 
 

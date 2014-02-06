@@ -135,7 +135,7 @@ SMALLBINOPTS = -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-rtti -
 
 # 
 DEFINE = -DPFM2_VERSION=${PFM2_VERSION} -DPFM2_BOOTLOADER_VERSION=${PFM2_BOOTLOADER_VERSION}
-CFLAGS  =  -Ofast   $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char 
+CFLAGS  =  -Ofast $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char 
 # -DDEBUG
 # CFLAGS       =   $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
 AFLAGS  = -ahls -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16    
@@ -172,9 +172,9 @@ all:
 zip: pfm2_$(PFM2_VERSION_NUMBER).zip
 
 pfm2_$(PFM2_VERSION_NUMBER).zip : 
-	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_FIRMWARE)) -R -s 0x8040000" > build/install_firmware.cmd
-	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_FIRMWARE_O)) -R -s 0x8040000" > build/install_firmware_overclocked.cmd
-	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_BOOTLOADER)) -R -s 0x8000000" > build/install_bootloader.cmd
+	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_FIRMWARE)) -s 0x8040000" > build/install_firmware.cmd
+	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_FIRMWARE_O)) -s 0x8040000" > build/install_firmware_overclocked.cmd
+	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_BOOTLOADER)) -s 0x8000000" > build/install_bootloader.cmd
 	zip pfm2_$(PFM2_VERSION_NUMBER).zip build/*.bin build/*.syx build/*.cmd
 
 pfm: $(BIN_FIRMWARE) 
@@ -192,24 +192,24 @@ installo: $(BIN_FIRMWARE_O)
 	st-flash write $(BIN_FIRMWARE_O) 0x08040000
 
 installdfu: $(BIN_FIRMWARE)
-	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_FIRMWARE) -R -s 0x8040000
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_FIRMWARE) -s 0x8040000
 
 installdfuo: $(BIN_FIRMWARE_O)
-	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_FIRMWARE_O) -R -s 0x8040000
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_FIRMWARE_O) -s 0x8040000
 
 installboot:boot
 	st-flash write $(BIN_BOOTLOADER) 0x08000000
 
 installbootdfu:boot
-	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_BOOTLOADER) -R -s 0x8000000
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_BOOTLOADER) -s 0x8000000
 
 installall:
-	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_BOOTLOADER) -R -s 0x8000000
-	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_FIRMWARE) -R -s 0x8040000
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_BOOTLOADER) -s 0x8000000
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_FIRMWARE) -s 0x8040000
 
 installallo:
-	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_BOOTLOADER) -R -s 0x8000000
-	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_FIRMWARE_O) -R -s 0x8040000
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_BOOTLOADER) -s 0x8000000
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_FIRMWARE_O) -s 0x8040000
 
 
 sysex : sysex/sysex.class

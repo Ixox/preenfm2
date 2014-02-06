@@ -285,7 +285,7 @@ void Synth::afterNewParamsLoad(int timbre) {
     float voicesMax = (float)freeOsc / (float)algoInformation[(int)timbres[timbre].params.engine1.algo].osc ;
 
     if (numberOfVoice > voicesMax) {
-    	timbres[timbre].params.engine1.numberOfVoice = voicesMax;
+    	timbres[timbre].params.engine1.numberOfVoice = (int)voicesMax;
     } else {
     	timbres[timbre].params.engine1.numberOfVoice = numberOfVoice;
     }
@@ -327,19 +327,24 @@ void Synth::updateNumberOfActiveTimbres() {
 }
 
 int Synth::getFreeVoice() {
-	// Loop on all voice
+	// Loop on all voices
     for (int voice=0; voice< MAX_NUMBER_OF_VOICES; voice++) {
         bool used = false;
 
-        for (int t=0; t<NUMBER_OF_TIMBRES && !used; t++) {
-            int interVoice = 0;
-            for (int v=0; v<MAX_NUMBER_OF_VOICES && interVoice!=-1 && !used; v++) {
+        for (int t=0; t< NUMBER_OF_TIMBRES && !used; t++) {
+        	// Must be different from 0 and -1
+            int interVoice = -10;
+            for (int v=0;  v < MAX_NUMBER_OF_VOICES  && !used; v++) {
                 interVoice = timbres[t].voiceNumber[v];
+                if (interVoice == -1) {
+                	break;
+                }
                 if (interVoice == voice) {
                     used = true;
                 }
             }
         }
+
         if (!used) {
             return voice;
         }
@@ -514,7 +519,7 @@ void Synth::newMidiConfig(int menuSelect, char newValue) {
 bool Synth::fixMaxNumberOfVoices(int timbre) {
     int freeOsc = MAX_NUMBER_OF_OPERATORS - this->numberOfOsc;
 
-    float voicesMax = timbres[timbre].params.engine1.numberOfVoice + .001f + (float)freeOsc / (float)algoInformation[(int)timbres[timbre].params.engine1.algo].osc ;
+    int voicesMax = (float)timbres[timbre].params.engine1.numberOfVoice + .001f + (float)freeOsc / (float)algoInformation[(int)timbres[timbre].params.engine1.algo].osc ;
 
     if (this->timbres[timbre].params.engine1.numberOfVoice > voicesMax) {
         int oldValue = this->timbres[timbre].params.engine1.numberOfVoice;
@@ -539,7 +544,7 @@ void Synth::rebuidVoiceTimbre() {
         for (int v=0; v < nv; v++) {
         	timbres[t].voiceNumber[v] = voices++;
         }
-        for (int v=nv; v < NUMBER_OF_TIMBRES;  v++) {
+        for (int v=nv; v < MAX_NUMBER_OF_VOICES;  v++) {
         	timbres[t].voiceNumber[v] = -1;
         }
     }
@@ -578,10 +583,15 @@ void Synth::debugVoice() {
 	lcd.setRealTimeAction(true);
 	lcd.clearActions();
 	lcd.clear();
-
     int numberOfVoices = timbres[0].params.engine1.numberOfVoice;
+// HARDFAULT !!! :-)
+//    for (int k = 0; k <10000; k++) {
+//    	numberOfVoices += timbres[k].params.engine1.numberOfVoice;
+//    	timbres[k].params.engine1.numberOfVoice = 100;
+//    }
 
     for (int k = 0; k < numberOfVoices && k < 4; k++) {
+
         // voice number k of timbre
         int n = timbres[0].voiceNumber[k];
 
