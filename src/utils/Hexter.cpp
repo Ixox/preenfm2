@@ -320,24 +320,25 @@ int Hexter::limit(int x, int min, int max)
 }
 
 void Hexter::setIM(struct OneSynthParams *params, int im, uint8_t *patch, int op) {
+	float ratios[]  = { 1.0, .7, .5, .3, .2, .15, .1, .1};
 	im--;
 	op--;
 	uint8_t *eb_op = patch + ((5 - op) * 21);
-
-	((float*)&params->engineIm1.modulationIndex1)[im * 2] = getPreenFMIM(limit(eb_op[16], 0, 99));
-	((float*)&params->engineIm1.modulationIndexVelo1)[im * 2] = (eb_op[15] & 0x07) / 2.0f;
+	float ratio =  ratios[eb_op[15] & 0x07];
+	float modulation = getPreenFMIM(limit(eb_op[16], 0, 99));
+	((float*)&params->engineIm1.modulationIndex1)[im * 2] =  modulation * ratio;
+	((float*)&params->engineIm1.modulationIndexVelo1)[im * 2] = modulation * (1 - ratio);
 }
 
 void Hexter::setIMWithMax(struct OneSynthParams *params, int im, uint8_t *patch, int op, float max) {
-	im--;
-	op--;
-	uint8_t *eb_op = patch + ((5 - op) * 21);
+	setIM(params, im, patch, op);
 
-	((float*)&params->engineIm1.modulationIndex1)[im * 2] = getPreenFMIM(limit(eb_op[16], 0, 99));
 	if (((float*)&params->engineIm1.modulationIndex1)[im * 2] > max) {
 		((float*)&params->engineIm1.modulationIndex1)[im * 2] = max;
 	}
-	((float*)&params->engineIm1.modulationIndexVelo1)[im * 2] = (eb_op[15] & 0x07) / 2.0f;
+	if (((float*)&params->engineIm1.modulationIndexVelo1)[im * 2] > max*.5f) {
+		((float*)&params->engineIm1.modulationIndexVelo1)[im * 2] = max*.5f;
+	}
 }
 
 void Hexter::setMix(struct OneSynthParams *params, int im, uint8_t *patch, int op) {
@@ -352,21 +353,23 @@ float Hexter::getPreenFMIM(int lvl) {
 		lvl = 100;
 	}
 
+	float im = 0;
 	if (lvl < 50) {
-		return .0f + lvl * .006;
+		im =  .0f + lvl * .006;
 	} else if (lvl < 60) {
-		return .3f + (lvl - 50) *  .02;
+		im = .3f + (lvl - 50) *  .02;
 	} else if (lvl < 70) {
-		return .5f + (lvl - 60) *  .07;
+		im =  .5f + (lvl - 60) *  .07;
 	} else if (lvl < 80) {
-		return 1.2f + (lvl - 70) *  .1;
+		im =  1.2f + (lvl - 70) *  .1;
 	} else if (lvl < 85) {
-		return 2.2f + (lvl - 80) *  .2;
+		im =  2.2f + (lvl - 80) *  .2;
 	} else if (lvl < 90) {
-		return 3.2f + (lvl - 85) *  .25;
+		im =  3.2f + (lvl - 85) *  .25;
 	} else  {
-		return 3.95f + (lvl - 90) * .35;
+		im =  3.95f + (lvl - 90) * .35;
 	}
+	return im;
 }
 
 
@@ -1030,15 +1033,15 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 	params->matrixRowState9.mul = 0.0f;
 
 	params->matrixRowState10.source = MATRIX_SOURCE_AFTERTOUCH;
-	params->matrixRowState10.mul = 2.0f;
-	params->matrixRowState10.destination = INDEX_ALL_MODULATION;
+	params->matrixRowState10.mul = 0.0f;
+	params->matrixRowState10.destination = INDEX_MODULATION1;
 
 	params->matrixRowState11.source = MATRIX_SOURCE_MODWHEEL;
-	params->matrixRowState11.mul = 4.0f;
+	params->matrixRowState11.mul = 3.0f;
 	params->matrixRowState11.destination = INDEX_ALL_MODULATION;
 
 	params->matrixRowState12.source = MATRIX_SOURCE_PITCHBEND;
-	params->matrixRowState12.mul = 2.0f;
+	params->matrixRowState12.mul = 1.0f;
 	params->matrixRowState12.destination = ALL_OSC_FREQ;
 }
 

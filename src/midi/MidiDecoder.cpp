@@ -309,10 +309,10 @@ void MidiDecoder::midiEventReceived(MidiEvent midiEvent) {
         break;
     case MIDI_PROGRAM_CHANGE:
         // Programm change
-        this->synthState->propagateBeforeNewParamsLoad();
-        storage->loadPreenFMPatch(this->synthState->fullState.preenFMBank, midiEvent.value[0], this->synthState->params);
-        this->synthState->propagateAfterNewParamsLoad();
-        this->synthState->resetDisplay();
+		//        this->synthState->propagateBeforeNewParamsLoad();
+		//        storage->loadPreenFMPatch(this->synthState->fullState.preenFMBank, midiEvent.value[0], this->synthState->params);
+		//        this->synthState->propagateAfterNewParamsLoad();
+		//        this->synthState->resetDisplay();
         break;
     case MIDI_SONG_POSITION:
         this->songPosition = ((int) midiEvent.value[1] << 7) + midiEvent.value[0];
@@ -328,12 +328,8 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
     // the following one should always been received...
     switch (midiEvent.value[0]) {
     case CC_BANK_SELECT:
-        // Not implemented... yet ?
-        /*
-        if (midiEvent.value[1] >= 1 and midiEvent.value[1] <= 3) {
-            this->synthState->fullState.bankNumber = midiEvent.value[1];
-        }
-        */
+    case CC_BANK_SELECT_LSB:
+        // Not implemented...
         break;
     case CC_MODWHEEL:
         this->synth->getTimbre(timbre)->getMatrix()->setSource(MATRIX_SOURCE_MODWHEEL, INV127 * midiEvent.value[1]);
