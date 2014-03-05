@@ -130,7 +130,12 @@ enum {
 };
 
 enum {
-    ROW_LFO_FIRST = ROW_MATRIX_LAST+1,
+	ROW_PERFORMANCE1 = ROW_MATRIX_LAST + 1
+};
+
+
+enum {
+    ROW_LFO_FIRST = ROW_PERFORMANCE1+1,
     ROW_LFOOSC1 = ROW_LFO_FIRST,
     ROW_LFOOSC2 ,
     ROW_LFOOSC3 ,
@@ -140,6 +145,7 @@ enum {
     ROW_LFOSEQ2 ,
     ROW_LFO_LAST = ROW_LFOSEQ2
 };
+
 
 
 enum {
@@ -339,6 +345,13 @@ struct EffectRowParams {
     float param3;
 };
 
+struct PerformanceRowParams {
+	float perf1;
+	float perf2;
+	float perf3;
+	float perf4;
+};
+
 
 
 struct OneSynthParams {
@@ -382,6 +395,7 @@ struct OneSynthParams {
     struct MatrixRowParams matrixRowState10;
     struct MatrixRowParams matrixRowState11;
     struct MatrixRowParams matrixRowState12;
+    struct PerformanceRowParams performance1;
     struct LfoParams lfoOsc1;
     struct LfoParams lfoOsc2;
     struct LfoParams lfoOsc3;

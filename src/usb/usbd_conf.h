@@ -34,12 +34,12 @@
 
 /** @defgroup USB_CONF_Exported_Defines
   * @{
-  */ 
+  */
 // #define USE_USB_OTG_HS
 
 #define USBD_CFG_MAX_NUM           1
 #define USBD_ITF_MAX_NUM		   1
-#define USB_MAX_STR_DESC_SIZ       64 
+#define USB_MAX_STR_DESC_SIZ       64
 #define USBD_EP0_MAX_PACKET_SIZE   64
 
 
@@ -47,44 +47,44 @@
 #define MSC_IN_EP 0x81
 #define MSC_OUT_EP 0x01
 #define MSC_MAX_PACKET 64
-#define MSC_MEDIA_PACKET 1024
+#define MSC_MEDIA_PACKET 2048
 
 
 /* Class Layer Parameter */
 
 /**
   * @}
-  */ 
+  */
 
 
 /** @defgroup USB_CONF_Exported_Types
   * @{
-  */ 
+  */
 /**
   * @}
-  */ 
+  */
 
 
 /** @defgroup USB_CONF_Exported_Macros
   * @{
-  */ 
+  */
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup USB_CONF_Exported_Variables
   * @{
-  */ 
+  */
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup USB_CONF_Exported_FunctionsPrototype
   * @{
-  */ 
+  */
 /**
   * @}
-  */ 
+  */
 
 
 #endif //__USBD_CONF__H__

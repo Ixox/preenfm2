@@ -26,6 +26,7 @@
 
 
 class Matrix  {
+	friend class Timbre;
 public:
     Matrix();
     ~Matrix();

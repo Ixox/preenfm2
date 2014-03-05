@@ -83,6 +83,9 @@ public:
     		numberOfVoiceInverse = 1.0f;
     	}
     }
+    float* getPerformanceValuesAddress() {
+    	return &matrix.sources[MATRIX_SOURCE_KEY];
+    }
 
     void lfoNoteOn() {
     	lfoOsc[0].noteOn();
@@ -365,9 +368,9 @@ private:
     uint8_t ignore_note_off_messages_;
     uint8_t recording_;
     // Low pass filter
-	float fxParam1, fxParam2, fxParam3, fxParam4;
-    float v0L, v1L, v2L, v3L;
-    float v0R, v1R, v2R, v3R;
+	float fxParam1, fxParam2, fxParam3;
+    float v0L, v1L;
+    float v0R, v1R;
 
 };
 

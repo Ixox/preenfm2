@@ -39,7 +39,6 @@ extern USBH_HOST                    usbHost;
 #define PFM_PATCH_SIZE sizeof(struct OneSynthParams)
 #define USB_PATCH_SIZE 1024
 #define USB_PATCH_ZERO USB_PATCH_SIZE-PFM_PATCH_SIZE
-#define USB_COMBO_SIZE USB_PATCH_SIZE*4+13
 
 
 class UsbKey : public Storage {
@@ -54,18 +53,17 @@ public:
     const struct BankFile* getPreenFMBank(int bankNumber);
     const struct BankFile* getPreenFMCombo(int comboNumber);
 
-
-    int firmwareInit();
-    int readNextFirmwareName(char *name, int*size);
-    int loadFirmwarePart(char *fileName, int seek, void* bytes, int size);
-
     int renameBank(const struct BankFile* bank, const char* newName);
     int renameCombo(const struct BankFile* bank, const char* newName);
 
 #ifdef BOOTLOADER
+    int firmwareInit();
+    int readNextFirmwareName(char *name, int*size);
+    int loadFirmwarePart(char *fileName, int seek, void* bytes, int size);
     unsigned int diskioGetSectorNumber();
     int diskioRead(uint8_t* buff, int address, int lenght);
     int diskioWrite(uint8_t* buff, int address, int lenght);
+    bool isFirmwareFile(char *name);
 #endif
 
 private:
@@ -88,7 +86,6 @@ private:
     int checkSize(FILE_ENUM file);
 
     const char* getFileName(FILE_ENUM file);
-    bool isFirmwareFile(char *name);
 
     int dx7Init();
     int dx7ReadNextFileName(struct BankFile* bank);
@@ -106,6 +103,7 @@ private:
     const char* getFullName(const char* pathName, const char* fileName) ;
     int strlen(const char *string);
 
+#ifndef BOOTLOADER
     bool dx7BankInitialized;
     struct BankFile dx7Bank[NUMBEROFDX7BANKS];
     int dx7NumberOfBanks;
@@ -121,6 +119,7 @@ private:
     struct BankFile errorDX7Bank;
     struct BankFile errorPreenFMBank;
     struct BankFile errorPreenFMCombo;
+#endif
 
     char fullName[40];
 };

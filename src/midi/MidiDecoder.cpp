@@ -438,9 +438,9 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
         case CC_MATRIX_SOURCE_CC3:
         case CC_MATRIX_SOURCE_CC4:
             // cc.value[1] = newValue * 5.0f + 50.1f;
-            this->synth->setTimbreMatrixSource(timbre, (enum SourceEnum)(MATRIX_SOURCE_CC1 + midiEvent.value[0] - CC_MATRIX_SOURCE_CC1),
-            		(float) midiEvent.value[1] * INV127);
-            break;
+            this->synth->setNewValueFromMidi(timbre, ROW_PERFORMANCE1,  midiEvent.value[0] - CC_MATRIX_SOURCE_CC1,
+                                (float)midiEvent.value[1] * INV127);
+                                    break;
 
             break;
         }
@@ -522,14 +522,12 @@ void MidiDecoder::decodeNrpn(int timbre) {
     }
 }
 
-void MidiDecoder::newParamValueFromExternal(int timbre, SynthParamType type,
-        int currentrow, int encoder, ParameterDisplay* param, float oldValue,
-        float newValue) {
+void MidiDecoder::newParamValueFromExternal(int timbre, int currentrow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
     // Do nothing here...
 }
 
 
-void MidiDecoder::newParamValue(int timbre, SynthParamType type, int currentrow,
+void MidiDecoder::newParamValue(int timbre, int currentrow,
     int encoder, ParameterDisplay* param, float oldValue, float newValue) {
 
     int sendCCOrNRPN = this->synthState->fullState.midiConfigValue[MIDICONFIG_SENDS] ;

@@ -27,7 +27,6 @@
 #include "SynthParamListener.h"
 #include "SynthStateAware.h"
 
-
 #define UINT_MAX  4294967295
 
 class Synth : public SynthParamListener, public SynthStateAware, public SynthParamChecker
@@ -61,11 +60,11 @@ public:
     }
 
 
-    void newParamValueFromExternal(int timbre, SynthParamType type, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
-        newParamValue(timbre, type, currentRow, encoder, param, oldValue, newValue);
+    void newParamValueFromExternal(int timbre, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
+        newParamValue(timbre, currentRow, encoder, param, oldValue, newValue);
     }
 
-    void newParamValue(int timbre, SynthParamType type, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue);
+    void newParamValue(int timbre, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue);
     void checkNewParamValue(int timbre, int currentRow, int encoder, float oldValue, float *newValue);
 
     int getFreeVoice();
@@ -83,7 +82,6 @@ public:
     void afterNewComboLoad();
     void updateNumberOfActiveTimbres();
     void showAlgo() { }
-    void newMidiConfig(int menuSelect, char newValue);
 
     void midiClockSetSongPosition(int songPosition) {
     	// nothing to do
@@ -148,7 +146,6 @@ public:
         return &timbres[timbre];
     }
 
-    void setTimbreMatrixSource(int timbre, enum SourceEnum source, float newValue);
     void setNewValueFromMidi(int timbre, int row, int encoder, float newValue);
 
     void setHoldPedal(int timbre, int value);
@@ -157,6 +154,7 @@ public:
 #ifdef DEBUG
     void debugVoice();
 #endif
+
 
 private:
     // Called by setSynthState
@@ -178,7 +176,6 @@ private:
 
     // noise index
     uint32_t random32bit;
-
 };
 
 

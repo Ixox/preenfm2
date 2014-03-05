@@ -26,7 +26,7 @@
 #define HC165_LOAD  GPIO_Pin_6
 
 #define NUMBER_OF_ENCODERS 4
-#define NUMBER_OF_BUTTONS 7
+#define NUMBER_OF_BUTTONS 8
 
 enum LastEncoderMove {
 	LAST_MOVE_NONE = 0,

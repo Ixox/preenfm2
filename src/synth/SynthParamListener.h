@@ -19,14 +19,6 @@
 #ifndef SYNTHPARAMLISTENER_H_
 #define SYNTHPARAMLISTENER_H_
 
-enum SynthParamType {
-    SYNTH_PARAM_TYPE_ENGINE = 0,
-    SYNTH_PARAM_TYPE_OSC,
-    SYNTH_PARAM_TYPE_ENV,
-    SYNTH_PARAM_TYPE_MATRIX,
-    SYNTH_PARAM_TYPE_LFO,
-    SYNTH_PARAM_TYPE_INVALID
-};
 
 enum ParameterDisplayType {
     DISPLAY_TYPE_NONE = 0,
@@ -57,16 +49,14 @@ struct ParameterDisplay {
 
 class SynthParamListener {
 public:
-    virtual void newParamValue(int timbre, SynthParamType type, int currentrow, int encoder, ParameterDisplay* param, float oldValue, float newValue) = 0;
-    virtual void newParamValueFromExternal(int timbre, SynthParamType type, int currentrow, int encoder, ParameterDisplay* param, float oldValue, float newValue) = 0;
+    virtual void newParamValue(int timbre, int currentrow, int encoder, ParameterDisplay* param, float oldValue, float newValue) = 0;
+    virtual void newParamValueFromExternal(int timbre, int currentrow, int encoder, ParameterDisplay* param, float oldValue, float newValue) = 0;
     virtual void newTimbre(int timbre) = 0;
     virtual void newcurrentRow(int timbre, int newcurrentRow) = 0;
     virtual void beforeNewParamsLoad(int timbre) = 0;
     virtual void afterNewParamsLoad(int timbre) = 0;
     virtual void afterNewComboLoad() = 0;
     virtual void showAlgo() = 0;
-    // could be in synthMenuListener but the consequences affects the params
-    virtual void newMidiConfig(int menuSelect, char newValue) = 0;
 
     virtual void playNote(int timbre, char note, char velocity) = 0;
     virtual void stopNote(int timbre, char note) = 0;

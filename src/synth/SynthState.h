@@ -35,12 +35,13 @@
 
 #define BUTTON_BACK         5
 #define BUTTON_MENUSELECT   6
+#define BUTTON_ENCODER   7
 
 #define BUTTON_DUMP   0
 
 
 #define NUMBER_OF_ENCODERS 4
-#define NUMBER_OF_BUTTONS 7
+#define NUMBER_OF_BUTTONS 8
 
 
 enum {
@@ -300,21 +301,6 @@ public:
 	void encoderTurnedWhileButtonPressed(int encoder, int ticks, int button);
 	void encoderTurnedForStepSequencer(int row, int num, int ticks);
 
-	static SynthParamType getListenerType(int row) {
-		if (row>= ROW_ENGINE_FIRST && row<=ROW_ENGINE_LAST) {
-			return SYNTH_PARAM_TYPE_ENGINE;
-		} else if (row>= ROW_OSC_FIRST && row<=ROW_OSC_LAST) {
-			return SYNTH_PARAM_TYPE_OSC;
-        } else if (row>= ROW_ENV_FIRST && row<=ROW_ENV_LAST) {
-			return SYNTH_PARAM_TYPE_ENV;
-        } else if (row>= ROW_MATRIX_FIRST && row<=ROW_MATRIX_LAST) {
-			return SYNTH_PARAM_TYPE_MATRIX;
-        } else if (row>= ROW_LFO_FIRST && row<=ROW_LFO_LAST) {
-			return SYNTH_PARAM_TYPE_LFO;
-		}
-		return SYNTH_PARAM_TYPE_INVALID;
-	}
-
 	void changeSynthModeRow(int button, int step);
 	void setNewValue(int timbre, int row, int encoder, float newValue);
 	void setNewStepValue(int timbre, int whichStepSeq, int step, int newValue);
@@ -349,7 +335,7 @@ public:
 		firstMenuListener = listener;
 	}
 
-	void propagateNewSynthMode() {
+    void propagateNewSynthMode() {
     	propagateNoteOff();
 		for (SynthMenuListener* listener = firstMenuListener; listener !=0; listener = listener->nextListener) {
 			listener->newSynthMode(&fullState);
@@ -374,15 +360,9 @@ public:
 		}
 	}
 
-    void propagateNewMidiConfig(int menuSelect, char newValue) {
-        for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-            listener->newMidiConfig(menuSelect, newValue);
-        }
-    }
-
     void propagateNewParamValue(int timbre, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
 		for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-			listener->newParamValue(timbre, getListenerType(currentRow), currentRow, encoder, param, oldValue, newValue);
+			listener->newParamValue(timbre, currentRow, encoder, param, oldValue, newValue);
 		}
 	}
 
@@ -400,7 +380,7 @@ public:
 
 	void propagateNewParamValueFromExternal(int timbre, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
 		for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-			listener->newParamValueFromExternal(timbre, getListenerType(currentRow), currentRow, encoder, param, oldValue, newValue);
+			listener->newParamValueFromExternal(timbre, currentRow, encoder, param, oldValue, newValue);
 		}
 	}
 
@@ -472,7 +452,7 @@ public:
 
     void tempoClick();
 
-    void setParamsAndTimbre(struct OneSynthParams *newParams, int newCurrentTimbre);
+    void setParamsAndTimbre(struct OneSynthParams *newParams, int newCurrentTimbre, float* performanceValues);
 
     void resetDisplay();
 
@@ -482,6 +462,7 @@ public:
 
     int currentTimbre;
     struct OneSynthParams *params;
+    float *performanceValues;
     struct OneSynthParams backupParams;
 	struct FullState fullState;
 	char stepSelect[2];
@@ -515,6 +496,7 @@ private:
 
     Storage* storage;
     Hexter* hexter;
+
 };
 
 // Global structure used all over the code

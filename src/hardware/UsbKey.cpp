@@ -25,6 +25,7 @@ void UsbKey::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, 
     USBH_Init(&usbOTGHost, USB_OTG_HS_CORE_ID, &usbHost, &USBH_MSC_cb, &USR_Callbacks);
     commandParams.commandState = COMMAND_INIT;
     usbProcess();
+#ifndef BOOTLOADER
     dx7NumberOfBanks = 0;
     dx7BankInitialized = false;
     for (int k=0; k< NUMBEROFDX7BANKS; k++) {
@@ -47,6 +48,7 @@ void UsbKey::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, 
     errorPreenFMBank.fileType = FILE_EMPTY;
     errorPreenFMCombo.fileType = FILE_EMPTY;
     errorDX7Bank.fileType = FILE_EMPTY;
+#endif
 }
 
 void UsbKey::usbProcess() {
@@ -125,24 +127,31 @@ int UsbKey::checkSize(FILE_ENUM file) {
 }
 
 
-bool UsbKey::isFirmwareFile(char *name)  {
-    if (name[0] != 'p' && name[0] != 'P') return false;
-    if (name[1] != '2') return false;
 
-    int pointPos = -1;
-    for (int k=10; k>2 && pointPos == -1; k--) {
-        if (name[k] == '.') {
-            pointPos = k;
-        }
-    }
-    if (pointPos == -1) return false;
-    if (name[pointPos+1] != 'b' && name[pointPos+1] != 'B') return false;
-    if (name[pointPos+2] != 'i' && name[pointPos+2] != 'I') return false;
-    if (name[pointPos+3] != 'n' && name[pointPos+3] != 'N') return false;
 
-    return true;
+int UsbKey::strlen(const char *string) {
+    int k;
+    for (k=0; k<1000 && string[k] != 0; k++);
+    return k;
 }
 
+const char* UsbKey::getFullName(const char* pathName, const char* fileName) {
+    int pos = 0;
+    int cpt = 0;
+    for (int k =0; k < strlen(pathName) && cpt++<24; k++) {
+        this->fullName[pos++] = pathName[k];
+    }
+    this->fullName[pos++] = '/';
+    cpt = 0;
+    for (int k = 0; k < strlen(fileName) && cpt++<14 ; k++) {
+    	this->fullName[pos++] = fileName[k];
+    }
+    this->fullName[pos] = 0;
+    return this->fullName;
+}
+
+
+#ifndef BOOTLOADER
 bool UsbKey::isDX7SysexFile(char *name, int size)  {
 	// DX7 Dump sysex size is 4104
 	if (size != 4104) {
@@ -159,22 +168,6 @@ bool UsbKey::isDX7SysexFile(char *name, int size)  {
     if (name[pointPos+1] != 's' && name[pointPos+1] != 'S') return false;
     if (name[pointPos+2] != 'y' && name[pointPos+2] != 'Y') return false;
     if (name[pointPos+3] != 'x' && name[pointPos+3] != 'X') return false;
-
-    /* Slow down too much.. not worth it...
-	uint8_t first6Bytes[6];
-	const char* fullBankName = getDX7BankFullName(name);
-    int result = load(fullBankName, 0,  (void*)first6Bytes, 6);
-    if (result > 0) {
-    	return false;
-    }
-	if (first6Bytes[0] != 0xf0
-    		|| first6Bytes[1] != 0x43
-    		|| first6Bytes[2] > 0x0f
-    		|| first6Bytes[3] != 0x09
-    		|| first6Bytes[5] != 0x00) {
-    	return false;
-	}
-*/
 
     return true;
 }
@@ -358,59 +351,6 @@ bool UsbKey::isPreenFMComboFile(char *name, int size)  {
     return true;
 }
 
-
-int UsbKey::firmwareInit() {
-    commandParams.commandState = COMMAND_OPEN_DIR;
-    commandParams.commandFileName = FIRMWARE_DIR;
-    usbProcess();
-    return commandParams.commandResult;
-}
-
-
-
-int UsbKey::readNextFirmwareName(char *name, int *size) {
-    do {
-        commandParams.commandState = COMMAND_NEXT_FILE_NAME;
-        commandParams.commandParam1 = (void*)name;
-        commandParams.commandParam2 = (void*)size;
-        usbProcess();
-    }  while (commandParams.commandResult == COMMAND_SUCCESS && !isFirmwareFile(name));
-    return commandParams.commandResult;
-}
-
-
-int UsbKey::loadFirmwarePart(char *fileName, int seek, void* bytes, int size) {
-    char fullName[32];
-    commandParams.commandState = COMMAND_LOAD;
-    commandParams.commandFileName = getFullName(FIRMWARE_DIR, fileName);
-    commandParams.commandParam1 = (void*)bytes;
-    commandParams.commandParamSize = size;
-    commandParams.commandSeek = seek;
-    usbProcess();
-    return commandParams.commandResult;
-}
-
-int UsbKey::strlen(const char *string) {
-    int k;
-    for (k=0; k<1000 && string[k] != 0; k++);
-    return k;
-}
-
-const char* UsbKey::getFullName(const char* pathName, const char* fileName) {
-    int pos = 0;
-    int cpt = 0;
-    for (int k =0; k < strlen(pathName) && cpt++<24; k++) {
-        this->fullName[pos++] = pathName[k];
-    }
-    this->fullName[pos++] = '/';
-    cpt = 0;
-    for (int k = 0; k < strlen(fileName) && cpt++<14 ; k++) {
-    	this->fullName[pos++] = fileName[k];
-    }
-    this->fullName[pos] = 0;
-    return this->fullName;
-}
-
 const char* UsbKey::getDX7BankFullName(const char* bankName) {
 	return getFullName(DX7_DIR, bankName);
 }
@@ -494,11 +434,61 @@ void UsbKey::sortBankFile(struct BankFile* bankFiles, int numberOfFiles) {
 		swapBankFile(bankFiles, i, minBank);
 	}
 }
+#endif
 
 
 
 
 #ifdef BOOTLOADER
+
+
+int UsbKey::firmwareInit() {
+    commandParams.commandState = COMMAND_OPEN_DIR;
+    commandParams.commandFileName = FIRMWARE_DIR;
+    usbProcess();
+    return commandParams.commandResult;
+}
+
+bool UsbKey::isFirmwareFile(char *name)  {
+    if (name[0] != 'p' && name[0] != 'P') return false;
+    if (name[1] != '2') return false;
+
+    int pointPos = -1;
+    for (int k=10; k>2 && pointPos == -1; k--) {
+        if (name[k] == '.') {
+            pointPos = k;
+        }
+    }
+    if (pointPos == -1) return false;
+    if (name[pointPos+1] != 'b' && name[pointPos+1] != 'B') return false;
+    if (name[pointPos+2] != 'i' && name[pointPos+2] != 'I') return false;
+    if (name[pointPos+3] != 'n' && name[pointPos+3] != 'N') return false;
+
+    return true;
+}
+
+
+int UsbKey::readNextFirmwareName(char *name, int *size) {
+    do {
+        commandParams.commandState = COMMAND_NEXT_FILE_NAME;
+        commandParams.commandParam1 = (void*)name;
+        commandParams.commandParam2 = (void*)size;
+        usbProcess();
+    }  while (commandParams.commandResult == COMMAND_SUCCESS && !isFirmwareFile(name));
+    return commandParams.commandResult;
+}
+
+
+int UsbKey::loadFirmwarePart(char *fileName, int seek, void* bytes, int size) {
+    char fullName[32];
+    commandParams.commandState = COMMAND_LOAD;
+    commandParams.commandFileName = getFullName(FIRMWARE_DIR, fileName);
+    commandParams.commandParam1 = (void*)bytes;
+    commandParams.commandParamSize = size;
+    commandParams.commandSeek = seek;
+    usbProcess();
+    return commandParams.commandResult;
+}
 
 unsigned int UsbKey::diskioGetSectorNumber() {
 	unsigned long size;

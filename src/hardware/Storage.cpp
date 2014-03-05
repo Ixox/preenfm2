@@ -27,12 +27,6 @@
 extern LiquidCrystal lcd;
 #endif
 
-// Set param in memmory reachable with USB : static is OK
-struct FlashSynthParams reachableFlashParam;
-struct OneSynthParams reachableParam;
-#define PROPERTY_FILE_SIZE 2048
-char propertyFile [PROPERTY_FILE_SIZE];
-uint8_t dx7PackedPatch[DX7_PACKED_PATCH_SIZED];
 
 void Storage::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4) {
     timbre[0] = timbre1;
@@ -57,6 +51,16 @@ void Storage::addNumber(char* name, int offset, int number) {
     }
     name[offset] = '\0';
 }
+
+
+#ifndef BOOTLOADER
+
+// Set param in memmory reachable with USB : static is OK
+#define PROPERTY_FILE_SIZE 2048
+struct FlashSynthParams reachableFlashParam;
+struct OneSynthParams reachableParam;
+char propertyFile [PROPERTY_FILE_SIZE];
+uint8_t dx7PackedPatch[DX7_PACKED_PATCH_SIZED];
 
 void Storage::removeDefaultCombo() {
     remove(DEFAULT_COMBO);
@@ -91,7 +95,6 @@ bool Storage::loadDefaultCombo() {
 
 
 void Storage::createPatchBank(const char* name) {
-#ifndef BOOTLOADER
 	const struct BankFile * newBank = addEmptyBank(name);
 	const char* fullBankName = getPreenFMFullName(name);
 	if (newBank == 0) {
@@ -103,12 +106,12 @@ void Storage::createPatchBank(const char* name) {
         addNumber(reachableFlashParam.presetName, 7, k + 1);
 		savePreenFMPatch(newBank, k, &preenMainPreset);
 	}
-#endif
+
 }
 
 
 void Storage::createComboBank(const char* name) {
-#ifndef BOOTLOADER
+
 	const struct BankFile * newBank = addEmptyCombo(name);
 	const char* fullBankName = getPreenFMFullName(name);
 
@@ -132,20 +135,8 @@ void Storage::createComboBank(const char* name) {
         }
 	}
 
-#endif
-#ifdef DONOTEXISTATALL
-	char comboName[12];
-    copy(comboName,  "Combo \0\0\0\0\0\0", 12);
 
-    for (int combo = 0; combo < 128; combo++) {
-        addNumber(comboName, 6, combo + 1);
-        saveCombo(combo, comboName);
-    }
-#endif
 }
-
-#ifndef BOOTLOADER
-
 
 
 void Storage::loadConfig(char* midiConfigBytes) {
@@ -209,7 +200,6 @@ void Storage::saveConfig(const char* midiConfigBytes) {
     save(PROPERTIES, 0,  propertyFile, wptr);
 }
 
-#endif
 
 // NEW mechanism ===
 
@@ -290,7 +280,6 @@ void Storage::savePreenFMCombo(const struct BankFile* combo, int comboNumber, ch
 
 
 void Storage::saveBank(const char* newBankName, const uint8_t* sysexTmpMem) {
-#ifndef BOOTLOADER
 	const struct BankFile * newBank = addEmptyBank(newBankName);
 	if (newBank == 0) {
 		return;
@@ -303,7 +292,6 @@ void Storage::saveBank(const char* newBankName, const uint8_t* sysexTmpMem) {
 		}
 		savePreenFMPatch(newBank, k, &oneSynthParamsTmp);
 	}
-#endif
 }
 
 int Storage::bankBaseLength(const char* bankName) {
@@ -468,6 +456,11 @@ void Storage::convertMemoryToParams(const struct FlashSynthParams* memory, struc
 		params->presetName[s] = memory->presetName[s];
 	}
 
+	params->performance1.perf1 = 0.0f;
+	params->performance1.perf2 = 0.0f;
+	params->performance1.perf3 = 0.0f;
+	params->performance1.perf4 = 0.0f;
+
     if (params->engineApr1.BPM < 10) {
 		params->engineApr1.clock = 0;
     	params->engineApr1.BPM = 90;
@@ -486,49 +479,6 @@ void Storage::convertMemoryToParams(const struct FlashSynthParams* memory, struc
 
 }
 
-
-
-
-#ifdef DEBUG
-
-extern unsigned int preenTimer;
-
-
-void Storage::testMemoryPreset() {
-	lcd.setRealTimeAction(true);
-	struct OneSynthParams tmpParam;
-	unsigned char* test = (unsigned char*)&tmpParam;
-	for (int k=0; k< sizeof(struct OneSynthParams); k++) {
-		test[k] = ((k + preenTimer) % 200) + 34;
-	}
-
-	tmpParam.engineApr1.BPM = (preenTimer % 200) + 15;
-	convertParamsToMemory(&tmpParam, &reachableFlashParam, true);
-	convertMemoryToParams(&reachableFlashParam, &reachableParam, true);
-
-	lcd.clear();
-	for (int k=0; k< sizeof(struct OneSynthParams); k++) {
-		unsigned char c1 = ((unsigned char*)&reachableParam)[k];
-		unsigned char c2 = test[k];
-		lcd.setCursor(0,1);
-		lcd.print(k);
-		lcd.print(":");
-		lcd.print((int)c1);
-		lcd.print("=");
-		lcd.print((int)c2);
-		lcd.print("?    ");
-		if (c1 != c2) {
-			lcd.setCursor(2,8);
-			lcd.print("NO !!(");
-			lcd.print((int)((unsigned char*)&reachableFlashParam)[k]);
-			lcd.print(")");
-			break;
-		}
-	}
-}
-#endif
-
-#ifndef BOOTLOADER
 
 int Storage::fillMidiConfig(char* midiConfigBytes, char* line) {
 	char key[21];
@@ -636,6 +586,49 @@ int Storage::getLine(char* file, char* line) {
 	return k;
 }
 
+
 #endif
+
+
+#ifdef DEBUG
+
+extern unsigned int preenTimer;
+
+
+void Storage::testMemoryPreset() {
+	lcd.setRealTimeAction(true);
+	struct OneSynthParams tmpParam;
+	unsigned char* test = (unsigned char*)&tmpParam;
+	for (int k=0; k< sizeof(struct OneSynthParams); k++) {
+		test[k] = ((k + preenTimer) % 200) + 34;
+	}
+
+	tmpParam.engineApr1.BPM = (preenTimer % 200) + 15;
+	convertParamsToMemory(&tmpParam, &reachableFlashParam, true);
+	convertMemoryToParams(&reachableFlashParam, &reachableParam, true);
+
+	lcd.clear();
+	for (int k=0; k< sizeof(struct OneSynthParams); k++) {
+		unsigned char c1 = ((unsigned char*)&reachableParam)[k];
+		unsigned char c2 = test[k];
+		lcd.setCursor(0,1);
+		lcd.print(k);
+		lcd.print(":");
+		lcd.print((int)c1);
+		lcd.print("=");
+		lcd.print((int)c2);
+		lcd.print("?    ");
+		if (c1 != c2) {
+			lcd.setCursor(2,8);
+			lcd.print("NO !!(");
+			lcd.print((int)((unsigned char*)&reachableFlashParam)[k]);
+			lcd.print(")");
+			break;
+		}
+	}
+}
+#endif
+
+
 
 

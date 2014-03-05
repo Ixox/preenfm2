@@ -105,14 +105,13 @@ public:
     void setSynth(Synth* synth);
     void setVisualInfo(VisualInfo* visualInfo);
 
-    void newParamValueFromExternal(int timbre, SynthParamType type, int currentrow, int encoder, ParameterDisplay* param, float oldValue, float newValue);
-    void newParamValue(int timbre, SynthParamType type, int currentrow, int encoder, ParameterDisplay* param, float oldValue, float newValue);
+    void newParamValueFromExternal(int timbre, int currentrow, int encoder, ParameterDisplay* param, float oldValue, float newValue);
+    void newParamValue(int timbre, int currentrow, int encoder, ParameterDisplay* param, float oldValue, float newValue);
     void newcurrentRow(int timbre, int newcurrentRow) {}
     void beforeNewParamsLoad(int timbre) {}
     void afterNewParamsLoad(int timbre) {}
     void afterNewComboLoad() {}
     void showAlgo() {}
-    virtual void newMidiConfig(int menuSelect, char newValue) {}
 
     void sendMidiCCOut(struct MidiEvent *toSend, bool flush);
     void sendSysexByte(uint8_t byte);

@@ -4,6 +4,13 @@
 #include "RingBuffer.h"
 #include "stm32f4xx_gpio.h"
 
+
+#ifndef BOOTLOADER
+#define LCDACTION_BUFFER_SIZE 128
+#else
+#define LCDACTION_BUFFER_SIZE 1
+#endif
+
 // commands
 #define LCD_CLEARDISPLAY 0x01
 #define LCD_RETURNHOME 0x02
@@ -116,7 +123,7 @@ private:
 
   unsigned char _numlines,_currline;
   int delayAfterCommand;
-  RingBuffer<LCDAction, 128> lcdActions;
+  RingBuffer<LCDAction, LCDACTION_BUFFER_SIZE> lcdActions;
 };
 
 #endif

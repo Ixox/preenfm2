@@ -253,6 +253,7 @@ static uint8_t usbd_midi_DataOut(void *pdev, uint8_t epnum) {
 				usartBufferIn.insert(usbMidiBuffRead[usbr+3]);
 				break;
 			// ========= 2 bytes =======================
+			case 0xd:
 			case 0x2:
 				if (synthState.fullState.midiConfigValue[MIDICONFIG_THROUGH] == 1) {
 					usartBufferOut.insert(usbMidiBuffRead[usbr+1]);

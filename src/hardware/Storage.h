@@ -104,18 +104,16 @@ class Storage {
 public:
     virtual ~Storage() {}
     virtual void init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4);
+
+#ifndef BOOTLOADER
     void setArpeggiatorPartOfThePreset(char *pointer) { arpeggiatorPartOfThePreset = pointer; }
-
-
     void saveDefaultCombo();
     bool loadDefaultCombo();
     void removeDefaultCombo();
     void createPatchBank(const char* name);
     void createComboBank(const char* name);
-#ifndef BOOTLOADER
     void loadConfig(char* midiConfigBytes);
     void saveConfig(const char* midiConfigBytes);
-#endif
 
     void saveBank(const char* newBankName, const uint8_t* sysexTmpMem);
     bool bankNameExist(const char* bankName);
@@ -137,6 +135,7 @@ public:
 
     virtual int renameBank(const struct BankFile* bank, const char* newName) = 0;
     virtual int renameCombo(const struct BankFile* bank, const char* newName) = 0;
+#endif
 
 #ifdef DEBUG
     void testMemoryPreset();
@@ -144,32 +143,17 @@ public:
 
 private:
     // Pure Virtual
+#ifndef BOOTLOADER
     virtual const struct BankFile*  addEmptyBank(const char* newBankName) = 0;
     virtual const struct BankFile*  addEmptyCombo(const char* newComboName) = 0;
     virtual const char* getDX7BankFullName(const char* bankName) = 0;
     virtual const char* getPreenFMFullName(const char* bankName) = 0;
     void dx7patchUnpack(uint8_t *packed_patch, uint8_t *unpacked_patch);
-    virtual int save(FILE_ENUM file,int seek, void* bytes, int size) = 0;
-    virtual int save(const char* fileName, int seek, void* bytes, int size) = 0;
-    virtual int load(FILE_ENUM file, int seek, void* bytes, int size) = 0;
-    virtual int load(const char* fileName, int seek, void* bytes, int size) = 0;
-    virtual int remove(FILE_ENUM file) = 0;
-    // checkSize must return -1 if file does not exist
-    virtual int checkSize(FILE_ENUM file) = 0;
-
-    void addNumber(char* name, int offset, int number);
-    void copy(char* dest, const char* source, int length);
-
     void  __attribute__ ((noinline)) copyFloat(float* source, float* dest, int n);
     void  __attribute__ ((noinline)) convertParamsToMemory(const struct OneSynthParams* params, struct FlashSynthParams* memory, bool saveArp);
     void  __attribute__ ((noinline)) convertMemoryToParams(const struct FlashSynthParams* memory, struct OneSynthParams* params, bool loadArp);
 
-    char *arpeggiatorPartOfThePreset;
-    char presetName[13];
-    struct OneSynthParams* timbre[4];
-
     // String util to read setting file
-#ifndef BOOTLOADER
     int getLine(char* file, char* line);
     int fillMidiConfig(char* midiConfig, char* line);
     int copy_string(char *target, const char *source);
@@ -179,6 +163,22 @@ private:
     void getValue(char * line, char *value);
     int str_cmp(const char*s1, const char*s2);
 #endif
+
+    virtual int save(FILE_ENUM file,int seek, void* bytes, int size) = 0;
+    virtual int save(const char* fileName, int seek, void* bytes, int size) = 0;
+    virtual int load(FILE_ENUM file, int seek, void* bytes, int size) = 0;
+    virtual int load(const char* fileName, int seek, void* bytes, int size) = 0;
+    virtual int remove(FILE_ENUM file) = 0;
+    // checkSize must return -1 if file does not exist
+    virtual int checkSize(FILE_ENUM file) = 0;
+    void addNumber(char* name, int offset, int number);
+    void copy(char* dest, const char* source, int length);
+
+
+    char *arpeggiatorPartOfThePreset;
+    char presetName[13];
+    struct OneSynthParams* timbre[4];
+
 };
 
 #endif /*__STORAGE_H__*/

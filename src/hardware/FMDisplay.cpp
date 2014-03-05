@@ -365,7 +365,7 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
             lcd->setCursor(ENCODER_ENGINE_GLIDE * 5, 2);
             lcd->print("    ");
             lcd->setCursor(ENCODER_ENGINE_GLIDE * 5, 3);
-            lcd->print(' ');
+            lcd->print("  ");
         }
         break;
     case DISPLAY_TYPE_STEP_SEQ1:
@@ -431,68 +431,73 @@ void FMDisplay::updateEncoderName(int row, int encoder) {
 }
 
 void FMDisplay::refreshAllScreenByStep() {
-    switch (refreshStatus) {
-    case 12:
-		lcd->setCursor(3,1);
-		lcd->print("               ");
-		break;
-    case 11:
-		// erase the caracters between
-		for (int k=0; k<4; k++) {
-			lcd->setCursor(4+k*5,2);
-			lcd->print(' ');
+	switch (this->synthState->fullState.synthMode) {
+	case SYNTH_MODE_EDIT:
+		switch (refreshStatus) {
+		case 12:
+			lcd->setCursor(3,1);
+			lcd->print("               ");
+			break;
+		case 11:
+			// erase the caracters between
+			for (int k=0; k<4; k++) {
+				lcd->setCursor(4+k*5,2);
+				lcd->print(' ');
+			}
+			break;
+		case 10:
+			// erase the caracters between
+			for (int k=0; k<4; k++) {
+				lcd->setCursor(4+k*5,3);
+				lcd->print(' ');
+			}
+			break;
+		case 9:
+		{
+			int row = this->synthState->getCurrentRow();
+			if (this->synthState->fullState.midiConfigValue[MIDICONFIG_OP_OPTION] == 0) {
+				// New UI
+				if (row >= ROW_OSC_FIRST && row <= ROW_ENV_LAST) {
+					lcd->setCursor(0,1);
+					lcd->print("Op");
+					lcd->print(this->synthState->getOperatorNumber() + 1);
+					lcd->print(" ");
+					lcd->print(allParameterRows.row[row]->rowName);
+				} else {
+					lcd->setCursor(0,1);
+					lcd->print(allParameterRows.row[row]->rowName);
+					if (row> ROW_ENGINE_LAST && row != ROW_PERFORMANCE1) {
+						lcd->print(' ');
+						lcd->print(getRowNumberToDiplay(row));
+					}
+				}
+			} else {
+				lcd->setCursor(0,1);
+				lcd->print(allParameterRows.row[row]->rowName);
+				if (row> ROW_ENGINE_LAST && row != ROW_PERFORMANCE1) {
+					lcd->print(' ');
+					lcd->print(getRowNumberToDiplay(row));
+				}
+			}
+			break;
+		}
+		case 5:
+		case 6:
+		case 7:
+		case 8:
+			updateEncoderName(this->synthState->getCurrentRow(), refreshStatus -5);
+			break;
+		default :
+			updateEncoderValue(refreshStatus);
+			break;
 		}
 		break;
-    case 10:
-		// erase the caracters between
-		for (int k=0; k<4; k++) {
-			lcd->setCursor(4+k*5,3);
-			lcd->print(' ');
-		}
-		break;
-    case 9:
-    {
-		int row = this->synthState->getCurrentRow();
-        if (this->synthState->fullState.midiConfigValue[MIDICONFIG_OP_OPTION] == 0) {
-        	// New UI
-        	if (row >= ROW_OSC_FIRST && row <= ROW_ENV_LAST) {
-        		lcd->setCursor(0,1);
-        		lcd->print("Op");
-        		lcd->print(this->synthState->getOperatorNumber() + 1);
-        		lcd->print(" ");
-        		lcd->print(allParameterRows.row[row]->rowName);
-        	} else {
-        		lcd->setCursor(0,1);
-        		lcd->print(allParameterRows.row[row]->rowName);
-        		if (row> ROW_ENGINE_LAST) {
-        			lcd->print(' ');
-        			lcd->print(getRowNumberToDiplay(row));
-        		}
-        	}
-        } else {
-    		lcd->setCursor(0,1);
-    		lcd->print(allParameterRows.row[row]->rowName);
-    		if (row> ROW_ENGINE_LAST) {
-    			lcd->print(' ');
-    			lcd->print(getRowNumberToDiplay(row));
-    		}
-        }
-        break;
-    }
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-        updateEncoderName(this->synthState->getCurrentRow(), refreshStatus -5);
-        break;
-    default :
-	    updateEncoderValue(refreshStatus);
-	    break;
 	}
     refreshStatus --;
 }
 
- void FMDisplay::updateEncoderValue(int refreshStatus) {
+
+void FMDisplay::updateEncoderValue(int refreshStatus) {
     int row = this->synthState->getCurrentRow();
     struct ParameterDisplay param = allParameterRows.row[row]->params[refreshStatus -1];
     float newValue;
@@ -533,7 +538,6 @@ void FMDisplay::displayPreset() {
     }
 }
 
-
 void FMDisplay::newTimbre(int timbre) {
     currentTimbre = timbre;
 	if (unlikely(wakeUpFromScreenSaver())) {
@@ -552,7 +556,7 @@ void FMDisplay::newTimbre(int timbre) {
 // Update FMDisplay regarding the callbacks from SynthState
 
 
-void FMDisplay::newParamValueFromExternal(int timbre, SynthParamType type, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
+void FMDisplay::newParamValueFromExternal(int timbre, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
 	if (unlikely(screenSaverMode)) {
 		return;
 	}
@@ -597,7 +601,7 @@ void FMDisplay::updateStepSequencer(int currentRow, int encoder, int oldValue, i
 	}
 }
 
-void FMDisplay::newParamValue(int timbre, SynthParamType type, int currentRow, int encoder, ParameterDisplay* param,  float oldValue, float newValue) {
+void FMDisplay::newParamValue(int timbre, int currentRow, int encoder, ParameterDisplay* param,  float oldValue, float newValue) {
 	if (wakeUpFromScreenSaver()) {
 		return;
 	}
@@ -614,7 +618,7 @@ void FMDisplay::newParamValue(int timbre, SynthParamType type, int currentRow, i
 		}
 
 		// If we change frequency type of OScillator rows, it's a bit special too....
-		if (unlikely(SynthState::getListenerType(currentRow)==SYNTH_PARAM_TYPE_OSC && encoder == ENCODER_OSC_FTYPE)) {
+		if (unlikely(currentRow >= ROW_OSC1 && currentRow <= ROW_OSC_LAST && encoder == ENCODER_OSC_FTYPE)) {
 			if (newValue == OSC_FT_FIXE) {
 				lcd->setCursor(ENCODER_OSC_FREQ * 5 + 1, 3);
 				lcd->print("        ");
@@ -666,13 +670,16 @@ void FMDisplay::newSynthMode(FullState* fullState)  {
 	}
     lcd->clearActions();
 	lcd->clear();
-	if (fullState->synthMode == SYNTH_MODE_EDIT) {
-        displayPreset();
-		refreshStatus = 12;
-	} else {
-		refreshStatus = 0;
-		menuRow = 0;
-		newMenuState(fullState);
+	switch (fullState->synthMode) {
+		case SYNTH_MODE_EDIT:
+			displayPreset();
+			refreshStatus = 12;
+			break;
+		case SYNTH_MODE_MENU:
+			refreshStatus = 0;
+			menuRow = 0;
+			newMenuState(fullState);
+			break;
 	}
 	// just in case...
 	algoCounter = 0;
@@ -1018,9 +1025,9 @@ bool FMDisplay::wakeUpFromScreenSaver() {
 	if (unlikely(screenSaverMode)) {
 		screenSaverMode = false;
 		screenSaveTimer = 0;
-        displayPreset();
-        refreshStatus = 12;
-        return true;
+		displayPreset();
+		refreshStatus = 12;
+		return true;
 	}
 	screenSaveTimer = 0;
 	return false;

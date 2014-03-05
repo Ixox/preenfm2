@@ -415,13 +415,18 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     	float pattern = (1 - fxParam2 * fxParam1);
 
     	float *sp = this->sampleBlock;
+    	float localv0L = v0L;
+    	float localv1L = v1L;
+    	float localv0R = v0R;
+    	float localv1R = v1R;
+
     	for (int k=0 ; k<BLOCK_SIZE  ; k++) {
 
     		// Left voice
-    		v0L =  pattern * v0L  -  (fxParam1) * v1L  + (fxParam1)* (*sp);
-    		v1L =  pattern * v1L  +  (fxParam1) * v0L;
+    		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1)* (*sp);
+    		localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
 
-    		*sp = v1L * mixerGain;
+    		*sp = localv1L * mixerGain;
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -433,10 +438,10 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     		sp++;
 
     		// Right voice
-    		v0R =  pattern * v0R  -  (fxParam1)*v1R  + (fxParam1)* (*sp);
-    		v1R =  pattern * v1R  +  (fxParam1)*v0R;
+    		localv0R =  pattern * localv0R  -  (fxParam1)*localv1R  + (fxParam1)* (*sp);
+    		localv1R =  pattern * localv1R  +  (fxParam1)*localv0R;
 
-    		*sp = v1R * mixerGain;
+    		*sp = localv1R * mixerGain;
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -447,6 +452,10 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
 
     		sp++;
     	}
+    	v0L = localv0L;
+    	v1L = localv1L;
+    	v0R = localv0R;
+    	v1R = localv1R;
     }
     break;
     case FILTER_HP:
@@ -462,13 +471,18 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     	float pattern = (1 - fxParam2 * fxParam1);
 
     	float *sp = this->sampleBlock;
+    	float localv0L = v0L;
+    	float localv1L = v1L;
+    	float localv0R = v0R;
+    	float localv1R = v1R;
+
     	for (int k=0 ; k<BLOCK_SIZE ; k++) {
 
     		// Left voice
-    		v0L =  pattern * v0L  -  (fxParam1) * v1L  + (fxParam1) * (*sp);
-    		v1L =  pattern * v1L  +  (fxParam1) * v0L;
+    		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1) * (*sp);
+    		localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
 
-    		*sp = (*sp - v1L) * mixerGain;
+    		*sp = (*sp - localv1L) * mixerGain;
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -480,10 +494,10 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     		sp++;
 
     		// Right voice
-    		v0R =  pattern * v0R  -  (fxParam1) * v1R  + (fxParam1) * (*sp);
-    		v1R =  pattern * v1R  +  (fxParam1) * v0R;
+    		localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + (fxParam1) * (*sp);
+    		localv1R =  pattern * localv1R  +  (fxParam1) * localv0R;
 
-    		*sp = (*sp - v1R) * mixerGain;
+    		*sp = (*sp - localv1R) * mixerGain;
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -494,6 +508,11 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
 
     		sp++;
     	}
+    	v0L = localv0L;
+    	v1L = localv1L;
+    	v0R = localv0R;
+    	v1R = localv1R;
+
     }
 	break;
     case FILTER_BASS:
@@ -518,11 +537,13 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     	//sample = saturate((sample + cap*ratio)*gain2);
 
     	float *sp = this->sampleBlock;
+    	float localv0L = v0L;
+    	float localv0R = v0R;
 
     	for (int k=0 ; k<BLOCK_SIZE ; k++) {
 
-    		v0L = ((*sp) + v0L * fxParam1) * fxParam3;
-    		(*sp) = ((*sp) + v0L * fxParam2) * mixerGain;
+    		localv0L = ((*sp) + localv0L * fxParam1) * fxParam3;
+    		(*sp) = ((*sp) + localv0L * fxParam2) * mixerGain;
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -533,8 +554,8 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
 
     		sp++;
 
-    		v0R = ((*sp) + v0R * fxParam1) * fxParam3;
-    		(*sp) = ((*sp) + v0R * fxParam2) * mixerGain;
+    		localv0R = ((*sp) + localv0R * fxParam1) * fxParam3;
+    		(*sp) = ((*sp) + localv0R * fxParam2) * mixerGain;
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -545,6 +566,9 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
 
     		sp++;
     	}
+    	v0L = localv0L;
+    	v0R = localv0R;
+
     }
     break;
     case FILTER_MIXER:
@@ -696,8 +720,8 @@ void Timbre::afterNewParamsLoad() {
 	}
 
     resetArpeggiator();
-    v0L = v1L = v2L = v3L = 0.0f;
-    v0R = v1R = v2R = v3R = 0.0f;
+    v0L = v1L = 0.0f;
+    v0R = v1R = 0.0f;
     for (int k=0; k<NUMBER_OF_ENCODERS; k++) {
     	setNewEffecParam(k);
     }
@@ -724,8 +748,8 @@ void Timbre::setNewValue(int index, struct ParameterDisplay* param, float newVal
 
 void Timbre::setNewEffecParam(int encoder) {
 	if (encoder == 0) {
-	    v0L = v1L = v2L = v3L = 0.0f;
-	    v0R = v1R = v2R = v3R = 0.0f;
+	    v0L = v1L = 0.0f;
+	    v0R = v1R = 0.0f;
 	}
 	switch ((int)params.effect.type) {
 	case FILTER_BASS:

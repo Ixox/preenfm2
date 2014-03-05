@@ -28,7 +28,7 @@ extern LiquidCrystal lcd;
 Encoders::Encoders() {
 	// PreenFM PCB R4
     char encoderPins[] = { 12, 14, 1, 13, 2, 8, 3, 7};
-    char buttonPins[] = { 9, 16, 10, 15, 11, 5, 4};
+    char buttonPins[] = { 9, 16, 10, 15, 11, 5, 4, 6};
 
     // GPIOG Periph clock enable
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
@@ -202,7 +202,7 @@ void Encoders::checkStatus(int encoderType) {
 				}
 				if (buttonPreviousState[k] && !buttonUsedFromSomethingElse[k]) {
 					// Just released
-					if (buttonTimer[k] > 20) {
+					if (buttonTimer[k] > 15) {
 						buttonPressed(k);
 					}
 				}

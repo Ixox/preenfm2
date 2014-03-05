@@ -40,6 +40,7 @@ public:
     void printFloatWithSpace(float value);
 	bool shouldThisValueShowUp(int row, int encoder);
 	void updateEncoderValue(int refreshStatus);
+	void updateCCValue(int refreshStatus);
 	void newTimbre(int timbre);
 
 	// VisualInfo
@@ -97,12 +98,11 @@ public:
     void newMenuSelect(FullState* fullState);
 	void menuBack(enum MenuState oldMenutState, FullState* fullState);
 	void eraseRow(int row);
-	void newMidiConfig(int menuSelect, char newValue) {};
 	void displayBankSelect(int bankNumber, bool usable, const char* name);
 	void displayPatchSelect(int presetNumber, const char* name);
 
-    void newParamValueFromExternal(int timbre, SynthParamType type, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue);
-    void newParamValue(int timbre, SynthParamType type, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue);
+    void newParamValueFromExternal(int timbre, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue);
+    void newParamValue(int timbre, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue);
     void newcurrentRow(int timbre, int newcurrentRow);
     void updateStepSequencer(int currentRow, int encoder, int oldValue, int newValue);
     void newPresetName(bool cleanFirst) {
@@ -152,8 +152,8 @@ public:
     }
 
     bool wakeUpFromScreenSaver();
-
     void displayAlgo(int algo);
+
 private:
 	LiquidCrystal* lcd;
 	Storage* storage;

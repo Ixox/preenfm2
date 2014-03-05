@@ -31,7 +31,7 @@ Synth::~Synth(void) {
 }
 
 void Synth::init() {
-	int numberOfVoices[]= { 5, 1, 1, 1};
+	int numberOfVoices[]= { 6, 0, 0, 0};
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
         for (int k=0; k<sizeof(struct OneSynthParams)/sizeof(float); k++) {
             ((float*)&timbres[t].params)[k] = ((float*)&preenMainPreset)[k];
@@ -56,7 +56,6 @@ void Synth::init() {
 	}
     updateNumberOfActiveTimbres();
 }
-
 
 void Synth::noteOn(int timbre, char note, char velocity) {
 	timbres[timbre].noteOn(note, velocity);
@@ -378,139 +377,114 @@ void Synth::checkNewParamValue(int timbre, int currentRow, int encoder, float ol
     }
 }
 
-void Synth::newParamValue(int timbre, SynthParamType type, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
-
-    if (unlikely(type == SYNTH_PARAM_TYPE_ENGINE )) {
-        if (currentRow == ROW_ENGINE) {
-            if (encoder == ENCODER_ENGINE_ALGO) {
-                refreshNumberOfOsc();
-                fixMaxNumberOfVoices(timbre);
-            } else if (encoder == ENCODER_ENGINE_VOICE) {
-                if (newValue > oldValue) {
-                    for (int v=(int)oldValue; v < (int)newValue; v++) {
-                    	timbres[timbre].voiceNumber[v] = getFreeVoice();
-                    }
-                    refreshNumberOfOsc();
-                } else {
-                    for (int v=(int)newValue; v < (int)oldValue; v++) {
-                        voices[timbres[timbre].voiceNumber[v]].killNow();
-                        timbres[timbre].voiceNumber[v] = -1;
-                    }
-                    refreshNumberOfOsc();
-                }
-                timbres[timbre].numberOfVoicesChanged();
-                if (newValue == 0.0f || oldValue == 0.0f) {
-                	updateNumberOfActiveTimbres();
-                }
-            }
-            /* DEBUG TEST setHoldPedal...
-            else if (encoder == ENCODER_ENGINE_VELOCITY) {
-            	if (newValue == 6) {
-            		setHoldPedal(0, 80);
-            	} else if (newValue == 7) {
-            		setHoldPedal(0, 20);
-            	}
-            }
-            */
-        } else if (currentRow == ROW_ARPEGGIATOR1) {
-        	if (encoder == ENCODER_ARPEGGIATOR_CLOCK) {
-        		allNoteOff(timbre);
-        		timbres[timbre].setArpeggiatorClock((uint8_t) newValue);
-        	}
-        	if (encoder == ENCODER_ARPEGGIATOR_BPM) {
-        		timbres[timbre].setNewBPMValue((uint8_t) newValue);
-        	}
-        	if (encoder == ENCODER_ARPEGGIATOR_DIRECTION) {
-        		timbres[timbre].setDirection((uint8_t) newValue);
-        	}
-        } else if (currentRow == ROW_ARPEGGIATOR2) {
-        	if (encoder == ENCODER_ARPEGGIATOR_LATCH) {
+void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
+	switch (currentRow) {
+	case ROW_ENGINE:
+		switch (encoder) {
+		case ENCODER_ENGINE_ALGO:
+			refreshNumberOfOsc();
+			fixMaxNumberOfVoices(timbre);
+			break;
+		case ENCODER_ENGINE_VOICE:
+			if (newValue > oldValue) {
+				for (int v=(int)oldValue; v < (int)newValue; v++) {
+					timbres[timbre].voiceNumber[v] = getFreeVoice();
+				}
+				refreshNumberOfOsc();
+			} else {
+				for (int v=(int)newValue; v < (int)oldValue; v++) {
+					voices[timbres[timbre].voiceNumber[v]].killNow();
+					timbres[timbre].voiceNumber[v] = -1;
+				}
+				refreshNumberOfOsc();
+			}
+			timbres[timbre].numberOfVoicesChanged();
+			if (newValue == 0.0f || oldValue == 0.0f) {
+				updateNumberOfActiveTimbres();
+			}
+			break;
+		}
+		break;
+	case ROW_ARPEGGIATOR1:
+		switch (encoder) {
+		case ENCODER_ARPEGGIATOR_CLOCK:
+			allNoteOff(timbre);
+			timbres[timbre].setArpeggiatorClock((uint8_t) newValue);
+        	break;
+		case ENCODER_ARPEGGIATOR_BPM:
+        	timbres[timbre].setNewBPMValue((uint8_t) newValue);
+        	break;
+		case ENCODER_ARPEGGIATOR_DIRECTION:
+			timbres[timbre].setDirection((uint8_t) newValue);
+        	break;
+		}
+        break;
+	case ROW_ARPEGGIATOR2:
+        	if (unlikely(encoder == ENCODER_ARPEGGIATOR_LATCH)) {
         		timbres[timbre].setLatchMode((uint8_t) newValue);
         	}
-        } else if (currentRow == ROW_EFFECT) {
+        	break;
+	case ROW_EFFECT:
         	timbres[timbre].setNewEffecParam(encoder);
-        }
-    } else if (type == SYNTH_PARAM_TYPE_ENV) {
-        switch (currentRow) {
-        case ROW_ENV1a:
-            timbres[timbre].env1.reloadADSR(encoder);
-            break;
-        case ROW_ENV1b:
-            timbres[timbre].env1.reloadADSR(encoder + 4);
-            break;
-        case ROW_ENV2a:
-            timbres[timbre].env2.reloadADSR(encoder);
-            break;
-        case ROW_ENV2b:
-            timbres[timbre].env2.reloadADSR(encoder + 4);
-            break;
-        case ROW_ENV3a:
-            timbres[timbre].env3.reloadADSR(encoder);
-            break;
-        case ROW_ENV3b:
-            timbres[timbre].env3.reloadADSR(encoder + 4);
-            break;
-        case ROW_ENV4a:
-            timbres[timbre].env4.reloadADSR(encoder);
-            break;
-        case ROW_ENV4b:
-            timbres[timbre].env4.reloadADSR(encoder + 4);
-            break;
-        case ROW_ENV5a:
-            timbres[timbre].env5.reloadADSR(encoder);
-            break;
-       case ROW_ENV5b:
-    	    timbres[timbre].env5.reloadADSR(encoder + 4);
-            break;
-        case ROW_ENV6a:
-            timbres[timbre].env6.reloadADSR(encoder);
-            break;
-        case ROW_ENV6b:
-            timbres[timbre].env6.reloadADSR(encoder + 4);
-            break;
-        }
-    } else if (type == SYNTH_PARAM_TYPE_MATRIX && encoder == ENCODER_MATRIX_DEST) {
-        // Reset old destination
-        timbres[timbre].matrix.resetDestination(oldValue);
-    } else if (type == SYNTH_PARAM_TYPE_LFO) {
+        	break;
+	case ROW_ENV1a:
+		timbres[timbre].env1.reloadADSR(encoder);
+		break;
+	case ROW_ENV1b:
+		timbres[timbre].env1.reloadADSR(encoder + 4);
+		break;
+	case ROW_ENV2a:
+		timbres[timbre].env2.reloadADSR(encoder);
+		break;
+	case ROW_ENV2b:
+		timbres[timbre].env2.reloadADSR(encoder + 4);
+		break;
+	case ROW_ENV3a:
+		timbres[timbre].env3.reloadADSR(encoder);
+		break;
+	case ROW_ENV3b:
+		timbres[timbre].env3.reloadADSR(encoder + 4);
+		break;
+	case ROW_ENV4a:
+		timbres[timbre].env4.reloadADSR(encoder);
+		break;
+	case ROW_ENV4b:
+		timbres[timbre].env4.reloadADSR(encoder + 4);
+		break;
+	case ROW_ENV5a:
+		timbres[timbre].env5.reloadADSR(encoder);
+		break;
+   case ROW_ENV5b:
+		timbres[timbre].env5.reloadADSR(encoder + 4);
+		break;
+	case ROW_ENV6a:
+		timbres[timbre].env6.reloadADSR(encoder);
+		break;
+	case ROW_ENV6b:
+		timbres[timbre].env6.reloadADSR(encoder + 4);
+		break;
+	case ROW_MATRIX_FIRST ... ROW_MATRIX_LAST:
+    	if (encoder == ENCODER_MATRIX_DEST) {
+    		// Reset old destination
+    		timbres[timbre].matrix.resetDestination(oldValue);
+    	}
+		break;
+	case ROW_LFO_FIRST ... ROW_LFO_LAST:
         // timbres[timbre].lfo[currentRow - ROW_LFOOSC1]->valueChanged(encoder);
     	timbres[timbre].lfoValueChange(currentRow, encoder, newValue);
-    }
+		break;
+	case ROW_PERFORMANCE1:
+		timbres[timbre].matrix.setSource((enum SourceEnum)(MATRIX_SOURCE_CC1 + encoder), newValue);
+		break;
+	}
 }
 
 
 // synth is the only one who knows timbres
 void Synth::newTimbre(int timbre)  {
-//    allParameterRows.row[ROW_ENGINE]->params[ENCODER_ENGINE_VOICE].maxValue = this->numberOfVoicesMax[timbre];
-//    allParameterRows.row[ROW_ENGINE]->params[ENCODER_ENGINE_VOICE].numberOfValues = this->numberOfVoicesMax[timbre];
-    this->synthState->setParamsAndTimbre(&timbres[timbre].params, timbre);
+    this->synthState->setParamsAndTimbre(&timbres[timbre].params, timbre, timbres[timbre].getPerformanceValuesAddress());
 }
 
-void Synth::newMidiConfig(int menuSelect, char newValue) {
-    /*
-    if (menuSelect == MIDICONFIG_SYNTHMODE) {
-        if (newValue == SYNTH_MODE_SINGLE) {
-
-            for (int k = 0; k<MAX_NUMBER_OF_VOICES; k++) {
-                if (voices[k].getCurrentTimbre() > 0 ) {
-                    voices[k].killNow();
-                }
-            }
-            numberOfTimbres = 1;
-        } else {
-            int voicesNumber[] = { 4, 2, 1, 1};
-            numberOfTimbres = 4;
-            for (int t=0; t<numberOfTimbres; t++) {
-                timbres[t].params.engine1.numberOfVoice = voicesNumber[t];
-            }
-        }
-        newTimbre(0);
-        rebuidVoiceTimbre();
-        refreshNumberOfOsc();
-        fixMaxNumberOfVoices(0);
-    }
-    */
-}
 
 /*
  * Return false if had to change number of voice
@@ -557,12 +531,6 @@ void Synth::refreshNumberOfOsc() {
         int nv = timbres[t].params.engine1.numberOfVoice + .0001f;
 		this->numberOfOsc += algoInformation[(int)timbres[t].params.engine1.algo].osc * nv;
     }
-}
-
-
-
-void Synth::setTimbreMatrixSource(int timbre, enum SourceEnum source, float newValue) {
-    this->timbres[timbre].matrix.setSource(source, newValue);
 }
 
 

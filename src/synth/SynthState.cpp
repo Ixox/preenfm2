@@ -235,7 +235,7 @@ struct ParameterRowDisplay lfoEnv2ParameterRow = {
 };
 
 const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "env2", "seq1", "seq2",
-		"ModW", "PitB", "AftT",  "Velo", "Key ", "CC1 ", "CC2 ", "CC3 ", "CC4 " } ;
+		"ModW", "PitB", "AftT",  "Velo", "Key ", "p1  ", "p2  ", "p3  ", "p4  " } ;
 
 const char* matrixDestNames [] = {
         "None", "Gate", "IM1 ", "IM2 ", "IM3 ", "IM4 ", "IM* ",
@@ -290,6 +290,17 @@ struct ParameterRowDisplay lfoStepParameterRow = {
         }
 };
 
+struct ParameterRowDisplay performanceParameterRow = {
+        "   -Performance-",
+        { "p1  ", "p2  ", "p3  ", "p4  " },
+        {
+                { 0 , 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder},
+                { 0 , 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder},
+                { 0 , 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder},
+                { 0 , 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder}
+        }
+};
+
 struct AllParameterRowsDisplay allParameterRows = {
         {
                 &engine1ParameterRow,
@@ -332,6 +343,7 @@ struct AllParameterRowsDisplay allParameterRows = {
                 &matrixParameterRow,
                 &matrixParameterRow,
                 &matrixParameterRow,
+                &performanceParameterRow,
                 &lfoParameterRow,
                 &lfoParameterRow,
                 &lfoParameterRow,
@@ -449,92 +461,99 @@ void SynthState::encoderTurnedForStepSequencer(int row, int encoder, int ticks) 
 void SynthState::twoButtonsPressed(int button1, int button2) {
 	int oldCurrentRow = currentRow;
 
-	if (button1 == BUTTON_BACK) {
-		switch (button2) {
-    	case BUTTON_SYNTH:
-    		propagateNoteOn(12);
-    		break;
-    	case BUTTON_OSC:
-    		propagateNoteOn(8);
-    		break;
-    	case BUTTON_ENV:
-    		propagateNoteOn(0);
-    		break;
-    	case BUTTON_MATRIX:
-    		propagateNoteOn(-8);
-    		break;
-    	case BUTTON_LFO:
-    		propagateNoteOn(-12);
-    		break;
-    	case BUTTON_MENUSELECT:
-    		propagateNoteOff();
-    		propagateBeforeNewParamsLoad();
-    		propagateAfterNewComboLoad();
-    		break;
-		}
-	} else if (button1 == BUTTON_SYNTH) {
-		int oldCurrentRow = currentRow;
-		switch (button2) {
-		case BUTTON_MENUSELECT:
-			if (fullState.synthMode  == SYNTH_MODE_EDIT) {
-				propagateShowAlgo();
-			}
-			break;
-		case BUTTON_OSC:
-			currentRow = ROW_ENGINE;
-			break;
-		case BUTTON_ENV:
-			currentRow = ROW_ARPEGGIATOR1;
-			break;
-		case BUTTON_MATRIX:
-			currentRow = ROW_MODULATION1;
-			break;
-		case BUTTON_LFO:
-			currentRow = ROW_EFFECT;
-			break;
-		}
-	} else if (button1 == BUTTON_MATRIX) {
-		switch (button2) {
-		case BUTTON_SYNTH:
-			currentRow = ROW_MATRIX1;
-			break;
-		case BUTTON_OSC:
-    		changeSynthModeRow(BUTTON_MATRIX , -3);
-			break;
-		case BUTTON_ENV:
-    		changeSynthModeRow(BUTTON_MATRIX , -1);
-			break;
-		case BUTTON_LFO:
-			currentRow = ROW_MATRIX6;
-			break;
-		}
-
-		if (oldCurrentRow != currentRow) {
-	        propagateNewCurrentRow(currentRow);
-	    }
-	} else if (button1 == BUTTON_LFO) {
-		int oldCurrentRow = currentRow;
-		switch (button2) {
-		case BUTTON_SYNTH:
-			currentRow = ROW_LFOOSC1;
-			break;
-		case BUTTON_OSC:
-			currentRow = ROW_LFOENV1;
-			break;
-		case BUTTON_ENV:
-			currentRow = ROW_LFOENV2;
-			break;
-		case BUTTON_MATRIX:
-			currentRow = ROW_LFOSEQ1;
-			break;
-		}
-
-		if (oldCurrentRow != currentRow) {
-	        propagateNewCurrentRow(currentRow);
-	    }
+	if ((fullState.synthMode  != SYNTH_MODE_EDIT)) {
+		return;
 	}
 
-
+	switch (button1) {
+		case BUTTON_BACK:
+			switch (button2) {
+			case BUTTON_SYNTH:
+				propagateNoteOn(12);
+				break;
+			case BUTTON_OSC:
+				propagateNoteOn(8);
+				break;
+			case BUTTON_ENV:
+				propagateNoteOn(0);
+				break;
+			case BUTTON_MATRIX:
+				propagateNoteOn(-8);
+				break;
+			case BUTTON_LFO:
+				propagateNoteOn(-12);
+				break;
+			case BUTTON_MENUSELECT:
+				propagateNoteOff();
+				propagateBeforeNewParamsLoad();
+				propagateAfterNewComboLoad();
+				break;
+			}
+		break;
+		case BUTTON_SYNTH:
+			switch (button2) {
+			case BUTTON_MENUSELECT:
+				if (fullState.synthMode  == SYNTH_MODE_EDIT) {
+					propagateShowAlgo();
+				}
+				break;
+			case BUTTON_OSC:
+				currentRow = ROW_ENGINE;
+				break;
+			case BUTTON_ENV:
+				currentRow = ROW_ARPEGGIATOR1;
+				break;
+			case BUTTON_MATRIX:
+				currentRow = ROW_MODULATION1;
+				break;
+			case BUTTON_LFO:
+				currentRow = ROW_EFFECT;
+				break;
+			}
+		break;
+		case BUTTON_MATRIX:
+			switch (button2) {
+			case BUTTON_SYNTH:
+				currentRow = ROW_MATRIX1;
+				break;
+			case BUTTON_OSC:
+				changeSynthModeRow(BUTTON_MATRIX , -3);
+				break;
+			case BUTTON_ENV:
+				changeSynthModeRow(BUTTON_MATRIX , -1);
+				break;
+			case BUTTON_LFO:
+				currentRow = ROW_MATRIX6;
+				break;
+			}
+		break;
+		case BUTTON_LFO:
+			switch (button2) {
+			case BUTTON_SYNTH:
+				currentRow = ROW_LFOOSC1;
+				break;
+			case BUTTON_OSC:
+				currentRow = ROW_LFOENV1;
+				break;
+			case BUTTON_ENV:
+				currentRow = ROW_LFOENV2;
+				break;
+			case BUTTON_MATRIX:
+				currentRow = ROW_LFOSEQ1;
+				break;
+			case BUTTON_MENUSELECT:
+				currentRow = ROW_PERFORMANCE1;
+				break;
+			}
+		break;
+		case BUTTON_MENUSELECT:
+			switch (button2) {
+			case BUTTON_LFO:
+				currentRow = ROW_PERFORMANCE1;
+				break;
+			}
+		break;
+	}
 
 #ifdef DEBUG
 	if (button1 == BUTTON_LFO) {
@@ -550,7 +569,6 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
 	if (oldCurrentRow != currentRow) {
         propagateNewCurrentRow(currentRow);
     }
-
 }
 
 
@@ -558,18 +576,21 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
 void SynthState::encoderTurnedWhileButtonPressed(int encoder, int ticks, int button) {
     int oldCurrentRow = currentRow;
 
-    if (fullState.synthMode == SYNTH_MODE_EDIT)  {
+    if (likely(fullState.synthMode != SYNTH_MODE_MENU))  {
     	switch (button) {
     	case BUTTON_SYNTH:
     	case BUTTON_OSC:
     	case BUTTON_ENV:
     	case BUTTON_MATRIX:
     	case BUTTON_LFO:
-    		changeSynthModeRow(button , ticks>0 ? 1 : -1);
+    		if (likely(fullState.synthMode == SYNTH_MODE_EDIT)) {
+    			changeSynthModeRow(button , ticks>0 ? 1 : -1);
+    		}
     		break;
     	case BUTTON_BACK:
     		encoderTurned(encoder, ticks * 10);
     		break;
+    	case BUTTON_ENCODER:
     	case BUTTON_MENUSELECT:
     	{
     		if (currentRow == ROW_ENGINE_FIRST) {
@@ -665,7 +686,7 @@ void SynthState::encoderTurned(int encoder, int ticks) {
         if (newValue != oldValue) {
             propagateNewParamValue(currentTimbre, currentRow, encoder, param, oldValue, newValue);
         }
-    } else {
+    } else if (fullState.synthMode == SYNTH_MODE_MENU) {
         int oldMenuSelect = fullState.menuSelect;
         if (encoder==0) {
             if (ticks>0) {
@@ -738,7 +759,6 @@ void SynthState::encoderTurned(int encoder, int ticks) {
             		fullState.midiConfigValue[fullState.menuSelect] = 0;
             	}
                 propagateNewMenuSelect();
-                propagateNewMidiConfig(fullState.menuSelect, fullState.midiConfigValue[fullState.menuSelect]);
             } else if (fullState.currentMenuItem->maxValue >= 128) {
                 if (ticks>0) {
                     fullState.menuSelect = fullState.menuSelect + 25;
@@ -821,7 +841,6 @@ void SynthState::encoderTurned(int encoder, int ticks) {
             propagateNewMenuSelect();
         }
     }
-
 }
 
 
@@ -1020,6 +1039,9 @@ void SynthState::buttonPressed(int button) {
         case BUTTON_LFO:
         	changeSynthModeRow(button , 1);
             break;
+    	case BUTTON_ENCODER:
+			currentRow = ROW_PERFORMANCE1;
+			break;
         case BUTTON_MENUSELECT:
             fullState.synthMode = SYNTH_MODE_MENU;
             fullState.menuSelect = fullState.firstMenu;
@@ -1667,7 +1689,8 @@ void SynthState::tempoClick() {
 	}
 }
 
-void SynthState::setParamsAndTimbre(struct OneSynthParams *newParams, int newCurrentTimbre) {
+void SynthState::setParamsAndTimbre(struct OneSynthParams *newParams, int newCurrentTimbre, float* performanceValues) {
     this->params = newParams;
     this->currentTimbre = newCurrentTimbre;
+    this->performanceValues = performanceValues;
 }
