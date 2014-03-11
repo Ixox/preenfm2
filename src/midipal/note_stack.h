@@ -64,20 +64,27 @@ class NoteStack {
   void NoteOff(uint8_t note);
   void Clear();
 
-  uint8_t size() { return size_; }
-  const NoteEntry& most_recent_note() { return pool_[root_ptr_]; }
-  const NoteEntry& least_recent_note() {
+  uint8_t size() const { return size_; }
+  const NoteEntry& most_recent_note() const { return pool_[root_ptr_]; }
+  const NoteEntry& least_recent_note() const {
     uint8_t current = root_ptr_;
     while (current && pool_[current].next_ptr) {
       current = pool_[current].next_ptr;
     }
     return pool_[current];
   }
-  const NoteEntry& sorted_note(uint8_t index) {
+  const NoteEntry& sorted_note(uint8_t index) const {
     return pool_[sorted_ptr_[index]];
   }
-  const NoteEntry& note(uint8_t index) { return pool_[index]; }
-  const NoteEntry& dummy() { return pool_[0]; }
+  const NoteEntry& played_note(uint8_t index) const {
+    uint8_t current = root_ptr_;
+    while (current && pool_[current].next_ptr && ++index < size_) {
+      current = pool_[current].next_ptr;
+    }
+    return pool_[current];
+  }
+  const NoteEntry& note(uint8_t index) const { return pool_[index]; }
+  const NoteEntry& dummy() const { return pool_[0]; }
 
  private:
   uint8_t size_;

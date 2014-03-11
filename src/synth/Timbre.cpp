@@ -25,6 +25,7 @@ enum ArpeggiatorDirection {
   ARPEGGIO_DIRECTION_DOWN,
   ARPEGGIO_DIRECTION_UP_DOWN,
   ARPEGGIO_DIRECTION_RANDOM,
+  ARPEGGIO_DIRECTION_PLAYED
 };
 uint16_t lut_res_arpeggiator_patterns[]  = {
    21845,  62965,  46517,  54741,  43861,  22869,  38293,   2313,
@@ -923,8 +924,12 @@ void Timbre::Tick() {
 		uint8_t has_arpeggiator_note = (bitmask_ & pattern) ? 255 : 0;
 		if (note_stack.size() && has_arpeggiator_note) {
 			StepArpeggio();
-			uint8_t note = note_stack.sorted_note(current_step_).note;
-			uint8_t velocity = note_stack.sorted_note(current_step_).velocity;
+			const NoteEntry &noteEntry = ARPEGGIO_DIRECTION_PLAYED == params.engineApr1.direction 
+			  ? note_stack.played_note(current_step_)
+			  : note_stack.sorted_note(current_step_);
+
+			uint8_t note = noteEntry.note;
+			uint8_t velocity = noteEntry.velocity;
 			note += 12 * current_octave_;
 
 	    	while (note > 127) {
