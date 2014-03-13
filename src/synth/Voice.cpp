@@ -52,12 +52,7 @@ Voice::~Voice(void)
 }
 
 void Voice::init(Timbre* timbre0, Timbre* timbre1, Timbre* timbre2, Timbre* timbre3) {
-	this->voiceTimbre = 0;
-	this->timbres[0] = timbre0;
-	this->timbres[1] = timbre1;
-	this->timbres[2] = timbre2;
-	this->timbres[3] = timbre3;
-	this->currentTimbre = this->timbres[0];
+	this->currentTimbre = 0;
 	this->playing = false;
 	this->newNotePending = false;
 	this->note = 0;
@@ -133,10 +128,7 @@ void Voice::glide() {
 	}
 }
 
-void Voice::noteOn(short timbre, short newNote, short velocity, unsigned int index) {
-	this->voiceTimbre = timbre;
-	this->currentTimbre = timbres[timbre];
-
+void Voice::noteOn(short newNote, short velocity, unsigned int index) {
 	this->released = false;
 	this->playing = true;
 	this->note = newNote;
@@ -174,7 +166,7 @@ void Voice::noteOn(short timbre, short newNote, short velocity, unsigned int ind
 
 void Voice::endNoteOrBeginNextOne() {
     if (this->newNotePending) {
-        noteOn(voiceTimbre, nextPendingNote, nextVelocity, index);
+        noteOn(nextPendingNote, nextVelocity, index);
         this->newNotePending = false;
     } else {
         this->playing = false;
@@ -196,7 +188,6 @@ void Voice::glideFirstNoteOff() {
 }
 
 void Voice::noteOff() {
-	this->note = 0;
 	this->released = true;
 	this->nextPendingNote = 0;
 	this->gliding = false;
@@ -213,7 +204,6 @@ void Voice::noteOff() {
 }
 
 void Voice::killNow() {
-	this->note = 0;
 	this->playing = false;
 	this->nextPendingNote = 0;
 	this->nextGlidingNote = 0;

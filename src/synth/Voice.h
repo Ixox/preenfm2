@@ -39,7 +39,7 @@ public:
     void endNoteOrBeginNextOne();
 
     void noteOnWithoutPop(short note, short velocity, unsigned int index);
-    void noteOn(short timbre, short note, short velocity, unsigned int index);
+    void noteOn(short note, short velocity, unsigned int index);
     void glideToNote(short newNote);
     void killNow();
     void noteOff();
@@ -53,10 +53,9 @@ public:
     char getNote() { return this->note; }
     char getNextPendingNote() { return this->nextPendingNote; }
     char getNextGlidingNote() { return this->nextGlidingNote; }
-    int getCurrentTimbre() { return this->voiceTimbre; }
     bool isHoldedByPedal() { return this->holdedByPedal; }
     bool setHoldedByPedal(bool holded) { this->holdedByPedal = holded; }
-
+    void setCurrentTimbre(Timbre *timbre) { this->currentTimbre = timbre; }
 private:
     // voice status
     int frequency;
@@ -104,8 +103,6 @@ private:
     float env5ValueMem;
     float env6ValueMem;
 
-    int voiceTimbre;
-    Timbre* timbres[4];
     Timbre* currentTimbre;
 
     // glide phase increment

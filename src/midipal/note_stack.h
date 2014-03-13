@@ -40,6 +40,7 @@
 
 
 // 2014 : Modified by Xavier HOSXE for PreenFM2
+// 2014 : played_note added by Patrick Dowling
 
 #ifndef MIDIPAL_NOTE_STACK_H_
 #define MIDIPAL_NOTE_STACK_H_

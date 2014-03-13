@@ -24,9 +24,18 @@ enum ArpeggiatorDirection {
   ARPEGGIO_DIRECTION_UP = 0,
   ARPEGGIO_DIRECTION_DOWN,
   ARPEGGIO_DIRECTION_UP_DOWN,
-  ARPEGGIO_DIRECTION_RANDOM,
-  ARPEGGIO_DIRECTION_PLAYED
+  ARPEGGIO_DIRECTION_PLAYED,
+  ARPEGGIO_DIRECTION_RANDOM
 };
+
+enum NewNoteType {
+	NEW_NOTE_FREE = 0,
+	NEW_NOTE_RELEASE,
+	NEW_NOTE_OLD,
+	NEW_NOTE_NONE
+};
+
+
 uint16_t lut_res_arpeggiator_patterns[]  = {
    21845,  62965,  46517,  54741,  43861,  22869,  38293,   2313,
    37449,  21065,  18761,  54553,  27499,  23387,  30583,  28087,
@@ -140,6 +149,14 @@ void Timbre::init(int timbreNumber) {
     this->timbreNumber = timbreNumber;
 }
 
+void Timbre::setVoiceNumber(int v, int n) {
+	voiceNumber[v] = n;
+	if (n >=0) {
+		voices[n]->setCurrentTimbre(this);
+	}
+}
+
+
 void Timbre::initVoicePointer(int n, Voice* voice) {
 	voices[n] = voice;
 }
@@ -163,19 +180,25 @@ void Timbre::noteOff(char note) {
 int cptHighNote = 0;
 
 void Timbre::preenNoteOn(char note, char velocity) {
+	if (unlikely(note <= 12 || note  > 110)) {
+		return;
+	}
 
-	if (params.engine1.numberOfVoice == 0) {
+	int iNov = (int) params.engine1.numberOfVoice;
+	if (unlikely(params.engine1.numberOfVoice == 0)) {
 		return;
 	}
 
 	unsigned int indexMin = (unsigned int)2147483647;
 	int voiceToUse = -1;
 
-	int iNov = (int) params.engine1.numberOfVoice;
+	int newNoteType = NEW_NOTE_NONE;
+
 	for (int k = 0; k < iNov; k++) {
 		// voice number k of timbre
 		int n = voiceNumber[k];
 
+#ifdef DEBUG
     	if (unlikely(n<0)) {
     		lcd.setRealTimeAction(true);
     		lcd.clear();
@@ -194,34 +217,38 @@ void Timbre::preenNoteOn(char note, char velocity) {
 			lcd.print("t: ");
 			lcd.print(timbreNumber);
 			lcd.setCursor(0,3);
-			lcd.print("nov*1000: ");
-			lcd.print((int)params.engine1.numberOfVoice * 1000.0f);
-			while (1);
+			lcd.print("note: ");
+			lcd.print((int)note);
+//			while (1);
     	}
+#endif
 
-		// same note.... ?
-		if (voices[n]->getNote() == note) {
+		// same note = priority 1 : take the voice immediatly
+		if (unlikely(voices[n]->isPlaying() && voices[n]->getNote() == note)) {
 			voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++);
 			return;
 		}
 
 		// unlikely because if it true, CPU is not full
-		if (unlikely(!voices[n]->isPlaying())) {
-			voices[n]->noteOn(timbreNumber, note, velocity, voiceIndex++);
-			return;
-		}
-
-		if (voices[n]->isReleased()) {
-			int indexVoice = voices[n]->getIndex();
-			if (indexVoice < indexMin) {
-				indexMin = indexVoice;
+		if (unlikely(newNoteType > NEW_NOTE_FREE)) {
+			if (!voices[n]->isPlaying()) {
 				voiceToUse = n;
-				// NO break... We must take the elder one
+				newNoteType = NEW_NOTE_FREE;
+			}
+
+			if (voices[n]->isReleased()) {
+				int indexVoice = voices[n]->getIndex();
+				if (indexVoice < indexMin) {
+					indexMin = indexVoice;
+					voiceToUse = n;
+					newNoteType = NEW_NOTE_RELEASE;
+				}
 			}
 		}
 	}
 
 	if (voiceToUse == -1) {
+		newNoteType = NEW_NOTE_OLD;
 		for (int k = 0; k < iNov; k++) {
 			// voice number k of timbre
 			int n = voiceNumber[k];
@@ -229,13 +256,39 @@ void Timbre::preenNoteOn(char note, char velocity) {
 			if (indexVoice < indexMin && !voices[n]->isNewNotePending()) {
 				indexMin = indexVoice;
 				voiceToUse = n;
-				// NO break... We must take the elder one
 			}
 		}
 	}
 	// All voices in newnotepending state ?
 	if (voiceToUse != -1) {
-		voices[voiceToUse]->noteOnWithoutPop(note, velocity, voiceIndex++);
+#ifdef DEBUG_VOICE
+		lcd.setRealTimeAction(true);
+		lcd.setCursor(16,1);
+		lcd.print(cptHighNote++);
+		lcd.setCursor(16,2);
+		switch (newNoteType) {
+			case NEW_NOTE_FREE:
+				lcd.print("F:");
+				break;
+			case NEW_NOTE_OLD:
+				lcd.print("O:");
+				break;
+			case NEW_NOTE_RELEASE:
+				lcd.print("R:");
+				break;
+		}
+		lcd.print(voiceToUse);
+#endif
+		switch (newNoteType) {
+		case NEW_NOTE_FREE:
+			voices[voiceToUse]->noteOn(note, velocity, voiceIndex++);
+			break;
+		case NEW_NOTE_OLD:
+		case NEW_NOTE_RELEASE:
+			voices[voiceToUse]->noteOnWithoutPop(note, velocity, voiceIndex++);
+			break;
+		}
+
 	}
 }
 
@@ -245,8 +298,10 @@ void Timbre::preenNoteOff(char note) {
 	for (int k = 0; k < iNov; k++) {
 		// voice number k of timbre
 		int n = voiceNumber[k];
-		if (unlikely(n==-1)) {
-			return;
+
+		// Not playing = free CPU
+		if (unlikely(!voices[n]->isPlaying())) {
+			continue;
 		}
 
 		if (likely(voices[n]->getNextGlidingNote() == 0)) {
@@ -924,7 +979,7 @@ void Timbre::Tick() {
 		uint8_t has_arpeggiator_note = (bitmask_ & pattern) ? 255 : 0;
 		if (note_stack.size() && has_arpeggiator_note) {
 			StepArpeggio();
-			const NoteEntry &noteEntry = ARPEGGIO_DIRECTION_PLAYED == params.engineApr1.direction 
+			const NoteEntry &noteEntry = ARPEGGIO_DIRECTION_PLAYED == params.engineApr1.direction
 			  ? note_stack.played_note(current_step_)
 			  : note_stack.sorted_note(current_step_);
 
@@ -1062,3 +1117,5 @@ void Timbre::lfoValueChange(int currentRow, int encoder, float newValue) {
 		break;
 	}
 }
+
+

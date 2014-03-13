@@ -263,7 +263,7 @@ void Synth::beforeNewParamsLoad(int timbre) {
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
         timbres[t].resetArpeggiator();
         for (int v=0; v<MAX_NUMBER_OF_VOICES; v++) {
-        	timbres[t].voiceNumber[v] = -1;
+        	timbres[t].setVoiceNumber(v, -1);
         }
     }
     // Stop all voices
@@ -388,13 +388,13 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
 		case ENCODER_ENGINE_VOICE:
 			if (newValue > oldValue) {
 				for (int v=(int)oldValue; v < (int)newValue; v++) {
-					timbres[timbre].voiceNumber[v] = getFreeVoice();
+					timbres[timbre].setVoiceNumber(v, getFreeVoice());
 				}
 				refreshNumberOfOsc();
 			} else {
 				for (int v=(int)newValue; v < (int)oldValue; v++) {
 					voices[timbres[timbre].voiceNumber[v]].killNow();
-					timbres[timbre].voiceNumber[v] = -1;
+					timbres[timbre].setVoiceNumber(v, -1);
 				}
 				refreshNumberOfOsc();
 			}
@@ -516,10 +516,10 @@ void Synth::rebuidVoiceTimbre() {
         int nv = timbres[t].params.engine1.numberOfVoice;
 
         for (int v=0; v < nv; v++) {
-        	timbres[t].voiceNumber[v] = voices++;
+        	timbres[t].setVoiceNumber(v, voices++);
         }
         for (int v=nv; v < MAX_NUMBER_OF_VOICES;  v++) {
-        	timbres[t].voiceNumber[v] = -1;
+        	timbres[t].setVoiceNumber(v, -1);
         }
     }
 }

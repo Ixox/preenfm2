@@ -51,6 +51,7 @@ public:
     Timbre();
     virtual ~Timbre();
     void init(int timbreNumber);
+    void setVoiceNumber(int v, int n);
     void initVoicePointer(int n, Voice* voice);
     void prepareForNextBlock();
     void cleanNextBlock();
@@ -283,6 +284,7 @@ public:
     float mix1, mix2, mix3, mix4, mix5, mix6;
     float pan1Left, pan2Left, pan3Left, pan4Left, pan5Left, pan6Left  ;
     float pan1Right, pan2Right, pan3Right, pan4Right, pan5Right, pan6Right ;
+
 
     // Needed for debuging
     char voiceNumber[MAX_NUMBER_OF_VOICES];
