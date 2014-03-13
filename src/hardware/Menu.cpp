@@ -65,7 +65,7 @@ const struct MidiConfig midiConfig[]  = {
         },
         {
                 "Midi ch. 4: ",
-                "midi3",
+                "midi4",
                 17,
                 midiChannels
         },
