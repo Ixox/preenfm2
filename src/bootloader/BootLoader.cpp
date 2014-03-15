@@ -18,7 +18,6 @@
 #include "BootLoader.h"
 #include "usbd_storage_desc.h"
 #include "LiquidCrystal.h"
-#include "Encoders.h"
 #include "usbd_msc_core.h"
 #include "UsbKey.h"
 #include "usbKey_usr.h"
@@ -102,6 +101,9 @@ BootLoader::BootLoader(LiquidCrystal* lcd) {
     this->firmwareSize = 0;
     this->checkSum = 0;
     this->checkSumReceived = 0;
+
+    encoders.insertListener(this);
+    encoders.checkSimpleStatus();
 }
 
 BootLoader::~BootLoader() {
@@ -429,10 +431,9 @@ void BootLoader::resetButtonPressed() {
 
 
 void BootLoader::welcome() {
-    this->lcd->begin(20,4);
     this->lcd->clear();
     this->lcd->setCursor(0,0);
-    this->lcd->print("BootLoader v"PFM2_BOOTLOADER_VERSION);
+    this->lcd->print("* BootLoader v"PFM2_BOOTLOADER_VERSION" *" );
 }
 
 
@@ -513,139 +514,213 @@ void switchLedOff() {
     GPIO_ResetBits(GPIOB, GPIO_Pin_6);
 }
 
+int BootLoader::doMainMenu()
+{
+  waitForButtonRelease();
+  welcome();
+  lcd->setCursor(0,1);
+  lcd->print("Eng:USB stick access");
+  lcd->setCursor(0,2);
+  lcd->print("Op :flash from stick");
+  lcd->setCursor(0,3);
+  lcd->print("Op2:Midi    Mtx:DFU");
+
+  return waitForButton();
+}
+
+int BootLoader::waitForButton()
+{
+  while ( !getButton() ) {
+    resetButtonPressed();
+    encoders.checkSimpleStatus();
+  }
+
+  int button = getButton();
+  resetButtonPressed();
+  return button;
+}
+
+int BootLoader::checkButtons()
+{
+  encoders.checkSimpleStatus();
+  return getButton();
+}
+
+void BootLoader::waitForButtonRelease()
+{
+  while ( getButton() ) {
+     resetButtonPressed();
+     encoders.checkSimpleStatus();
+  }
+}
 
 int main(void) {
-	switchLedInit();
-	switchLedOn();
-	BootLoader bootLoader(&lcd);
-    Encoders encoders;
+  switchLedInit();
+  switchLedOn();
+  
+  lcd.begin(20,4);
+  BootLoader bootLoader(&lcd);
+  
+  if (bootLoader.getButton() == 0) {
+    // App ready ?
+    pFunction Jump_To_Application;
+    uint32_t JumpAddress;
+    
+    // Stack can be on RAM or CCRAM
+    if (((*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFC0000) == 0x20000000
+	|| ((*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFE0000) == 0x10000000) {
+      switchLedOff();
+      /* Jump to user application */
+      JumpAddress = *(__IO uint32_t*) (APPLICATION_ADDRESS + 4);
+      Jump_To_Application = (pFunction) JumpAddress;
+      /* Initialize user application's Stack Pointer */
+      __set_MSP(*(__IO uint32_t*) APPLICATION_ADDRESS);
+      Jump_To_Application();
+    } else {
+      lcd.begin(20,4);
+      lcd.clear();
+      lcd.setCursor(1, 0);
+      lcd.print("Bootloader OK but");
+      lcd.setCursor(1, 1);
+      lcd.print("No PreenFM Firmware");
+      int cpt = 0;
+      while (1) {
+	cpt++;
+	if (cpt == 1000000) {
+	  switchLedOff();
+	} else if (cpt == 2000000) {
+	  switchLedOn();
+	  cpt = 0;
+	}
+      }
+    }
+  }
 
-    encoders.insertListener(&bootLoader);
+  while ( true ) {
+    bool exit = false;
+    switch( bootLoader.doMainMenu() ) {
+    case 1: // ENG
+      bootLoader.doUSBStorage();
+      break;
+    case 2: // Op
+      bootLoader.doUSBUpgrade();
+      break;
+    case 3: // Op2
+      bootLoader.doSysexUpgrade();
+      break;
+    case 4: // Mtx
+      bootLoader.doDFU();
+      break;
+    case 7: // Menu 
+      exit = true;
+      break;
 
+    default:
+      break;
+    }
+    
+    // Instead of cleaning up, just restart from main menu
+    if ( !exit ) {
+      NVIC_SystemReset();
+      while(1);
+    }
+  }
+
+  bootLoader.waitForButtonRelease();
+  switchLedOff();
+  lcd.clear();
+  lcd.setCursor(0,2);
+  lcd.print( "     Resetting...    " );
+  uDelay(100000);
+  __set_MSP(*(__IO uint32_t*) 0x08000000);
+  NVIC_SystemReset();
+  while (1);
+}
+
+void BootLoader::doUSBStorage()
+{
+  lcd->clear();
+  lcd->setCursor(0,1);
+  lcd->print("  Access USB Stick  ");
+
+  // Init state
+  uDelay(1000000);
+  usbKey.init(0,0,0,0);
+  USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &USR_storage_desc, &USBD_MSC_cb, &storageUsrCallback);
+
+  lcd->setCursor(0,3);
+  lcd->print("<- Exit" );
+
+  while ( 1 != getButton() ) {
+    resetButtonPressed();
     encoders.checkSimpleStatus();
 
-    if (bootLoader.getButton() == 0) {
-        // App ready ?
-        pFunction Jump_To_Application;
-        uint32_t JumpAddress;
-        // Stack can be on RAM or CCRAM
-        if (((*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFC0000) == 0x20000000
-		|| ((*(__IO uint32_t*) APPLICATION_ADDRESS) & 0x3FFE0000) == 0x10000000) {
-            switchLedOff();
-            /* Jump to user application */
-            JumpAddress = *(__IO uint32_t*) (APPLICATION_ADDRESS + 4);
-            Jump_To_Application = (pFunction) JumpAddress;
-            /* Initialize user application's Stack Pointer */
-            __set_MSP(*(__IO uint32_t*) APPLICATION_ADDRESS);
-            Jump_To_Application();
-        } else {
-            lcd.begin(20,4);
-            lcd.clear();
-            lcd.setCursor(1, 0);
-            lcd.print("Bootloader OK but");
-            lcd.setCursor(1, 1);
-            lcd.print("No PreenFM Firmware");
-            int cpt = 0;
-            while (1) {
-            	cpt++;
-            	if (cpt == 1000000) {
-            		switchLedOff();
-            	} else if (cpt == 2000000) {
-            		switchLedOn();
-            		cpt = 0;
-            	}
-            }
-        }
+    if (readCpt >=0) {
+      lcd->setCursor(9,2);
+      if (readCpt >= 99998) {
+	lcd->print('R');
+      } else if (readCpt == 0) {
+	lcd->print(' ');
+      }
+      readCpt --;
     }
-
-	bootLoader.welcome();
-    while (bootLoader.getButton() != 0) {
-    	bootLoader.resetButtonPressed();
-        encoders.checkSimpleStatus();
-	}
-
-	lcd.setCursor(0,1);
-	lcd.print("Eng:USB stick access");
-	lcd.setCursor(0,2);
-	lcd.print("Op :flash from stick");
-	lcd.setCursor(0,3);
-	lcd.print("Op2:Midi    Mtx:DFU");
-
-    while (bootLoader.getButton() == 0) {
-    	bootLoader.resetButtonPressed();
-        encoders.checkSimpleStatus();
-	}
-
-    if (bootLoader.getButton() == 1) {
-    	bootLoader.welcome();
-
-        // Init state
-        uDelay(1000000);
-        usbKey.init(0,0,0,0);
-    	USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &USR_storage_desc, &USBD_MSC_cb, &storageUsrCallback);
-
-
-    	while (1) {
-    		if (readCpt >=0) {
-    			if (readCpt >= 99998) {
-    				lcd.setCursor(9,3);
-    				lcd.print('R');
-    			} else if (readCpt == 0) {
-    				lcd.setCursor(9,3);
-    				lcd.print(' ');
-    			}
-    			readCpt --;
-    		}
-    		if (writeCpt >=0) {
-    			if (writeCpt >= 99998) {
-    				lcd.setCursor(10,3);
-    				lcd.print('W');
-    			} else if (writeCpt == 0) {
-    				lcd.setCursor(10,3);
-    				lcd.print(' ');
-    			}
-    			writeCpt --;
-    		}
-        }
-    } else if (bootLoader.getButton() == 2) {
-        // Button... flash new firmware
-    	bootLoader.welcome();
-    	lcd.setCursor(4,2);
-    	lcd.print("USB upgrade");
-        uDelay(1000000);
-        // Init state
-        bootLoader.initKey();
-
-        while (1) {
-            bootLoader.resetButtonPressed();
-            encoders.checkStatus(0);
-            bootLoader.process();
-            USB_OTG_BSP_uDelay(1000);
-        }
-    } else if (bootLoader.getButton() == 3) {
-    	bootLoader.welcome();
-
-    	bootLoader.sysexMode();
-
-        while (1) {
-            bootLoader.resetButtonPressed();
-            encoders.checkStatus(0);
-            bootLoader.process();
-            USB_OTG_BSP_uDelay(1000);
-        }
-    } else if (bootLoader.getButton() == 4) {
-        // Button... flash new firmware
-    	bootLoader.welcome();
-    	lcd.setCursor(1,2);
-    	lcd.print("!STM32F4 USB DFU!");
-    	uint32_t magicRam = 0x2001BFF0;
-    	*(__IO uint32_t*)magicRam = 0x12344321;
-        pFunction jumpToBootloader  = (pFunction)*(__IO uint32_t*) 0x08000004;
-        RCC_DeInit();
-		__set_MSP(*(__IO uint32_t*) 0x08000000);
-		jumpToBootloader();
-    } else {
+    if (writeCpt >=0) {
+      lcd->setCursor(10,2);
+      if (writeCpt >= 99998) {
+	lcd->print('W');
+      } else if (writeCpt == 0) {
+	lcd->print(' ');
+      }
+      writeCpt --;
     }
+  }
 
-    while (1);
+  // Nuke if from orbit, its the only way to be sure...
+  USBD_DeInit(&usbOTGDevice);	// seems to be a NOP
+  usbOTGDevice.regs.DREGS->DCTL |= 0x02;
+}
+
+void BootLoader::doUSBUpgrade()
+{
+  welcome();
+  lcd->setCursor(4,2);
+  lcd->print("USB upgrade");
+  uDelay(1000000);
+
+  // Init state
+  initKey();
+
+  while (1) {
+    resetButtonPressed();
+    encoders.checkStatus(0);
+    process();
+    USB_OTG_BSP_uDelay(1000);
+  }
+}
+ 
+void BootLoader::doSysexUpgrade()
+{
+  welcome();
+  sysexMode();
+
+  while (1) {
+    resetButtonPressed();
+    encoders.checkStatus(0);
+    process();
+    USB_OTG_BSP_uDelay(1000);
+  }
+}
+
+void BootLoader::doDFU()
+{
+  welcome();
+  lcd->setCursor(1,2);
+  lcd->print("!STM32F4 USB DFU!");
+
+  uint32_t magicRam = 0x2001BFF0;
+  *(__IO uint32_t*)magicRam = 0x12344321;
+  pFunction jumpToBootloader  = (pFunction)*(__IO uint32_t*) 0x08000004;
+  RCC_DeInit();
+  __set_MSP(*(__IO uint32_t*) 0x08000000);
+  jumpToBootloader();
 }

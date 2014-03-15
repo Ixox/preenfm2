@@ -20,6 +20,7 @@
 
 #include <stdint.h>
 #include "EncodersListener.h"
+#include "Encoders.h"
 
 class LiquidCrystal;
 
@@ -71,6 +72,24 @@ private:
 	int firmwareSize;
 	uint32_t checkSum, checkSumReceived;
 	bool oneFirmwareAtLeast;
+	Encoders encoders;
+
+ public:
+
+	int waitForButton();
+	int checkButtons();
+	void waitForButtonRelease();
+
+	/**
+	 * Run main menu until button pressed
+	 * @return button that was pressed
+	 */
+	int doMainMenu();
+
+	void doUSBStorage();
+	void doUSBUpgrade();
+	void doSysexUpgrade();
+	void doDFU();
 
 };
 

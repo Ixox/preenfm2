@@ -45,8 +45,8 @@ void USBD_USR_DeviceReset(uint8_t speed )
 */
 void USBD_USR_DeviceConfigured (void)
 {
-	lcd.setCursor(0,2);
-	lcd.print("  Access USB Stick");
+  //	lcd.setCursor(0,2);
+  //	lcd.print("  Access USB Stick");
 }
 
 
