@@ -40,7 +40,7 @@ public:
 
 	void nextValueInMatrix();
 
-	inline void noteOn();
+	void noteOn();
 
 	void noteOff() {
 		// Nothing to do
