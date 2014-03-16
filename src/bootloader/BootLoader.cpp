@@ -37,6 +37,7 @@
 #define STM32_TICKS_PER_US          500
 #define STM32_DELAY_US_MULT         (STM32_TICKS_PER_US/3)
 
+#define BOOTLOADER_WORD 0x43211234
 
 UsbKey             usbKey ;
 RingBuffer<uint8_t, 100> usartBufferIn;
@@ -188,7 +189,7 @@ void BootLoader::process() {
 	case BL_FINISHED:
 		this->lcd->setCursor(0,3);
 		this->lcd->print("    Rebooting...    ");
-		uDelay(1000000);
+		uDelay(500000);
 		doReboot();
 		while (1);
 		break;
@@ -555,13 +556,15 @@ void BootLoader::waitForButtonRelease()
 }
 
 int main(void) {
+	uint32_t magicRam = 0x2001BFF0;
+
 	switchLedInit();
 	switchLedOn();
 
 	lcd.begin(20,4);
 	BootLoader bootLoader(&lcd);
 
-	if (bootLoader.getButton() == 0) {
+	if (bootLoader.getButton() == 0 && (*(__IO uint32_t*)magicRam != BOOTLOADER_WORD)) {
 		// App ready ?
 		pFunction Jump_To_Application;
 		uint32_t JumpAddress;
@@ -596,10 +599,15 @@ int main(void) {
 		}
 	}
 
+	*(__IO uint32_t*)magicRam = 0;
 	while ( true ) {
 		switch( bootLoader.doMainMenu() ) {
 		case 1: // ENG
 			bootLoader.doUSBStorage();
+			*(__IO uint32_t*)magicRam = BOOTLOADER_WORD;
+			// Instead of cleaning up, just restart from main menu
+			NVIC_SystemReset();
+			while(1);
 			break;
 		case 2: // Op
 			bootLoader.doUSBUpgrade();
@@ -616,18 +624,25 @@ int main(void) {
 		default:
 			break;
 		}
-
-		// Instead of cleaning up, just restart from main menu
-//		if ( !exit ) {
-//			NVIC_SystemReset();
-//			while(1);
-//		}
 	}
 
 }
 
 void BootLoader::doReboot() {
 	waitForButtonRelease();
+	int blinkCpt = 10;
+	int cpt = 0;
+	while (blinkCpt) {
+		cpt++;
+		if (cpt == 1000000) {
+			switchLedOff();
+		} else if (cpt == 2000000) {
+			switchLedOn();
+			cpt = 0;
+			blinkCpt--;
+		}
+	}
+
 	switchLedOff();
 	uDelay(100000);
 	__set_MSP(*(__IO uint32_t*) 0x08000000);
@@ -638,7 +653,7 @@ void BootLoader::doReboot() {
 void BootLoader::doUSBStorage()
 {
 	lcd->clear();
-	lcd->setCursor(0,1);
+	lcd->setCursor(0,0);
 	lcd->print("  Access USB Stick  ");
 
 	// Init state
@@ -646,6 +661,8 @@ void BootLoader::doUSBStorage()
 	usbKey.init(0,0,0,0);
 	USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &USR_storage_desc, &USBD_MSC_cb, &storageUsrCallback);
 
+	lcd->setCursor(0,2);
+	lcd->print("Unmount before exit" );
 	lcd->setCursor(3,3);
 	lcd->print("<-   Exit   ->" );
 	encoders.checkSimpleStatus();
@@ -655,7 +672,7 @@ void BootLoader::doUSBStorage()
 		encoders.checkSimpleStatus();
 
 		if (readCpt >=0) {
-			lcd->setCursor(9,2);
+			lcd->setCursor(9,1);
 			if (readCpt >= 9998) {
 				lcd->print('R');
 			} else if (readCpt == 0) {
@@ -664,7 +681,7 @@ void BootLoader::doUSBStorage()
 			readCpt --;
 		}
 		if (writeCpt >=0) {
-			lcd->setCursor(10,2);
+			lcd->setCursor(10,1);
 			if (writeCpt >= 9998) {
 				lcd->print('W');
 			} else if (writeCpt == 0) {
@@ -684,9 +701,11 @@ void BootLoader::doUSBStorage()
 void BootLoader::doUSBUpgrade()
 {
 	welcome();
-	lcd->setCursor(4,2);
-	lcd->print("USB upgrade");
+	lcd->setCursor(1,2);
+	lcd->print("Reading USB drive");
 	uDelay(1000000);
+	lcd->setCursor(1,2);
+	lcd->print("                    ");
 
 	// Init state
 	initKey();
