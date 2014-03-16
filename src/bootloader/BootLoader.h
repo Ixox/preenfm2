@@ -90,6 +90,7 @@ private:
 	void doUSBUpgrade();
 	void doSysexUpgrade();
 	void doDFU();
+	void doReboot();
 
 };
 

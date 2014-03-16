@@ -16,14 +16,14 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
   *
   ******************************************************************************
-  */ 
+  */
 
 
 
@@ -56,21 +56,21 @@ extern int writeCpt;
 
 int8_t STORAGE_Init (uint8_t lun);
 
-int8_t STORAGE_GetCapacity (uint8_t lun, 
-                           uint32_t *block_num, 
+int8_t STORAGE_GetCapacity (uint8_t lun,
+                           uint32_t *block_num,
                            uint16_t *block_size);
 
 int8_t  STORAGE_IsReady (uint8_t lun);
 
 int8_t  STORAGE_IsWriteProtected (uint8_t lun);
 
-int8_t STORAGE_Read (uint8_t lun, 
-                        uint8_t *buf, 
+int8_t STORAGE_Read (uint8_t lun,
+                        uint8_t *buf,
                         uint32_t blk_addr,
                         uint16_t blk_len);
 
-int8_t STORAGE_Write (uint8_t lun, 
-                        uint8_t *buf, 
+int8_t STORAGE_Write (uint8_t lun,
+                        uint8_t *buf,
                         uint32_t blk_addr,
                         uint16_t blk_len);
 
@@ -78,21 +78,21 @@ int8_t STORAGE_GetMaxLun (void);
 
 /* USB Mass storage Standard Inquiry Data */
 const int8_t  STORAGE_Inquirydata[] = {//36
-  
+
   /* LUN 0 */
-  0x00,		
-  0x80,		
-  0x02,		
+  0x00,
+  0x80,
+  0x02,
   0x02,
   (USBD_STD_INQUIRY_LENGTH - 5),
   0x00,
-  0x00,	
+  0x00,
   0x00,
   'I', 'X', 'O', 'X', ' ', ' ', ' ', ' ', /* Manufacturer : 8 bytes */
   'P', 'r', 'e', 'e', 'n', 'F', 'M', '2', /* Product      : 16 Bytes */
   ' ', 'S', 't', 'i', 'c', 'k', ' ', ' ',
   '1', '.', '0' ,'3',                     /* Version      : 4 Bytes */
-}; 
+};
 
 USBD_STORAGE_cb_TypeDef USBD_MICRO_SDIO_fops =
 {
@@ -104,7 +104,7 @@ USBD_STORAGE_cb_TypeDef USBD_MICRO_SDIO_fops =
   STORAGE_Write,
   STORAGE_GetMaxLun,
   STORAGE_Inquirydata,
-  
+
 };
 
 
@@ -171,12 +171,12 @@ int8_t  STORAGE_IsWriteProtected (uint8_t lun)
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-int8_t STORAGE_Read (uint8_t lun, 
-                 uint8_t *buf, 
-                 uint32_t blk_addr,                       
+int8_t STORAGE_Read (uint8_t lun,
+                 uint8_t *buf,
+                 uint32_t blk_addr,
                  uint16_t blk_len)
 {
-  readCpt = 100000;
+  readCpt = 10000;
   return usbKey.diskioRead(buf, blk_addr, blk_len);
 }
 /*******************************************************************************
@@ -186,12 +186,12 @@ int8_t STORAGE_Read (uint8_t lun,
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-int8_t STORAGE_Write (uint8_t lun, 
-                  uint8_t *buf, 
+int8_t STORAGE_Write (uint8_t lun,
+                  uint8_t *buf,
                   uint32_t blk_addr,
                   uint16_t blk_len)
 {
-	writeCpt = 100000;
+	writeCpt = 10000;
 	return usbKey.diskioWrite(buf, blk_addr, blk_len);
 }
 /*******************************************************************************
