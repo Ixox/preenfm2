@@ -93,7 +93,8 @@ Encoders::Encoders() {
 	for (int k=0; k<NUMBER_OF_BUTTONS; k++) {
 		buttonBit[k] = 1 << (buttonPins[k] -1);
 		buttonPreviousState[k] = false;
-		buttonTimer[k] = 16;
+		// > 30
+		buttonTimer[k] = 31;
 		buttonUsedFromSomethingElse[k] = false;
 	}
 
@@ -130,7 +131,7 @@ void Encoders::checkSimpleStatus() {
 		bool b1 = ((registerBits & buttonBit[k]) == 0);
 		// button is pressed
 		if (b1) {
-			if (buttonTimer[k] > 15) {
+			if (buttonTimer[k] > 30) {
 				buttonPressed(k);
 			}
 			buttonTimer[k]=0;
