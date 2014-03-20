@@ -1,6 +1,6 @@
 TODO (temporary list, grow over time) : 
-
-
+. Algo28 : IM2 shows up !
+. Patch and bank change by midi
 
 
 
