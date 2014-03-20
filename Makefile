@@ -88,7 +88,7 @@ SRC_FIRMWARE = src/PreenFM.cpp \
 	src/library/fat_fs/src/fattime.c  \
 	src/midipal/note_stack.cpp \
 	src/midipal/event_scheduler.cpp 
- 
+
 
 SRC_BOOTLOADER = src/bootloader/BootLoader.cpp \
 	src/bootloader/usb_storage_usr.c \
@@ -129,7 +129,7 @@ SRC_BOOTLOADER = src/bootloader/BootLoader.cpp \
 	src/library/STM32_USB_Device_Library/Class/msc/src/usbd_msc_data.c \
 	src/library/STM32_USB_Device_Library/Class/msc/src/usbd_msc_scsi.c \
 	src/library/STM32F4xx_StdPeriph_Driver/src/misc.c 
- 
+
 INCLUDESDIR = -I./src/third/ -I./src/library/STM32_USB_HOST_Library/Class/MSC/inc -I./src/library/STM32_USB_HOST_Library/Core/inc -I./src/library/STM32_USB_OTG_Driver/inc -I./src/library/fat_fs/inc -I./src/library/STM32_USB_Device_Library/Core/inc -I./src/library/STM32_USB_Device_Library/Class/midi/inc -I./src/library/STM32F4xx_StdPeriph_Driver/inc/ -I./src/library/CMSIS/Include/ -I./src/utils/ -I./src/hardware -I./src/usb -I./src/synth -I./src/midi -I./src/midipal -I./src -I./src/library/STM32_USB_Device_Library/Class/msc/inc
 SMALLBINOPTS = -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions  -Wl,--gc-sections  
 
@@ -229,14 +229,14 @@ $(BIN_FIRMWARE): $(ELF_FIRMWARE)
 $(BIN_FIRMWARE_O): $(ELF_FIRMWARE_O)
 	$(CP) -O binary $^ $(BIN_FIRMWARE_O)
 	ls -l $(BIN_FIRMWARE_O)
-	
+
 $(ELF_FIRMWARE): $(OBJ_FIRMWARE) $(STARTUP)
 	$(CC) $(LFLAGS) $^ -o $@
 	arm-none-eabi-nm -l -S -n $(ELF_FIRMWARE) > $(SYMBOLS_FIRMWARE) 
 	arm-none-eabi-readelf -S $(ELF_FIRMWARE)
 
 $(ELF_FIRMWARE_O): $(OBJ_FIRMWARE) $(STARTUP)
-	$(CC) $(LFLAGS) $^ -o $@
+	@$(CC) $(LFLAGS) $^ -o $@
 	arm-none-eabi-nm -l -S -n $(ELF_FIRMWARE_O) > $(SYMBOLS_FIRMWARE_O) 
 	arm-none-eabi-readelf -S $(ELF_FIRMWARE_O)
 
@@ -259,61 +259,80 @@ $(STARTUP_BOOTLOADER): linker_bootloader/startup_stm32f4xx.s
 
 
 build/%.o: src/%.c
-	$(CC) $(CFLAGS) $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) $< -o $@
 
 build/%.o: src/%.cpp
-	$(CC) $(CFLAGS) $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) $< -o $@
 
 build/%.o: src/bootloader/%.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) -fpermissive $< -o $@
 
 build/%.o: src/bootloader/%.cpp
-	$(CC) $(CFLAGS) $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) $< -o $@
 
 build/%.o: src/usb/%.cpp
-	$(CC) $(CFLAGS) $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) $< -o $@
 
 build/%.o: src/usb/%.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) -fpermissive $< -o $@
 
 build/%.o: src/third/%.c
-	$(CC) $(CFLAGS) $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) $< -o $@
 
 build/%.o: src/synth/%.cpp
-	$(CC) $(CFLAGS) $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) $< -o $@
 
 build/%.o: src/hardware/%.cpp
-	$(CC) $(CFLAGS) $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) $< -o $@
 
 build/%.o: src/midi/%.cpp
-	$(CC) $(CFLAGS) $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) $< -o $@
 
 build/%.o: src/utils/%.cpp
-	$(CC) $(CFLAGS) $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) $< -o $@
 
 build/%.o: src/library/STM32_USB_OTG_Driver/src/%.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) -fpermissive $< -o $@
 
 build/%.o: src/library/STM32_USB_HOST_Library/Core/src/%.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) -fpermissive $< -o $@
 
 build/%.o: src/library/STM32_USB_HOST_Library/Class/MSC/src/%.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) -fpermissive $< -o $@
 
 build/%.o: src/library/STM32_USB_Device_Library/Core/src/%.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) -fpermissive $< -o $@
 
 build/%.o: src/library/STM32_USB_Device_Library/Class/msc/src/%.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) -fpermissive $< -o $@
 
 build/%.o: src/library/STM32F4xx_StdPeriph_Driver/src/%.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) -fpermissive $< -o $@
 
 build/%.o: src/library/fat_fs/src/%.c
-	$(CC) $(CFLAGS) -fpermissive $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) -fpermissive $< -o $@
 
 build/%.o: src/midipal/%.cpp
-	$(CC) $(CFLAGS)  $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS)  $< -o $@
 
 
 clean:

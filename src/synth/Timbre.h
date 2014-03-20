@@ -340,7 +340,7 @@ private:
 
     // TO REFACTOR
     float ticksPerSecond;
-    const float calledPerSecond = PREENFM_FREQUENCY / 32.0f;
+    static const float calledPerSecond = PREENFM_FREQUENCY / 32.0f;
     float ticksEveryNCalls;
     int ticksEveyNCallsInteger;
 
