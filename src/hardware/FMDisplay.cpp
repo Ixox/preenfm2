@@ -206,6 +206,11 @@ void FMDisplay::printFloatWithSpace(float value) {
 bool FMDisplay::shouldThisValueShowUp(int row, int encoder) {
     int algo = this->synthState->params->engine1.algo;
     switch (row) {
+		case ROW_MODULATION1:
+			if (unlikely(encoder >= 2 && algoInformation[algo].im == 1)) {
+				return false;
+			}
+		break;
     	case ROW_MODULATION2:
 			if (unlikely(encoder >= 2 && algoInformation[algo].im == 3)) {
 				return false;
