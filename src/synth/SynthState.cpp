@@ -384,6 +384,7 @@ SynthState::SynthState() {
     fullState.midiConfigValue[MIDICONFIG_THROUGH] = 0;
     fullState.midiConfigValue[MIDICONFIG_RECEIVES] = 3;
     fullState.midiConfigValue[MIDICONFIG_SENDS] = 1;
+    fullState.midiConfigValue[MIDICONFIG_PROGRAM_CHANGE] = 1;
     fullState.midiConfigValue[MIDICONFIG_REALTIME_SYSEX] = 0;
     fullState.midiConfigValue[MIDICONFIG_BOOT_START] = 0;
     fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] = 60;
@@ -485,7 +486,7 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
 				break;
 			case BUTTON_MENUSELECT:
 				propagateNoteOff();
-				propagateBeforeNewParamsLoad();
+				propagateBeforeNewParamsLoad(currentTimbre);
 				propagateAfterNewComboLoad();
 				break;
 			}
@@ -792,9 +793,7 @@ void SynthState::encoderTurned(int encoder, int ticks) {
         		break;
         	case MENU_LOAD_SELECT_DX7_PRESET:
                 propagateNoteOff();
-                propagateBeforeNewParamsLoad();
-        		hexter->loadHexterPatch(storage->dx7LoadPatch(fullState.dx7Bank, fullState.menuSelect), params);
-                propagateAfterNewParamsLoad();
+                loadDx7Patch(currentTimbre, fullState.dx7Bank, fullState.menuSelect, params);
                 fullState.dx7PresetNumber = fullState.menuSelect;
                 break;
         	case MENU_LOAD_SELECT_BANK:
@@ -826,10 +825,9 @@ void SynthState::encoderTurned(int encoder, int ticks) {
         		}
         		break;
 			case MENU_LOAD_SELECT_BANK_PRESET:
-                propagateNoteOff();
-				propagateBeforeNewParamsLoad();
-				storage->loadPreenFMPatch(fullState.preenFMBank, fullState.menuSelect, params);
-				propagateAfterNewParamsLoad();
+			    propagateNoteOff();
+				loadPreenFMPatch(currentTimbre, fullState.preenFMBank, fullState.menuSelect, params);
+				break;
 			case MENU_SAVE_SELECT_BANK_PRESET:
                 fullState.preenFMPresetNumber = fullState.menuSelect;
                 break;
@@ -841,6 +839,60 @@ void SynthState::encoderTurned(int encoder, int ticks) {
             propagateNewMenuSelect();
         }
     }
+}
+
+void SynthState::loadPreenFMPatch(int timbre, BankFile const *bank, int patchNumber, struct OneSynthParams* params) {
+	propagateBeforeNewParamsLoad(timbre);
+	storage->loadPreenFMPatch(bank, patchNumber, params);
+	propagateAfterNewParamsLoad(timbre);
+}
+
+void SynthState::loadDx7Patch(int timbre, BankFile const *bank, int patchNumber, struct OneSynthParams* params) {
+	propagateBeforeNewParamsLoad(timbre);
+	hexter->loadHexterPatch(storage->dx7LoadPatch(bank, patchNumber), params);
+	propagateAfterNewParamsLoad(timbre);
+}
+
+void SynthState::loadPreenFMCombo(BankFile const *bank, int patchNumber) {
+	propagateBeforeNewParamsLoad(currentTimbre);
+	storage->loadPreenFMCombo(bank, patchNumber);
+	// Update and clean all timbres
+	this->currentTimbre = 0;
+	propagateNewTimbre(currentTimbre);
+	propagateAfterNewComboLoad();
+}
+
+
+void SynthState::loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int patchNumber, struct OneSynthParams* params) {
+	switch (bank) {
+	case 0:
+		{
+			BankFile const *bank = storage->getPreenFMBank(bankLSB);
+			if (bank->fileType != FILE_EMPTY) {
+				loadPreenFMPatch(timbre, bank, patchNumber, params);
+			}
+		}
+		break;
+	case 1:
+		{
+			BankFile const *bank = storage->getPreenFMCombo(bankLSB);
+			if (bank->fileType != FILE_EMPTY) {
+				loadPreenFMCombo(bank, patchNumber);
+			}
+		}
+		break;
+	case 2:
+	case 3:
+	case 4:
+		{
+			int dx7bank = bank - 2;
+			BankFile const *bank = storage->getDx7Bank(bankLSB + dx7bank * 128);
+			if (bank->fileType != FILE_EMPTY) {
+				loadDx7Patch(timbre, bank, patchNumber, params);
+			}
+		}
+		break;
+	}
 }
 
 
@@ -1219,25 +1271,14 @@ const MenuItem* SynthState::afterButtonPressed() {
     	fullState.dx7BankNumber = fullState.menuSelect;
     	break;
     case MENU_LOAD_SELECT_BANK_PRESET:
-        propagateBeforeNewParamsLoad();
-        storage->loadPreenFMPatch(fullState.preenFMBank, fullState.menuSelect, params);
         PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
-        propagateAfterNewParamsLoad();
         break;
     case MENU_LOAD_SELECT_COMBO_PRESET:
-        propagateBeforeNewParamsLoad();
-        storage->loadPreenFMCombo(fullState.preenFMCombo, fullState.menuSelect);
-        // Update and clean all timbres
-        this->currentTimbre = 0;
-        propagateNewTimbre(currentTimbre);
+    	loadPreenFMCombo(fullState.preenFMCombo, fullState.menuSelect);
         PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
-        propagateAfterNewComboLoad();
         break;
     case MENU_LOAD_SELECT_DX7_PRESET:
-    	// propagateBeforeNewParamsLoad();
-		// hexter->loadHexterPatch(storage->dx7LoadPatch(&fullState.dx7Bank, fullState.menuSelect), params);
 		PresetUtil::copySynthParams((char*)params, (char*)&backupParams);
-		// propagateAfterNewParamsLoad();
         break;
     case MENU_SAVE_SELECT_BANK_PRESET:
     	for (int k=0; k<12; k++) {
@@ -1523,18 +1564,14 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.menuSelect = fullState.preenFMComboPresetNumber;
         break;
     case MENU_LOAD_SELECT_BANK_PRESET:
-		propagateBeforeNewParamsLoad();
-		storage->loadPreenFMPatch(fullState.preenFMBank, fullState.preenFMPresetNumber, params);
-		propagateAfterNewParamsLoad();
+		loadPreenFMPatch(currentTimbre, fullState.preenFMBank, fullState.preenFMPresetNumber, params);
         fullState.menuSelect = fullState.preenFMPresetNumber;
         break;
     case MENU_LOAD_SELECT_COMBO_PRESET:
         fullState.menuSelect = fullState.preenFMComboPresetNumber;
         break;
     case MENU_LOAD_SELECT_DX7_PRESET:
-		propagateBeforeNewParamsLoad();
-		hexter->loadHexterPatch(storage->dx7LoadPatch(fullState.dx7Bank, fullState.dx7PresetNumber), params);
-		propagateAfterNewParamsLoad();
+        loadDx7Patch(currentTimbre, fullState.dx7Bank, fullState.dx7PresetNumber, params);
         fullState.menuSelect = fullState.dx7PresetNumber;
         break;
     case MENU_LOAD:
@@ -1593,22 +1630,22 @@ const MenuItem* SynthState::menuBack() {
     case MENU_LOAD_SELECT_BANK_PRESET:
         propagateNoteOff();
         fullState.menuSelect = fullState.preenFMBankNumber;
-        propagateBeforeNewParamsLoad();
+        propagateBeforeNewParamsLoad(currentTimbre);
         PresetUtil::copySynthParams((char*)&backupParams, (char*)params);
-        propagateAfterNewParamsLoad();
+        propagateAfterNewParamsLoad(currentTimbre);
         break;
     case MENU_LOAD_SELECT_COMBO_PRESET:
         fullState.menuSelect = fullState.preenFMComboNumber;
-        propagateBeforeNewParamsLoad();
+        propagateBeforeNewParamsLoad(currentTimbre);
         PresetUtil::copySynthParams((char*)&backupParams, (char*)params);
-        propagateAfterNewParamsLoad();
+        propagateAfterNewParamsLoad(currentTimbre);
         break;
     case MENU_LOAD_SELECT_DX7_PRESET:
         propagateNoteOff();
         fullState.menuSelect = fullState.dx7BankNumber;
-        propagateBeforeNewParamsLoad();
+        propagateBeforeNewParamsLoad(currentTimbre);
         PresetUtil::copySynthParams((char*)&backupParams, (char*)params);
-        propagateAfterNewParamsLoad();
+        propagateAfterNewParamsLoad(currentTimbre);
         break;
     case MENU_SAVE_SYSEX_BANK_CONFIRM_OVERRIDE:
     case MENU_SAVE_ENTER_NEW_SYSEX_BANK_NAME:
@@ -1654,9 +1691,9 @@ void SynthState::newSysexBankReady() {
 
 
 
-void SynthState::propagateAfterNewParamsLoad() {
+void SynthState::propagateAfterNewParamsLoad(int timbre) {
    for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-	   listener->afterNewParamsLoad(currentTimbre);
+	   listener->afterNewParamsLoad(timbre);
    }
 }
 

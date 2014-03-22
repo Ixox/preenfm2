@@ -146,6 +146,10 @@ private:
     uint8_t *usbBufRead;
     uint8_t *usbBufWrite;
     int sysexIndex;
+
+    // int bank number
+    char bankNumber[NUMBER_OF_TIMBRES];
+    char bankNumberLSB[NUMBER_OF_TIMBRES];
 };
 
 #endif /* MIDIDECODER_H_ */

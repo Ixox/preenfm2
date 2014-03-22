@@ -293,7 +293,6 @@ void Synth::afterNewParamsLoad(int timbre) {
     rebuidVoiceTimbre();
     updateNumberOfActiveTimbres();
     timbres[timbre].numberOfVoicesChanged();
-
 }
 
 void Synth::afterNewComboLoad() {
@@ -531,6 +530,10 @@ void Synth::refreshNumberOfOsc() {
         int nv = timbres[t].params.engine1.numberOfVoice + .0001f;
 		this->numberOfOsc += algoInformation[(int)timbres[t].params.engine1.algo].osc * nv;
     }
+}
+
+void Synth::loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int patchNumber) {
+	this->synthState->loadPreenFMPatchFromMidi(timbre, bank, bankLSB, patchNumber, &timbres[timbre].params);
 }
 
 

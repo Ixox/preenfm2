@@ -391,9 +391,9 @@ public:
 	}
 
 
-	void propagateBeforeNewParamsLoad() {
+	void propagateBeforeNewParamsLoad(int timbre) {
         for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-            listener->beforeNewParamsLoad(currentTimbre);
+            listener->beforeNewParamsLoad(timbre);
         }
     }
 
@@ -436,7 +436,7 @@ public:
     	}
     }
 
-    void propagateAfterNewParamsLoad();
+    void propagateAfterNewParamsLoad(int timbre);
     void propagateAfterNewComboLoad();
     void propagateNewTimbre(int timbre);
 
@@ -459,6 +459,10 @@ public:
     bool getIsPlayingNote() {
     	return isPlayingNote;
     }
+	void loadPreenFMPatch(int timbre, BankFile const *bank, int patchNumber, struct OneSynthParams* params);
+	void loadDx7Patch(int timbre, BankFile const *bank, int patchNumber, struct OneSynthParams* params);
+	void loadPreenFMCombo(BankFile const *bank, int patchNumber);
+	void loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int patchNumber, struct OneSynthParams* params);
 
     int currentTimbre;
     struct OneSynthParams *params;

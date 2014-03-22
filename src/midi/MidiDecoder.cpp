@@ -68,7 +68,10 @@ MidiDecoder::MidiDecoder() {
     this->runningStatus = 0;
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
     	omniOn[t] = false;
+        bankNumber[t] = 0;
+        bankNumberLSB[t] = 0;
     }
+
     usbBufRead = usbBuf;
     usbBufWrite = usbBuf;
     sysexIndex = 0;
@@ -308,11 +311,11 @@ void MidiDecoder::midiEventReceived(MidiEvent midiEvent) {
         }
         break;
     case MIDI_PROGRAM_CHANGE:
-        // Programm change
-		//        this->synthState->propagateBeforeNewParamsLoad();
-		//        storage->loadPreenFMPatch(this->synthState->fullState.preenFMBank, midiEvent.value[0], this->synthState->params);
-		//        this->synthState->propagateAfterNewParamsLoad();
-		//        this->synthState->resetDisplay();
+    	if (this->synthState->fullState.midiConfigValue[MIDICONFIG_PROGRAM_CHANGE]) {
+			for (int tk = 0; tk< timbreIndex; tk++ ) {
+				this->synth->loadPreenFMPatchFromMidi(timbres[tk], bankNumber[timbres[tk]], bankNumberLSB[timbres[tk]], midiEvent.value[0]);
+			}
+    	}
         break;
     case MIDI_SONG_POSITION:
         this->songPosition = ((int) midiEvent.value[1] << 7) + midiEvent.value[0];
@@ -328,8 +331,10 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
     // the following one should always been received...
     switch (midiEvent.value[0]) {
     case CC_BANK_SELECT:
+    	bankNumber[timbre] = midiEvent.value[1];
+    	break;
     case CC_BANK_SELECT_LSB:
-        // Not implemented...
+    	bankNumberLSB[timbre] = midiEvent.value[1];
         break;
     case CC_MODWHEEL:
         this->synth->getTimbre(timbre)->getMatrix()->setSource(MATRIX_SOURCE_MODWHEEL, INV127 * midiEvent.value[1]);

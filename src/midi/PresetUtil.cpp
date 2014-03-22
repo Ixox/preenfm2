@@ -356,9 +356,9 @@ int PresetUtil::readSysex(bool patchAllowed, bool bankAllowed) {
                     index = -errorCode;
                     bError = true;
                 } else {
-                    PresetUtil::synthState->propagateBeforeNewParamsLoad();
+                    PresetUtil::synthState->propagateBeforeNewParamsLoad(0);
                     PresetUtil::convertCharArrayToSynthState(sysexTmpMem, PresetUtil::synthState->params);
-                    PresetUtil::synthState->propagateAfterNewParamsLoad();
+                    PresetUtil::synthState->propagateAfterNewParamsLoad(0);
                     PresetUtil::synthState->resetDisplay();
                 }
             } else if (sysexType == SYSEX_PREENFM2_BANK) {
@@ -375,9 +375,9 @@ int PresetUtil::readSysex(bool patchAllowed, bool bankAllowed) {
                     index = -errorCode;
                     bError = true;
                 } else {
-                    PresetUtil::synthState->propagateBeforeNewParamsLoad();
+                    PresetUtil::synthState->propagateBeforeNewParamsLoad(0);
                     PresetUtil::convertPFM1CharArrayToSynthState(sysexTmpMem, PresetUtil::synthState->params, true);
-                    PresetUtil::synthState->propagateAfterNewParamsLoad();
+                    PresetUtil::synthState->propagateAfterNewParamsLoad(0);
                     PresetUtil::synthState->resetDisplay();
                 }
             } else if (sysexType == SYSEX_PREENFM1_BANK) {

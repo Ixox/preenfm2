@@ -836,36 +836,36 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
 		break;
 	case MENU_LOAD_SELECT_BANK_PRESET:
 	case MENU_LOAD_SELECT_DX7_PRESET:
-		displayPatchSelect(fullState->menuSelect + 1, this->synthState->params->presetName);
+		displayPatchSelect(fullState->menuSelect, this->synthState->params->presetName);
 		break;
 	case MENU_SAVE_SELECT_BANK_PRESET:
-		displayPatchSelect(fullState->menuSelect + 1, storage->loadPreenFMPatchName(fullState->preenFMBank, fullState->menuSelect));
+		displayPatchSelect(fullState->menuSelect, storage->loadPreenFMPatchName(fullState->preenFMBank, fullState->menuSelect));
 		break;
 	case MENU_LOAD_SELECT_COMBO_PRESET:
 	case MENU_SAVE_SELECT_COMBO_PRESET:
-		displayPatchSelect(fullState->menuSelect + 1, storage->loadPreenFMComboName(fullState->preenFMCombo, fullState->menuSelect));
+		displayPatchSelect(fullState->menuSelect, storage->loadPreenFMComboName(fullState->preenFMCombo, fullState->menuSelect));
 		break;
 	case MENU_LOAD_SELECT_DX7_BANK:
-		displayBankSelect(fullState->menuSelect + 1, (fullState->dx7Bank->fileType != FILE_EMPTY), fullState->dx7Bank->name);
+		displayBankSelect(fullState->menuSelect, (fullState->dx7Bank->fileType != FILE_EMPTY), fullState->dx7Bank->name);
 		break;
 	case MENU_SAVE_SELECT_BANK:
-		displayBankSelect(fullState->menuSelect + 1, (fullState->preenFMBank->fileType == FILE_OK), fullState->preenFMBank->name);
+		displayBankSelect(fullState->menuSelect, (fullState->preenFMBank->fileType == FILE_OK), fullState->preenFMBank->name);
 		break;
 	case MENU_RENAME_SELECT_BANK:
 	case MENU_SAVE_SYSEX_BANK:
-		displayBankSelect(fullState->menuSelect + 1, (storage->getPreenFMBank(fullState->menuSelect)->fileType != FILE_EMPTY), storage->getPreenFMBank(fullState->menuSelect)->name);
+		displayBankSelect(fullState->menuSelect, (storage->getPreenFMBank(fullState->menuSelect)->fileType != FILE_EMPTY), storage->getPreenFMBank(fullState->menuSelect)->name);
 		break;
 	case MENU_LOAD_SELECT_BANK:
-		displayBankSelect(fullState->menuSelect + 1, (fullState->preenFMBank->fileType != FILE_EMPTY), fullState->preenFMBank->name);
+		displayBankSelect(fullState->menuSelect, (fullState->preenFMBank->fileType != FILE_EMPTY), fullState->preenFMBank->name);
 		break;
 	case MENU_RENAME_SELECT_COMBO:
-		displayBankSelect(fullState->menuSelect + 1, (storage->getPreenFMCombo(fullState->menuSelect)->fileType != FILE_EMPTY), storage->getPreenFMCombo(fullState->menuSelect)->name);
+		displayBankSelect(fullState->menuSelect, (storage->getPreenFMCombo(fullState->menuSelect)->fileType != FILE_EMPTY), storage->getPreenFMCombo(fullState->menuSelect)->name);
 		break;
 	case MENU_SAVE_SELECT_COMBO:
-		displayBankSelect(fullState->menuSelect + 1, (fullState->preenFMCombo->fileType == FILE_OK), fullState->preenFMCombo->name);
+		displayBankSelect(fullState->menuSelect, (fullState->preenFMCombo->fileType == FILE_OK), fullState->preenFMCombo->name);
 		break;
 	case MENU_LOAD_SELECT_COMBO:
-		displayBankSelect(fullState->menuSelect + 1, (fullState->preenFMCombo->fileType != FILE_EMPTY), fullState->preenFMCombo->name);
+		displayBankSelect(fullState->menuSelect, (fullState->preenFMCombo->fileType != FILE_EMPTY), fullState->preenFMCombo->name);
 		break;
 	case MENU_DONE:
 		lcd->clear();
@@ -1025,6 +1025,15 @@ void FMDisplay::tempoClick() {
 	}
 }
 
+void FMDisplay::afterNewParamsLoad(int timbre) {
+    presetModifed[timbre] = false;
+	if (currentTimbre == timbre && this->synthState->fullState.synthMode == SYNTH_MODE_EDIT && !screenSaverMode) {
+		lcd->clearActions();
+		lcd->clear();
+		displayPreset();
+		refreshStatus = 12;
+	}
+}
 
 bool FMDisplay::wakeUpFromScreenSaver() {
 	if (unlikely(screenSaverMode)) {

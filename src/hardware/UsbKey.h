@@ -36,7 +36,6 @@ extern USBH_HOST                    usbHost;
 #define DX7_DIR                  "0:/pfm2/dx7"
 #define PREENFM_DIR              "0:/pfm2"
 
-#define PFM_PATCH_SIZE sizeof(struct OneSynthParams)
 #define USB_PATCH_SIZE 1024
 #define USB_PATCH_ZERO USB_PATCH_SIZE-PFM_PATCH_SIZE
 

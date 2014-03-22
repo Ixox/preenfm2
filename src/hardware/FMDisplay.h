@@ -119,9 +119,9 @@ public:
 
 
     void beforeNewParamsLoad(int timbre) { };
-    void afterNewParamsLoad(int timbre) {
-        presetModifed[timbre] = false;
-    }
+    void afterNewParamsLoad(int timbre);
+
+
     void afterNewComboLoad() {
         for (int k=0; k<4; k++) {
             presetModifed[k] = false;

@@ -151,6 +151,12 @@ void setup() {
 
     bool displayline1 = true;
     for (int r=0; r<20; r++) {
+    	if (r<10 && (r & 0x1) == 0) {
+			GPIO_SetBits(GPIOB, GPIO_Pin_6);
+    	} else {
+    		GPIO_ResetBits(GPIOB, GPIO_Pin_6);
+    	}
+
     	switch (r) {
     	case 0:
         	synth.noteOn(0, 40, 120);

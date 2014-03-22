@@ -88,6 +88,12 @@ const struct MidiConfig midiConfig[]  = {
                 midiSends
         },
         {
+                "Program ch: ",
+                "programchange",
+                2,
+                yesNo
+        },
+        {
                 "R.Time SysEx: ",
                 "realtimesysex",
                 2,
