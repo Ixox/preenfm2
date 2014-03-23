@@ -108,9 +108,6 @@ void setup() {
     fmDisplay.setSynthState(&synthState);
     midiDecoder.setSynthState(&synthState);
     midiDecoder.setVisualInfo(&fmDisplay);
-    PresetUtil::setSynthState(&synthState);
-    PresetUtil::setStorage(&usbKey);
-    PresetUtil::setMidiDecoder(&midiDecoder);
     midiDecoder.setSynth(&synth);
     midiDecoder.setStorage(&usbKey);
 
@@ -134,6 +131,7 @@ void setup() {
     synthState.setHexter(&hexter);
 
     usbKey.init(synth.getTimbre(0)->getParamRaw(), synth.getTimbre(1)->getParamRaw(), synth.getTimbre(2)->getParamRaw(), synth.getTimbre(3)->getParamRaw());
+    usbKey.setSysexSender(&midiDecoder);
     // usbKey and hexter needs to know if arpeggiator must be loaded and saved
     usbKey.setArpeggiatorPartOfThePreset(&synthState.fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET]);
     hexter.setArpeggiatorPartOfThePreset(&synthState.fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET]);

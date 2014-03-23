@@ -94,12 +94,6 @@ const struct MidiConfig midiConfig[]  = {
                 yesNo
         },
         {
-                "R.Time SysEx: ",
-                "realtimesysex",
-                2,
-                yesNo
-        },
-        {
                 "Boot: ",
                 "boot",
                 4,
@@ -170,8 +164,8 @@ const struct MenuItem allMenus[]  = {
                 MENU_LOAD,
                 "Load",
                 true,
-                4,
-                {MENU_LOAD_SELECT_BANK, MENU_LOAD_SELECT_COMBO, MENU_LOAD_SELECT_DX7_BANK, MENU_MIDI_SYSEX_GET}
+                3,
+                {MENU_LOAD_SELECT_BANK, MENU_LOAD_SELECT_COMBO, MENU_LOAD_SELECT_DX7_BANK}
         },
         {
                 MENU_LOAD_SELECT_BANK,
@@ -215,20 +209,13 @@ const struct MenuItem allMenus[]  = {
                 32,
                 {MENU_DONE}
         },
-        {
-                MENU_MIDI_SYSEX_GET,
-                "SyX",
-                false,
-                0,
-                {MENU_DONE}
-        },
         // === SAVE
         {
                 MENU_SAVE,
                 "Save",
                 true,
                 4,
-                {MENU_SAVE_SELECT_BANK, MENU_SAVE_SELECT_COMBO, MENU_DEFAULT_COMBO, MENU_SAVE_SYSEX }
+                {MENU_SAVE_SELECT_BANK, MENU_SAVE_SELECT_COMBO, MENU_DEFAULT_COMBO, MENU_SAVE_SYSEX_PATCH }
         },
         {
                 MENU_SAVE_SELECT_BANK,
@@ -295,29 +282,8 @@ const struct MenuItem allMenus[]  = {
         },
         // === SYSEX
         {
-                MENU_SAVE_SYSEX,
-                "SyX",
-                true,
-                2,
-                {MENU_SAVE_SYSEX_PATCH, MENU_SAVE_SYSEX_BANK}
-        },
-        {
-                MENU_MIDI_PATCH_GET,
-                "Patch",
-                false,
-                0,
-                {MENU_DONE}
-        },
-        {
-                MENU_SAVE_SYSEX_BANK,
-                "Bank",
-                false,
-                32,
-                {MENU_DONE}
-        },
-        {
                 MENU_SAVE_SYSEX_PATCH,
-                "Patch",
+                "SyX",
                 false,
                 0,
                 {MENU_DONE}
@@ -439,22 +405,5 @@ const struct MenuItem allMenus[]  = {
                 8,
                 {MENU_DONE}
         },
-
-        // ==================== SAVE NEW SYSEX BANK
-        {
-                MENU_SAVE_ENTER_NEW_SYSEX_BANK_NAME,
-                "New Bank Name?",
-                false,
-                8,
-                {MENU_DONE}
-        },
-        {
-        		MENU_SAVE_SYSEX_BANK_CONFIRM_OVERRIDE,
-        		"Erase Existing Bank?",
-        		false,
-        		1,
-        		{MENU_DONE}
-
-        }
 };
 

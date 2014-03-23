@@ -21,6 +21,7 @@
 #define __STORAGE_H__
 
 #include "Common.h"
+#include "SysexSender.h"
 
 enum FILE_ENUM {
     DEFAULT_COMBO = 0,
@@ -106,6 +107,7 @@ public:
     virtual void init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4);
 
 #ifndef BOOTLOADER
+    void setSysexSender(SysexSender* sysexSender) { this->sysexSender = sysexSender; }
     void setArpeggiatorPartOfThePreset(char *pointer) { arpeggiatorPartOfThePreset = pointer; }
     void saveDefaultCombo();
     bool loadDefaultCombo();
@@ -115,7 +117,6 @@ public:
     void loadConfig(char* midiConfigBytes);
     void saveConfig(const char* midiConfigBytes);
 
-    void saveBank(const char* newBankName, const uint8_t* sysexTmpMem);
     bool bankNameExist(const char* bankName);
     int bankBaseLength(const char* bankName);
     bool comboNameExist(const char* comboName);
@@ -127,6 +128,8 @@ public:
     void loadPreenFMPatch(const struct BankFile* bank, int patchNumber, struct OneSynthParams *params);
     const char* loadPreenFMPatchName(const struct BankFile* bank, int patchNumber);
     void savePreenFMPatch(const struct BankFile* bank, int patchNumber, const struct OneSynthParams *params);
+    void sendPreenFMPatchAsSysex(const struct OneSynthParams *params);
+    void decodeBufferAndApplyPreset(uint8_t* buffer, struct OneSynthParams *params);
 
     virtual const struct BankFile* getPreenFMCombo(int comboNumber) = 0;
     void loadPreenFMCombo(const struct BankFile* combo, int comboNumber);
@@ -149,9 +152,9 @@ private:
     virtual const char* getDX7BankFullName(const char* bankName) = 0;
     virtual const char* getPreenFMFullName(const char* bankName) = 0;
     void dx7patchUnpack(uint8_t *packed_patch, uint8_t *unpacked_patch);
-    void  __attribute__ ((noinline)) copyFloat(float* source, float* dest, int n);
-    void  __attribute__ ((noinline)) convertParamsToMemory(const struct OneSynthParams* params, struct FlashSynthParams* memory, bool saveArp);
-    void  __attribute__ ((noinline)) convertMemoryToParams(const struct FlashSynthParams* memory, struct OneSynthParams* params, bool loadArp);
+    void copyFloat(float* source, float* dest, int n);
+    void convertParamsToMemory(const struct OneSynthParams* params, struct FlashSynthParams* memory, bool saveArp);
+    void convertMemoryToParams(const struct FlashSynthParams* memory, struct OneSynthParams* params, bool loadArp);
 
     // String util to read setting file
     int getLine(char* file, char* line);
@@ -178,7 +181,7 @@ private:
     char *arpeggiatorPartOfThePreset;
     char presetName[13];
     struct OneSynthParams* timbre[4];
-
+    SysexSender* sysexSender;
 };
 
 #endif /*__STORAGE_H__*/

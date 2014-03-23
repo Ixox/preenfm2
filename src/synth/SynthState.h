@@ -23,7 +23,6 @@
 #include "SynthParamListener.h"
 #include "SynthParamChecker.h"
 #include "SynthMenuListener.h"
-#include "PresetUtil.h"
 #include "Menu.h"
 #include "Storage.h"
 
@@ -40,8 +39,6 @@
 #define BUTTON_DUMP   0
 
 
-#define NUMBER_OF_ENCODERS 4
-#define NUMBER_OF_BUTTONS 8
 
 
 enum {
@@ -271,17 +268,6 @@ enum EventState {
 	MIDI_EVENT_COMPLETE
 };
 
-struct MidiEventState {
-    EventState eventState;
-    unsigned char numberOfBytes;
-    unsigned char index;
-};
-
-struct MidiEvent {
-	unsigned char channel;
-	EventType eventType;
-	unsigned char value[2];
-};
 
 class Hexter;
 
@@ -305,6 +291,7 @@ public:
 	void setNewValue(int timbre, int row, int encoder, float newValue);
 	void setNewStepValue(int timbre, int whichStepSeq, int step, int newValue);
 
+	void analyseSysexBuffer(uint8_t *buffer);
 
 	const MenuItem* afterButtonPressed();
 	const MenuItem* menuBack();
@@ -472,6 +459,7 @@ public:
 	char stepSelect[2];
 
 private:
+	void copySynthParams(char* source, char* dest);
 	int getRowFromOperator();
 	bool isCurrentRowAvailable();
 	bool isEnterNameState(int currentItme);

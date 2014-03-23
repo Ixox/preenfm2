@@ -74,7 +74,9 @@ void Synth::allNoteOff(int timbre) {
     for (int k = 0; k < numberOfVoices; k++) {
         // voice number k of timbre
         int n = timbres[timbre].voiceNumber[k];
-        voices[n].noteOff();
+        if (voices[n].isPlaying() && !voices[n].isReleased()) {
+        	voices[n].noteOff();
+        }
     }
 }
 
@@ -572,10 +574,10 @@ void Synth::debugVoice() {
         lcd.setCursor(4, k);
         lcd.print((int)voices[n].getNextPendingNote());
 
-        lcd.setCursor(12, k);
+        lcd.setCursor(18, k);
         lcd.print((int)voices[n].getIndex());
 
-        lcd.setCursor(17, k);
+        lcd.setCursor(18, k);
         lcd.print((int) voices[n].isReleased());
 		lcd.print((int) voices[n].isPlaying());
     }

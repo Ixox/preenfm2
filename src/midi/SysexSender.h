@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Xavier Hosxe
+ * Copyright 2014 Xavier Hosxe
  *
  * Author: Xavier Hosxe (xavier . hosxe (at) gmail . com)
  *
@@ -15,17 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef SYSEXSENDER_H_
+#define SYSEXSENDER_H_
 
-#ifndef SYNTHPARAMCHECKER_H_
-#define SYNTHPARAMCHECKER_H_
 
 
-class SynthParamChecker {
+class SysexSender
+{
 public:
-	virtual ~SynthParamChecker() {};
-    virtual void checkNewParamValue(int timbre, int currentRow, int encoder, float oldValue, float *newValue) = 0;
+	virtual ~SysexSender() {};
 
-    SynthParamChecker* nextChecker;
+	virtual void sendSysexByte(uint8_t byte) = 0;
+	virtual void sendSysexFinished() = 0;
 };
 
-#endif /* SYNTHPARAMCHECKER_H_ */
+#endif /* SYSEXSENDER_H_ */

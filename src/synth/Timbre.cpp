@@ -180,12 +180,12 @@ void Timbre::noteOff(char note) {
 int cptHighNote = 0;
 
 void Timbre::preenNoteOn(char note, char velocity) {
-	if (unlikely(note <= 12 || note  > 110)) {
+	if (unlikely(note < 10)) {
 		return;
 	}
 
 	int iNov = (int) params.engine1.numberOfVoice;
-	if (unlikely(params.engine1.numberOfVoice == 0)) {
+	if (unlikely(iNov == 0)) {
 		return;
 	}
 
@@ -198,7 +198,7 @@ void Timbre::preenNoteOn(char note, char velocity) {
 		// voice number k of timbre
 		int n = voiceNumber[k];
 
-#ifdef DEBUG
+#ifdef DEBUG_VOICE
     	if (unlikely(n<0)) {
     		lcd.setRealTimeAction(true);
     		lcd.clear();
@@ -225,6 +225,14 @@ void Timbre::preenNoteOn(char note, char velocity) {
 
 		// same note = priority 1 : take the voice immediatly
 		if (unlikely(voices[n]->isPlaying() && voices[n]->getNote() == note)) {
+#ifdef DEBUG_VOICE
+		lcd.setRealTimeAction(true);
+		lcd.setCursor(16,1);
+		lcd.print(cptHighNote++);
+		lcd.setCursor(16,2);
+		lcd.print("S:");
+		lcd.print(n);
+#endif
 			voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++);
 			return;
 		}
@@ -313,9 +321,13 @@ void Timbre::preenNoteOff(char note) {
 					voices[n]->noteOff();
 					return;
 				}
-
 			}
 		} else {
+	        	lcd.setRealTimeAction(true);
+	        	lcd.clear();
+	        	lcd.setCursor(0,0);
+	        	lcd.print("Gliding");
+
 			// if gliding and releasing first note
 			if (voices[n]->getNote() == note) {
 				voices[n]->glideFirstNoteOff();

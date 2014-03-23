@@ -188,6 +188,9 @@ void Voice::glideFirstNoteOff() {
 }
 
 void Voice::noteOff() {
+	if (unlikely(!this->playing)) {
+		return;
+	}
 	this->released = true;
 	this->nextPendingNote = 0;
 	this->gliding = false;

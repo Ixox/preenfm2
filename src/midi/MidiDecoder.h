@@ -19,6 +19,7 @@
 #define MIDIDECODER_H_
 
 #include "SynthStateAware.h"
+#include "SysexSender.h"
 #include "Synth.h"
 #include "RingBuffer.h"
 #include "VisualInfo.h"
@@ -28,6 +29,20 @@
 
 // number of external control change
 #define NUMBER_OF_ECC 4
+
+
+struct MidiEventState {
+    EventState eventState;
+    uint8_t numberOfBytes;
+    uint16_t index;
+};
+
+struct MidiEvent {
+	unsigned char channel;
+	EventType eventType;
+	unsigned char value[2];
+};
+
 
 enum AllControlChange {
     CC_BANK_SELECT = 0,
@@ -89,7 +104,7 @@ struct Nrpn {
 
 
 
-class MidiDecoder : public SynthParamListener, public SynthStateAware
+class MidiDecoder : public SynthParamListener, public SynthStateAware, public SysexSender
 {
 public:
     MidiDecoder();
@@ -114,15 +129,14 @@ public:
     void showAlgo() {}
 
     void sendMidiCCOut(struct MidiEvent *toSend, bool flush);
-    void sendSysexByte(uint8_t byte);
-    void sendSysexFinished();
     void flushMidiOut();
-    void sendToExternalGear(int enumber);
-    void readSysex();
     void playNote(int timbre, char note, char velocity) {}
     void stopNote(int timbre, char note) {}
     void newTimbre(int timbre) {}
 
+    // Sysex sender
+    void sendSysexByte(uint8_t byte);
+    void sendSysexFinished();
 
 private:
     struct MidiEventState currentEventState;

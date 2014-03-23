@@ -27,6 +27,11 @@ extern USB_OTG_CORE_HANDLE          usbOTGDevice;
 
 #define INV127 .00787401574803149606f
 
+// Let's have sysexBuffer in regular RAM.
+#define SYSEX_BUFFER_SIZE 1024
+uint8_t sysexBuffer[SYSEX_BUFFER_SIZE];
+
+
 #ifdef LCDDEBUG
 
 #include "LiquidCrystal.h"
@@ -138,44 +143,37 @@ void MidiDecoder::newByte(unsigned char byte) {
             break;
         }
     } else {
-        if (currentEventState.eventState == MIDI_EVENT_WAITING && byte >= 0x80) {
-        	// Running status is cleared later in newMEssageType() if byte >= 0xF0
-            this->runningStatus = byte;
-            newMessageType(byte);
-        } else if (currentEventState.eventState == MIDI_EVENT_WAITING && byte < 0x80) {
-            // midi source use running status...
-            if (this->runningStatus > 0) {
-                newMessageType(this->runningStatus);
-                newMessageData(byte);
-            }
-        } else if (currentEventState.eventState == MIDI_EVENT_IN_PROGRESS) {
-            newMessageData(byte);
-        } else if (currentEventState.eventState == MIDI_EVENT_SYSEX) {
-            if (byte == MIDI_SYSEX_END) {
-                currentEventState.eventState = MIDI_EVENT_WAITING;
-                currentEventState.index = 0;
-            } else if (currentEventState.index == 0) {
-
-                currentEventState.index = 1;
-                // Do something for non commercial sysex We assume it's for us !
-                if (byte == 0x7d) {
-                    // System exclusive
-                    // Allow patch if real time allowed OR if currenly waiting for sysex
-                    // Allow bank if currently waiting for sysex only
-                    bool waitingForSysex = this->synthState->fullState.currentMenuItem->menuState == MENU_MIDI_SYSEX_GET;
-                    bool realTimeSysexAllowed = this->synthState->fullState.midiConfigValue[MIDICONFIG_REALTIME_SYSEX] == 1;
-                    int r = PresetUtil::readSysex(realTimeSysexAllowed || waitingForSysex, waitingForSysex);
-                    currentEventState.eventState = MIDI_EVENT_WAITING;
-                    currentEventState.index = 0;
-                    if (r == 2) {
-                        this->synthState->newSysexBankReady();
-                    }
-                }
+    	switch (currentEventState.eventState) {
+    	case MIDI_EVENT_WAITING:
+            if (byte >= 0x80) {
+            	// Running status is cleared later in newMEssageType() if byte >= 0xF0
+                this->runningStatus = byte;
+                newMessageType(byte);
             } else {
-                // We do nothing !
-                // consume sysex message till the end !
+                // midi source use running status...
+                if (this->runningStatus > 0) {
+                    newMessageType(this->runningStatus);
+                    newMessageData(byte);
+                }
             }
-        }
+            break;
+    	case MIDI_EVENT_IN_PROGRESS:
+            newMessageData(byte);
+            break;
+    	case MIDI_EVENT_SYSEX:
+			if (currentEventState.index < SYSEX_BUFFER_SIZE) {
+				sysexBuffer[currentEventState.index++] = byte;
+			}
+			if (byte == MIDI_SYSEX_END) {
+				if (currentEventState.index < SYSEX_BUFFER_SIZE) {
+					// End of sysex =>Analyse Sysex
+					this->synthState->analyseSysexBuffer(sysexBuffer);
+				}
+				currentEventState.eventState = MIDI_EVENT_WAITING;
+				currentEventState.index = 0;
+			}
+			break;
+    	}
     }
 }
 
@@ -212,6 +210,7 @@ void MidiDecoder::newMessageType(unsigned char byte) {
         switch (byte)  {
         case MIDI_SYSEX:
             currentEventState.eventState = MIDI_EVENT_SYSEX;
+			currentEventState.index = 0;
             break;
         case MIDI_SONG_POSITION:
             currentEvent.eventType = MIDI_SONG_POSITION;
@@ -444,7 +443,7 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
         case CC_MATRIX_SOURCE_CC4:
             // cc.value[1] = newValue * 5.0f + 50.1f;
             this->synth->setNewValueFromMidi(timbre, ROW_PERFORMANCE1,  midiEvent.value[0] - CC_MATRIX_SOURCE_CC1,
-                                (float)midiEvent.value[1] * INV127);
+                                (float)(midiEvent.value[1] -64) * INV127 * 2.0 );
                                     break;
 
             break;
@@ -523,7 +522,8 @@ void MidiDecoder::decodeNrpn(int timbre) {
 
         this->synthState->setNewStepValue(timbre, whichStepSeq, step, value);
     } else if (this->currentNrpn[timbre].paramMSB == 127 && this->currentNrpn[timbre].paramLSB == 127)  {
-        PresetUtil::sendCurrentPatchAsNrpns(timbre);
+    	// TO ADD !!!!!
+        // PresetUtil::sendCurrentPatchAsNrpns(timbre);
     }
 }
 
@@ -705,7 +705,6 @@ void MidiDecoder::sendMidiCCOut(struct MidiEvent *toSend, bool flush) {
 		flushMidiOut();
 	}
 }
-
 void MidiDecoder::sendSysexByte(uint8_t byte) {
 
 	if (this->synthState->fullState.midiConfigValue[MIDICONFIG_USB] == USBMIDI_IN_AND_OUT) {
@@ -759,12 +758,14 @@ void MidiDecoder::sendSysexFinished() {
 		case 1:
 			// 0x5 SysEx ends with 1 byte
 			usbBufRead[0] = 0x00  | 0x5;
+			// Zero the rest
 			usbBufRead[2] = 0;
 			usbBufRead[3] = 0;
 			break;
 		case 2:
 			// 0x6 SysEx ends with 2 bytes
 			usbBufRead[0] = 0x00  | 0x6;
+			// Zero the rest
 			usbBufRead[3] = 0;
 			break;
 		case 3:
@@ -795,9 +796,13 @@ void MidiDecoder::flushMidiOut() {
 		if (usbBufRead >= usbBuf+128) {
 			usbBufRead = usbBuf;
 		}
-
+		usbBufRead[0] = 0;
+		usbBufRead[4] = 0;
+		usbBufRead[8] = 0;
+		usbBufRead[12] = 0;
 		usbBufWrite = usbBufRead;
 	}
 
 	USART_ITConfig(USART3, USART_IT_TXE, ENABLE);
 }
+

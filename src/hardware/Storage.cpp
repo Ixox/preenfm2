@@ -19,13 +19,9 @@
 #include <stdint.h>
 #include "Storage.h"
 #include "Menu.h"
-#include "PresetUtil.h"
-#include "Menu.h"
 
-#ifdef DEBUG
 #include "LiquidCrystal.h"
 extern LiquidCrystal lcd;
-#endif
 
 
 void Storage::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4) {
@@ -250,6 +246,73 @@ void Storage::savePreenFMPatch(const struct BankFile* bank, int patchNumber, con
     save(fullBankName, patchNumber * ALIGNED_PATCH_SIZE  + PFM_PATCH_SIZE,  (void*)zeros, ALIGNED_PATCH_ZERO);
 }
 
+
+void Storage::sendPreenFMPatchAsSysex(const struct OneSynthParams *params) {
+	// Use Flash memory model which is not supposed to change
+	convertParamsToMemory(params, &reachableFlashParam, true);
+
+	int sysexSize = sizeof(FlashSynthParams);
+
+    sysexSender->sendSysexByte(0xf0);
+    sysexSender->sendSysexByte(0x7d);
+    sysexSender->sendSysexByte(SYSEX_NEW_PFM2_BYTE_PATCH);
+
+    uint32_t checksum = 0;
+    uint32_t rest = 0;
+    uint8_t  restBits = 0;
+
+    for (int index=0; index < sizeof(FlashSynthParams); index++) {
+    	uint32_t newPart = ((uint8_t*)&reachableFlashParam)[index];
+    	rest = rest | (newPart << restBits);
+
+        sysexSender->sendSysexByte(rest & 0x7f);
+        checksum += rest & 0x7f;
+    	rest >>= 7;
+    	restBits ++;
+    	if (restBits == 7) {
+            sysexSender->sendSysexByte(rest);
+            rest = 0;
+            restBits = 0;
+    	}
+    }
+    if (restBits > 0) {
+        sysexSender->sendSysexByte(rest);
+    }
+
+    sysexSender->sendSysexByte((uint8_t) (checksum % 128));
+    sysexSender->sendSysexByte(0xf7);
+    sysexSender->sendSysexFinished();
+}
+
+
+void Storage::decodeBufferAndApplyPreset(uint8_t* buffer, struct OneSynthParams *params) {
+	if (buffer[0] != 0x7d || buffer[1] != SYSEX_NEW_PFM2_BYTE_PATCH) {
+		return;
+	}
+
+	int indexBuffer = 2;
+	int indexParam = 0;
+	char* decodeParams = (char*)&reachableFlashParam;
+    uint8_t restBits = 0;
+    uint32_t rest = 0;
+	while (buffer[indexBuffer] != 0xf7 && indexParam <= sizeof(struct FlashSynthParams)) {
+		lcd.setCursor(0,1);
+		lcd.print(indexBuffer);
+		lcd.setCursor(10,1);
+		lcd.print(indexParam);
+		rest = rest | (buffer[indexBuffer++] << restBits);
+		restBits += 7;
+		if (restBits >= 8) {
+			decodeParams[indexParam++] = rest & 0xff;
+			rest >>= 8;
+			restBits -= 8;
+		}
+	}
+
+	// Apply to param with arpegiator
+	convertMemoryToParams(&reachableFlashParam, params, true);
+}
+
 void Storage::loadPreenFMCombo(const struct BankFile* combo, int comboNumber) {
 	const char* fullBankName = getPreenFMFullName(combo->name);
     for (int timbre = 0; timbre < 4; timbre++)  {
@@ -278,21 +341,6 @@ void Storage::savePreenFMCombo(const struct BankFile* combo, int comboNumber, ch
 }
 
 
-
-void Storage::saveBank(const char* newBankName, const uint8_t* sysexTmpMem) {
-	const struct BankFile * newBank = addEmptyBank(newBankName);
-	if (newBank == 0) {
-		return;
-	}
-	for (int k=0; k<128; k++) {
-		if (sysexTmpMem[8 + PATCH_SIZE_PFM2 * 128] == '2') {
-			PresetUtil::convertCharArrayToSynthState(8 + sysexTmpMem + PATCH_SIZE_PFM2 * k, &oneSynthParamsTmp);
-		} else /* MUST BE '1' */ {
-			PresetUtil::convertPFM1CharArrayToSynthState(sysexTmpMem + PFM1_PATCH_SIZE * k, &oneSynthParamsTmp, false);
-		}
-		savePreenFMPatch(newBank, k, &oneSynthParamsTmp);
-	}
-}
 
 int Storage::bankBaseLength(const char* bankName) {
 	int k;
@@ -628,6 +676,8 @@ void Storage::testMemoryPreset() {
 	}
 }
 #endif
+
+
 
 
 
