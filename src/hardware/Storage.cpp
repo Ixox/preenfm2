@@ -296,10 +296,6 @@ void Storage::decodeBufferAndApplyPreset(uint8_t* buffer, struct OneSynthParams 
     uint8_t restBits = 0;
     uint32_t rest = 0;
 	while (buffer[indexBuffer] != 0xf7 && indexParam <= sizeof(struct FlashSynthParams)) {
-		lcd.setCursor(0,1);
-		lcd.print(indexBuffer);
-		lcd.setCursor(10,1);
-		lcd.print(indexParam);
 		rest = rest | (buffer[indexBuffer++] << restBits);
 		restBits += 7;
 		if (restBits >= 8) {

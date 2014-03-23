@@ -323,11 +323,6 @@ void Timbre::preenNoteOff(char note) {
 				}
 			}
 		} else {
-	        	lcd.setRealTimeAction(true);
-	        	lcd.clear();
-	        	lcd.setCursor(0,0);
-	        	lcd.print("Gliding");
-
 			// if gliding and releasing first note
 			if (voices[n]->getNote() == note) {
 				voices[n]->glideFirstNoteOff();
