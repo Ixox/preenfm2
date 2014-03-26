@@ -212,19 +212,19 @@ struct ParameterRowDisplay envParameterRow2 = {
 };
 
 struct ParameterRowDisplay lfoEnvParameterRow = {
-        "LFO Env",
+        "Free Env",
         { "Attk", "Deca", "Sust", "Rele" },
         {
                 { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { 0, 16, 1601, DISPLAY_TYPE_INT_OR_NONE, nullNames, nullNamesOrder, nullNamesOrder }
+                { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
 const char* lofEnv2Loop [] = { "No  ", "Sile", "Attk"};
 struct ParameterRowDisplay lfoEnv2ParameterRow = {
-        "LFO Env",
+        "Free Env",
         { "Sile", "Attk", "Deca", "Loop" },
         {
                 { 0, 16, 1601, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
@@ -271,7 +271,7 @@ struct ParameterRowDisplay lfoParameterRow = {
                 { LFO_SIN, LFO_TYPE_MAX-1, LFO_TYPE_MAX, DISPLAY_TYPE_STRINGS,  lfoShapeNames, nullNamesOrder, nullNamesOrder},
                 { 0, 24.9, 250, DISPLAY_TYPE_FLOAT_LFO_FREQUENCY, nullNames, nullNamesOrder, nullNamesOrder },
                 { -1, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { -0.02f, 4, 202, DISPLAY_TYPE_LFO_KSYN, nullNames, nullNamesOrder, nullNamesOrder },
+                { -0.01f, 16, 1602, DISPLAY_TYPE_LFO_KSYN, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -280,7 +280,7 @@ struct ParameterRowDisplay lfoParameterRow = {
 const char* lfoSeqMidiClock[] =  { "MC/4", "MC/2", "MC  ", "MC*2", "MC*4" };
 
 struct ParameterRowDisplay lfoStepParameterRow = {
-        "LFO Seq",
+        "Step Seq",
         { "Bpm ", "Gate", "    ", "    " },
         {
                 { 10 ,245, 236, DISPLAY_TYPE_STEP_SEQ_BPM, nullNames, nullNamesOrder, nullNamesOrder},

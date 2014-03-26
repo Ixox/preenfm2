@@ -67,6 +67,8 @@ const struct OneSynthParams defaultPreset  = {
         { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION1, 0} ,
         { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION1, 0} ,
         { MATRIX_SOURCE_LFO1, 0, INDEX_MODULATION1, 0} ,
+		// Init Performance
+		{ 0, 0, 0, 0},
         // LFOs
         { LFO_SIN, 2.0, 0, 0} ,
         { LFO_SIN, 2.0, 0, 0} ,
@@ -75,8 +77,6 @@ const struct OneSynthParams defaultPreset  = {
         { 1, .2, .2, 1.0} ,
         { 100, .8,  0, 0}  ,
         { 100, .8, 0, 0},
-		// Init Performance
-		{ 0, 0, 0, 0},
         {{ 3, 0, 7,  0,  12,  15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}} ,
         {{ 3, 0, 7,  0,  12,  15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}} ,
         // Name
@@ -85,7 +85,7 @@ const struct OneSynthParams defaultPreset  = {
 };
 
 const struct OneSynthParams preenMainPreset  = {
-		// patch name : 'Preen 2.0'
+		// patch name : 'Preen mk2'
 		// Engine
 		{ ALGO9, 12, 2, 4} ,
 
@@ -142,6 +142,8 @@ const struct OneSynthParams preenMainPreset  = {
 		{ MATRIX_SOURCE_MODWHEEL, 0, PAN_OSC1, 0} ,
 		{ MATRIX_SOURCE_LFO2, 0, PAN_OSC2, 0} ,
 		{ MATRIX_SOURCE_LFO3, 0, PAN_OSC1, 0} ,
+		// Init Performance
+		{ 0, 0, 0, 0},
 		// LFOs
 		{ LFO_SIN, 4.5, 0, 0} ,
 		{ LFO_SIN, 4.8, 0, 1.0} ,
@@ -150,8 +152,6 @@ const struct OneSynthParams preenMainPreset  = {
 		{ 1, .2, .2, 1.0} ,
 		{ 110, .5,  0, 0}  ,
 		{ 140, .6, 0, 0},
-		// Init Performance
-		{ 0, 0, 0, 0},
 		{{ 0,7,15,15,15,0,15,15,  0,15,15,15,0,15,15,15}} ,
 		{{ 15, 4, 2, 0, 15, 2, 0, 8, 15, 0, 12, 0, 8, 0, 15, 0}} ,
 		"Preen mk2"

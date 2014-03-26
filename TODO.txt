@@ -1,7 +1,4 @@
 TODO (temporary list, grow over time) : 
-. Algo28 : IM2 shows up !
-. Patch and bank change by midi
-
 
 
 OK to test  
@@ -9,6 +6,11 @@ OK to test
 . env attack as target...
 
 DONE:
+. Fixed ENV1 release, that did not release when > 1.0
+. Renamed "LFO Env" => "Free Env", "LFO step" => "Step Seq"
+. KSyn : change to 16s max
+. Algo28 : IM2 shows up !
+. Patch and bank change by midi
 . Midi through latency : move into interupt
 . Fine tune too hard !
 . LFO frequency finer
