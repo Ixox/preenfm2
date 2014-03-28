@@ -22,6 +22,7 @@
 
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
+#define ARRAY_SIZE(x)  ( sizeof(x) / sizeof((x)[0]) )
 
 #define BLOCK_SIZE 32
 
@@ -33,6 +34,7 @@
 
 #define MAX_NUMBER_OF_VOICES 16
 #define MAX_NUMBER_OF_OPERATORS 48
+
 #define NUMBER_OF_TIMBRES 4
 #define NUMBER_OF_OPERATORS 6
 
@@ -83,8 +85,9 @@ enum {
     ROW_OSC_MIX1,
     ROW_OSC_MIX2,
     ROW_OSC_MIX3,
-    ROW_ARPEGGIATOR1 ,
-    ROW_ARPEGGIATOR2 ,
+    ROW_ARPEGGIATOR1,
+    ROW_ARPEGGIATOR2,
+    ROW_ARPEGGIATOR3,
     ROW_EFFECT,
     ROW_ENGINE_LAST = ROW_EFFECT
 };
@@ -210,6 +213,13 @@ struct EngineArp2 {
     float division;
     float duration;
     float latche;
+};
+
+struct EngineArpPattern {
+    float nibble0;
+    float nibble1;
+    float nibble2;
+    float nibble3;
 };
 
 struct EngineIm1 {
@@ -370,6 +380,7 @@ struct OneSynthParams {
     struct EngineMix3 engineMix3;
     struct EngineArp1 engineApr1;
     struct EngineArp2 engineApr2;
+    struct EngineArpPattern engineArpPattern;
     struct EffectRowParams effect;
     struct OscillatorParams osc1;
     struct OscillatorParams osc2;

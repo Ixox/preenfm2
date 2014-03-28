@@ -23,6 +23,7 @@ extern const char* lfoOscMidiClock[];
 
 const char* stepChars  = "_123456789ABCDEF";
 
+#define CUSTOM_CHAR_NOTE (char)7
 
 // = / 10000
 #define TMP_FLOAT PREENFM_FREQUENCY * .0001
@@ -156,7 +157,7 @@ void FMDisplay::customCharsInit() {
     lcd->createChar(4, stepPos);
     lcd->createChar(5, firstSteps);
     lcd->createChar(6, thirdStep);
-    lcd->createChar(7, note);
+    lcd->createChar(CUSTOM_CHAR_NOTE, note);
 }
 
 void FMDisplay::printValueWithSpace(int value) {
@@ -418,7 +419,20 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
 			lcd->print((char)4);
     }
     break;
-	}
+    case DISPLAY_TYPE_NIBBLE:
+    {
+		char s[] = { '-', '-', '-', '-', 0 };
+		if ( newValue & 0x1 ) s[ 0 ] = CUSTOM_CHAR_NOTE;
+		if ( newValue & 0x2 ) s[ 1 ] = CUSTOM_CHAR_NOTE;
+		if ( newValue & 0x4 ) s[ 2 ] = CUSTOM_CHAR_NOTE;
+		if ( newValue & 0x8 ) s[ 3 ] = CUSTOM_CHAR_NOTE;
+
+		lcd->setCursor(encoder*5, 3);
+		lcd->print( s );
+		//printValueWithSpace(newValue);
+    }
+    break;
+    }
 }
 
 void FMDisplay::updateEncoderName(int row, int encoder) {

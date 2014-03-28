@@ -157,8 +157,6 @@ void Synth::buildNewSampleBlock() {
 	this->voices[k++].nextBlock();
 	this->voices[k++].nextBlock();
 
-
-
 	// Add timbre per timbre because gate and eventual other effect are per timbre
 	if (likely(timbres[0].params.engine1.numberOfVoice > 0)) {
 		timbres[0].fxAfterBlock(ratioTimbre);
@@ -425,6 +423,9 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
         		timbres[timbre].setLatchMode((uint8_t) newValue);
         	}
         	break;
+	case ROW_ARPEGGIATOR3:
+		timbres[timbre].setArpeggiatorPatternNibble( encoder, (uint8_t)newValue );
+		break;
 	case ROW_EFFECT:
         	timbres[timbre].setNewEffecParam(encoder);
         	break;

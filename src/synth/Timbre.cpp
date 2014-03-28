@@ -42,6 +42,23 @@ uint16_t lut_res_arpeggiator_patterns[]  = {
    22359,  28527,  30431,  43281,  28609,  53505,
 };
 
+
+uint16_t Timbre::getArpeggiatorPattern() const
+{
+  const int pattern = (int)params.engineApr2.pattern;
+  if ( pattern < ARRAY_SIZE(lut_res_arpeggiator_patterns) )
+    return lut_res_arpeggiator_patterns[ pattern ];
+  else
+    return arp_user_pattern;
+}
+
+void Timbre::setArpeggiatorPatternNibble( int encoder, uint8_t value )
+{
+    uint16_t mask = 0xf << (encoder*4);
+    arp_user_pattern &= ~mask;
+    arp_user_pattern |= ( value & 0xf ) << (encoder*4);
+}
+
 const uint8_t midi_clock_tick_per_step[17]  = {
   192, 144, 96, 72, 64, 48, 36, 32, 24, 16, 12, 8, 6, 4, 3, 2, 1
 };
@@ -107,6 +124,7 @@ Timbre::Timbre() {
 
     // Init FX variables
     v0L = v1L = v0R = v1R = 0.0f;
+    arp_user_pattern = 0;
 }
 
 Timbre::~Timbre() {
@@ -982,7 +1000,7 @@ void Timbre::Tick() {
 
 	if (tick_ >= midi_clock_tick_per_step[(int)params.engineApr2.division]) {
 		tick_ = 0;
-		uint16_t pattern = lut_res_arpeggiator_patterns[(int)params.engineApr2.pattern - 1];
+		uint16_t pattern = getArpeggiatorPattern();
 		uint8_t has_arpeggiator_note = (bitmask_ & pattern) ? 255 : 0;
 		if (note_stack.size() && has_arpeggiator_note) {
 			StepArpeggio();
@@ -1124,5 +1142,3 @@ void Timbre::lfoValueChange(int currentRow, int encoder, float newValue) {
 		break;
 	}
 }
-
-

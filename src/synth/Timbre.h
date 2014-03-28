@@ -71,6 +71,8 @@ public:
     void setNewBPMValue(float bpm);
     void setArpeggiatorClock(float bpm);
     void resetArpeggiator();
+    uint16_t getArpeggiatorPattern() const;
+    void setArpeggiatorPatternNibble( int encoder, uint8_t value );
 
     void noteOn(char note, char velocity);
     void noteOff(char note);
@@ -349,6 +351,7 @@ private:
     float arpegiatorStep;
     NoteStack note_stack;
     EventScheduler event_scheduler;
+    uint16_t arp_user_pattern;
 //
 //
 //    uint8_t clk_mode_;
@@ -373,7 +376,6 @@ private:
 	float fxParam1, fxParam2, fxParam3;
     float v0L, v1L;
     float v0R, v1R;
-
 };
 
 #endif /* TIMBRE_H_ */

@@ -51,7 +51,6 @@ struct ParameterRowDisplay engine1ParameterRow  = {
 const char* clockName[] = { "Off ", "Int ", "Ext " };
 const char* dirName[] = { "Up  ", "Down", "U&D ", "Play", "Rand" };
 
-
 struct ParameterRowDisplay engineArp1ParameterRow  = {
         "Arpeggiator" ,
         { "Clk ", "BPM ", "Dire" , "Octv"},
@@ -69,18 +68,31 @@ const char* divNames[] = { "2/1 ", "3/2 ", "1/1 ", "3/4 ", "2/3 ", "1/2 ", "3/8 
 		"1/12", "1/16", "1/24", "1/32", "1/48", "1/96"};
 const char* activeName[] = { "Off ", "On  " };
 
+const char* patternName[] = { "P  1", "P  2", "P  3", "P  4", "P  5", "P  6", "P  7", "P  8",
+			      "P  9", "P 10", "P 11", "P 12", "P 13", "P 14", "P 15", "P 16",
+			      "P 17", "P 18", "P 19", "P 20", "P 21", "P 22", "USR1" };
+
 struct ParameterRowDisplay engineArp2ParameterRow  = {
-        "Arpeggiator" ,
-        { "Ptrn", "Divi", "Dura", "Latc" },
-        {
-                {1, 22, 22, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder},
-                {0, 16, 17, DISPLAY_TYPE_STRINGS, divNames, nullNamesOrder, nullNamesOrder },
-                {0, 16, 17, DISPLAY_TYPE_STRINGS, divNames, nullNamesOrder, nullNamesOrder },
-                {0, 1, 2, DISPLAY_TYPE_STRINGS, activeName, nullNamesOrder, nullNamesOrder },
-        }
+	"Arpeggiator" ,
+	{ "Ptrn", "Divi", "Dura", "Latc" },
+	{
+		{0, 22, 23, DISPLAY_TYPE_STRINGS, patternName, nullNamesOrder, nullNamesOrder},
+		{0, 16, 17, DISPLAY_TYPE_STRINGS, divNames, nullNamesOrder, nullNamesOrder },
+		{0, 16, 17, DISPLAY_TYPE_STRINGS, divNames, nullNamesOrder, nullNamesOrder },
+		{0, 1, 2, DISPLAY_TYPE_STRINGS, activeName, nullNamesOrder, nullNamesOrder },
+	}
 };
 
-
+struct ParameterRowDisplay engineArpPatternRow = {
+	"Pattern USR1",
+	{ "    ", "    ", "    ", "    " },
+	{
+		{0, 15, 16, DISPLAY_TYPE_NIBBLE, nullNames, nullNamesOrder, nullNamesOrder },
+		{0, 15, 16, DISPLAY_TYPE_NIBBLE, nullNames, nullNamesOrder, nullNamesOrder },
+		{0, 15, 16, DISPLAY_TYPE_NIBBLE, nullNames, nullNamesOrder, nullNamesOrder },
+		{0, 15, 16, DISPLAY_TYPE_NIBBLE, nullNames, nullNamesOrder, nullNamesOrder },
+	}
+};
 
 struct ParameterRowDisplay engineIM1ParameterRow = {
         "Modulation" ,
@@ -312,6 +324,7 @@ struct AllParameterRowsDisplay allParameterRows = {
                 &engineMix3ParameterRow,
                 &engineArp1ParameterRow,
                 &engineArp2ParameterRow,
+                &engineArpPatternRow,
                 &effectParameterRow,
                 &oscParameterRow,
                 &oscParameterRow,

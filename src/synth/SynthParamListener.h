@@ -32,7 +32,8 @@ enum ParameterDisplayType {
     DISPLAY_TYPE_STEP_SEQ1,
     DISPLAY_TYPE_STEP_SEQ2,
     DISPLAY_TYPE_STEP_SEQ_BPM,
-    DISPLAY_TYPE_LFO_KSYN
+    DISPLAY_TYPE_LFO_KSYN,
+    DISPLAY_TYPE_NIBBLE
 };
 
 struct ParameterDisplay {
