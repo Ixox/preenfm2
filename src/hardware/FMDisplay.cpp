@@ -309,22 +309,13 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
         printValueWithSpace(newValue);
         break;
     case DISPLAY_TYPE_LFO_KSYN:
-        if (newFloatValue < 0.0f) {
+        if (unlikely(newFloatValue < 0.0f)) {
             lcd->setCursor(encoder*5, 3);
     		lcd->print("Off ");
     		break;
     	}
         lcd->setCursor(encoder*5 - 1, 3);
         printFloatWithSpace(newFloatValue);
-        break;
-    case DISPLAY_TYPE_INT_OR_NONE:
-    	if (newFloatValue != 4.0f) {
-            lcd->setCursor(encoder*5 - 1, 3);
-            printFloatWithSpace(newFloatValue);
-    	} else {
-            lcd->setCursor(encoder*5, 3);
-    		lcd->print("None");
-    	}
         break;
     case DISPLAY_TYPE_FLOAT:
     	if (unlikely(row == ROW_PERFORMANCE1)) {

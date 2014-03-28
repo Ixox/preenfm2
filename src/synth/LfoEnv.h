@@ -78,10 +78,8 @@ public:
 	}
 
 	void noteOff() {
-		if (this->envParams->release <1.0) {
-	        env.envState = ENV_STATE_ON_R;
-	        newState();
-		}
+		env.envState = ENV_STATE_ON_R;
+		newState();
 	}
 
 
