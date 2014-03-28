@@ -43,6 +43,9 @@ enum {  CLOCK_OFF,
 		CLOCK_EXTERNAL
 };
 
+enum {
+  ARPEGGIATOR_PATTERN_COUNT = 22
+};
 
 class Timbre {
     friend class Synth;

@@ -36,7 +36,7 @@ enum NewNoteType {
 };
 
 
-uint16_t lut_res_arpeggiator_patterns[]  = {
+uint16_t lut_res_arpeggiator_patterns[ ARPEGGIATOR_PATTERN_COUNT ]  = {
    21845,  62965,  46517,  54741,  43861,  22869,  38293,   2313,
    37449,  21065,  18761,  54553,  27499,  23387,  30583,  28087,
    22359,  28527,  30431,  43281,  28609,  53505,
