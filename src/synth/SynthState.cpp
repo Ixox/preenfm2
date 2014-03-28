@@ -945,7 +945,7 @@ bool SynthState::isCurrentRowAvailable() {
 		}
 	}
 	if ( currentRow == ROW_ARPEGGIATOR3 )
-	  return (int)params->engineApr2.pattern >= ARPEGGIATOR_PATTERN_COUNT;
+	  return (int)params->engineArp2.pattern >= ARPEGGIATOR_PATTERN_COUNT;
 	return true;
 }
 

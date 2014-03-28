@@ -378,8 +378,8 @@ struct OneSynthParams {
     struct EngineMix1 engineMix1;
     struct EngineMix2 engineMix2;
     struct EngineMix3 engineMix3;
-    struct EngineArp1 engineApr1;
-    struct EngineArp2 engineApr2;
+    struct EngineArp1 engineArp1;
+    struct EngineArp2 engineArp2;
     struct EngineArpPattern engineArpPattern;
     struct EffectRowParams effect;
     struct OscillatorParams osc1;

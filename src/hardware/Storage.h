@@ -88,8 +88,8 @@ struct FlashSynthParams {
     struct StepSequencerSteps lfoSteps1;
     struct StepSequencerSteps lfoSteps2;
     char presetName[13];
-    struct EngineArp1 engineApr1;
-    struct EngineArp2 engineApr2;
+    struct EngineArp1 engineArp1;
+    struct EngineArp2 engineArp2;
     struct FlashEngineVeloIm1 flashEngineVeloIm1;
     struct FlashEngineVeloIm2 flashEngineVeloIm2;
     struct EffectRowParams effect;
