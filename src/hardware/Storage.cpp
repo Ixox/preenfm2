@@ -416,6 +416,7 @@ void Storage::convertParamsToMemory(const struct OneSynthParams* params, struct 
 	copyFloat((float*)&params->engine1, (float*)&memory->engine1, 4);
 	if (saveArp) {
 		copyFloat((float*)&params->engineArp1, (float*)&memory->engineArp1, 4 * 2);
+		memory->engineArpPattern = params->engineArpPattern;
 	} else {
 		memory->engineArp1.clock = 0;
 		memory->engineArp1.BPM = 90;
@@ -424,6 +425,10 @@ void Storage::convertParamsToMemory(const struct OneSynthParams* params, struct 
 		memory->engineArp2.division = 12;
 		memory->engineArp2.duration = 14;
 		memory->engineArp2.latche = 0;
+		memory->engineArpPattern._0 = 0.0f;
+		memory->engineArpPattern._1 = 0.0f;
+		memory->engineArpPattern._2 = 0.0f;
+		memory->engineArpPattern._3 = 0.0f;
 	}
 
 	memory->flashEngineIm1.modulationIndex1 = params->engineIm1.modulationIndex1;
@@ -468,6 +473,7 @@ void Storage::convertMemoryToParams(const struct FlashSynthParams* memory, struc
 	copyFloat((float*)&memory->engine1, (float*)&params->engine1, 4);
 	if (loadArp) {
 		copyFloat((float*)&memory->engineArp1, (float*)&params->engineArp1, 4 * 2);
+		params->engineArpPattern = memory->engineArpPattern;
 	}
 
 	params->engineIm1.modulationIndex1 = memory->flashEngineIm1.modulationIndex1;

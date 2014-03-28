@@ -56,7 +56,7 @@ void Timbre::setArpeggiatorPatternNibble( int encoder, uint8_t value )
 {
     uint16_t mask = 0xf << (encoder*4);
     arp_user_pattern &= ~mask;
-    arp_user_pattern |= ( value & 0xf ) << (encoder*4);
+    arp_user_pattern |= ( value & 0xf ) << (encoder*4);    
 }
 
 const uint8_t midi_clock_tick_per_step[17]  = {
@@ -815,6 +815,7 @@ void Timbre::resetArpeggiator() {
 	note_stack.Clear();
 	setArpeggiatorClock(params.engineArp1.clock);
 	setLatchMode(params.engineArp2.latche);
+	arp_user_pattern = params.engineArpPattern.toBitmask();
 }
 
 
@@ -1094,8 +1095,9 @@ void Timbre::Start() {
 	recording_ = 0;
 	running_ = 1;
 	tick_ = midi_clock_tick_per_step[(int)params.engineArp2.division] - 1;
-    current_octave_ = 127;
+	current_octave_ = 127;
 	current_direction_ = (params.engineArp1.direction == ARPEGGIO_DIRECTION_DOWN ? -1 : 1);
+	arp_user_pattern = params.engineArpPattern.toBitmask();
 }
 
 

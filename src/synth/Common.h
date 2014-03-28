@@ -216,10 +216,15 @@ struct EngineArp2 {
 };
 
 struct EngineArpPattern {
-    float nibble0;
-    float nibble1;
-    float nibble2;
-    float nibble3;
+    float _0;
+    float _1;
+    float _2;
+    float _3;
+
+  uint16_t toBitmask() const
+  {
+    return ((uint16_t)_0 & 0xf) | ((uint16_t)_1 & 0xf) << 4 | ((uint16_t)_2 & 0xf ) << 8 | ((uint16_t)_3 & 0xf) << 12;
+  }
 };
 
 struct EngineIm1 {
