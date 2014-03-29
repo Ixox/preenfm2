@@ -177,6 +177,11 @@ enum LfoMidiClockMc {
 	LFO_MIDICLOCK_MC_TIME_8
 };
 
+enum {
+  ARPEGGIATOR_PRESET_PATTERN_COUNT = 22,
+  ARPEGGIATOR_USER_PATTERN_COUNT = 4,
+  ARPEGGIATOR_PATTERN_COUNT = ARPEGGIATOR_PRESET_PATTERN_COUNT + ARPEGGIATOR_USER_PATTERN_COUNT
+};
 
 #define NUMBER_OF_ROWS ROW_LFO_LAST+1
 
@@ -215,16 +220,16 @@ struct EngineArp2 {
     float latche;
 };
 
-struct EngineArpPattern {
-    float _0;
-    float _1;
-    float _2;
-    float _3;
+/* low 16 bits = pattern mask, high reserved for now */
+typedef uint32_t arp_pattern_t;
+#define ARP_PATTERN_GETMASK(x) (uint16_t)( (x) & 0xffff)
+#define ARP_PATTERN_SETMASK(p,m) do { (p) = ((p) & ~0xffff) | ((m) & 0xffff); } while (0)
+#define ARP_PATTERN(x) ((uint32_t)(x) & 0xffff)
+#define ARP_MASK_GETNIBBLE(m,i) (((m) >> (i*4)) & 0xf)
+#define ARP_MASK_SETNIBBLE(m,i,v) do {  mask &= ~(0xf << (i*4)); mask |= (v << (i*4)); } while(0)
 
-  uint16_t toBitmask() const
-  {
-    return ((uint16_t)_0 & 0xf) | ((uint16_t)_1 & 0xf) << 4 | ((uint16_t)_2 & 0xf ) << 8 | ((uint16_t)_3 & 0xf) << 12;
-  }
+struct EngineArpUserPatterns {
+  arp_pattern_t patterns[ 4 ];
 };
 
 struct EngineIm1 {
@@ -385,7 +390,7 @@ struct OneSynthParams {
     struct EngineMix3 engineMix3;
     struct EngineArp1 engineArp1;
     struct EngineArp2 engineArp2;
-    struct EngineArpPattern engineArpPattern;
+    struct EngineArpUserPatterns engineArpUserPatterns;
     struct EffectRowParams effect;
     struct OscillatorParams osc1;
     struct OscillatorParams osc2;

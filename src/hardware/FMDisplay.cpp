@@ -410,17 +410,9 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
 			lcd->print((char)4);
     }
     break;
-    case DISPLAY_TYPE_NIBBLE:
+    case DISPLAY_TYPE_ARP_PATTERN:
     {
-		char s[] = { '-', '-', '-', '-', 0 };
-		if ( newValue & 0x1 ) s[ 0 ] = CUSTOM_CHAR_NOTE;
-		if ( newValue & 0x2 ) s[ 1 ] = CUSTOM_CHAR_NOTE;
-		if ( newValue & 0x4 ) s[ 2 ] = CUSTOM_CHAR_NOTE;
-		if ( newValue & 0x8 ) s[ 3 ] = CUSTOM_CHAR_NOTE;
-
-		lcd->setCursor(encoder*5, 3);
-		lcd->print( s );
-		//printValueWithSpace(newValue);
+      updateArpPattern(row,encoder,0,0);
     }
     break;
     }
@@ -438,6 +430,11 @@ void FMDisplay::updateEncoderName(int row, int encoder) {
     	int effect = this->synthState->params->effect.type;
     	lcd->print(filterRowDisplay[effect].paramName[encoder -1]);
     	return;
+    }
+    if (unlikely(row == ROW_ARPEGGIATOR3 && encoder == 0)) {
+      lcd->print("usr");
+      lcd->print(1+(int)this->synthState->params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT);
+      return;
     }
 
     const struct ParameterRowDisplay* paramRow = allParameterRows.row[row];
@@ -615,6 +612,22 @@ void FMDisplay::updateStepSequencer(int currentRow, int encoder, int oldValue, i
 	}
 }
 
+void FMDisplay::updateArpPattern(int currentRow, int encoder, int oldValue, int newValue ) {
+
+  const int index = (int)this->synthState->params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT;
+  const arp_pattern_t user_pattern = this->synthState->params->engineArpUserPatterns.patterns[ index ];
+
+  uint16_t nibble = ARP_MASK_GETNIBBLE( ARP_PATTERN_GETMASK(user_pattern), encoder );
+
+  lcd->setCursor(5*encoder,3);
+  char s[] = { '-', '-', '-', '-', 0 };
+  if ( nibble & 0x1 ) s[ 0 ] = CUSTOM_CHAR_NOTE;
+  if ( nibble & 0x2 ) s[ 1 ] = CUSTOM_CHAR_NOTE;
+  if ( nibble & 0x4 ) s[ 2 ] = CUSTOM_CHAR_NOTE;
+  if ( nibble & 0x8 ) s[ 3 ] = CUSTOM_CHAR_NOTE;
+  lcd->print( s );
+}
+
 void FMDisplay::newParamValue(int timbre, int currentRow, int encoder, ParameterDisplay* param,  float oldValue, float newValue) {
 	if (wakeUpFromScreenSaver()) {
 		return;
@@ -629,6 +642,11 @@ void FMDisplay::newParamValue(int timbre, int currentRow, int encoder, Parameter
 		if (unlikely(currentRow >= ROW_LFOSEQ1 && encoder>1)) {
 			updateStepSequencer(currentRow, encoder, oldValue, newValue);
 			return;
+		}
+		// special case arpegiattor...
+		if (unlikely(ROW_ARPEGGIATOR3 == currentRow)) {
+		  updateArpPattern(currentRow, encoder, oldValue, newValue );
+		  return;
 		}
 
 		// If we change frequency type of OScillator rows, it's a bit special too....

@@ -93,7 +93,7 @@ struct FlashSynthParams {
     struct FlashEngineVeloIm1 flashEngineVeloIm1;
     struct FlashEngineVeloIm2 flashEngineVeloIm2;
     struct EffectRowParams effect;
-    struct EngineArpPattern engineArpPattern;
+    struct EngineArpUserPatterns engineArpUserPatterns;
 };
 
 

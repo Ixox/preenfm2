@@ -43,10 +43,6 @@ enum {  CLOCK_OFF,
 		CLOCK_EXTERNAL
 };
 
-enum {
-  ARPEGGIATOR_PATTERN_COUNT = 22
-};
-
 class Timbre {
     friend class Synth;
     friend class Voice;
@@ -75,7 +71,6 @@ public:
     void setArpeggiatorClock(float bpm);
     void resetArpeggiator();
     uint16_t getArpeggiatorPattern() const;
-    void setArpeggiatorPatternNibble( int encoder, uint8_t value );
 
     void noteOn(char note, char velocity);
     void noteOff(char note);
@@ -354,7 +349,6 @@ private:
     float arpegiatorStep;
     NoteStack note_stack;
     EventScheduler event_scheduler;
-    uint16_t arp_user_pattern;
 //
 //
 //    uint8_t clk_mode_;

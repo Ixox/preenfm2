@@ -36,27 +36,23 @@ enum NewNoteType {
 };
 
 
-uint16_t lut_res_arpeggiator_patterns[ ARPEGGIATOR_PATTERN_COUNT ]  = {
-   21845,  62965,  46517,  54741,  43861,  22869,  38293,   2313,
-   37449,  21065,  18761,  54553,  27499,  23387,  30583,  28087,
-   22359,  28527,  30431,  43281,  28609,  53505,
+arp_pattern_t lut_res_arpeggiator_patterns[ ARPEGGIATOR_PRESET_PATTERN_COUNT ]  = {
+  ARP_PATTERN(21845), ARP_PATTERN(62965), ARP_PATTERN(46517), ARP_PATTERN(54741),
+  ARP_PATTERN(43861), ARP_PATTERN(22869), ARP_PATTERN(38293), ARP_PATTERN(2313),
+  ARP_PATTERN(37449), ARP_PATTERN(21065), ARP_PATTERN(18761), ARP_PATTERN(54553),
+  ARP_PATTERN(27499), ARP_PATTERN(23387), ARP_PATTERN(30583), ARP_PATTERN(28087),
+  ARP_PATTERN(22359), ARP_PATTERN(28527), ARP_PATTERN(30431), ARP_PATTERN(43281),
+  ARP_PATTERN(28609), ARP_PATTERN(53505)
 };
 
 
 uint16_t Timbre::getArpeggiatorPattern() const
 {
   const int pattern = (int)params.engineArp2.pattern;
-  if ( pattern < ARRAY_SIZE(lut_res_arpeggiator_patterns) )
-    return lut_res_arpeggiator_patterns[ pattern ];
+  if ( pattern < ARPEGGIATOR_PRESET_PATTERN_COUNT )
+    return ARP_PATTERN_GETMASK(lut_res_arpeggiator_patterns[ pattern ]);
   else
-    return arp_user_pattern;
-}
-
-void Timbre::setArpeggiatorPatternNibble( int encoder, uint8_t value )
-{
-    uint16_t mask = 0xf << (encoder*4);
-    arp_user_pattern &= ~mask;
-    arp_user_pattern |= ( value & 0xf ) << (encoder*4);    
+    return ARP_PATTERN_GETMASK( params.engineArpUserPatterns.patterns[ pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT ] );
 }
 
 const uint8_t midi_clock_tick_per_step[17]  = {
@@ -124,7 +120,6 @@ Timbre::Timbre() {
 
     // Init FX variables
     v0L = v1L = v0R = v1R = 0.0f;
-    arp_user_pattern = 0;
 }
 
 Timbre::~Timbre() {
@@ -815,7 +810,6 @@ void Timbre::resetArpeggiator() {
 	note_stack.Clear();
 	setArpeggiatorClock(params.engineArp1.clock);
 	setLatchMode(params.engineArp2.latche);
-	arp_user_pattern = params.engineArpPattern.toBitmask();
 }
 
 
@@ -1097,7 +1091,6 @@ void Timbre::Start() {
 	tick_ = midi_clock_tick_per_step[(int)params.engineArp2.division] - 1;
 	current_octave_ = 127;
 	current_direction_ = (params.engineArp1.direction == ARPEGGIO_DIRECTION_DOWN ? -1 : 1);
-	arp_user_pattern = params.engineArpPattern.toBitmask();
 }
 
 

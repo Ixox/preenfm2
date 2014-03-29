@@ -105,6 +105,7 @@ public:
     void newParamValue(int timbre, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue);
     void newcurrentRow(int timbre, int newcurrentRow);
     void updateStepSequencer(int currentRow, int encoder, int oldValue, int newValue);
+    void updateArpPattern(int currentRow, int encoder, int oldValue, int newValue);
     void newPresetName(bool cleanFirst) {
     	if (cleanFirst) {
     		lcd->setCursor(7,0);

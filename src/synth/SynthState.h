@@ -286,6 +286,7 @@ public:
 	void twoButtonsPressed(int button1, int button2);
 	void encoderTurnedWhileButtonPressed(int encoder, int ticks, int button);
 	void encoderTurnedForStepSequencer(int row, int num, int ticks);
+	void encoderTurnedForArpPattern(int row, int num, int ticks);
 
 	void changeSynthModeRow(int button, int step);
 	void setNewValue(int timbre, int row, int encoder, float newValue);

@@ -424,7 +424,6 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
         	}
         	break;
 	case ROW_ARPEGGIATOR3:
-		timbres[timbre].setArpeggiatorPatternNibble( encoder, (uint8_t)newValue );
 		break;
 	case ROW_EFFECT:
         	timbres[timbre].setNewEffecParam(encoder);

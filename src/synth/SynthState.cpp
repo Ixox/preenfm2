@@ -70,13 +70,14 @@ const char* activeName[] = { "Off ", "On  " };
 
 const char* patternName[] = { "P  1", "P  2", "P  3", "P  4", "P  5", "P  6", "P  7", "P  8",
 			      "P  9", "P 10", "P 11", "P 12", "P 13", "P 14", "P 15", "P 16",
-			      "P 17", "P 18", "P 19", "P 20", "P 21", "P 22", "USR1" };
+			      "P 17", "P 18", "P 19", "P 20", "P 21", "P 22",
+			      "usr1", "usr2", "usr3", "usr4" };
 
 struct ParameterRowDisplay engineArp2ParameterRow  = {
-	"Arpeggiator" ,
+	"Arpeggiator",
 	{ "Ptrn", "Divi", "Dura", "Latc" },
 	{
-		{0, 22, 23, DISPLAY_TYPE_STRINGS, patternName, nullNamesOrder, nullNamesOrder},
+		{0, ARPEGGIATOR_PATTERN_COUNT-1, ARPEGGIATOR_PATTERN_COUNT, DISPLAY_TYPE_STRINGS, patternName, nullNamesOrder, nullNamesOrder},
 		{0, 16, 17, DISPLAY_TYPE_STRINGS, divNames, nullNamesOrder, nullNamesOrder },
 		{0, 16, 17, DISPLAY_TYPE_STRINGS, divNames, nullNamesOrder, nullNamesOrder },
 		{0, 1, 2, DISPLAY_TYPE_STRINGS, activeName, nullNamesOrder, nullNamesOrder },
@@ -84,13 +85,13 @@ struct ParameterRowDisplay engineArp2ParameterRow  = {
 };
 
 struct ParameterRowDisplay engineArpPatternRow = {
-	"Pattern USR1",
+	"Arpeggiator",
 	{ "    ", "    ", "    ", "    " },
 	{
-		{0, 15, 16, DISPLAY_TYPE_NIBBLE, nullNames, nullNamesOrder, nullNamesOrder },
-		{0, 15, 16, DISPLAY_TYPE_NIBBLE, nullNames, nullNamesOrder, nullNamesOrder },
-		{0, 15, 16, DISPLAY_TYPE_NIBBLE, nullNames, nullNamesOrder, nullNamesOrder },
-		{0, 15, 16, DISPLAY_TYPE_NIBBLE, nullNames, nullNamesOrder, nullNamesOrder },
+		{0, 0, 0, DISPLAY_TYPE_ARP_PATTERN, nullNames, nullNamesOrder, nullNamesOrder },
+		{0, 0, 0, DISPLAY_TYPE_ARP_PATTERN, nullNames, nullNamesOrder, nullNamesOrder },
+		{0, 0, 0, DISPLAY_TYPE_ARP_PATTERN, nullNames, nullNamesOrder, nullNamesOrder },
+		{0, 0, 0, DISPLAY_TYPE_ARP_PATTERN, nullNames, nullNamesOrder, nullNamesOrder },
 	}
 };
 
@@ -469,7 +470,23 @@ void SynthState::encoderTurnedForStepSequencer(int row, int encoder, int ticks) 
 	}
 }
 
+void SynthState::encoderTurnedForArpPattern(int row, int encoder, int ticks) {
 
+  arp_pattern_t *pattern = &params->engineArpUserPatterns.patterns[ (int)params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT ];
+  uint16_t mask = ARP_PATTERN_GETMASK( *pattern );
+
+  int oldvalue = ARP_MASK_GETNIBBLE( mask, encoder );
+  int newvalue = oldvalue + ticks;
+  if ( newvalue > 15 )
+    newvalue = 15;
+  else if ( newvalue < 0 )
+    newvalue = 0;
+
+  ARP_MASK_SETNIBBLE( mask, encoder, newvalue );
+  ARP_PATTERN_SETMASK( *pattern, mask );
+
+  propagateNewParamValue(currentTimbre, row, encoder, (ParameterDisplay*)NULL, oldvalue, newvalue);
+}
 
 void SynthState::twoButtonsPressed(int button1, int button2) {
 	int oldCurrentRow = currentRow;
@@ -639,6 +656,10 @@ void SynthState::encoderTurned(int encoder, int ticks) {
     			return;
     		}
     	};
+	if (currentRow == ROW_ARPEGGIATOR3) {
+	  encoderTurnedForArpPattern(currentRow, encoder, ticks);
+	  return;
+	}
 
         int num = encoder + currentRow * NUMBER_OF_ENCODERS;
         struct ParameterDisplay* param = &(allParameterRows.row[currentRow]->params[encoder]);
@@ -945,7 +966,7 @@ bool SynthState::isCurrentRowAvailable() {
 		}
 	}
 	if ( currentRow == ROW_ARPEGGIATOR3 )
-	  return (int)params->engineArp2.pattern >= ARPEGGIATOR_PATTERN_COUNT;
+	  return (int)params->engineArp2.pattern >= ARPEGGIATOR_PRESET_PATTERN_COUNT;
 	return true;
 }
 
