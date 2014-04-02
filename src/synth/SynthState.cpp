@@ -85,7 +85,7 @@ struct ParameterRowDisplay engineArp2ParameterRow  = {
 };
 
 struct ParameterRowDisplay engineArpPatternRow = {
-        "Arpeg ",
+        "Pattern ",
         { "    ", "    ", "    ", "    " },
         {
                 {0, 0, 0, DISPLAY_TYPE_ARP_PATTERN, nullNames, nullNamesOrder, nullNamesOrder },
@@ -470,10 +470,8 @@ void SynthState::encoderTurnedForStepSequencer(int row, int encoder, int ticks) 
 }
 
 void SynthState::encoderTurnedForArpPattern(int row, int encoder, int ticks) {
-    int whichStepSeq = row - ROW_LFOSEQ1;
-    StepSequencerSteps * seqSteps = &((StepSequencerSteps * )(&params->lfoSteps1))[whichStepSeq];
-
-    if (encoder < 3) {
+    if (encoder == 0) { 
+        // Encoder 0: move cursor
         int oldPos = patternSelect;
         patternSelect += (ticks > 0? 1 : -1);
 
@@ -486,39 +484,29 @@ void SynthState::encoderTurnedForArpPattern(int row, int encoder, int ticks) {
         propagateNewParamValue(currentTimbre, row, encoder, (ParameterDisplay*)NULL, oldPos, patternSelect);
 
     } else {
+        // Change value(s)
+        arp_pattern_t pattern = params->engineArpUserPatterns.patterns[ (int)params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT ];
+        const uint16_t oldMask = ARP_PATTERN_GETMASK( pattern );
+	uint16_t newMask = oldMask;
 
-        arp_pattern_t *pattern = &params->engineArpUserPatterns.patterns[ (int)params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT ];
-        bool oldValue = *pattern & (1 << patternSelect);
-
+	uint16_t bitsToModify;
+	switch ( encoder ) {
+	case 3: bitsToModify = 0x1 << patternSelect; break;	   // modify single note
+	case 2: bitsToModify = 0x1111 << (patternSelect & 3); break; // modify all 
+	case 1: bitsToModify = 0xf << ((patternSelect>>2)<<2); break; // modify entire bar
+	}
         if (ticks > 0) {
-            if (!oldValue) {
-                arp_pattern_t bitToAdd = 1 << patternSelect;
-                *pattern |= bitToAdd;
-                propagateNewParamValue(currentTimbre, row, encoder, (ParameterDisplay*)NULL, 0, 1);
-            }
-        } else {
-            if (oldValue) {
-                arp_pattern_t bitToRemove = 1 << patternSelect;
-                *pattern &= ~bitToRemove;
-                propagateNewParamValue(currentTimbre, row, encoder, (ParameterDisplay*)NULL, 1, 0);
-            }
-        }
-    }
+	    newMask |= bitsToModify;
+	} else {
+	    newMask &= ~bitsToModify;
+	}
 
-//    arp_pattern_t *pattern = &params->engineArpUserPatterns.patterns[ (int)params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT ];
-//    uint16_t mask = ARP_PATTERN_GETMASK( *pattern );
-//
-//    int oldvalue = ARP_MASK_GETNIBBLE( mask, encoder );
-//    int newvalue = oldvalue + ticks;
-//    if ( newvalue > 15 )
-//        newvalue = 15;
-//    else if ( newvalue < 0 )
-//        newvalue = 0;
-//
-//    ARP_MASK_SETNIBBLE( mask, encoder, newvalue );
-//    ARP_PATTERN_SETMASK( *pattern, mask );
-//
-//    propagateNewParamValue(currentTimbre, row, encoder, (ParameterDisplay*)NULL, oldvalue, newvalue);
+	if ( oldMask != newMask ) {
+	  ARP_PATTERN_SETMASK( pattern, newMask );
+	  params->engineArpUserPatterns.patterns[ (int)params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT ] = pattern;
+	  propagateNewParamValue(currentTimbre, row, encoder, (ParameterDisplay*)NULL, oldMask, newMask );
+	}
+    }
 }
 
 void SynthState::twoButtonsPressed(int button1, int button2) {

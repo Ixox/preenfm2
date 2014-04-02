@@ -523,6 +523,7 @@ void FMDisplay::refreshAllScreenByStep() {
                 lcd->print(getRowNumberToDiplay(row));
             }
             if (row == ROW_ARPEGGIATOR3) {
+		lcd->setCursor(8,1);
                 lcd->print("Usr");
                 lcd->print(1+(int)this->synthState->params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT);
             }
@@ -649,19 +650,7 @@ void FMDisplay::updateStepSequencer(int currentRow, int encoder, int oldValue, i
 }
 
 void FMDisplay::updateArpPattern(int currentRow, int encoder, int oldValue, int newValue ) {
-    if (encoder == 3) {
-        // new value to display
-        lcd->setCursor(2 + this->synthState->patternSelect , 3);
-
-        const int index = (int)this->synthState->params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT;
-        const arp_pattern_t user_pattern = this->synthState->params->engineArpUserPatterns.patterns[ index ];
-
-        if ((user_pattern & (1 << this->synthState->patternSelect)) > 0)  {
-            lcd->print(CUSTOM_CHAR_NOTE);
-        } else {
-            lcd->print('_');
-        }
-    } else {
+    if ( 0 == encoder ) {
         // Change cursor
         lcd->setCursor(2 + oldValue, 2);
         if ((oldValue & 3) == 0) {
@@ -672,20 +661,18 @@ void FMDisplay::updateArpPattern(int currentRow, int encoder, int oldValue, int 
 
         lcd->setCursor(2 + newValue, 2);
         lcd->print((char)3);
+    } else {
+        // new value to display
+	
+	int mask = 0x1;
+	for ( int i = 0; i < sizeof(uint16_t)*8; ++i ) {
+	  if ( (oldValue & mask) != (newValue & mask ) ) {
+	    lcd->setCursor(2 + i, 3);
+	    lcd->print( newValue & mask ? CUSTOM_CHAR_NOTE : '_' );
+	  }
+	  mask <<= 1;
+	}
     }
-
-    //    const int index = (int)this->synthState->params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT;
-    //    const arp_pattern_t user_pattern = this->synthState->params->engineArpUserPatterns.patterns[ index ];
-    //
-    //    uint16_t nibble = ARP_MASK_GETNIBBLE( ARP_PATTERN_GETMASK(user_pattern), encoder );
-    //
-    //    lcd->setCursor(5*encoder,3);
-    //    char s[] = { '-', '-', '-', '-', 0 };
-    //    if ( nibble & 0x1 ) s[ 0 ] = CUSTOM_CHAR_NOTE;
-    //    if ( nibble & 0x2 ) s[ 1 ] = CUSTOM_CHAR_NOTE;
-    //    if ( nibble & 0x4 ) s[ 2 ] = CUSTOM_CHAR_NOTE;
-    //    if ( nibble & 0x8 ) s[ 3 ] = CUSTOM_CHAR_NOTE;
-    //    lcd->print( s );
 }
 
 
