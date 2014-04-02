@@ -103,9 +103,6 @@ void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) 
 }
 
 void Voice::glide() {
-	if (!this->gliding) {
-		return;
-	}
 	this->glidePhase += glidePhaseInc[(int)(currentTimbre->params.engine1.glide - .95f)];
 	if (glidePhase < 1.0f) {
 
@@ -222,10 +219,6 @@ void Voice::killNow() {
 
 
 void Voice::nextBlock() {
-	// If not playing we have some CPU free to jump
-	if (unlikely(!playing)) {
-		return;
-	}
 
 	float env1Value;
 	float env2Value;
@@ -3067,17 +3060,16 @@ void Voice::nextBlock() {
 
 			for (int k =0; k< BLOCK_SIZE; k++) {
 
+				float car1 = osc1Values[k] * env1Value * currentTimbre->mix1;
+				float car2 = osc2Values[k] * env2Value * currentTimbre->mix2;
+				float car3 = osc3Values[k] * env3Value * currentTimbre->mix3;
+				float car4 = osc4Values[k] * env4Value * currentTimbre->mix4;
 
-				float car1 = osc1Values[k] * env1Value * currentTimbre->mix1 * div6TimesVelocity;
-				float car2 = osc2Values[k] * env2Value * currentTimbre->mix2 * div6TimesVelocity;
-				float car3 = osc3Values[k] * env3Value * currentTimbre->mix3 * div6TimesVelocity;
-				float car4 = osc4Values[k] * env4Value * currentTimbre->mix4 * div6TimesVelocity;
+				float car5 = currentTimbre->osc5.getNextSample(&oscState5) * env5Value * currentTimbre->mix5;
+				float car6 = currentTimbre->osc6.getNextSample(&oscState6) * env6Value * currentTimbre->mix6;
 
-				float car5 = currentTimbre->osc5.getNextSample(&oscState5) * env5Value * currentTimbre->mix5 * div6TimesVelocity;
-				float car6 = currentTimbre->osc6.getNextSample(&oscState6) * env6Value * currentTimbre->mix6 * div6TimesVelocity;
-
-				*sample++ += car1 * currentTimbre->pan1Left + car2 * currentTimbre->pan2Left + car3 * currentTimbre->pan3Left + car4 * currentTimbre->pan4Left + car5 * currentTimbre->pan5Left + car6 * currentTimbre->pan6Left;
-				*sample++ += car1 * currentTimbre->pan1Right + car2 * currentTimbre->pan2Right + car3 * currentTimbre->pan3Right + car4 * currentTimbre->pan4Right + car5 * currentTimbre->pan5Right + car6 * currentTimbre->pan6Right;
+				*sample++ += (car1 * currentTimbre->pan1Left + car2 * currentTimbre->pan2Left + car3 * currentTimbre->pan3Left + car4 * currentTimbre->pan4Left + car5 * currentTimbre->pan5Left + car6 * currentTimbre->pan6Left) * div6TimesVelocity;
+				*sample++ += (car1 * currentTimbre->pan1Right + car2 * currentTimbre->pan2Right + car3 * currentTimbre->pan3Right + car4 * currentTimbre->pan4Right + car5 * currentTimbre->pan5Right + car6 * currentTimbre->pan6Right) * div6TimesVelocity;
 
 				env1Value += env1Inc;
 				env2Value += env2Inc;
@@ -3164,18 +3156,18 @@ void Voice::nextBlock() {
 			for (int k =0; k< BLOCK_SIZE; k++) {
 
 
-				float car1 = osc1Values[k] * env1Value * currentTimbre->mix1 * div5TimesVelocity;
-				float car2 = osc2Values[k] * env2Value * currentTimbre->mix2 * div5TimesVelocity;
-				float car3 = osc3Values[k] * env3Value * currentTimbre->mix3 * div5TimesVelocity;
-				float car4 = osc4Values[k] * env4Value * currentTimbre->mix4 * div5TimesVelocity;
+				float car1 = osc1Values[k] * env1Value * currentTimbre->mix1;
+				float car2 = osc2Values[k] * env2Value * currentTimbre->mix2;
+				float car3 = osc3Values[k] * env3Value * currentTimbre->mix3;
+				float car4 = osc4Values[k] * env4Value * currentTimbre->mix4;
 
 				float freq6 = currentTimbre->osc6.getNextSample(&oscState6) * env6Value * oscState6.frequency;
 
 				oscState5.frequency = freq6 * voiceIm1 + oscState5.mainFrequencyPlusMatrix;
-				float car5 = currentTimbre->osc5.getNextSample(&oscState5) * env5Value * currentTimbre->mix5 * div5TimesVelocity;
+				float car5 = currentTimbre->osc5.getNextSample(&oscState5) * env5Value * currentTimbre->mix5;
 
-				*sample++ += car1 * currentTimbre->pan1Left + car2 * currentTimbre->pan2Left + car3 * currentTimbre->pan3Left + car4 * currentTimbre->pan4Left + car5 * currentTimbre->pan5Left;
-				*sample++ += car1 * currentTimbre->pan1Right + car2 * currentTimbre->pan2Right + car3 * currentTimbre->pan3Right + car4 * currentTimbre->pan4Right + car5 * currentTimbre->pan5Right;
+				*sample++ += (car1 * currentTimbre->pan1Left + car2 * currentTimbre->pan2Left + car3 * currentTimbre->pan3Left + car4 * currentTimbre->pan4Left + car5 * currentTimbre->pan5Left)  * div5TimesVelocity;
+				*sample++ += (car1 * currentTimbre->pan1Right + car2 * currentTimbre->pan2Right + car3 * currentTimbre->pan3Right + car4 * currentTimbre->pan4Right + car5 * currentTimbre->pan5Right)  * div5TimesVelocity;
 
 				env1Value += env1Inc;
 				env2Value += env2Inc;

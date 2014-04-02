@@ -39,8 +39,8 @@ extern float panTable[];
 class Voice;
 
 enum {  CLOCK_OFF,
-		CLOCK_INTERNAL,
-		CLOCK_EXTERNAL
+    CLOCK_INTERNAL,
+    CLOCK_EXTERNAL
 };
 
 
@@ -78,93 +78,93 @@ public:
     void preenNoteOn(char note, char velocity);
     void preenNoteOff(char note);
     void numberOfVoicesChanged() {
-    	if (params.engine1.numberOfVoice > 0) {
-    		numberOfVoiceInverse = 1.0f / params.engine1.numberOfVoice;
-    	} else {
-    		numberOfVoiceInverse = 1.0f;
-    	}
+        if (params.engine1.numberOfVoice > 0) {
+            numberOfVoiceInverse = 1.0f / params.engine1.numberOfVoice;
+        } else {
+            numberOfVoiceInverse = 1.0f;
+        }
     }
     float* getPerformanceValuesAddress() {
-    	return &matrix.sources[MATRIX_SOURCE_KEY];
+        return &matrix.sources[MATRIX_SOURCE_KEY];
     }
 
     void lfoNoteOn() {
-    	lfoOsc[0].noteOn();
-    	lfoOsc[1].noteOn();
-    	lfoOsc[2].noteOn();
-    	lfoEnv[0].noteOn();
-    	lfoEnv2[0].noteOn();
-    	lfoStepSeq[0].noteOn();
-    	lfoStepSeq[1].noteOn();
+        lfoOsc[0].noteOn();
+        lfoOsc[1].noteOn();
+        lfoOsc[2].noteOn();
+        lfoEnv[0].noteOn();
+        lfoEnv2[0].noteOn();
+        lfoStepSeq[0].noteOn();
+        lfoStepSeq[1].noteOn();
     }
 
     void lfoNoteOff() {
-    	lfoOsc[0].noteOff();
-    	lfoOsc[1].noteOff();
-    	lfoOsc[2].noteOff();
-    	lfoEnv[0].noteOff();
-    	lfoEnv2[0].noteOff();
-    	lfoStepSeq[0].noteOff();
-    	lfoStepSeq[1].noteOff();
+        lfoOsc[0].noteOff();
+        lfoOsc[1].noteOff();
+        lfoOsc[2].noteOff();
+        lfoEnv[0].noteOff();
+        lfoEnv2[0].noteOff();
+        lfoStepSeq[0].noteOff();
+        lfoStepSeq[1].noteOff();
     }
 
     void lfoValueChange(int currentRow, int encoder, float newValue);
     // timbres[timbre].lfo[currentRow - ROW_LFOOSC1]->valueChanged(encoder);
 
-/*
+    /*
     void calculateFrequencyWithMatrix(struct OscState* oscState[NUMBER_OF_OPERATORS]) {
         for (int k=0; k<algoInformation[(int)params.engine1.algo].osc; k++) {
             osc1.calculateFrequencyWithMatrix(oscState[0]);
         }
     }
-*/
+     */
 
 
     void updateAllModulationIndexes() {
-    	int numberOfIMs = algoInformation[(int)(params.engine1.algo)].im;
-    	modulationIndex1 = params.engineIm1.modulationIndex1 + matrix.getDestination(INDEX_MODULATION1) + matrix.getDestination(INDEX_ALL_MODULATION);
-    	if (unlikely(modulationIndex1 < 0.0f)) {
-    		modulationIndex1 = 0.0f;
-    	}
+        int numberOfIMs = algoInformation[(int)(params.engine1.algo)].im;
+        modulationIndex1 = params.engineIm1.modulationIndex1 + matrix.getDestination(INDEX_MODULATION1) + matrix.getDestination(INDEX_ALL_MODULATION);
+        if (unlikely(modulationIndex1 < 0.0f)) {
+            modulationIndex1 = 0.0f;
+        }
         modulationIndex2 = params.engineIm1.modulationIndex2 + matrix.getDestination(INDEX_MODULATION2) + matrix.getDestination(INDEX_ALL_MODULATION);
-    	if (unlikely(modulationIndex2 < 0.0f)) {
-    		modulationIndex2 = 0.0f;
-    	}
-
-        modulationIndex3 = params.engineIm2.modulationIndex3 + matrix.getDestination(INDEX_MODULATION3) + matrix.getDestination(INDEX_ALL_MODULATION);
-    	if (unlikely(modulationIndex3 < 0.0f)) {
-    		modulationIndex3 = 0.0f;
-    	}
-
-    	if (likely(numberOfIMs < 3)) {
-        	return;
+        if (unlikely(modulationIndex2 < 0.0f)) {
+            modulationIndex2 = 0.0f;
         }
 
-    	modulationIndex4 = params.engineIm2.modulationIndex4 + matrix.getDestination(INDEX_MODULATION4) + matrix.getDestination(INDEX_ALL_MODULATION);
-    	if (unlikely(modulationIndex4 < 0.0f)) {
-    		modulationIndex4 = 0.0f;
-    	}
+        modulationIndex3 = params.engineIm2.modulationIndex3 + matrix.getDestination(INDEX_MODULATION3) + matrix.getDestination(INDEX_ALL_MODULATION);
+        if (unlikely(modulationIndex3 < 0.0f)) {
+            modulationIndex3 = 0.0f;
+        }
+
+        if (likely(numberOfIMs < 3)) {
+            return;
+        }
+
+        modulationIndex4 = params.engineIm2.modulationIndex4 + matrix.getDestination(INDEX_MODULATION4) + matrix.getDestination(INDEX_ALL_MODULATION);
+        if (unlikely(modulationIndex4 < 0.0f)) {
+            modulationIndex4 = 0.0f;
+        }
 
         modulationIndex5 = params.engineIm3.modulationIndex5 + matrix.getDestination(INDEX_ALL_MODULATION);;
-    	if (unlikely(modulationIndex5 < 0.0f)) {
-    		modulationIndex5 = 0.0f;
-    	}
+        if (unlikely(modulationIndex5 < 0.0f)) {
+            modulationIndex5 = 0.0f;
+        }
 
     }
 
     void updateAllMixOscsAndPans() {
-    	int numberOfMixes = algoInformation[(int)(params.engine1.algo)].mix;
-    	int mix;
-    	float inv65535 = .0000152587890625; // 1/ 65535
+        int numberOfMixes = algoInformation[(int)(params.engine1.algo)].mix;
+        int mix;
+        float inv65535 = .0000152587890625; // 1/ 65535
 
-    	mix1 = params.engineMix1.mixOsc1 + matrix.getDestination(MIX_OSC1) + matrix.getDestination(ALL_MIX);
-    	// Optimization to check mix1 is between 0 and 1
-    	mix1 = __USAT((int)(mix1 * 65536) , 16) * inv65535;
+        mix1 = params.engineMix1.mixOsc1 + matrix.getDestination(MIX_OSC1) + matrix.getDestination(ALL_MIX);
+        // Optimization to check mix1 is between 0 and 1
+        mix1 = __USAT((int)(mix1 * 65536) , 16) * inv65535;
         float pan1 = params.engineMix1.panOsc1 + matrix.getDestination(PAN_OSC1) + matrix.getDestination(ALL_PAN) + 1.0f;
         // pan1 is between -1 and 1 : Scale from 0.0 to 256
         int pan = __USAT((int)(pan1 * 128), 8);
-		pan1Left = panTable[256 - pan];
-		pan1Right = panTable[pan];
+        pan1Left = panTable[256 - pan];
+        pan1Right = panTable[pan];
 
 
         mix2 = params.engineMix1.mixOsc2 + matrix.getDestination(MIX_OSC2) + matrix.getDestination(ALL_MIX);
@@ -172,12 +172,12 @@ public:
 
         float pan2 = params.engineMix1.panOsc2 + matrix.getDestination(PAN_OSC2) + matrix.getDestination(ALL_PAN) + 1.0f;
         pan = __USAT((int)(pan2 * 128), 8);
-		pan2Left = panTable[256 - pan];
-		pan2Right = panTable[pan];
+        pan2Left = panTable[256 - pan];
+        pan2Right = panTable[pan];
 
         // A bit lighter for algo with 1 or 2 mix...
         if (numberOfMixes <=2) {
-        	return;
+            return;
         }
 
         mix3 = params.engineMix2.mixOsc3 + matrix.getDestination(MIX_OSC3) + matrix.getDestination(ALL_MIX);
@@ -185,21 +185,21 @@ public:
 
         float pan3 = params.engineMix2.panOsc3 + matrix.getDestination(PAN_OSC3) + matrix.getDestination(ALL_PAN) + 1.0f;
         pan = __USAT((int)(pan3 * 128), 8);
-		pan3Left = panTable[256 - pan];
-		pan3Right = panTable[pan];
+        pan3Left = panTable[256 - pan];
+        pan3Right = panTable[pan];
 
         // No matrix for mix4 and pan4
         mix4 = params.engineMix2.mixOsc4 + matrix.getDestination(ALL_MIX);
         mix4 = __USAT((int)(mix4 * 65535) , 16) * inv65535;
         float pan4 = params.engineMix2.panOsc4 + matrix.getDestination(ALL_PAN) + 1.0f;
         pan = __USAT((int)(pan4 * 128), 8);
-		pan4Left = panTable[256 - pan];
-		pan4Right = panTable[pan];
+        pan4Left = panTable[256 - pan];
+        pan4Right = panTable[pan];
 
 
         // A bit lighter for algo with 5 or 6 mix...
         if (likely(numberOfMixes <=4)) {
-        	return;
+            return;
         }
 
         // No more matrix....
@@ -208,15 +208,15 @@ public:
         mix5 = __USAT((int)(mix5 * 65535) , 16) * inv65535;
         float pan5 = params.engineMix3.panOsc5 + matrix.getDestination(ALL_PAN)  + 1.0f;
         pan = __USAT((int)(pan5 * 128), 8);
-		pan5Left = panTable[256 - pan];
-		pan5Right = panTable[pan];
+        pan5Left = panTable[256 - pan];
+        pan5Right = panTable[pan];
 
         mix6 = params.engineMix3.mixOsc6 + matrix.getDestination(ALL_MIX);
         mix6 = __USAT((int)(mix6 * 65535) , 16) * inv65535;
         float pan6 = params.engineMix3.panOsc6 + matrix.getDestination(ALL_PAN) + 1.0f;
         pan = __USAT((int)(pan6 * 128), 8);
-		pan6Left = panTable[256 - pan];
-		pan6Right = panTable[pan];
+        pan6Left = panTable[256 - pan];
+        pan6Right = panTable[pan];
 
     }
 
@@ -227,13 +227,13 @@ public:
     }
 
     void midiClockContinue(int songPosition) {
-    	lfoOsc[0].midiClock(songPosition, false);
-    	lfoOsc[1].midiClock(songPosition, false);
-    	lfoOsc[2].midiClock(songPosition, false);
-    	lfoEnv[0].midiClock(songPosition, false);
-    	lfoEnv2[0].midiClock(songPosition, false);
-    	lfoStepSeq[0].midiClock(songPosition, false);
-    	lfoStepSeq[1].midiClock(songPosition, false);
+        lfoOsc[0].midiClock(songPosition, false);
+        lfoOsc[1].midiClock(songPosition, false);
+        lfoOsc[2].midiClock(songPosition, false);
+        lfoEnv[0].midiClock(songPosition, false);
+        lfoEnv2[0].midiClock(songPosition, false);
+        lfoStepSeq[0].midiClock(songPosition, false);
+        lfoStepSeq[1].midiClock(songPosition, false);
 
 
         this->recomputeNext = ((songPosition&0x1)==0);
@@ -242,30 +242,30 @@ public:
 
 
     void midiClockStart() {
-    	lfoOsc[0].midiContinue();
-    	lfoOsc[1].midiContinue();
-    	lfoOsc[2].midiContinue();
-    	lfoEnv[0].midiContinue();
-    	lfoEnv2[0].midiContinue();
-    	lfoStepSeq[0].midiContinue();
-    	lfoStepSeq[1].midiContinue();
+        lfoOsc[0].midiContinue();
+        lfoOsc[1].midiContinue();
+        lfoOsc[2].midiContinue();
+        lfoEnv[0].midiContinue();
+        lfoEnv2[0].midiContinue();
+        lfoStepSeq[0].midiContinue();
+        lfoStepSeq[1].midiContinue();
         this->recomputeNext = true;
         OnMidiStart();
     }
 
 
     void midiClockStop() {
-    	OnMidiStop();
+        OnMidiStop();
     }
 
     void midiClockSongPositionStep(int songPosition) {
-    	lfoOsc[0].midiClock(songPosition, this->recomputeNext);
-    	lfoOsc[1].midiClock(songPosition, this->recomputeNext);
-    	lfoOsc[2].midiClock(songPosition, this->recomputeNext);
-    	lfoEnv[0].midiClock(songPosition, this->recomputeNext);
-    	lfoEnv2[0].midiClock(songPosition, this->recomputeNext);
-    	lfoStepSeq[0].midiClock(songPosition, this->recomputeNext);
-    	lfoStepSeq[1].midiClock(songPosition, this->recomputeNext);
+        lfoOsc[0].midiClock(songPosition, this->recomputeNext);
+        lfoOsc[1].midiClock(songPosition, this->recomputeNext);
+        lfoOsc[2].midiClock(songPosition, this->recomputeNext);
+        lfoEnv[0].midiClock(songPosition, this->recomputeNext);
+        lfoEnv2[0].midiClock(songPosition, this->recomputeNext);
+        lfoStepSeq[0].midiClock(songPosition, this->recomputeNext);
+        lfoStepSeq[1].midiClock(songPosition, this->recomputeNext);
 
         if ((songPosition & 0x1)==0) {
             this->recomputeNext = true;
@@ -276,6 +276,10 @@ public:
     }
 
     float* getSampleBlock() {
+        return sampleBlock;
+    }
+
+    const float* getSampleBlock() const {
         return sampleBlock;
     }
 
@@ -349,14 +353,14 @@ private:
     float arpegiatorStep;
     NoteStack note_stack;
     EventScheduler event_scheduler;
-//
-//
-//    uint8_t clk_mode_;
-//    uint8_t groove_template_;
-//    uint8_t groove_amount_;
-//    uint8_t channel_;
-//    uint8_t pattern_;
-//
+    //
+    //
+    //    uint8_t clk_mode_;
+    //    uint8_t groove_template_;
+    //    uint8_t groove_amount_;
+    //    uint8_t channel_;
+    //    uint8_t pattern_;
+    //
 
 
     uint8_t running_;
@@ -370,7 +374,7 @@ private:
     uint8_t ignore_note_off_messages_;
     uint8_t recording_;
     // Low pass filter
-	float fxParam1, fxParam2, fxParam3;
+    float fxParam1, fxParam2, fxParam3;
     float v0L, v1L;
     float v0R, v1R;
 

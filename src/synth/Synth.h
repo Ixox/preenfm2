@@ -35,10 +35,10 @@ public:
     Synth(void);
     virtual ~Synth(void);
 
-	void setSynthState(SynthState* sState) {
-		SynthStateAware::setSynthState(sState);
-		init();
-	}
+    void setSynthState(SynthState* sState) {
+        SynthStateAware::setSynthState(sState);
+        init();
+    }
 
     void noteOn(int timbre, char note, char velocity);
     void noteOff(int timbre, char note);
@@ -51,7 +51,7 @@ public:
 
     // Overide SynthParamListener
     void playNote(int timbreNumber, char note, char velocity) {
-    	noteOn(timbreNumber, note, velocity);
+        noteOn(timbreNumber, note, velocity);
     }
     void stopNote(int timbreNumber, char note) {
         if (note != 0) {
@@ -84,7 +84,7 @@ public:
     void showAlgo() { }
 
     void midiClockSetSongPosition(int songPosition) {
-    	// nothing to do
+        // nothing to do
     }
 
     void midiClockContinue(int songPosition) {
@@ -118,20 +118,16 @@ public:
         }
     }
 
-    inline float leftSampleAtReadCursor() {
+    inline int leftSampleAtReadCursor() const {
         return this->samples[this->readCursor];
     }
 
-    inline float rightSampleAtReadCursor() {
+    inline int rightSampleAtReadCursor() const {
         return this->samples[this->readCursor + 1];
     }
 
-
     void incReadCursor() {
-        this->readCursor += 2;
-        if (this->readCursor == 256) {
-            this->readCursor = 0;
-        }
+        this->readCursor = (this->readCursor + 2) & 255;
     }
 
     inline int getSampleCount() {
@@ -147,12 +143,13 @@ public:
     }
 
     void setNewValueFromMidi(int timbre, int row, int encoder, float newValue);
-	void loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int patchNumber);
+    void loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int patchNumber);
     void setHoldPedal(int timbre, int value);
 
 
 #ifdef DEBUG
     void debugVoice();
+    void showCycles();
 #endif
 
 
@@ -161,6 +158,9 @@ private:
     void init();
 
     float ratioTimbre;
+
+    float ratioTimbreLP;
+
     int numberOfOsc;
     Voice voices[MAX_NUMBER_OF_VOICES];
     Timbre timbres[NUMBER_OF_TIMBRES];
@@ -169,13 +169,11 @@ private:
     // sample Buffer
     volatile int readCursor;
     volatile int writeCursor;
-    float samples[256];
+    int samples[256];
 
     // gate
     float currentGate;
 
-    // noise index
-    uint32_t random32bit;
 };
 
 

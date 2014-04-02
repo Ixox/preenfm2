@@ -54,8 +54,10 @@ public:
     char getNextPendingNote() { return this->nextPendingNote; }
     char getNextGlidingNote() { return this->nextGlidingNote; }
     bool isHoldedByPedal() { return this->holdedByPedal; }
-    bool setHoldedByPedal(bool holded) { this->holdedByPedal = holded; }
+    void setHoldedByPedal(bool holded) { this->holdedByPedal = holded; }
     void setCurrentTimbre(Timbre *timbre) { this->currentTimbre = timbre; }
+    bool isGliding() { return gliding; }
+
 private:
     // voice status
     int frequency;

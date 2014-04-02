@@ -42,21 +42,21 @@ void LfoOsc::init(struct LfoParams *lfoParams, Matrix *matrix, SourceEnum source
 void LfoOsc::midiClock(int songPosition, bool computeStep) {
 
     // Midi Clock
-//    if ((lfo->freq * 10.0f) >= LFO_MIDICLOCK_MC_DIV_16) {
-//        if ((songPosition & 0x1)==0) {
-//            if (computeStep) {
-//                lcd.setCursor(0,1);
-//                lcd.print((int)(lfo->freq * 10.0f));
-//                lcd.print(' ');
-//
-//                lcd.setCursor(5,1);
-//                lcd.print((int) ticks);
-//                lcd.print(' ');
-//            }
-//        }
-//    }
+    //    if ((lfo->freq * 10.0f) >= LFO_MIDICLOCK_MC_DIV_16) {
+    //        if ((songPosition & 0x1)==0) {
+    //            if (computeStep) {
+    //                lcd.setCursor(0,1);
+    //                lcd.print((int)(lfo->freq * 10.0f));
+    //                lcd.print(' ');
+    //
+    //                lcd.setCursor(5,1);
+    //                lcd.print((int) ticks);
+    //                lcd.print(' ');
+    //            }
+    //        }
+    //    }
 
-	ticks &= 0x7ff;
+    ticks &= 0x7ff;
 
     switch ((int)(lfo->freq * 10.0f + .05f)) {
     case LFO_MIDICLOCK_MC_DIV_16:
@@ -145,14 +145,14 @@ void LfoOsc::midiClock(int songPosition, bool computeStep) {
         break;
     }
 
-//    if ((lfo->freq * 10.0f) >= LFO_MIDICLOCK_MC_DIV_16) {
-//
-//        if ((songPosition & 0x1)==0) {
-//            lcd.setCursor(11,1);
-//            lcd.print((int)(currentFreq*1000.0f));
-//            lcd.print(' ');
-//        }
-//    }
+    //    if ((lfo->freq * 10.0f) >= LFO_MIDICLOCK_MC_DIV_16) {
+    //
+    //        if ((songPosition & 0x1)==0) {
+    //            lcd.setCursor(11,1);
+    //            lcd.print((int)(currentFreq*1000.0f));
+    //            lcd.print(' ');
+    //        }
+    //    }
 
 }
 
@@ -179,16 +179,16 @@ void LfoOsc::nextValueInMatrix() {
         break;
     }
     case LFO_RAMP:
-    	if (unlikely(phase >= 1.0f)) {
-    		phase -= 1;
-    	}
+        if (unlikely(phase >= 1.0f)) {
+            phase -= 1;
+        }
         lfoValue = -1.0f + phase * 2.0f;
         break;
     case LFO_SIN:
     {
-    	if (unlikely(phase >= 1.0f)) {
-    		phase -= 1;
-    	}
+        if (unlikely(phase >= 1.0f)) {
+            phase -= 1;
+        }
         int sinIndex = (int) (phase * waveTables[0].max);
         sinIndex &= waveTables[0].max;
         lfoValue = sinTable[sinIndex];
@@ -213,7 +213,7 @@ void LfoOsc::nextValueInMatrix() {
     }
 
 
-    if (currentRamp < ramp) {
+    if (unlikely(currentRamp < ramp)) {
         lfoValue = lfoValue * currentRamp  * rampInv ;
         currentRamp += PREENFM_FREQUENCY_INVERSED_LFO;
     }
@@ -228,8 +228,8 @@ void LfoOsc::noteOn() {
     if (ramp >= 0.0f) {
         currentRamp = (ramp == 0.0) * 1.0f;
         if ((lfo->freq * 10.0f) < LFO_MIDICLOCK_MC_DIV_16) {
-    		phase = 0;
-    	}
+            phase = 0;
+        }
         // Retriger value if random...
         if (unlikely(lfo->shape == LFO_RANDOM)) {
             currentRandomValue = noise[0];
