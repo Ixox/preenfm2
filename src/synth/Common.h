@@ -22,6 +22,7 @@
 
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
+#define ARRAY_SIZE(x)  ( sizeof(x) / sizeof((x)[0]) )
 
 #define BLOCK_SIZE 32
 
@@ -33,6 +34,7 @@
 
 #define MAX_NUMBER_OF_VOICES 16
 #define MAX_NUMBER_OF_OPERATORS 48
+
 #define NUMBER_OF_TIMBRES 4
 #define NUMBER_OF_OPERATORS 6
 
@@ -83,8 +85,9 @@ enum {
     ROW_OSC_MIX1,
     ROW_OSC_MIX2,
     ROW_OSC_MIX3,
-    ROW_ARPEGGIATOR1 ,
-    ROW_ARPEGGIATOR2 ,
+    ROW_ARPEGGIATOR1,
+    ROW_ARPEGGIATOR2,
+    ROW_ARPEGGIATOR3,
     ROW_EFFECT,
     ROW_ENGINE_LAST = ROW_EFFECT
 };
@@ -174,6 +177,11 @@ enum LfoMidiClockMc {
 	LFO_MIDICLOCK_MC_TIME_8
 };
 
+enum {
+  ARPEGGIATOR_PRESET_PATTERN_COUNT = 22,
+  ARPEGGIATOR_USER_PATTERN_COUNT = 4,
+  ARPEGGIATOR_PATTERN_COUNT = ARPEGGIATOR_PRESET_PATTERN_COUNT + ARPEGGIATOR_USER_PATTERN_COUNT
+};
 
 #define NUMBER_OF_ROWS ROW_LFO_LAST+1
 
@@ -210,6 +218,18 @@ struct EngineArp2 {
     float division;
     float duration;
     float latche;
+};
+
+/* low 16 bits = pattern mask, high reserved for now */
+typedef uint32_t arp_pattern_t;
+#define ARP_PATTERN_GETMASK(x) (uint16_t)( (x) & 0xffff)
+#define ARP_PATTERN_SETMASK(p,m) do { (p) = ((p) & ~0xffff) | ((m) & 0xffff); } while (0)
+#define ARP_PATTERN(x) ((uint32_t)(x) & 0xffff)
+#define ARP_MASK_GETNIBBLE(m,i) (((m) >> (i*4)) & 0xf)
+#define ARP_MASK_SETNIBBLE(m,i,v) do {  mask &= ~(0xf << (i*4)); mask |= (v << (i*4)); } while(0)
+
+struct EngineArpUserPatterns {
+  arp_pattern_t patterns[ 4 ];
 };
 
 struct EngineIm1 {
@@ -368,8 +388,9 @@ struct OneSynthParams {
     struct EngineMix1 engineMix1;
     struct EngineMix2 engineMix2;
     struct EngineMix3 engineMix3;
-    struct EngineArp1 engineApr1;
-    struct EngineArp2 engineApr2;
+    struct EngineArp1 engineArp1;
+    struct EngineArp2 engineArp2;
+    struct EngineArpUserPatterns engineArpUserPatterns;
     struct EffectRowParams effect;
     struct OscillatorParams osc1;
     struct OscillatorParams osc2;

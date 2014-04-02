@@ -33,8 +33,8 @@ const char* allChars  = "_ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 
 const char* nullNames []= {};
 const unsigned char* nullNamesOrder = NULL;
 const char* algoNames [] = { "alg1", "alg2", "alg3", "alg4", "alg5", "alg6", "alg7", "alg8", "alg9",
-		"al10", "al11", "al12", "al13", "al14", "al15", "al16", "al17", "al18", "al19",
-		"al20", "al21", "al22", "al23", "al24", "al25", "al26", "al27", "al28"  };
+        "al10", "al11", "al12", "al13", "al14", "al15", "al16", "al17", "al18", "al19",
+        "al20", "al21", "al22", "al23", "al24", "al25", "al26", "al27", "al28"  };
 
 struct ParameterRowDisplay engine1ParameterRow  = {
         "Engine" ,
@@ -51,7 +51,6 @@ struct ParameterRowDisplay engine1ParameterRow  = {
 const char* clockName[] = { "Off ", "Int ", "Ext " };
 const char* dirName[] = { "Up  ", "Down", "U&D ", "Play", "Rand" };
 
-
 struct ParameterRowDisplay engineArp1ParameterRow  = {
         "Arpeggiator" ,
         { "Clk ", "BPM ", "Dire" , "Octv"},
@@ -66,21 +65,35 @@ struct ParameterRowDisplay engineArp1ParameterRow  = {
 //   192, 144, 96, 72, 64, 48, 36, 32, 24, 16, 12, 8, 6, 4, 3, 2, 1
 
 const char* divNames[] = { "2/1 ", "3/2 ", "1/1 ", "3/4 ", "2/3 ", "1/2 ", "3/8 ", "1/3 ", "1/4 ", "1/6 ", "1/8 ",
-		"1/12", "1/16", "1/24", "1/32", "1/48", "1/96"};
+        "1/12", "1/16", "1/24", "1/32", "1/48", "1/96"};
 const char* activeName[] = { "Off ", "On  " };
 
+const char* patternName[] = { "1   ", "2   ", "3   ", "4   ", "5   ", "6   ", "7   ", "8   ", "9   ",
+        "10   ", "11  ", "12  ", "13  ", "14  ", "15  ", "16  ", "17  ", "18  ", "19  ",
+        "20   ", "21  ", "22  ",
+        "Usr1", "Usr2", "Usr3", "Usr4" };
+
 struct ParameterRowDisplay engineArp2ParameterRow  = {
-        "Arpeggiator" ,
+        "Arpeggiator",
         { "Ptrn", "Divi", "Dura", "Latc" },
         {
-                {1, 22, 22, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder},
+                {0, ARPEGGIATOR_PATTERN_COUNT-1, ARPEGGIATOR_PATTERN_COUNT, DISPLAY_TYPE_STRINGS, patternName, nullNamesOrder, nullNamesOrder},
                 {0, 16, 17, DISPLAY_TYPE_STRINGS, divNames, nullNamesOrder, nullNamesOrder },
                 {0, 16, 17, DISPLAY_TYPE_STRINGS, divNames, nullNamesOrder, nullNamesOrder },
                 {0, 1, 2, DISPLAY_TYPE_STRINGS, activeName, nullNamesOrder, nullNamesOrder },
         }
 };
 
-
+struct ParameterRowDisplay engineArpPatternRow = {
+        "Arpeg ",
+        { "    ", "    ", "    ", "    " },
+        {
+                {0, 0, 0, DISPLAY_TYPE_ARP_PATTERN, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 0, 0, DISPLAY_TYPE_ARP_PATTERN, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 0, 0, DISPLAY_TYPE_ARP_PATTERN, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 0, 0, DISPLAY_TYPE_ARP_PATTERN, nullNames, nullNamesOrder, nullNamesOrder },
+        }
+};
 
 struct ParameterRowDisplay engineIM1ParameterRow = {
         "Modulation" ,
@@ -165,11 +178,11 @@ struct ParameterRowDisplay effectParameterRow = {
 };
 
 struct FilterRowDisplay filterRowDisplay[FILTER_LAST] = {
-	{ NULL, NULL, "Gain" },
-	{ "Pan ", NULL, "Gain" },
-	{ "Freq", "Res ", "Gain" },
-	{ "Freq", "Res ", "Gain" },
-	{ "LoFr", "Boos", "Gain" }
+        { NULL, NULL, "Gain" },
+        { "Pan ", NULL, "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "LoFr", "Boos", "Gain" }
 };
 
 
@@ -235,17 +248,17 @@ struct ParameterRowDisplay lfoEnv2ParameterRow = {
 };
 
 const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "env2", "seq1", "seq2",
-		"ModW", "PitB", "AftT",  "Velo", "Key ", "p1  ", "p2  ", "p3  ", "p4  " } ;
+        "ModW", "PitB", "AftT",  "Velo", "Key ", "p1  ", "p2  ", "p3  ", "p4  " } ;
 
 const char* matrixDestNames [] = {
         "None", "Gate", "IM1 ", "IM2 ", "IM3 ", "IM4 ", "IM* ",
         "Mix1", "Pan1", "Mix2", "Pan2", "Mix3", "Pan3", "Mix3", "Pan3", "Mix*", "Pan*",
         "o1Fq", "o2Fq", "o3Fq", "o4Fq", "o5Fq", "o6Fq", "o*Fq",
         "Att1", "Att2", "Att3", "Att4", "Att5", "Att6", "Att*", "Rel*",
-	    "mx01", "mx02", "mx03", "mx04",
+        "mx01", "mx02", "mx03", "mx04",
         "l1Fq", "l2Fq", "l3Fq", "e2si", "s1ga", "s2ga",
         "FlHz"
-	   } ;
+} ;
 
 
 struct ParameterRowDisplay matrixParameterRow = {
@@ -312,6 +325,7 @@ struct AllParameterRowsDisplay allParameterRows = {
                 &engineMix3ParameterRow,
                 &engineArp1ParameterRow,
                 &engineArp2ParameterRow,
+                &engineArpPatternRow,
                 &effectParameterRow,
                 &oscParameterRow,
                 &oscParameterRow,
@@ -406,172 +420,221 @@ SynthState::SynthState() {
 
     stepSelect[0] = 0;
     stepSelect[1] = 0;
+    patternSelect = 0;
 
     isPlayingNote = false;
 
     for (int row= 0; row <NUMBER_OF_ROWS; row++) {
-    	for (int param=0; param<NUMBER_OF_ENCODERS; param++) {
+        for (int param=0; param<NUMBER_OF_ENCODERS; param++) {
             struct ParameterDisplay* paramDisplay = &(allParameterRows.row[row]->params[param]);
             if (paramDisplay->numberOfValues > 1.0) {
-            	paramDisplay->incValue = ((paramDisplay->maxValue - paramDisplay->minValue) / (paramDisplay->numberOfValues - 1.0f));
+                paramDisplay->incValue = ((paramDisplay->maxValue - paramDisplay->minValue) / (paramDisplay->numberOfValues - 1.0f));
             } else {
-            	paramDisplay->incValue = 0.0f;
+                paramDisplay->incValue = 0.0f;
             }
-    	}
+        }
     }
 }
 
 
 void SynthState::encoderTurnedForStepSequencer(int row, int encoder, int ticks) {
-	int whichStepSeq = row - ROW_LFOSEQ1;
-	StepSequencerSteps * seqSteps = &((StepSequencerSteps * )(&params->lfoSteps1))[whichStepSeq];
+    int whichStepSeq = row - ROW_LFOSEQ1;
+    StepSequencerSteps * seqSteps = &((StepSequencerSteps * )(&params->lfoSteps1))[whichStepSeq];
 
-	if (encoder == 2) {
-		int oldPos = stepSelect[whichStepSeq];
-		stepSelect[whichStepSeq] += (ticks>0? 1 : -1);
+    if (encoder == 2) {
+        int oldPos = stepSelect[whichStepSeq];
+        stepSelect[whichStepSeq] += (ticks>0? 1 : -1);
 
-		if (stepSelect[whichStepSeq]>15) {
-			stepSelect[whichStepSeq] = 0;
-		} else if (stepSelect[whichStepSeq]<0) {
-			stepSelect[whichStepSeq] = 15;
-		}
+        if (stepSelect[whichStepSeq]>15) {
+            stepSelect[whichStepSeq] = 0;
+        } else if (stepSelect[whichStepSeq]<0) {
+            stepSelect[whichStepSeq] = 15;
+        }
 
         propagateNewParamValue(currentTimbre, row, encoder, (ParameterDisplay*)NULL, oldPos, stepSelect[whichStepSeq]);
 
-	} else if (encoder == 3) {
-		char *step = &seqSteps->steps[stepSelect[whichStepSeq]];
-		int oldValue = (int)(*step);
+    } else if (encoder == 3) {
+        char *step = &seqSteps->steps[stepSelect[whichStepSeq]];
+        int oldValue = (int)(*step);
 
-		(*step) += ticks;
+        (*step) += ticks;
 
-		if ((*step)>15) {
-			(*step) = 15;
-		} else if ((*step)<0) {
-			(*step) = 0;
-		}
+        if ((*step)>15) {
+            (*step) = 15;
+        } else if ((*step)<0) {
+            (*step) = 0;
+        }
 
         propagateNewParamValue(currentTimbre, row, encoder, (ParameterDisplay*)NULL, oldValue, (int)(*step));
-
-
-	}
+    }
 }
 
+void SynthState::encoderTurnedForArpPattern(int row, int encoder, int ticks) {
+    int whichStepSeq = row - ROW_LFOSEQ1;
+    StepSequencerSteps * seqSteps = &((StepSequencerSteps * )(&params->lfoSteps1))[whichStepSeq];
 
+    if (encoder < 3) {
+        int oldPos = patternSelect;
+        patternSelect += (ticks > 0? 1 : -1);
+
+        if (patternSelect>15) {
+            patternSelect = 0;
+        } else if (patternSelect<0) {
+            patternSelect = 15;
+        }
+
+        propagateNewParamValue(currentTimbre, row, encoder, (ParameterDisplay*)NULL, oldPos, patternSelect);
+
+    } else {
+
+        arp_pattern_t *pattern = &params->engineArpUserPatterns.patterns[ (int)params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT ];
+        bool oldValue = *pattern & (1 << patternSelect);
+
+        if (ticks > 0) {
+            if (!oldValue) {
+                arp_pattern_t bitToAdd = 1 << patternSelect;
+                *pattern |= bitToAdd;
+                propagateNewParamValue(currentTimbre, row, encoder, (ParameterDisplay*)NULL, 0, 1);
+            }
+        } else {
+            if (oldValue) {
+                arp_pattern_t bitToRemove = 1 << patternSelect;
+                *pattern &= ~bitToRemove;
+                propagateNewParamValue(currentTimbre, row, encoder, (ParameterDisplay*)NULL, 1, 0);
+            }
+        }
+    }
+
+//    arp_pattern_t *pattern = &params->engineArpUserPatterns.patterns[ (int)params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT ];
+//    uint16_t mask = ARP_PATTERN_GETMASK( *pattern );
+//
+//    int oldvalue = ARP_MASK_GETNIBBLE( mask, encoder );
+//    int newvalue = oldvalue + ticks;
+//    if ( newvalue > 15 )
+//        newvalue = 15;
+//    else if ( newvalue < 0 )
+//        newvalue = 0;
+//
+//    ARP_MASK_SETNIBBLE( mask, encoder, newvalue );
+//    ARP_PATTERN_SETMASK( *pattern, mask );
+//
+//    propagateNewParamValue(currentTimbre, row, encoder, (ParameterDisplay*)NULL, oldvalue, newvalue);
+}
 
 void SynthState::twoButtonsPressed(int button1, int button2) {
-	int oldCurrentRow = currentRow;
+    int oldCurrentRow = currentRow;
 
-	if ((fullState.synthMode  != SYNTH_MODE_EDIT)) {
-		return;
-	}
+    if ((fullState.synthMode  != SYNTH_MODE_EDIT)) {
+        return;
+    }
 
-	switch (button1) {
-		case BUTTON_BACK:
-			switch (button2) {
-			case BUTTON_SYNTH:
-				propagateNoteOn(12);
-				break;
-			case BUTTON_OSC:
-				propagateNoteOn(8);
-				break;
-			case BUTTON_ENV:
-				propagateNoteOn(0);
-				break;
-			case BUTTON_MATRIX:
-				propagateNoteOn(-8);
-				break;
-			case BUTTON_LFO:
-				propagateNoteOn(-12);
-				break;
-			case BUTTON_MENUSELECT:
-				propagateNoteOff();
-				propagateBeforeNewParamsLoad(currentTimbre);
-				propagateAfterNewComboLoad();
-				break;
-			}
-		break;
-		case BUTTON_SYNTH:
-			switch (button2) {
-			case BUTTON_MENUSELECT:
-				if (fullState.synthMode  == SYNTH_MODE_EDIT) {
-					propagateShowAlgo();
-				}
-				break;
-			case BUTTON_OSC:
-				currentRow = ROW_ENGINE;
-				break;
-			case BUTTON_ENV:
-				currentRow = ROW_ARPEGGIATOR1;
-				break;
-			case BUTTON_MATRIX:
-				currentRow = ROW_MODULATION1;
-				break;
-			case BUTTON_LFO:
-				currentRow = ROW_EFFECT;
-				break;
-			}
-		break;
-		case BUTTON_MATRIX:
-			switch (button2) {
-			case BUTTON_SYNTH:
-				currentRow = ROW_MATRIX1;
-				break;
-			case BUTTON_OSC:
-				changeSynthModeRow(BUTTON_MATRIX , -3);
-				break;
-			case BUTTON_ENV:
-				changeSynthModeRow(BUTTON_MATRIX , -1);
-				break;
-			case BUTTON_LFO:
-				currentRow = ROW_MATRIX6;
-				break;
-			}
-		break;
-		case BUTTON_LFO:
-			switch (button2) {
-			case BUTTON_SYNTH:
-				currentRow = ROW_LFOOSC1;
-				break;
-			case BUTTON_OSC:
-				currentRow = ROW_LFOENV1;
-				break;
-			case BUTTON_ENV:
-				currentRow = ROW_LFOENV2;
-				break;
+    switch (button1) {
+    case BUTTON_BACK:
+        switch (button2) {
+        case BUTTON_SYNTH:
+            propagateNoteOn(12);
+            break;
+        case BUTTON_OSC:
+            propagateNoteOn(8);
+            break;
+        case BUTTON_ENV:
+            propagateNoteOn(0);
+            break;
+        case BUTTON_MATRIX:
+            propagateNoteOn(-8);
+            break;
+        case BUTTON_LFO:
+            propagateNoteOn(-12);
+            break;
+        case BUTTON_MENUSELECT:
+            propagateNoteOff();
+            propagateBeforeNewParamsLoad(currentTimbre);
+            propagateAfterNewComboLoad();
+            break;
+        }
+        break;
+        case BUTTON_SYNTH:
+            switch (button2) {
+            case BUTTON_MENUSELECT:
+                if (fullState.synthMode  == SYNTH_MODE_EDIT) {
+                    propagateShowAlgo();
+                }
+                break;
+            case BUTTON_OSC:
+                currentRow = ROW_ENGINE;
+                break;
+            case BUTTON_ENV:
+                currentRow = ROW_ARPEGGIATOR1;
+                break;
+            case BUTTON_MATRIX:
+                currentRow = ROW_MODULATION1;
+                break;
+            case BUTTON_LFO:
+                currentRow = ROW_EFFECT;
+                break;
+            }
+            break;
+            case BUTTON_MATRIX:
+                switch (button2) {
+                case BUTTON_SYNTH:
+                    currentRow = ROW_MATRIX1;
+                    break;
+                case BUTTON_OSC:
+                    changeSynthModeRow(BUTTON_MATRIX , -3);
+                    break;
+                case BUTTON_ENV:
+                    changeSynthModeRow(BUTTON_MATRIX , -1);
+                    break;
+                case BUTTON_LFO:
+                    currentRow = ROW_MATRIX6;
+                    break;
+                }
+                break;
+                case BUTTON_LFO:
+                    switch (button2) {
+                    case BUTTON_SYNTH:
+                        currentRow = ROW_LFOOSC1;
+                        break;
+                    case BUTTON_OSC:
+                        currentRow = ROW_LFOENV1;
+                        break;
+                    case BUTTON_ENV:
+                        currentRow = ROW_LFOENV2;
+                        break;
 #ifndef DEBUG
-			case BUTTON_MATRIX:
-				currentRow = ROW_LFOSEQ1;
-				break;
+                    case BUTTON_MATRIX:
+                        currentRow = ROW_LFOSEQ1;
+                        break;
 #endif
-			case BUTTON_MENUSELECT:
-				currentRow = ROW_PERFORMANCE1;
-				break;
-			}
-		break;
-		case BUTTON_MENUSELECT:
-			switch (button2) {
-			case BUTTON_LFO:
-				currentRow = ROW_PERFORMANCE1;
-				break;
-			}
-		break;
-	}
+                    case BUTTON_MENUSELECT:
+                        currentRow = ROW_PERFORMANCE1;
+                        break;
+                    }
+                    break;
+                    case BUTTON_MENUSELECT:
+                        switch (button2) {
+                        case BUTTON_LFO:
+                            currentRow = ROW_PERFORMANCE1;
+                            break;
+                        }
+                        break;
+    }
 
 #ifdef DEBUG
-	if (button1 == BUTTON_LFO) {
-		if (button2 == BUTTON_MATRIX) {
-			synth.debugVoice();
-		}
-		if (button2 == BUTTON_BACK) {
-			synth.showCycles();
- 		}
-		if (button2 == BUTTON_MENUSELECT) {
-			storage->testMemoryPreset();
-		}
-	}
+    if (button1 == BUTTON_LFO) {
+        if (button2 == BUTTON_MATRIX) {
+            synth.debugVoice();
+        }
+        if (button2 == BUTTON_BACK) {
+            synth.showCycles();
+        }
+        if (button2 == BUTTON_MENUSELECT) {
+            storage->testMemoryPreset();
+        }
+    }
 #endif
 
-	if (oldCurrentRow != currentRow) {
+    if (oldCurrentRow != currentRow) {
         propagateNewCurrentRow(currentRow);
     }
 }
@@ -582,37 +645,37 @@ void SynthState::encoderTurnedWhileButtonPressed(int encoder, int ticks, int but
     int oldCurrentRow = currentRow;
 
     if (likely(fullState.synthMode != SYNTH_MODE_MENU))  {
-    	switch (button) {
-    	case BUTTON_SYNTH:
-    	case BUTTON_OSC:
-    	case BUTTON_ENV:
-    	case BUTTON_MATRIX:
-    	case BUTTON_LFO:
-    		if (likely(fullState.synthMode == SYNTH_MODE_EDIT)) {
-    			changeSynthModeRow(button , ticks>0 ? 1 : -1);
-    		}
-    		break;
-    	case BUTTON_BACK:
-    		encoderTurned(encoder, ticks * 10);
-    		break;
-    	case BUTTON_ENCODER:
-    	case BUTTON_MENUSELECT:
-    	{
-    		if (currentRow == ROW_ENGINE_FIRST) {
-    			// Nothing if first engine row
-    			return;
-    		}
+        switch (button) {
+        case BUTTON_SYNTH:
+        case BUTTON_OSC:
+        case BUTTON_ENV:
+        case BUTTON_MATRIX:
+        case BUTTON_LFO:
+            if (likely(fullState.synthMode == SYNTH_MODE_EDIT)) {
+                changeSynthModeRow(button , ticks>0 ? 1 : -1);
+            }
+            break;
+        case BUTTON_BACK:
+            encoderTurned(encoder, ticks * 10);
+            break;
+        case BUTTON_ENCODER:
+        case BUTTON_MENUSELECT:
+        {
+            if (currentRow == ROW_ENGINE_FIRST) {
+                // Nothing if first engine row
+                return;
+            }
             struct ParameterDisplay* param = &(allParameterRows.row[currentRow]->params[encoder]);
-    		const struct OneSynthParams* defaultParams = &defaultPreset;
+            const struct OneSynthParams* defaultParams = &defaultPreset;
             int num = encoder + currentRow * NUMBER_OF_ENCODERS;
             float &value = ((float*)params)[num];
             float oldValue = value;
             float newValue = ((float*)defaultParams)[num];
             value = newValue;
             propagateNewParamValue(currentTimbre, currentRow, encoder, param, oldValue, newValue);
-    		break;
-    	}
-    	}
+            break;
+        }
+        }
     }
     if (oldCurrentRow != currentRow) {
         propagateNewCurrentRow(currentRow);
@@ -624,11 +687,15 @@ void SynthState::encoderTurned(int encoder, int ticks) {
 
         // Step sequencer special case
         if (currentRow >= ROW_LFOSEQ1) {
-    		if (encoder >= 2) {
-    			encoderTurnedForStepSequencer(currentRow, encoder, ticks);
-    			return;
-    		}
-    	};
+            if (encoder >= 2) {
+                encoderTurnedForStepSequencer(currentRow, encoder, ticks);
+                return;
+            }
+        };
+        if (currentRow == ROW_ARPEGGIATOR3) {
+            encoderTurnedForArpPattern(currentRow, encoder, ticks);
+            return;
+        }
 
         int num = encoder + currentRow * NUMBER_OF_ENCODERS;
         struct ParameterDisplay* param = &(allParameterRows.row[currentRow]->params[encoder]);
@@ -636,41 +703,41 @@ void SynthState::encoderTurned(int encoder, int ticks) {
         float oldValue;
 
 
-		if (param->displayType == DISPLAY_TYPE_STRINGS) {
-			// Do not use encoder acceleration
-			ticks = ticks > 0 ? 1 : -1;
-		}
+        if (param->displayType == DISPLAY_TYPE_STRINGS) {
+            // Do not use encoder acceleration
+            ticks = ticks > 0 ? 1 : -1;
+        }
 
-		if (param->valueNameOrder == NULL) {
-			// Not string parameters
+        if (param->valueNameOrder == NULL) {
+            // Not string parameters
 
-			// floating point test to be sure numberOfValues is different from 1.
-			// for voices when number of voices forced to 0
-			if (param->numberOfValues < 1.5) {
-				return;
-			}
+            // floating point test to be sure numberOfValues is different from 1.
+            // for voices when number of voices forced to 0
+            if (param->numberOfValues < 1.5) {
+                return;
+            }
 
 
-			float &value = ((float*)params)[num];
-			oldValue = value;
+            float &value = ((float*)params)[num];
+            oldValue = value;
 
-			float inc = param->incValue;
+            float inc = param->incValue;
 
-			// Slow down LFO frequency
-			if (param->displayType == DISPLAY_TYPE_FLOAT_LFO_FREQUENCY && oldValue < 1.0f) {
-				inc = inc * .1f;
-			}
+            // Slow down LFO frequency
+            if (param->displayType == DISPLAY_TYPE_FLOAT_LFO_FREQUENCY && oldValue < 1.0f) {
+                inc = inc * .1f;
+            }
 
-			int tickIndex = (value - param->minValue) / inc + .0005f + ticks;
-			newValue = param->minValue + tickIndex * inc;
-			propagateNewParamCheck(encoder, oldValue, &newValue);
-			if (newValue > param->maxValue) {
-				newValue = param->maxValue;
-			}
-			if (newValue < param->minValue) {
-				newValue = param->minValue;
-			}
-			value = newValue;
+            int tickIndex = (value - param->minValue) / inc + .0005f + ticks;
+            newValue = param->minValue + tickIndex * inc;
+            propagateNewParamCheck(encoder, oldValue, &newValue);
+            if (newValue > param->maxValue) {
+                newValue = param->maxValue;
+            }
+            if (newValue < param->minValue) {
+                newValue = param->minValue;
+            }
+            value = newValue;
         } else {
             float *value = &((float*)params)[num];
             int index;
@@ -756,13 +823,13 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                 }
                 propagateNewMenuSelect();
             } else if (fullState.currentMenuItem->menuState == MENU_CONFIG_SETTINGS) {
-            	fullState.midiConfigValue[fullState.menuSelect] = fullState.midiConfigValue[fullState.menuSelect] + (ticks>0? 1: -1);
-            	if (fullState.midiConfigValue[fullState.menuSelect] >= midiConfig[fullState.menuSelect].maxValue) {
-            		fullState.midiConfigValue[fullState.menuSelect] = midiConfig[fullState.menuSelect].maxValue - 1;
-            	}
-            	if (fullState.midiConfigValue[fullState.menuSelect] < 0 ) {
-            		fullState.midiConfigValue[fullState.menuSelect] = 0;
-            	}
+                fullState.midiConfigValue[fullState.menuSelect] = fullState.midiConfigValue[fullState.menuSelect] + (ticks>0? 1: -1);
+                if (fullState.midiConfigValue[fullState.menuSelect] >= midiConfig[fullState.menuSelect].maxValue) {
+                    fullState.midiConfigValue[fullState.menuSelect] = midiConfig[fullState.menuSelect].maxValue - 1;
+                }
+                if (fullState.midiConfigValue[fullState.menuSelect] < 0 ) {
+                    fullState.midiConfigValue[fullState.menuSelect] = 0;
+                }
                 propagateNewMenuSelect();
             } else if (fullState.currentMenuItem->maxValue >= 128) {
                 if (ticks>0) {
@@ -787,57 +854,57 @@ void SynthState::encoderTurned(int encoder, int ticks) {
         }
 
         if (fullState.menuSelect != oldMenuSelect) {
-        	switch (fullState.currentMenuItem->menuState) {
-        	case MENU_LOAD_SELECT_DX7_BANK:
-        		// Did we really change DX7 bank?
-        		if (fullState.dx7Bank != storage->getDx7Bank(fullState.menuSelect)) {
-        			fullState.dx7Bank = storage->getDx7Bank(fullState.menuSelect);
-        			fullState.dx7PresetNumber = 0;
-        		}
-        		break;
-        	case MENU_LOAD_SELECT_DX7_PRESET:
+            switch (fullState.currentMenuItem->menuState) {
+            case MENU_LOAD_SELECT_DX7_BANK:
+                // Did we really change DX7 bank?
+                if (fullState.dx7Bank != storage->getDx7Bank(fullState.menuSelect)) {
+                    fullState.dx7Bank = storage->getDx7Bank(fullState.menuSelect);
+                    fullState.dx7PresetNumber = 0;
+                }
+                break;
+            case MENU_LOAD_SELECT_DX7_PRESET:
                 propagateNoteOff();
                 loadDx7Patch(currentTimbre, fullState.dx7Bank, fullState.menuSelect, params);
                 fullState.dx7PresetNumber = fullState.menuSelect;
                 break;
-        	case MENU_LOAD_SELECT_BANK:
-        	case MENU_SAVE_SELECT_BANK:
-        		// Did we really change bank?
-        		if (fullState.preenFMBank != storage->getPreenFMBank(fullState.menuSelect)) {
-        			fullState.preenFMBank = storage->getPreenFMBank(fullState.menuSelect);
-        			fullState.preenFMPresetNumber = 0;
-        		}
-        		break;
-        	case MENU_RENAME_SELECT_BANK:
-        		// Did we really change bank?
-        		if (fullState.preenFMBank != storage->getPreenFMBank(fullState.menuSelect)) {
-        			fullState.preenFMBank = storage->getPreenFMBank(fullState.menuSelect);
-        		}
-        		break;
-        	case MENU_LOAD_SELECT_COMBO:
-        	case MENU_SAVE_SELECT_COMBO:
-        		// Did we really change bank?
-        		if (fullState.preenFMCombo != storage->getPreenFMCombo(fullState.menuSelect)) {
-        			fullState.preenFMCombo = storage->getPreenFMCombo(fullState.menuSelect);
-        			fullState.preenFMComboPresetNumber = 0;
-        		}
-        		break;
-        	case MENU_RENAME_SELECT_COMBO:
-        		// Did we really change combo?
-        		if (fullState.preenFMCombo != storage->getPreenFMCombo(fullState.menuSelect)) {
-        			fullState.preenFMCombo = storage->getPreenFMCombo(fullState.menuSelect);
-        		}
-        		break;
-			case MENU_LOAD_SELECT_BANK_PRESET:
-			    propagateNoteOff();
-				loadPreenFMPatch(currentTimbre, fullState.preenFMBank, fullState.menuSelect, params);
-                fullState.preenFMPresetNumber = fullState.menuSelect;
-				break;
-			case MENU_SAVE_SELECT_BANK_PRESET:
+            case MENU_LOAD_SELECT_BANK:
+            case MENU_SAVE_SELECT_BANK:
+                // Did we really change bank?
+                if (fullState.preenFMBank != storage->getPreenFMBank(fullState.menuSelect)) {
+                    fullState.preenFMBank = storage->getPreenFMBank(fullState.menuSelect);
+                    fullState.preenFMPresetNumber = 0;
+                }
+                break;
+            case MENU_RENAME_SELECT_BANK:
+                // Did we really change bank?
+                if (fullState.preenFMBank != storage->getPreenFMBank(fullState.menuSelect)) {
+                    fullState.preenFMBank = storage->getPreenFMBank(fullState.menuSelect);
+                }
+                break;
+            case MENU_LOAD_SELECT_COMBO:
+            case MENU_SAVE_SELECT_COMBO:
+                // Did we really change bank?
+                if (fullState.preenFMCombo != storage->getPreenFMCombo(fullState.menuSelect)) {
+                    fullState.preenFMCombo = storage->getPreenFMCombo(fullState.menuSelect);
+                    fullState.preenFMComboPresetNumber = 0;
+                }
+                break;
+            case MENU_RENAME_SELECT_COMBO:
+                // Did we really change combo?
+                if (fullState.preenFMCombo != storage->getPreenFMCombo(fullState.menuSelect)) {
+                    fullState.preenFMCombo = storage->getPreenFMCombo(fullState.menuSelect);
+                }
+                break;
+            case MENU_LOAD_SELECT_BANK_PRESET:
+                propagateNoteOff();
+                loadPreenFMPatch(currentTimbre, fullState.preenFMBank, fullState.menuSelect, params);
                 fullState.preenFMPresetNumber = fullState.menuSelect;
                 break;
-			case MENU_LOAD_SELECT_COMBO_PRESET:
-			case MENU_SAVE_SELECT_COMBO_PRESET:
+            case MENU_SAVE_SELECT_BANK_PRESET:
+                fullState.preenFMPresetNumber = fullState.menuSelect;
+                break;
+            case MENU_LOAD_SELECT_COMBO_PRESET:
+            case MENU_SAVE_SELECT_COMBO_PRESET:
                 fullState.preenFMComboPresetNumber = fullState.menuSelect;
                 break;
             }
@@ -847,57 +914,57 @@ void SynthState::encoderTurned(int encoder, int ticks) {
 }
 
 void SynthState::loadPreenFMPatch(int timbre, BankFile const *bank, int patchNumber, struct OneSynthParams* params) {
-	propagateBeforeNewParamsLoad(timbre);
-	storage->loadPreenFMPatch(bank, patchNumber, params);
-	propagateAfterNewParamsLoad(timbre);
+    propagateBeforeNewParamsLoad(timbre);
+    storage->loadPreenFMPatch(bank, patchNumber, params);
+    propagateAfterNewParamsLoad(timbre);
 }
 
 void SynthState::loadDx7Patch(int timbre, BankFile const *bank, int patchNumber, struct OneSynthParams* params) {
-	propagateBeforeNewParamsLoad(timbre);
-	hexter->loadHexterPatch(storage->dx7LoadPatch(bank, patchNumber), params);
-	propagateAfterNewParamsLoad(timbre);
+    propagateBeforeNewParamsLoad(timbre);
+    hexter->loadHexterPatch(storage->dx7LoadPatch(bank, patchNumber), params);
+    propagateAfterNewParamsLoad(timbre);
 }
 
 void SynthState::loadPreenFMCombo(BankFile const *bank, int patchNumber) {
-	propagateBeforeNewParamsLoad(currentTimbre);
-	storage->loadPreenFMCombo(bank, patchNumber);
-	// Update and clean all timbres
-	this->currentTimbre = 0;
-	propagateNewTimbre(currentTimbre);
-	propagateAfterNewComboLoad();
+    propagateBeforeNewParamsLoad(currentTimbre);
+    storage->loadPreenFMCombo(bank, patchNumber);
+    // Update and clean all timbres
+    this->currentTimbre = 0;
+    propagateNewTimbre(currentTimbre);
+    propagateAfterNewComboLoad();
 }
 
 
 void SynthState::loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int patchNumber, struct OneSynthParams* params) {
-	switch (bank) {
-	case 0:
-		{
-			BankFile const *bank = storage->getPreenFMBank(bankLSB);
-			if (bank->fileType != FILE_EMPTY) {
-				loadPreenFMPatch(timbre, bank, patchNumber, params);
-			}
-		}
-		break;
-	case 1:
-		{
-			BankFile const *bank = storage->getPreenFMCombo(bankLSB);
-			if (bank->fileType != FILE_EMPTY) {
-				loadPreenFMCombo(bank, patchNumber);
-			}
-		}
-		break;
-	case 2:
-	case 3:
-	case 4:
-		{
-			int dx7bank = bank - 2;
-			BankFile const *bank = storage->getDx7Bank(bankLSB + dx7bank * 128);
-			if (bank->fileType != FILE_EMPTY) {
-				loadDx7Patch(timbre, bank, patchNumber, params);
-			}
-		}
-		break;
-	}
+    switch (bank) {
+    case 0:
+    {
+        BankFile const *bank = storage->getPreenFMBank(bankLSB);
+        if (bank->fileType != FILE_EMPTY) {
+            loadPreenFMPatch(timbre, bank, patchNumber, params);
+        }
+    }
+    break;
+    case 1:
+    {
+        BankFile const *bank = storage->getPreenFMCombo(bankLSB);
+        if (bank->fileType != FILE_EMPTY) {
+            loadPreenFMCombo(bank, patchNumber);
+        }
+    }
+    break;
+    case 2:
+    case 3:
+    case 4:
+    {
+        int dx7bank = bank - 2;
+        BankFile const *bank = storage->getDx7Bank(bankLSB + dx7bank * 128);
+        if (bank->fileType != FILE_EMPTY) {
+            loadDx7Patch(timbre, bank, patchNumber, params);
+        }
+    }
+    break;
+    }
 }
 
 
@@ -909,174 +976,165 @@ void SynthState::resetDisplay() {
 
 bool SynthState::isCurrentRowAvailable() {
 
-	if (algoInformation[(int)params->engine1.algo].mix <= 2) {
-		if (currentRow == ROW_OSC_MIX2 ) {
-			return false;
-		}
-	}
-	if (algoInformation[(int)params->engine1.algo].mix <= 4) {
-		if (currentRow == ROW_OSC_MIX3 ) {
-			return false;
-		}
-	}
-	if (algoInformation[(int)params->engine1.algo].im == 0) {
-		if (currentRow == ROW_MODULATION1 ) {
-			return false;
-		}
-	}
-	if (algoInformation[(int)params->engine1.algo].im <= 2) {
-		if (currentRow == ROW_MODULATION2 ) {
-			return false;
-		}
-	}
-	if (algoInformation[(int)params->engine1.algo].im <= 4) {
-		if (currentRow == ROW_MODULATION3 ) {
-			return false;
-		}
-	}
-	return true;
+    switch (currentRow) {
+    case ROW_OSC_MIX2:
+        return algoInformation[(int)params->engine1.algo].mix > 2;
+    case ROW_OSC_MIX3:
+        return algoInformation[(int)params->engine1.algo].mix > 4;
+    case ROW_MODULATION1:
+        return algoInformation[(int)params->engine1.algo].im != 0;
+    case ROW_MODULATION2:
+        return algoInformation[(int)params->engine1.algo].im > 2;
+    case ROW_MODULATION3:
+        return algoInformation[(int)params->engine1.algo].im > 4;
+    case ROW_ARPEGGIATOR2:
+        return params->engineArp1.clock > 0;
+    case ROW_ARPEGGIATOR3:
+        return params->engineArp1.clock > 0 && params->engineArp2.pattern >= ARPEGGIATOR_PRESET_PATTERN_COUNT;
+    }
+    return true;
 }
 
 int SynthState::getRowFromOperator() {
-	switch (operatorView) {
-	case 0:
-		return ROW_OSC_FIRST + operatorNumber;
-		break;
-	case 1:
-		return ROW_ENV_FIRST + operatorNumber * 2;
-		break;
-	case 2:
-		return ROW_ENV_FIRST + operatorNumber * 2 + 1;
-		break;
-	}
+    switch (operatorView) {
+    case 0:
+        return ROW_OSC_FIRST + operatorNumber;
+        break;
+    case 1:
+        return ROW_ENV_FIRST + operatorNumber * 2;
+        break;
+    case 2:
+        return ROW_ENV_FIRST + operatorNumber * 2 + 1;
+        break;
+    }
 }
 
 
 void SynthState::changeSynthModeRow(int button, int step) {
-	unsigned char lastBecauseOfAlgo;
+    unsigned char lastBecauseOfAlgo;
 
-	switch (button) {
-		case BUTTON_SYNTH:
-			if (currentRow<ROW_ENGINE_FIRST || currentRow>ROW_ENGINE_LAST) {
-				currentRow = engineRow;
-			} else {
-				do {
-					currentRow += step;
-					if (currentRow>ROW_ENGINE_LAST) {
-						currentRow = ROW_ENGINE_FIRST;
-					} else if (currentRow<ROW_ENGINE_FIRST) {
-						currentRow = ROW_ENGINE_LAST;
-					}
-				} while (!isCurrentRowAvailable());
-			}
-			engineRow = currentRow;
-		break;
-		case BUTTON_OSC:
-	        if (this->fullState.midiConfigValue[MIDICONFIG_OP_OPTION] == 0) {
-	        	// New UI - operator number
-				lastBecauseOfAlgo = algoInformation[(int)params->engine1.algo].osc - 1;
-				if (currentRow < ROW_OSC_FIRST || currentRow > ROW_ENV_LAST) {
-					// Nothing to do.;.
-				} else {
-					operatorNumber += step;
-				}
-				if (operatorNumber > lastBecauseOfAlgo) {
-					operatorNumber = 0;
-				} else if (operatorNumber < 0) {
-					operatorNumber = lastBecauseOfAlgo;
-				}
-				currentRow = getRowFromOperator();
-	        } else {
-	        	// Old UI
-				lastBecauseOfAlgo = ROW_OSC_FIRST + algoInformation[(int)params->engine1.algo].osc - 1;
-				if (currentRow<ROW_OSC_FIRST || currentRow>lastBecauseOfAlgo) {
-					currentRow = ROW_OSC_FIRST + oscillatorRow;
-				} else {
-					currentRow += step;
-					envelopeRow = (currentRow - ROW_OSC_FIRST)*2;
-				}
-				if (currentRow>lastBecauseOfAlgo) {
-					currentRow = ROW_OSC_FIRST;
-				} else if (currentRow<ROW_OSC_FIRST) {
-					currentRow = lastBecauseOfAlgo;
-				}
-				oscillatorRow = currentRow - ROW_OSC_FIRST;
-	        }
-			break;
-		case BUTTON_ENV:
-	        if (this->fullState.midiConfigValue[MIDICONFIG_OP_OPTION] == 0) {
-	        	// New UI - op / env1 / env2 for the current operator
-	        	// New UI - operator number
-				lastBecauseOfAlgo = algoInformation[(int)params->engine1.algo].osc - 1;
-				if (currentRow < ROW_OSC_FIRST || currentRow > ROW_ENV_LAST) {
-					// Nothing to do.;.
-				} else {
-					operatorView += step;
-					if (operatorView > 2) {
-						operatorView = 0;
-					} else if (operatorView < 0) {
-						operatorView = 2;
-					}
-				}
-				if (operatorNumber > lastBecauseOfAlgo) {
-					operatorNumber = 0;
-				} else if (operatorNumber < 0) {
-					operatorNumber = lastBecauseOfAlgo;
-				}
-				currentRow = getRowFromOperator();
-	        } else {
-				lastBecauseOfAlgo = ROW_ENV_FIRST - 1 + algoInformation[(int)params->engine1.algo].osc  * 2;
-				if (currentRow<ROW_ENV_FIRST || currentRow>lastBecauseOfAlgo) {
-					currentRow = ROW_ENV_FIRST + envelopeRow;
-				} else {
-					currentRow += step;
-					oscillatorRow = (currentRow - ROW_ENV_FIRST) >> 1;
-				}
-				if (currentRow>lastBecauseOfAlgo) {
-					currentRow = ROW_ENV_FIRST;
-				} else if (currentRow<ROW_ENV_FIRST) {
-					currentRow = lastBecauseOfAlgo;
-				}
-				envelopeRow = currentRow - ROW_ENV_FIRST;
-	        }
-		break;
-		case BUTTON_MATRIX:
-			if (currentRow<ROW_MATRIX_FIRST || currentRow>ROW_MATRIX_LAST) {
-				currentRow = matrixRow;
-			} else {
-				currentRow += step;
-				if (currentRow>ROW_MATRIX_LAST) {
-					currentRow = ROW_MATRIX_FIRST;
-				} else if (currentRow<ROW_MATRIX_FIRST) {
-					currentRow = ROW_MATRIX_LAST;
-				}
-			}
-			matrixRow = currentRow;
-			break;
-		case BUTTON_LFO:
-			if (currentRow<ROW_LFO_FIRST || currentRow>ROW_LFO_LAST) {
-				currentRow = lfoRow;
-			} else {
-				currentRow += step;
-				if (currentRow>ROW_LFO_LAST) {
-					currentRow = ROW_LFO_FIRST;
-				} else if (currentRow<ROW_LFO_FIRST) {
-					currentRow = ROW_LFO_LAST;
-				}
-			}
-			lfoRow = currentRow;
-		break;
-	}
+    switch (button) {
+    case BUTTON_SYNTH:
+        if (currentRow<ROW_ENGINE_FIRST || currentRow>ROW_ENGINE_LAST) {
+            currentRow = engineRow;
+        } else {
+            do {
+                currentRow += step;
+                if (currentRow>ROW_ENGINE_LAST) {
+                    currentRow = ROW_ENGINE_FIRST;
+                } else if (currentRow<ROW_ENGINE_FIRST) {
+                    currentRow = ROW_ENGINE_LAST;
+                }
+            } while (!isCurrentRowAvailable());
+        }
+        engineRow = currentRow;
+        break;
+    case BUTTON_OSC:
+        if (this->fullState.midiConfigValue[MIDICONFIG_OP_OPTION] == 0) {
+            // New UI - operator number
+            lastBecauseOfAlgo = algoInformation[(int)params->engine1.algo].osc - 1;
+            if (currentRow < ROW_OSC_FIRST || currentRow > ROW_ENV_LAST) {
+                // Nothing to do.;.
+            } else {
+                operatorNumber += step;
+            }
+            if (operatorNumber > lastBecauseOfAlgo) {
+                operatorNumber = 0;
+            } else if (operatorNumber < 0) {
+                operatorNumber = lastBecauseOfAlgo;
+            }
+            currentRow = getRowFromOperator();
+        } else {
+            // Old UI
+            lastBecauseOfAlgo = ROW_OSC_FIRST + algoInformation[(int)params->engine1.algo].osc - 1;
+            if (currentRow<ROW_OSC_FIRST || currentRow>lastBecauseOfAlgo) {
+                currentRow = ROW_OSC_FIRST + oscillatorRow;
+            } else {
+                currentRow += step;
+                envelopeRow = (currentRow - ROW_OSC_FIRST)*2;
+            }
+            if (currentRow>lastBecauseOfAlgo) {
+                currentRow = ROW_OSC_FIRST;
+            } else if (currentRow<ROW_OSC_FIRST) {
+                currentRow = lastBecauseOfAlgo;
+            }
+            oscillatorRow = currentRow - ROW_OSC_FIRST;
+        }
+        break;
+    case BUTTON_ENV:
+        if (this->fullState.midiConfigValue[MIDICONFIG_OP_OPTION] == 0) {
+            // New UI - op / env1 / env2 for the current operator
+            // New UI - operator number
+            lastBecauseOfAlgo = algoInformation[(int)params->engine1.algo].osc - 1;
+            if (currentRow < ROW_OSC_FIRST || currentRow > ROW_ENV_LAST) {
+                // Nothing to do.;.
+            } else {
+                operatorView += step;
+                if (operatorView > 2) {
+                    operatorView = 0;
+                } else if (operatorView < 0) {
+                    operatorView = 2;
+                }
+            }
+            if (operatorNumber > lastBecauseOfAlgo) {
+                operatorNumber = 0;
+            } else if (operatorNumber < 0) {
+                operatorNumber = lastBecauseOfAlgo;
+            }
+            currentRow = getRowFromOperator();
+        } else {
+            lastBecauseOfAlgo = ROW_ENV_FIRST - 1 + algoInformation[(int)params->engine1.algo].osc  * 2;
+            if (currentRow<ROW_ENV_FIRST || currentRow>lastBecauseOfAlgo) {
+                currentRow = ROW_ENV_FIRST + envelopeRow;
+            } else {
+                currentRow += step;
+                oscillatorRow = (currentRow - ROW_ENV_FIRST) >> 1;
+            }
+            if (currentRow>lastBecauseOfAlgo) {
+                currentRow = ROW_ENV_FIRST;
+            } else if (currentRow<ROW_ENV_FIRST) {
+                currentRow = lastBecauseOfAlgo;
+            }
+            envelopeRow = currentRow - ROW_ENV_FIRST;
+        }
+        break;
+    case BUTTON_MATRIX:
+        if (currentRow<ROW_MATRIX_FIRST || currentRow>ROW_MATRIX_LAST) {
+            currentRow = matrixRow;
+        } else {
+            currentRow += step;
+            if (currentRow>ROW_MATRIX_LAST) {
+                currentRow = ROW_MATRIX_FIRST;
+            } else if (currentRow<ROW_MATRIX_FIRST) {
+                currentRow = ROW_MATRIX_LAST;
+            }
+        }
+        matrixRow = currentRow;
+        break;
+    case BUTTON_LFO:
+        if (currentRow<ROW_LFO_FIRST || currentRow>ROW_LFO_LAST) {
+            currentRow = lfoRow;
+        } else {
+            currentRow += step;
+            if (currentRow>ROW_LFO_LAST) {
+                currentRow = ROW_LFO_FIRST;
+            } else if (currentRow<ROW_LFO_FIRST) {
+                currentRow = ROW_LFO_LAST;
+            }
+        }
+        lfoRow = currentRow;
+        break;
+    }
 }
 
 bool SynthState::isEnterNameState(int currentItem) {
-	return currentItem == MENU_SAVE_ENTER_PRESET_NAME
-			|| currentItem == MENU_RENAME_PATCH
-			|| currentItem == MENU_SAVE_ENTER_COMBO_NAME
-			|| currentItem == MENU_RENAME_BANK
-			|| currentItem == MENU_RENAME_COMBO
-			|| currentItem == MENU_CREATE_BANK
-			|| currentItem == MENU_CREATE_COMBO;
+    return currentItem == MENU_SAVE_ENTER_PRESET_NAME
+            || currentItem == MENU_RENAME_PATCH
+            || currentItem == MENU_SAVE_ENTER_COMBO_NAME
+            || currentItem == MENU_RENAME_BANK
+            || currentItem == MENU_RENAME_COMBO
+            || currentItem == MENU_CREATE_BANK
+            || currentItem == MENU_CREATE_COMBO;
 }
 
 void SynthState::buttonPressed(int button) {
@@ -1093,11 +1151,11 @@ void SynthState::buttonPressed(int button) {
         case BUTTON_ENV:
         case BUTTON_MATRIX:
         case BUTTON_LFO:
-        	changeSynthModeRow(button , 1);
+            changeSynthModeRow(button , 1);
             break;
-    	case BUTTON_ENCODER:
-			currentRow = ROW_PERFORMANCE1;
-			break;
+        case BUTTON_ENCODER:
+            currentRow = ROW_PERFORMANCE1;
+            break;
         case BUTTON_MENUSELECT:
             fullState.synthMode = SYNTH_MODE_MENU;
             fullState.menuSelect = fullState.firstMenu;
@@ -1109,67 +1167,67 @@ void SynthState::buttonPressed(int button) {
             currentTimbre++;
             currentTimbre &= 3;
             propagateNewTimbre(currentTimbre);
-        	break;
+            break;
         }
     } else {
         // Any button when done is display makes the synth go back to edit mode.
-		// MENU MODE
-		switch (button) {
-		case BUTTON_MENUSELECT:
-			fullState.currentMenuItem = afterButtonPressed();
-			break;
-		case BUTTON_BACK:
-		{
-			enum MenuState oldState = fullState.currentMenuItem->menuState;
-			fullState.currentMenuItem = menuBack();
-			propagateMenuBack(oldState);
-			break;
-		}
-		case BUTTON_LFO:
-		{
+        // MENU MODE
+        switch (button) {
+        case BUTTON_MENUSELECT:
+            fullState.currentMenuItem = afterButtonPressed();
+            break;
+        case BUTTON_BACK:
+        {
+            enum MenuState oldState = fullState.currentMenuItem->menuState;
+            fullState.currentMenuItem = menuBack();
+            propagateMenuBack(oldState);
+            break;
+        }
+        case BUTTON_LFO:
+        {
             if (isEnterNameState(fullState.currentMenuItem->menuState)) {
-				fullState.name[fullState.menuSelect] = 0;
-				propagateNewMenuSelect();
-			} else {
-				propagateNoteOn(-12);
-			}
-			break;
-		}
-		case BUTTON_MATRIX:
-		{
-            if (isEnterNameState(fullState.currentMenuItem->menuState)) {
-				fullState.name[fullState.menuSelect] = 27;
-				propagateNewMenuSelect();
+                fullState.name[fullState.menuSelect] = 0;
+                propagateNewMenuSelect();
             } else {
-				propagateNoteOn(-8);
-			}
-			break;
-		}
-		case BUTTON_ENV:
-		{
+                propagateNoteOn(-12);
+            }
+            break;
+        }
+        case BUTTON_MATRIX:
+        {
             if (isEnterNameState(fullState.currentMenuItem->menuState)) {
-				fullState.name[fullState.menuSelect] = 55;
-				propagateNewMenuSelect();
+                fullState.name[fullState.menuSelect] = 27;
+                propagateNewMenuSelect();
             } else {
-				propagateNoteOn(0);
-			}
-			break;
-		}
-		case BUTTON_OSC:
-		{
+                propagateNoteOn(-8);
+            }
+            break;
+        }
+        case BUTTON_ENV:
+        {
             if (isEnterNameState(fullState.currentMenuItem->menuState)) {
-				fullState.name[fullState.menuSelect] = 66;
-				propagateNewMenuSelect();
+                fullState.name[fullState.menuSelect] = 55;
+                propagateNewMenuSelect();
             } else {
-				propagateNoteOn(8);
-			}
-			break;
-		}
-		case BUTTON_SYNTH:
-		{
-			propagateNoteOn(12);
-		}
-		}
+                propagateNoteOn(0);
+            }
+            break;
+        }
+        case BUTTON_OSC:
+        {
+            if (isEnterNameState(fullState.currentMenuItem->menuState)) {
+                fullState.name[fullState.menuSelect] = 66;
+                propagateNewMenuSelect();
+            } else {
+                propagateNoteOn(8);
+            }
+            break;
+        }
+        case BUTTON_SYNTH:
+        {
+            propagateNoteOn(12);
+        }
+        }
     }
 
     if (oldSynthMode != fullState.synthMode) {
@@ -1187,22 +1245,22 @@ void SynthState::buttonPressed(int button) {
 
 
 void SynthState::setNewStepValue(int timbre, int whichStepSeq, int step, int newValue) {
-	if (whichStepSeq <0 || whichStepSeq>1 || step <0 || step > 15 || newValue<0 || newValue>15) {
-		return;
-	}
-	StepSequencerSteps * seqSteps = &((StepSequencerSteps * )(&params->lfoSteps1))[whichStepSeq];
+    if (whichStepSeq <0 || whichStepSeq>1 || step <0 || step > 15 || newValue<0 || newValue>15) {
+        return;
+    }
+    StepSequencerSteps * seqSteps = &((StepSequencerSteps * )(&params->lfoSteps1))[whichStepSeq];
 
-	int oldValue = seqSteps->steps[step];
+    int oldValue = seqSteps->steps[step];
 
-	if (oldValue !=  newValue) {
-		int oldStep = stepSelect[whichStepSeq];
-		seqSteps->steps[step] = newValue;
-		stepSelect[whichStepSeq] = step;
-		if (oldStep != step) {
-			propagateNewParamValueFromExternal(timbre, ROW_LFOSEQ1 + whichStepSeq, 2, NULL, oldStep, stepSelect[whichStepSeq]);
-		}
-		propagateNewParamValueFromExternal(timbre, ROW_LFOSEQ1 + whichStepSeq, 3, NULL, oldValue, newValue);
-	}
+    if (oldValue !=  newValue) {
+        int oldStep = stepSelect[whichStepSeq];
+        seqSteps->steps[step] = newValue;
+        stepSelect[whichStepSeq] = step;
+        if (oldStep != step) {
+            propagateNewParamValueFromExternal(timbre, ROW_LFOSEQ1 + whichStepSeq, 2, NULL, oldStep, stepSelect[whichStepSeq]);
+        }
+        propagateNewParamValueFromExternal(timbre, ROW_LFOSEQ1 + whichStepSeq, 3, NULL, oldValue, newValue);
+    }
 
 }
 
@@ -1210,7 +1268,7 @@ void SynthState::setNewStepValue(int timbre, int whichStepSeq, int step, int new
 
 void SynthState::setNewValue(int timbre, int row, int encoder, float newValue) {
     // ??? STILL USEFULL
-/*
+    /*
     int index = row * NUMBER_OF_ENCODERS + encoder;
     struct ParameterDisplay* param = &(allParameterRows.row[row]->params[encoder]);
     int oldValue = ((float*)params)[index];
@@ -1221,7 +1279,7 @@ void SynthState::setNewValue(int timbre, int row, int encoder, float newValue) {
     }
     ((float*)params)[index] = newValue;
     propagateNewParamValueFromExternal(timbre, row, encoder, param, oldValue, newValue);
-    */
+     */
 }
 
 const MenuItem* SynthState::afterButtonPressed() {
@@ -1243,58 +1301,58 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.firstMenu = fullState.menuSelect;
         break;
     case MENU_SAVE_SELECT_BANK:
-    	if (fullState.preenFMBank->fileType != FILE_OK) {
-    		return fullState.currentMenuItem;
-    	}
+        if (fullState.preenFMBank->fileType != FILE_OK) {
+            return fullState.currentMenuItem;
+        }
         fullState.preenFMBankNumber = fullState.menuSelect;
         break;
     case MENU_RENAME_SELECT_BANK:
     case MENU_LOAD_SELECT_BANK:
-    	if (fullState.preenFMBank->fileType == FILE_EMPTY) {
-    		return fullState.currentMenuItem;
-    	}
+        if (fullState.preenFMBank->fileType == FILE_EMPTY) {
+            return fullState.currentMenuItem;
+        }
         fullState.preenFMBankNumber = fullState.menuSelect;
         break;
     case MENU_SAVE_SELECT_COMBO:
-    	if (fullState.preenFMCombo->fileType != FILE_OK) {
-    		return fullState.currentMenuItem;
-    	}
+        if (fullState.preenFMCombo->fileType != FILE_OK) {
+            return fullState.currentMenuItem;
+        }
         fullState.preenFMComboNumber = fullState.menuSelect;
         break;
     case MENU_RENAME_SELECT_COMBO:
     case MENU_LOAD_SELECT_COMBO:
-    	if (fullState.preenFMCombo->fileType == FILE_EMPTY) {
-    		return fullState.currentMenuItem;
-    	}
+        if (fullState.preenFMCombo->fileType == FILE_EMPTY) {
+            return fullState.currentMenuItem;
+        }
         fullState.preenFMComboNumber = fullState.menuSelect;
         break;
     case MENU_LOAD_SELECT_DX7_BANK:
-    	if (fullState.dx7Bank->fileType != FILE_OK) {
-    		return fullState.currentMenuItem;
-    	}
-    	fullState.dx7BankNumber = fullState.menuSelect;
-    	break;
+        if (fullState.dx7Bank->fileType != FILE_OK) {
+            return fullState.currentMenuItem;
+        }
+        fullState.dx7BankNumber = fullState.menuSelect;
+        break;
     case MENU_LOAD_SELECT_BANK_PRESET:
         copySynthParams((char*)params, (char*)&backupParams);
         break;
     case MENU_LOAD_SELECT_COMBO_PRESET:
-    	loadPreenFMCombo(fullState.preenFMCombo, fullState.menuSelect);
+        loadPreenFMCombo(fullState.preenFMCombo, fullState.menuSelect);
         copySynthParams((char*)params, (char*)&backupParams);
         break;
     case MENU_LOAD_SELECT_DX7_PRESET:
-		copySynthParams((char*)params, (char*)&backupParams);
+        copySynthParams((char*)params, (char*)&backupParams);
         break;
     case MENU_SAVE_SELECT_BANK_PRESET:
-    	for (int k=0; k<12; k++) {
-    		fullState.name[k] = 0;
-    	}
-    	for (int k=0; k<12 && params->presetName[k] != 0; k++) {
-    		for (int j=0; j<getLength(allChars); j++) {
-    			if (params->presetName[k] == allChars[j]) {
-    				fullState.name[k] = j;
-    			}
-    		}
-    	}
+        for (int k=0; k<12; k++) {
+            fullState.name[k] = 0;
+        }
+        for (int k=0; k<12 && params->presetName[k] != 0; k++) {
+            for (int j=0; j<getLength(allChars); j++) {
+                if (params->presetName[k] == allChars[j]) {
+                    fullState.name[k] = j;
+                }
+            }
+        }
         break;
     case MENU_SAVE_SELECT_COMBO_PRESET:
     {
@@ -1307,7 +1365,7 @@ const MenuItem* SynthState::afterButtonPressed() {
                 }
             }
         }
-    	break;
+        break;
     }
     case MENU_RENAME_PATCH:
         for (length=12; fullState.name[length-1] == 0; length--);
@@ -1319,7 +1377,7 @@ const MenuItem* SynthState::afterButtonPressed() {
     case MENU_SAVE_ENTER_PRESET_NAME:
         for (length=12; fullState.name[length-1] == 0; length--);
         for (int k=0; k<length; k++) {
-        	params->presetName[k] = allChars[(int)fullState.name[k]];
+            params->presetName[k] = allChars[(int)fullState.name[k]];
         }
         params->presetName[length] = '\0';
         storage->savePreenFMPatch(fullState.preenFMBank, fullState.preenFMPresetNumber, params);
@@ -1328,52 +1386,52 @@ const MenuItem* SynthState::afterButtonPressed() {
         for (length=12; fullState.name[length-1] == 0; length--);
         char comboName[12];
         for (int k=0; k<length; k++) {
-        	comboName[k] = allChars[(int)fullState.name[k]];
+            comboName[k] = allChars[(int)fullState.name[k]];
         }
         comboName[length] = '\0';
         storage->savePreenFMCombo(fullState.preenFMCombo, fullState.preenFMComboPresetNumber, comboName);
         break;
     case MENU_SAVE_SYSEX_PATCH:
         //PresetUtil::sendCurrentPatchToSysex();
-    	storage->sendPreenFMPatchAsSysex(params);
+        storage->sendPreenFMPatchAsSysex(params);
         break;
     case MENU_RENAME_COMBO:
-    	for (length=0; length<8 && fullState.name[length]!=0; length++) {
-        	fullState.name[length] =  allChars[fullState.name[length]];
-    	}
-    	fullState.name[length++] = '.';
-    	fullState.name[length++] = 'c';
-    	fullState.name[length++] = 'm';
-    	fullState.name[length++] = 'b';
-    	fullState.name[length++] = '\0';
-    	if (storage->renameCombo(fullState.preenFMCombo, fullState.name) > 0) {
-        	rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
-    	}
+        for (length=0; length<8 && fullState.name[length]!=0; length++) {
+            fullState.name[length] =  allChars[fullState.name[length]];
+        }
+        fullState.name[length++] = '.';
+        fullState.name[length++] = 'c';
+        fullState.name[length++] = 'm';
+        fullState.name[length++] = 'b';
+        fullState.name[length++] = '\0';
+        if (storage->renameCombo(fullState.preenFMCombo, fullState.name) > 0) {
+            rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
+        }
 
-    	break;
+        break;
     case MENU_RENAME_BANK:
-    	for (length=0; length<8 && fullState.name[length]!=0; length++) {
-        	fullState.name[length] =  allChars[fullState.name[length]];
-    	}
-    	fullState.name[length++] = '.';
-    	fullState.name[length++] = 'b';
-    	fullState.name[length++] = 'n';
-    	fullState.name[length++] = 'k';
-    	fullState.name[length++] = '\0';
-    	if (storage->renameBank(fullState.preenFMBank, fullState.name) > 0) {
-        	rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
-    	}
-    	break;
+        for (length=0; length<8 && fullState.name[length]!=0; length++) {
+            fullState.name[length] =  allChars[fullState.name[length]];
+        }
+        fullState.name[length++] = '.';
+        fullState.name[length++] = 'b';
+        fullState.name[length++] = 'n';
+        fullState.name[length++] = 'k';
+        fullState.name[length++] = '\0';
+        if (storage->renameBank(fullState.preenFMBank, fullState.name) > 0) {
+            rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
+        }
+        break;
     case MENU_CANCEL:
     case MENU_DONE:
     case MENU_ERROR:
         fullState.synthMode = SYNTH_MODE_EDIT;
         break;
     case MENU_CREATE_BANK:
-    	// Must create the bank here....
+        // Must create the bank here....
         for (length=8; fullState.name[length-1] == 0; length--);
         for (int k=0; k<length; k++) {
-        	fullState.name[k] = allChars[(int)fullState.name[k]];
+            fullState.name[k] = allChars[(int)fullState.name[k]];
         }
         fullState.name[length++] = '.';
         fullState.name[length++] = 'b';
@@ -1381,24 +1439,24 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.name[length++] = 'k';
         fullState.name[length] = '\0';
         if (!storage->bankNameExist(fullState.name)) {
-        	cmi = fullState.currentMenuItem;
-        	// Update display while formating
-        	lcd.setRealTimeAction(true);
-        	fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
-        	propagateNewMenuState();
-        	storage->createPatchBank(fullState.name);
-        	lcd.setRealTimeAction(false);
-        	fullState.currentMenuItem = cmi;
+            cmi = fullState.currentMenuItem;
+            // Update display while formating
+            lcd.setRealTimeAction(true);
+            fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
+            propagateNewMenuState();
+            storage->createPatchBank(fullState.name);
+            lcd.setRealTimeAction(false);
+            fullState.currentMenuItem = cmi;
         } else {
-        	rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
+            rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
         }
         break;
     case MENU_CREATE_COMBO:
 
-    	// Must create the combo here....
+        // Must create the combo here....
         for (length=8; fullState.name[length-1] == 0; length--);
         for (int k=0; k<length; k++) {
-        	fullState.name[k] = allChars[(int)fullState.name[k]];
+            fullState.name[k] = allChars[(int)fullState.name[k]];
         }
         fullState.name[length++] = '.';
         fullState.name[length++] = 'c';
@@ -1407,17 +1465,17 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.name[length] = '\0';
 
         if (!storage->comboNameExist(fullState.name)) {
-			cmi = fullState.currentMenuItem;
-			// Update display while formating
-			lcd.setRealTimeAction(true);
-			fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
-			propagateNewMenuState();
-			storage->createComboBank(fullState.name);
-			lcd.setRealTimeAction(false);
-			fullState.currentMenuItem = cmi;
-    	} else {
-        	rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
-    	}
+            cmi = fullState.currentMenuItem;
+            // Update display while formating
+            lcd.setRealTimeAction(true);
+            fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
+            propagateNewMenuState();
+            storage->createComboBank(fullState.name);
+            lcd.setRealTimeAction(false);
+            fullState.currentMenuItem = cmi;
+        } else {
+            rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
+        }
         break;
     case MENU_CONFIG_SETTINGS_SAVE:
         storage->saveConfig(fullState.midiConfigValue);
@@ -1434,7 +1492,7 @@ const MenuItem* SynthState::afterButtonPressed() {
     case MENU_SAVE:
         fullState.saveWhat = fullState.menuSelect;
         break;
-     default:
+    default:
         break;
     }
 
@@ -1444,64 +1502,64 @@ const MenuItem* SynthState::afterButtonPressed() {
     switch (rMenuItem->menuState) {
     case MENU_CREATE_COMBO:
     {
-    	const char *bankName = "COMBO01";
-    	int length = 7;
+        const char *bankName = "COMBO01";
+        int length = 7;
         for (int k=0; k<length ; k++) {
             for (int j=0; j<getLength(allChars); j++) {
                 if (bankName[k] == allChars[j]) {
-                	fullState.name[k] = j;
+                    fullState.name[k] = j;
                 }
             }
         }
         for (int k=length; k<8; k++) {
-        	fullState.name[k] = 0;
+            fullState.name[k] = 0;
         }
         fullState.menuSelect = 0;
-    	break;
+        break;
     }
     case MENU_CREATE_BANK:
     {
-    	const char *bankName = "BANK01";
-    	int length = 6;
+        const char *bankName = "BANK01";
+        int length = 6;
         for (int k=0; k<length ; k++) {
             for (int j=0; j<getLength(allChars); j++) {
                 if (bankName[k] == allChars[j]) {
-                	fullState.name[k] = j;
+                    fullState.name[k] = j;
                 }
             }
         }
         for (int k=length; k<8; k++) {
-        	fullState.name[k] = 0;
+            fullState.name[k] = 0;
         }
         fullState.menuSelect = 0;
-    	break;
+        break;
     }
     case MENU_RENAME_COMBO:
         for (int k=0; k<8; k++) {
-        	fullState.name[k] = 0;
+            fullState.name[k] = 0;
         }
         for (int k=0; k<8 && fullState.preenFMCombo->name[k]!='.'; k++) {
             for (int j=0; j<getLength(allChars); j++) {
                 if (fullState.preenFMCombo->name[k] == allChars[j]) {
-                	fullState.name[k] = j;
+                    fullState.name[k] = j;
                 }
             }
         }
         fullState.menuSelect = 0;
-    	break;
+        break;
     case MENU_RENAME_BANK:
         for (int k=0; k<8; k++) {
-        	fullState.name[k] = 0;
+            fullState.name[k] = 0;
         }
         for (int k=0; k<8 && fullState.preenFMBank->name[k]!='.'; k++) {
             for (int j=0; j<getLength(allChars); j++) {
                 if (fullState.preenFMBank->name[k] == allChars[j]) {
-                	fullState.name[k] = j;
+                    fullState.name[k] = j;
                 }
             }
         }
         fullState.menuSelect = 0;
-    	break;
+        break;
     case MENU_RENAME_PATCH:
         for (int k=0; k<12; k++) {
             fullState.name[k] = 0;
@@ -1522,7 +1580,7 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.menuSelect = fullState.preenFMComboPresetNumber;
         break;
     case MENU_LOAD_SELECT_BANK_PRESET:
-		loadPreenFMPatch(currentTimbre, fullState.preenFMBank, fullState.preenFMPresetNumber, params);
+        loadPreenFMPatch(currentTimbre, fullState.preenFMBank, fullState.preenFMPresetNumber, params);
         fullState.menuSelect = fullState.preenFMPresetNumber;
         break;
     case MENU_LOAD_SELECT_COMBO_PRESET:
@@ -1552,8 +1610,8 @@ const MenuItem* SynthState::afterButtonPressed() {
         break;
     case MENU_LOAD_SELECT_DX7_BANK:
         fullState.menuSelect = fullState.dx7BankNumber;
-    	fullState.dx7Bank = storage->getDx7Bank(fullState.menuSelect);
-    	break;
+        fullState.dx7Bank = storage->getDx7Bank(fullState.menuSelect);
+        break;
     default:
         fullState.menuSelect = 0;
     }
@@ -1619,38 +1677,38 @@ const MenuItem* SynthState::menuBack() {
 
 
 void SynthState::propagateAfterNewParamsLoad(int timbre) {
-   for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-	   listener->afterNewParamsLoad(timbre);
-   }
+    for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+        listener->afterNewParamsLoad(timbre);
+    }
 }
 
 void SynthState::propagateAfterNewComboLoad() {
-   for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-	   listener->afterNewComboLoad();
-   }
+    for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+        listener->afterNewComboLoad();
+    }
 }
 
 void SynthState::propagateNewTimbre(int timbre) {
-	propagateNoteOff();
-	for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-		listener->newTimbre(timbre);
-	}
+    propagateNoteOff();
+    for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+        listener->newTimbre(timbre);
+    }
 }
 
 void SynthState::tempoClick() {
-	if (fullState.synthMode == SYNTH_MODE_MENU) {
-		if (fullState.currentMenuItem->menuState == MENU_DONE
-				|| fullState.currentMenuItem->menuState == MENU_ERROR
-				|| fullState.currentMenuItem->menuState == MENU_CANCEL) {
-			if (doneClick > 4) {
-				fullState.synthMode = SYNTH_MODE_EDIT;
-				propagateNewSynthMode();
-			}
-			doneClick ++;
-		}
-	} else {
-		doneClick = 0;
-	}
+    if (fullState.synthMode == SYNTH_MODE_MENU) {
+        if (fullState.currentMenuItem->menuState == MENU_DONE
+                || fullState.currentMenuItem->menuState == MENU_ERROR
+                || fullState.currentMenuItem->menuState == MENU_CANCEL) {
+            if (doneClick > 4) {
+                fullState.synthMode = SYNTH_MODE_EDIT;
+                propagateNewSynthMode();
+            }
+            doneClick ++;
+        }
+    } else {
+        doneClick = 0;
+    }
 }
 
 void SynthState::setParamsAndTimbre(struct OneSynthParams *newParams, int newCurrentTimbre, float* performanceValues) {
@@ -1668,7 +1726,7 @@ void SynthState::copySynthParams(char* source, char* dest) {
 
 
 void SynthState::analyseSysexBuffer(uint8_t *buffer) {
-	propagateBeforeNewParamsLoad(currentTimbre);
-	storage->decodeBufferAndApplyPreset(buffer, params);
-	propagateAfterNewParamsLoad(currentTimbre);
+    propagateBeforeNewParamsLoad(currentTimbre);
+    storage->decodeBufferAndApplyPreset(buffer, params);
+    propagateAfterNewParamsLoad(currentTimbre);
 }

@@ -43,7 +43,6 @@ enum {  CLOCK_OFF,
     CLOCK_EXTERNAL
 };
 
-
 class Timbre {
     friend class Synth;
     friend class Voice;
@@ -71,6 +70,7 @@ public:
     void setNewBPMValue(float bpm);
     void setArpeggiatorClock(float bpm);
     void resetArpeggiator();
+    uint16_t getArpeggiatorPattern() const;
 
     void noteOn(char note, char velocity);
     void noteOff(char note);
@@ -377,7 +377,6 @@ private:
     float fxParam1, fxParam2, fxParam3;
     float v0L, v1L;
     float v0R, v1R;
-
 };
 
 #endif /* TIMBRE_H_ */

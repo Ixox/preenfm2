@@ -415,15 +415,18 @@ void Storage::convertParamsToMemory(const struct OneSynthParams* params, struct 
 
 	copyFloat((float*)&params->engine1, (float*)&memory->engine1, 4);
 	if (saveArp) {
-		copyFloat((float*)&params->engineApr1, (float*)&memory->engineApr1, 4 * 2);
+		copyFloat((float*)&params->engineArp1, (float*)&memory->engineArp1, 4 * 2);
+		memory->engineArpUserPatterns = params->engineArpUserPatterns;
 	} else {
-		memory->engineApr1.clock = 0;
-		memory->engineApr1.BPM = 90;
-		memory->engineApr1.octave = 1;
-		memory->engineApr2.pattern = 2;
-		memory->engineApr2.division = 12;
-		memory->engineApr2.duration = 14;
-		memory->engineApr2.latche = 0;
+		memory->engineArp1.clock = 0;
+		memory->engineArp1.BPM = 90;
+		memory->engineArp1.octave = 1;
+		memory->engineArp2.pattern = 2;
+		memory->engineArp2.division = 12;
+		memory->engineArp2.duration = 14;
+		memory->engineArp2.latche = 0;
+		for ( int p = 0; p< ARRAY_SIZE(memory->engineArpUserPatterns.patterns); ++p )
+		  memory->engineArpUserPatterns.patterns[ p ] = 0;
 	}
 
 	memory->flashEngineIm1.modulationIndex1 = params->engineIm1.modulationIndex1;
@@ -467,7 +470,8 @@ void Storage::convertMemoryToParams(const struct FlashSynthParams* memory, struc
 	// First engine line
 	copyFloat((float*)&memory->engine1, (float*)&params->engine1, 4);
 	if (loadArp) {
-		copyFloat((float*)&memory->engineApr1, (float*)&params->engineApr1, 4 * 2);
+		copyFloat((float*)&memory->engineArp1, (float*)&params->engineArp1, 4 * 2);
+		params->engineArpUserPatterns = memory->engineArpUserPatterns;
 	}
 
 	params->engineIm1.modulationIndex1 = memory->flashEngineIm1.modulationIndex1;
@@ -505,14 +509,14 @@ void Storage::convertMemoryToParams(const struct FlashSynthParams* memory, struc
 	params->performance1.perf3 = 0.0f;
 	params->performance1.perf4 = 0.0f;
 
-    if (params->engineApr1.BPM < 10) {
-		params->engineApr1.clock = 0;
-    	params->engineApr1.BPM = 90;
-    	params->engineApr1.octave = 1;
-    	params->engineApr2.pattern = 2;
-    	params->engineApr2.division = 12;
-    	params->engineApr2.duration = 14;
-    	params->engineApr2.latche = 0;
+    if (params->engineArp1.BPM < 10) {
+		params->engineArp1.clock = 0;
+    	params->engineArp1.BPM = 90;
+    	params->engineArp1.octave = 1;
+    	params->engineArp2.pattern = 2;
+    	params->engineArp2.division = 12;
+    	params->engineArp2.duration = 14;
+    	params->engineArp2.latche = 0;
     }
 
     if (params->effect.type == 0.0f && params->effect.param1 == 0.0f && params->effect.param2 == 0.0f && params->effect.param3 == 0.0f) {
@@ -647,7 +651,7 @@ void Storage::testMemoryPreset() {
 		test[k] = ((k + preenTimer) % 200) + 34;
 	}
 
-	tmpParam.engineApr1.BPM = (preenTimer % 200) + 15;
+	tmpParam.engineArp1.BPM = (preenTimer % 200) + 15;
 	convertParamsToMemory(&tmpParam, &reachableFlashParam, true);
 	convertMemoryToParams(&reachableFlashParam, &reachableParam, true);
 

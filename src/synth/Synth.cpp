@@ -112,7 +112,6 @@ bool Synth::isPlaying() {
 
 
 void Synth::buildNewSampleBlock() {
-
     CYCLE_MEASURE_START(cycles_rng);
 
     // We consider the random number is always ready here...
@@ -396,6 +395,8 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
                 if (unlikely(encoder == ENCODER_ARPEGGIATOR_LATCH)) {
                     timbres[timbre].setLatchMode((uint8_t) newValue);
                 }
+                break;
+            case ROW_ARPEGGIATOR3:
                 break;
             case ROW_EFFECT:
                 timbres[timbre].setNewEffecParam(encoder);
