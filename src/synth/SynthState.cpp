@@ -284,7 +284,7 @@ struct ParameterRowDisplay lfoParameterRow = {
                 { LFO_SIN, LFO_TYPE_MAX-1, LFO_TYPE_MAX, DISPLAY_TYPE_STRINGS,  lfoShapeNames, nullNamesOrder, nullNamesOrder},
                 { 0, 24.9, 250, DISPLAY_TYPE_FLOAT_LFO_FREQUENCY, nullNames, nullNamesOrder, nullNamesOrder },
                 { -1, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
-                { -0.01f, 16, 1602, DISPLAY_TYPE_LFO_KSYN, nullNames, nullNamesOrder, nullNamesOrder }
+                { -0.01f, 16.0f, 1602, DISPLAY_TYPE_LFO_KSYN, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -470,7 +470,7 @@ void SynthState::encoderTurnedForStepSequencer(int row, int encoder, int ticks) 
 }
 
 void SynthState::encoderTurnedForArpPattern(int row, int encoder, int ticks) {
-    if (encoder == 0) { 
+    if (encoder == 0) {
         // Encoder 0: move cursor
         int oldPos = patternSelect;
         patternSelect += (ticks > 0? 1 : -1);
@@ -487,25 +487,25 @@ void SynthState::encoderTurnedForArpPattern(int row, int encoder, int ticks) {
         // Change value(s)
         arp_pattern_t pattern = params->engineArpUserPatterns.patterns[ (int)params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT ];
         const uint16_t oldMask = ARP_PATTERN_GETMASK( pattern );
-	uint16_t newMask = oldMask;
+        uint16_t newMask = oldMask;
 
-	uint16_t bitsToModify;
-	switch ( encoder ) {
-	case 3: bitsToModify = 0x1 << patternSelect; break;	   // modify single note
-	case 2: bitsToModify = 0x1111 << (patternSelect & 3); break; // modify all 
-	case 1: bitsToModify = 0xf << ((patternSelect>>2)<<2); break; // modify entire bar
-	}
+        uint16_t bitsToModify;
+        switch ( encoder ) {
+        case 3: bitsToModify = 0x1 << patternSelect; break;	   // modify single note
+        case 2: bitsToModify = 0x1111 << (patternSelect & 3); break; // modify all
+        case 1: bitsToModify = 0xf << ((patternSelect>>2)<<2); break; // modify entire bar
+        }
         if (ticks > 0) {
-	    newMask |= bitsToModify;
-	} else {
-	    newMask &= ~bitsToModify;
-	}
+            newMask |= bitsToModify;
+        } else {
+            newMask &= ~bitsToModify;
+        }
 
-	if ( oldMask != newMask ) {
-	  ARP_PATTERN_SETMASK( pattern, newMask );
-	  params->engineArpUserPatterns.patterns[ (int)params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT ] = pattern;
-	  propagateNewParamValue(currentTimbre, row, encoder, (ParameterDisplay*)NULL, oldMask, newMask );
-	}
+        if ( oldMask != newMask ) {
+            ARP_PATTERN_SETMASK( pattern, newMask );
+            params->engineArpUserPatterns.patterns[ (int)params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT ] = pattern;
+            propagateNewParamValue(currentTimbre, row, encoder, (ParameterDisplay*)NULL, oldMask, newMask );
+        }
     }
 }
 

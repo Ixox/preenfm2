@@ -184,11 +184,11 @@ void FMDisplay::printFloatWithSpace(float value) {
         lcd->print(' ');
     }
     if (value < 10.0f) {
-        int integer = (int) value;
+        int integer = (int) (value + .0005f);
         lcd->print(integer);
         lcd->print('.');
         value -= integer;
-        int valueTimes100 = (int)(value*100+.0005);
+        int valueTimes100 = (int)(value*100.0f+.0005f);
         if (valueTimes100 < 10) {
             lcd->print("0");
             lcd->print(valueTimes100);
@@ -523,7 +523,7 @@ void FMDisplay::refreshAllScreenByStep() {
                 lcd->print(getRowNumberToDiplay(row));
             }
             if (row == ROW_ARPEGGIATOR3) {
-		lcd->setCursor(8,1);
+                lcd->setCursor(8,1);
                 lcd->print("Usr");
                 lcd->print(1+(int)this->synthState->params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT);
             }
@@ -663,15 +663,15 @@ void FMDisplay::updateArpPattern(int currentRow, int encoder, int oldValue, int 
         lcd->print((char)3);
     } else {
         // new value to display
-	
-	int mask = 0x1;
-	for ( int i = 0; i < sizeof(uint16_t)*8; ++i ) {
-	  if ( (oldValue & mask) != (newValue & mask ) ) {
-	    lcd->setCursor(2 + i, 3);
-	    lcd->print( newValue & mask ? CUSTOM_CHAR_NOTE : '_' );
-	  }
-	  mask <<= 1;
-	}
+
+        int mask = 0x1;
+        for ( int i = 0; i < sizeof(uint16_t)*8; ++i ) {
+            if ( (oldValue & mask) != (newValue & mask ) ) {
+                lcd->setCursor(2 + i, 3);
+                lcd->print( newValue & mask ? CUSTOM_CHAR_NOTE : '_' );
+            }
+            mask <<= 1;
+        }
     }
 }
 
