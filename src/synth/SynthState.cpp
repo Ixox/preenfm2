@@ -24,6 +24,9 @@ extern LiquidCrystal      lcd;
 #include "Synth.h"
 extern Synth synth;
 
+// Allow each timbre to remember which row was last used
+//#define SYNTHSTATE_PER_TIMBRE_EDITING
+
 #define NULL 0
 // FLASH :  __attribute__ ((section (".USER_FLASH")))
 // Ex : const char* nullNames [] __attribute__ ((section (".USER_FLASH")))= {};
@@ -416,8 +419,13 @@ SynthState::SynthState() {
     // edit with timbre 0
     currentTimbre = 0;
     currentRow = 0;
-
-
+#ifdef SYNTHSTATE_PER_TIMBRE_EDITING
+    for (int t=0; t < NUMBER_OF_TIMBRES; ++t)
+      lastRowForTimbre[t] = 0;
+#else
+    for (int t=0; t < NUMBER_OF_TIMBRES; ++t)
+      lastRowForTimbre[t] = -1;
+#endif
     stepSelect[0] = 0;
     stepSelect[1] = 0;
     patternSelect = 0;
@@ -572,6 +580,7 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
                     break;
                 case BUTTON_ENV:
                     changeSynthModeRow(BUTTON_MATRIX , -1);
+                    onUserChangedRow();
                     break;
                 case BUTTON_LFO:
                     currentRow = ROW_MATRIX6;
@@ -624,6 +633,7 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
 
     if (oldCurrentRow != currentRow) {
         propagateNewCurrentRow(currentRow);
+        onUserChangedRow();
     }
 }
 
@@ -641,6 +651,7 @@ void SynthState::encoderTurnedWhileButtonPressed(int encoder, int ticks, int but
         case BUTTON_LFO:
             if (likely(fullState.synthMode == SYNTH_MODE_EDIT)) {
                 changeSynthModeRow(button , ticks>0 ? 1 : -1);
+                onUserChangedRow();
             }
             break;
         case BUTTON_BACK:
@@ -962,7 +973,7 @@ void SynthState::resetDisplay() {
     propagateNewSynthMode();
 }
 
-bool SynthState::isCurrentRowAvailable() {
+bool SynthState::isCurrentRowAvailable() const {
 
     switch (currentRow) {
     case ROW_OSC_MIX2:
@@ -1140,6 +1151,7 @@ void SynthState::buttonPressed(int button) {
         case BUTTON_MATRIX:
         case BUTTON_LFO:
             changeSynthModeRow(button , 1);
+            onUserChangedRow();
             break;
         case BUTTON_ENCODER:
             currentRow = ROW_PERFORMANCE1;
@@ -1152,9 +1164,28 @@ void SynthState::buttonPressed(int button) {
             fullState.currentMenuItem = MenuItemUtil::getMenuItem(MAIN_MENU);
             break;
         case BUTTON_BACK:
+            lastRowForTimbre[ currentTimbre ] = currentRow; // remember row for when we return to this timbre
             currentTimbre++;
-            currentTimbre &= 3;
+            currentTimbre &= (NUMBER_OF_TIMBRES-1);
             propagateNewTimbre(currentTimbre);
+
+            if ( lastRowForTimbre[ currentTimbre ] >= 0 )
+                currentRow = lastRowForTimbre[ currentTimbre ];
+            if ( !isCurrentRowAvailable() ) {
+                int b = -1;
+                if ( currentRow >= ROW_ENGINE_FIRST && currentRow <= ROW_ENGINE_LAST )
+                  b = BUTTON_SYNTH;
+                else if ( currentRow >= ROW_OSC_FIRST && currentRow <= ROW_OSC_LAST )
+                  b = BUTTON_OSC;
+                else if ( currentRow >= ROW_ENV_FIRST && currentRow <= ROW_ENV_LAST )
+                  b = BUTTON_OSC;
+                else if ( currentRow >= ROW_MATRIX_FIRST && currentRow <= ROW_MATRIX_LAST )
+                  b = BUTTON_MATRIX;
+                else if ( currentRow >= ROW_LFO_FIRST && currentRow <= ROW_LFO_LAST )
+                  b = BUTTON_LFO;
+                if ( b >= 0 )
+                  changeSynthModeRow( b, -1 );
+            }
             break;
         }
     } else {
@@ -1717,4 +1748,13 @@ void SynthState::analyseSysexBuffer(uint8_t *buffer) {
     propagateBeforeNewParamsLoad(currentTimbre);
     storage->decodeBufferAndApplyPreset(buffer, params);
     propagateAfterNewParamsLoad(currentTimbre);
+}
+
+void SynthState::onUserChangedRow() {
+
+#ifndef SYNTHSTATE_PER_TIMBRE_EDITING
+  // Reset the row so it uses the same for each instrument
+    for (int t = 0; t < NUMBER_OF_TIMBRES; ++t )
+      lastRowForTimbre[t] = -1;
+#endif
 }

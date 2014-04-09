@@ -463,11 +463,14 @@ public:
 private:
 	void copySynthParams(char* source, char* dest);
 	int getRowFromOperator();
-	bool isCurrentRowAvailable();
+	bool isCurrentRowAvailable() const;
 	bool isEnterNameState(int currentItme);
 	char engineRow, oscillatorRow, envelopeRow, matrixRow, lfoRow;
 	char operatorNumber, operatorView;
 	char currentRow;
+    int lastRowForTimbre[ NUMBER_OF_TIMBRES ];
+    void onUserChangedRow();
+
 	bool isPlayingNote ;
 	char playingNote;
 	char playingTimbre;
