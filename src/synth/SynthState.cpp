@@ -24,9 +24,6 @@ extern LiquidCrystal      lcd;
 #include "Synth.h"
 extern Synth synth;
 
-// Allow each timbre to remember which row was last used
-//#define SYNTHSTATE_PER_TIMBRE_EDITING
-
 #define NULL 0
 // FLASH :  __attribute__ ((section (".USER_FLASH")))
 // Ex : const char* nullNames [] __attribute__ ((section (".USER_FLASH")))= {};
@@ -1164,13 +1161,15 @@ void SynthState::buttonPressed(int button) {
             fullState.currentMenuItem = MenuItemUtil::getMenuItem(MAIN_MENU);
             break;
         case BUTTON_BACK:
-            lastRowForTimbre[ currentTimbre ] = currentRow; // remember row for when we return to this timbre
+        {
+            setLastRowForTimbre( currentTimbre, currentRow ); // remember row for when we return to this timbre
             currentTimbre++;
             currentTimbre &= (NUMBER_OF_TIMBRES-1);
             propagateNewTimbre(currentTimbre);
 
-            if ( lastRowForTimbre[ currentTimbre ] >= 0 )
-                currentRow = lastRowForTimbre[ currentTimbre ];
+            int last = getLastRowForTimbre( currentTimbre );
+            if ( last >= 0 )
+                currentRow = last;
             if ( !isCurrentRowAvailable() ) {
                 int b = -1;
                 if ( currentRow >= ROW_ENGINE_FIRST && currentRow <= ROW_ENGINE_LAST )
@@ -1186,7 +1185,8 @@ void SynthState::buttonPressed(int button) {
                 if ( b >= 0 )
                   changeSynthModeRow( b, -1 );
             }
-            break;
+        }
+        break;
         }
     } else {
         // Any button when done is display makes the synth go back to edit mode.
@@ -1752,7 +1752,9 @@ void SynthState::analyseSysexBuffer(uint8_t *buffer) {
 
 void SynthState::onUserChangedRow() {
 
-#ifndef SYNTHSTATE_PER_TIMBRE_EDITING
+#ifdef SYNTHSTATE_PER_TIMBRE_EDITING
+  // nothing
+#else
   // Reset the row so it uses the same for each instrument
     for (int t = 0; t < NUMBER_OF_TIMBRES; ++t )
       lastRowForTimbre[t] = -1;

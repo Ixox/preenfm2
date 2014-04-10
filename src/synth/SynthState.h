@@ -39,6 +39,8 @@
 #define BUTTON_DUMP   0
 
 
+// Allow each timbre to remember which row was last used
+//#define SYNTHSTATE_PER_TIMBRE_EDITING
 
 
 enum {
@@ -470,6 +472,8 @@ private:
 	char currentRow;
     int lastRowForTimbre[ NUMBER_OF_TIMBRES ];
     void onUserChangedRow();
+    int getLastRowForTimbre( int timbre ) const;
+    void setLastRowForTimbre( int timbre, int row );
 
 	bool isPlayingNote ;
 	char playingNote;
@@ -499,6 +503,30 @@ private:
 // Global structure used all over the code
 extern struct AllParameterRowsDisplay allParameterRows;
 extern struct FilterRowDisplay filterRowDisplay[];
+
+inline
+int SynthState::getLastRowForTimbre( int timbre ) const
+{
+#ifdef SYNTHSTATE_PER_TIMBRE_EDITING
+  return lastRowForTimbre[ timbre ];
+#else
+  (void)timbre;
+  return lastRowForTimbre[ 0 ];
+#endif
+}
+
+inline
+void SynthState::setLastRowForTimbre( int timbre, int row )
+{
+#ifdef SYNTHSTATE_PER_TIMBRE_EDITING
+  lastRowForTimbre[ timbre ] = row;
+#else
+  (void)timbre;
+  if ( lastRowForTimbre[ 0 ] < 0 )
+    lastRowForTimbre[ 0 ] = row;
+#endif
+}
+
 
 
 #endif /* SYNTHSTATUS_H_ */
