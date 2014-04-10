@@ -37,7 +37,6 @@ const char* operatorButton[] = { "New", "Old" };
 const char* version[] = { PFM2_VERSION" "OVERCLOCK_STRING };
 const char* oledSaver[] = { "Off", "2m", "5m", "10m", "1h" };
 
-
 const struct MidiConfig midiConfig[]  = {
 		{
 				"Usb Midi: ",
@@ -140,6 +139,12 @@ const struct MidiConfig midiConfig[]  = {
                 "screensaver",
                 5,
                 oledSaver,
+        },
+        {
+                "Unlinked edit: ",
+                "unlinkededit",
+                2,
+                yesNo
         },
         // Don't count in MIDICONFIG_SIZE
         {

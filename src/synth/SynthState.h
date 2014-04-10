@@ -39,10 +39,6 @@
 #define BUTTON_DUMP   0
 
 
-// Allow each timbre to remember which row was last used
-//#define SYNTHSTATE_PER_TIMBRE_EDITING
-
-
 enum {
     ENCODER_ENGINE_ALGO = 0,
     ENCODER_ENGINE_VELOCITY,
@@ -475,7 +471,7 @@ private:
     int getLastRowForTimbre( int timbre ) const;
     void setLastRowForTimbre( int timbre, int row );
 
-	bool isPlayingNote ;
+	bool isPlayingNote;
 	char playingNote;
 	char playingTimbre;
 
@@ -507,26 +503,19 @@ extern struct FilterRowDisplay filterRowDisplay[];
 inline
 int SynthState::getLastRowForTimbre( int timbre ) const
 {
-#ifdef SYNTHSTATE_PER_TIMBRE_EDITING
-  return lastRowForTimbre[ timbre ];
-#else
-  (void)timbre;
-  return lastRowForTimbre[ 0 ];
-#endif
+	if ( fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] )
+		return lastRowForTimbre[ timbre ];
+	else
+		return lastRowForTimbre[ 0 ];
 }
 
 inline
 void SynthState::setLastRowForTimbre( int timbre, int row )
 {
-#ifdef SYNTHSTATE_PER_TIMBRE_EDITING
-  lastRowForTimbre[ timbre ] = row;
-#else
-  (void)timbre;
-  if ( lastRowForTimbre[ 0 ] < 0 )
-    lastRowForTimbre[ 0 ] = row;
-#endif
+	if ( fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] )
+		lastRowForTimbre[ timbre ] = row;
+	else
+		lastRowForTimbre[ 0 ] = row;
 }
-
-
 
 #endif /* SYNTHSTATUS_H_ */

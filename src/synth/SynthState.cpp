@@ -407,6 +407,7 @@ SynthState::SynthState() {
     fullState.midiConfigValue[MIDICONFIG_LED_CLOCK] = 1;
     fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET] = 0;
     fullState.midiConfigValue[MIDICONFIG_OLED_SAVER] = 0;
+	fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] = 0;
     fullState.firstMenu = 0;
 
     for (int k=0; k<12; k++) {
@@ -416,13 +417,13 @@ SynthState::SynthState() {
     // edit with timbre 0
     currentTimbre = 0;
     currentRow = 0;
-#ifdef SYNTHSTATE_PER_TIMBRE_EDITING
-    for (int t=0; t < NUMBER_OF_TIMBRES; ++t)
-      lastRowForTimbre[t] = 0;
-#else
-    for (int t=0; t < NUMBER_OF_TIMBRES; ++t)
-      lastRowForTimbre[t] = -1;
-#endif
+	if ( fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] ) {
+		for (int t=0; t < NUMBER_OF_TIMBRES; ++t)
+			lastRowForTimbre[t] = 0;
+	} else {
+		for (int t=0; t < NUMBER_OF_TIMBRES; ++t)
+			lastRowForTimbre[t] = -1;
+	}
     stepSelect[0] = 0;
     stepSelect[1] = 0;
     patternSelect = 0;
@@ -1752,11 +1753,9 @@ void SynthState::analyseSysexBuffer(uint8_t *buffer) {
 
 void SynthState::onUserChangedRow() {
 
-#ifdef SYNTHSTATE_PER_TIMBRE_EDITING
-  // nothing
-#else
-  // Reset the row so it uses the same for each instrument
-    for (int t = 0; t < NUMBER_OF_TIMBRES; ++t )
-      lastRowForTimbre[t] = -1;
-#endif
+	if ( !fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] ) {
+		// Reset the row so it uses the same for each instrument
+		for (int t = 0; t < NUMBER_OF_TIMBRES; ++t )
+			lastRowForTimbre[t] = -1;
+	}
 }
