@@ -133,6 +133,7 @@ public:
     void playNote(int timbre, char note, char velocity) {}
     void stopNote(int timbre, char note) {}
     void newTimbre(int timbre) {}
+    void sendCurrentPatchAsNrpns(int timbre);
 
     // Sysex sender
     void sendSysexByte(uint8_t byte);

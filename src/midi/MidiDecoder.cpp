@@ -497,6 +497,54 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
     }
 }
 
+void MidiDecoder::sendCurrentPatchAsNrpns(int timbre) {
+    struct MidiEvent cc;
+    cc.eventType = MIDI_CONTROL_CHANGE;
+    // Si channel = ALL envoie sur 1
+    int channel = this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL1 + timbre] -1;
+    if (channel == -1) {
+        channel = 0;
+    }
+    cc.channel = channel;
+
+    for (int currentrow = 0; currentrow < NUMBER_OF_ROWS; currentrow++) {
+        for (int encoder = 0; encoder < NUMBER_OF_ENCODERS; encoder++) {
+            struct ParameterDisplay* param = &allParameterRows.row[currentrow]->params[encoder];
+            float floatValue = ((float*)this->synthState->params)[currentrow * NUMBER_OF_ENCODERS + encoder];
+
+            int valueToSend;
+
+            if (param->displayType == DISPLAY_TYPE_FLOAT || param->displayType == DISPLAY_TYPE_FLOAT_OSC_FREQUENCY || param->displayType == DISPLAY_TYPE_FLOAT_LFO_FREQUENCY) {
+                valueToSend = (floatValue - param->minValue) * 100.0f + .1f ;
+            } else {
+                valueToSend = floatValue + .1f ;
+            }
+            // MSB / LSB
+            int paramNumber =  currentrow * NUMBER_OF_ENCODERS + encoder;
+            // Value to send must be positive
+
+            // NRPN is 4 control change
+            cc.value[0] = 99;
+            cc.value[1] = (unsigned char)(paramNumber >> 7);
+            sendMidiCCOut(&cc, false);
+            cc.value[0] = 98;
+            cc.value[1] = (unsigned char)(paramNumber & 127);
+            sendMidiCCOut(&cc, false);
+            cc.value[0] = 6;
+            cc.value[1] = (unsigned char) (valueToSend >> 7);
+            sendMidiCCOut(&cc, false);
+            cc.value[0] = 38;
+            cc.value[1] = (unsigned char) (valueToSend & 127);
+            sendMidiCCOut(&cc, false);
+
+            flushMidiOut();
+            // Wait for midi to be flushed
+            while (usartBufferOut.getCount()>0) {}
+        }
+    }
+
+}
+
 void MidiDecoder::decodeNrpn(int timbre) {
     if (this->currentNrpn[timbre].paramMSB < 2) {
         unsigned int index = (this->currentNrpn[timbre].paramMSB << 7) + this->currentNrpn[timbre].paramLSB;
@@ -522,8 +570,7 @@ void MidiDecoder::decodeNrpn(int timbre) {
 
         this->synthState->setNewStepValue(timbre, whichStepSeq, step, value);
     } else if (this->currentNrpn[timbre].paramMSB == 127 && this->currentNrpn[timbre].paramLSB == 127)  {
-    	// TO ADD !!!!!
-        // PresetUtil::sendCurrentPatchAsNrpns(timbre);
+        sendCurrentPatchAsNrpns(timbre);
     }
 }
 
