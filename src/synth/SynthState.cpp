@@ -252,7 +252,7 @@ const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "en
 
 const char* matrixDestNames [] = {
         "None", "Gate", "IM1 ", "IM2 ", "IM3 ", "IM4 ", "IM* ",
-        "Mix1", "Pan1", "Mix2", "Pan2", "Mix3", "Pan3", "Mix3", "Pan3", "Mix*", "Pan*",
+        "Mix1", "Pan1", "Mix2", "Pan2", "Mix3", "Pan3", "Mix4", "Pan4", "Mix*", "Pan*",
         "o1Fq", "o2Fq", "o3Fq", "o4Fq", "o5Fq", "o6Fq", "o*Fq",
         "Att1", "Att2", "Att3", "Att4", "Att5", "Att6", "Att*", "Rel*",
         "mx01", "mx02", "mx03", "mx04",
