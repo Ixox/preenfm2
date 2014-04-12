@@ -514,7 +514,7 @@ void SynthState::setLastRowForTimbre( int timbre, int row )
 {
 	if ( fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] )
 		lastRowForTimbre[ timbre ] = row;
-	else
+	else if ( lastRowForTimbre[ 0 ] < 0 )
 		lastRowForTimbre[ 0 ] = row;
 }
 

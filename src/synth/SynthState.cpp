@@ -1178,7 +1178,7 @@ void SynthState::buttonPressed(int button) {
                 else if ( currentRow >= ROW_OSC_FIRST && currentRow <= ROW_OSC_LAST )
                   b = BUTTON_OSC;
                 else if ( currentRow >= ROW_ENV_FIRST && currentRow <= ROW_ENV_LAST )
-                  b = BUTTON_OSC;
+                  b = BUTTON_ENV;
                 else if ( currentRow >= ROW_MATRIX_FIRST && currentRow <= ROW_MATRIX_LAST )
                   b = BUTTON_MATRIX;
                 else if ( currentRow >= ROW_LFO_FIRST && currentRow <= ROW_LFO_LAST )
