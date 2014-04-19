@@ -35,11 +35,19 @@ public:
 	Lfo();
 	virtual ~Lfo() {}
 	virtual void init(Matrix* matrix, SourceEnum source, DestinationEnum dest);
+
+	/*
+	 * All calls to these functions are currently type-specific, and the
+	 * virtual function calls have a high overhead (~500 cycles total per
+	 * buildNewSampleBlock). The savings may be due to inlining which is
+	 * (usually) not possible for virtual functions
 	virtual void valueChanged(int encoder) = 0;
 	virtual void nextValueInMatrix() = 0 ;
 	virtual void noteOn() = 0;
 	virtual void noteOff() = 0;
-	virtual void midiClock(int songPosition, bool computeStep) {}
+	virtual void midiClock(int songPosition, bool computeStep) = 0;
+	*/
+
 	void midiContinue() {
 		ticks = 0;
 	}

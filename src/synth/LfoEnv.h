@@ -82,6 +82,8 @@ public:
 		newState();
 	}
 
+	void midiClock(int songPosition, bool computeStep) {
+	}
 
 private:
     // target values of ADSR
