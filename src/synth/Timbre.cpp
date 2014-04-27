@@ -25,7 +25,8 @@ enum ArpeggiatorDirection {
   ARPEGGIO_DIRECTION_DOWN,
   ARPEGGIO_DIRECTION_UP_DOWN,
   ARPEGGIO_DIRECTION_PLAYED,
-  ARPEGGIO_DIRECTION_RANDOM
+  ARPEGGIO_DIRECTION_RANDOM,
+  ARPEGGIO_DIRECTION_CHORD
 };
 
 enum NewNoteType {
@@ -939,7 +940,18 @@ void Timbre::OnMidiClock() {
 }
 
 
+void Timbre::SendNote(uint8_t note, uint8_t velocity) {
 
+	// If there are some Note Off messages for the note about to be triggeered
+	// remove them from the queue and process them now.
+	if (event_scheduler.Remove(note, 0)) {
+		preenNoteOff(note);
+	}
+
+	// Send a note on and schedule a note off later.
+	preenNoteOn(note, velocity);
+	event_scheduler.Schedule(note, 0, midi_clock_tick_per_step[(int)params.engineArp2.duration] - 1, 0);
+}
 
 void Timbre::SendLater(uint8_t note, uint8_t velocity, uint8_t when, uint8_t tag) {
 	event_scheduler.Schedule(note, velocity, when, tag);
@@ -996,26 +1008,27 @@ void Timbre::Tick() {
 		uint16_t pattern = getArpeggiatorPattern();
 		uint8_t has_arpeggiator_note = (bitmask_ & pattern) ? 255 : 0;
 		if (note_stack.size() && has_arpeggiator_note) {
-			StepArpeggio();
-			const NoteEntry &noteEntry = ARPEGGIO_DIRECTION_PLAYED == params.engineArp1.direction
-			  ? note_stack.played_note(current_step_)
-			  : note_stack.sorted_note(current_step_);
+			if ( ARPEGGIO_DIRECTION_CHORD != params.engineArp1.direction ) {
+				StepArpeggio();
+				const NoteEntry &noteEntry = ARPEGGIO_DIRECTION_PLAYED == params.engineArp1.direction
+					? note_stack.played_note(current_step_)
+					: note_stack.sorted_note(current_step_);
 
-			uint8_t note = noteEntry.note;
-			uint8_t velocity = noteEntry.velocity;
-			note += 12 * current_octave_;
+				uint8_t note = noteEntry.note;
+				uint8_t velocity = noteEntry.velocity;
+				note += 12 * current_octave_;
 
-	    	while (note > 127) {
-				note -= 12;
+				while (note > 127) {
+					note -= 12;
+				}
+
+				SendNote(note, velocity);
+			} else {
+				for (int i = 0; i < note_stack.size(); ++i ) {
+					const NoteEntry& note = note_stack.sorted_note(i);
+					SendNote(note.note, note.velocity);
+				}
 			}
-			// If there are some Note Off messages for the note about to be triggeered
-			// remove them from the queue and process them now.
-			if (event_scheduler.Remove(note, 0)) {
-				preenNoteOff(note);
-			}
-			// Send a note on and schedule a note off later.
-			preenNoteOn(note, velocity);
-			event_scheduler.Schedule(note, 0, midi_clock_tick_per_step[(int)params.engineArp2.duration] - 1, 0);
 		}
 		bitmask_ <<= 1;
 		if (!bitmask_) {
