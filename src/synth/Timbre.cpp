@@ -29,20 +29,24 @@ enum ArpeggiatorDirection {
     ARPEGGIO_DIRECTION_RANDOM,
     ARPEGGIO_DIRECTION_CHORD,
    /*
-    * CYCLE modes repeat permutations of notes, e.g. UP: C-E-G -> E-G-C -> G-C-E -> repeat
+    * ROTATE modes rotate the first note played, e.g. UP: C-E-G -> E-G-C -> G-C-E -> repeat
     */
-    ARPEGGIO_DIRECTION_UP_CYCLE, ARPEGGIO_DIRECTION_DOWN_CYCLE, ARPEGGIO_DIRECTION_UP_DOWN_CYCLE,
+    ARPEGGIO_DIRECTION_ROTATE_UP, ARPEGGIO_DIRECTION_ROTATE_DOWN, ARPEGGIO_DIRECTION_ROTATE_UP_DOWN,
    /*
-    * SUPERCYCLE modes repeat permutations of notes with transpose, e.g. UP: C-E-G -> E-G-C1 -> G-C1-E1 -> repeat
+    * SHIFT modes rotate and extend with transpose, e.g. UP: C-E-G -> E-G-C1 -> G-C1-E1 -> repeat
     */
-    ARPEGGIO_DIRECTION_UP_SUPERCYCLE, ARPEGGIO_DIRECTION_DOWN_SUPERCYCLE, ARPEGGIO_DIRECTION_UP_DOWN_SUPERCYCLE,
+    ARPEGGIO_DIRECTION_SHIFT_UP, ARPEGGIO_DIRECTION_SHIFT_DOWN, ARPEGGIO_DIRECTION_SHIFT_UP_DOWN,
+
+    ARPEGGIO_DIRECTION_COUNT
 };
+
+// TODO Maybe add something like struct ArpDirectionParams { dir, can_change, use_start_step }
 
 inline static int __getDirection( int _direction ) {
 	switch( _direction ) {
 	case ARPEGGIO_DIRECTION_DOWN:
-	case ARPEGGIO_DIRECTION_DOWN_CYCLE:
-	case ARPEGGIO_DIRECTION_DOWN_SUPERCYCLE:
+	case ARPEGGIO_DIRECTION_ROTATE_DOWN:
+	case ARPEGGIO_DIRECTION_SHIFT_DOWN:
 		return -1;
 	default:
 		return 1;
@@ -52,8 +56,8 @@ inline static int __getDirection( int _direction ) {
 inline static int __canChangeDir( int _direction ) {
 	switch( _direction ) {
 	case ARPEGGIO_DIRECTION_UP_DOWN:
-	case ARPEGGIO_DIRECTION_UP_DOWN_CYCLE:
-	case ARPEGGIO_DIRECTION_UP_DOWN_SUPERCYCLE:
+	case ARPEGGIO_DIRECTION_ROTATE_UP_DOWN:
+	case ARPEGGIO_DIRECTION_SHIFT_UP_DOWN:
 		return 1;
 	default:
 		return 0;
@@ -1049,13 +1053,13 @@ void Timbre::Tick() {
 					step = start_step_ + current_step_;
 					if ( step >= num_notes ) {
 						step -= num_notes;
-						transpose = 1;
+						transpose = 12;
 					}
 				} else {
 					step = (num_notes - 1) - (start_step_ + current_step_);
 					if ( step < 0 ) {
 						step += num_notes;
-						transpose = -1;
+						transpose = -12;
 					}
 				}
 #ifdef DEBUG_ARP_STEP
@@ -1072,8 +1076,7 @@ void Timbre::Tick() {
 				uint8_t note = noteEntry.note;
 				uint8_t velocity = noteEntry.velocity;
 				note += 12 * current_octave_;
-				if ( direction >= ARPEGGIO_DIRECTION_UP_SUPERCYCLE )
-					note += 12 * transpose;
+				note += transpose;
 
 				while (note > 127) {
 					note -= 12;
@@ -1103,8 +1106,9 @@ void Timbre::StepArpeggio() {
 		return;
 	}
 
+	int direction = params.engineArp1.direction;
 	uint8_t num_notes = note_stack.size();
-	if (params.engineArp1.direction == ARPEGGIO_DIRECTION_RANDOM) {
+	if (direction == ARPEGGIO_DIRECTION_RANDOM) {
 		uint8_t random_byte = *(uint8_t*)noise;
 		current_octave_ = random_byte & 0xf;
 		current_step_ = (random_byte & 0xf0) >> 4;
@@ -1115,24 +1119,26 @@ void Timbre::StepArpeggio() {
 			current_step_ -= num_notes;
 		}
 	} else {
-		// Handling of direction is in Tick()
-		uint8_t change_octave = 0;
+		// NOTE: We always count [0 - num_notes) here; the actual handling of direction is in Tick()
+
+		uint8_t trigger_change = 0;
 		if (++current_step_ >= num_notes) {
 			current_step_ = 0;
-			change_octave = 1;
+			trigger_change = 1;
 		}
-		// special case the 'CYCLE' and 'SUPERCYCLE' modes, they might not change the octave until the cycle is through
-		if (change_octave && (params.engineArp1.direction >= ARPEGGIO_DIRECTION_UP_CYCLE) ) {
+
+		// special case the 'ROTATE' and 'SHIFT' modes, they might not change the octave until the cycle is through
+		if (trigger_change && (direction >= ARPEGGIO_DIRECTION_ROTATE_UP ) ) {
 			if ( ++start_step_ >= num_notes )
 				start_step_ = 0;
 			else
-				change_octave = 0;
+				trigger_change = 0;
 		}
 
-		if (change_octave) {
+		if (trigger_change) {
 			current_octave_ += current_direction_;
 			if (current_octave_ >= params.engineArp1.octave || current_octave_ < 0) {
-				if ( __canChangeDir(params.engineArp1.direction) ) {
+				if ( __canChangeDir(direction) ) {
 					current_direction_ = -current_direction_;
 					StartArpeggio();
 					if (num_notes > 1 || params.engineArp1.octave > 1) {

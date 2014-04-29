@@ -305,7 +305,6 @@ private:
     void OnMidiClock();
 	void SendNote(uint8_t note, uint8_t velocity);
 
-
     int timbreNumber;
     struct OneSynthParams params;
     Matrix matrix;

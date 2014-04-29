@@ -49,7 +49,7 @@ struct ParameterRowDisplay engine1ParameterRow  = {
 
 
 const char* clockName[] = { "Off ", "Int ", "Ext " };
-const char* dirName[] = { "Up  ", "Down", "U&D ", "Play", "Rand", "Chrd", "UpCy", "DnCy", "UDCy", "UpC+", "DnC+", "UDC+" };
+const char* dirName[] = { "Up  ", "Down", "U&D ", "Play", "Rand", "Chrd", "RtUp", "RtDn", "RtUD", "ShUp", "ShDn", "ShUD" };
 
 struct ParameterRowDisplay engineArp1ParameterRow  = {
         "Arpeggiator" ,
