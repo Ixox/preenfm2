@@ -500,28 +500,5 @@ private:
 extern struct AllParameterRowsDisplay allParameterRows;
 extern struct FilterRowDisplay filterRowDisplay[];
 
-inline
-int SynthState::getLastRowForTimbre( int timbre ) const
-{
-	if ( fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] )
-		return lastRowForTimbre[ timbre ];
-	else
-		return lastRowForTimbre[ 0 ];
-}
-
-inline
-void SynthState::setLastRowForTimbre( int timbre, int row )
-{
-	if ( fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] ) {
-		lastRowForTimbre[ timbre ] = row;
-	} else {
-		// Only remember row if there currently isn't one set; this means
-		// we are cycling through the instruments and want to return to
-		// the row that was set when the cycle started. This saved row is
-		// invalidated when the user manually changes row.
-		if ( lastRowForTimbre[ 0 ] < 0 )
-			lastRowForTimbre[ 0 ] = row;
-	}
-}
 
 #endif /* SYNTHSTATUS_H_ */

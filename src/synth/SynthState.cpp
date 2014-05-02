@@ -1171,20 +1171,8 @@ void SynthState::buttonPressed(int button) {
             int last = getLastRowForTimbre( currentTimbre );
             if ( last >= 0 )
                 currentRow = last;
-            if ( !isCurrentRowAvailable() ) {
-                int b = -1;
-                if ( currentRow >= ROW_ENGINE_FIRST && currentRow <= ROW_ENGINE_LAST )
-                  b = BUTTON_SYNTH;
-                else if ( currentRow >= ROW_OSC_FIRST && currentRow <= ROW_OSC_LAST )
-                  b = BUTTON_OSC;
-                else if ( currentRow >= ROW_ENV_FIRST && currentRow <= ROW_ENV_LAST )
-                  b = BUTTON_ENV;
-                else if ( currentRow >= ROW_MATRIX_FIRST && currentRow <= ROW_MATRIX_LAST )
-                  b = BUTTON_MATRIX;
-                else if ( currentRow >= ROW_LFO_FIRST && currentRow <= ROW_LFO_LAST )
-                  b = BUTTON_LFO;
-                if ( b >= 0 )
-                  changeSynthModeRow( b, -1 );
+            if ( !isCurrentRowAvailable() && currentRow >= ROW_ENGINE_FIRST && currentRow <= ROW_ENGINE_LAST) {
+                  changeSynthModeRow( BUTTON_SYNTH, -1 );
             }
         }
         break;
@@ -1758,4 +1746,27 @@ void SynthState::onUserChangedRow() {
 		for (int t = 0; t < NUMBER_OF_TIMBRES; ++t )
 			lastRowForTimbre[t] = -1;
 	}
+}
+
+
+int SynthState::getLastRowForTimbre( int timbre ) const
+{
+    if ( fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] )
+        return lastRowForTimbre[ timbre ];
+    else
+        return lastRowForTimbre[ 0 ];
+}
+
+void SynthState::setLastRowForTimbre( int timbre, int row )
+{
+    if ( fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] ) {
+        lastRowForTimbre[ timbre ] = row;
+    } else {
+        // Only remember row if there currently isn't one set; this means
+        // we are cycling through the instruments and want to return to
+        // the row that was set when the cycle started. This saved row is
+        // invalidated when the user manually changes row.
+        if ( lastRowForTimbre[ 0 ] < 0 )
+            lastRowForTimbre[ 0 ] = row;
+    }
 }
