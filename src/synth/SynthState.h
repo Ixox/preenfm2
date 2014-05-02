@@ -39,8 +39,6 @@
 #define BUTTON_DUMP   0
 
 
-
-
 enum {
     ENCODER_ENGINE_ALGO = 0,
     ENCODER_ENGINE_VELOCITY,
@@ -463,12 +461,17 @@ public:
 private:
 	void copySynthParams(char* source, char* dest);
 	int getRowFromOperator();
-	bool isCurrentRowAvailable();
+	bool isCurrentRowAvailable() const;
 	bool isEnterNameState(int currentItme);
 	char engineRow, oscillatorRow, envelopeRow, matrixRow, lfoRow;
 	char operatorNumber, operatorView;
 	char currentRow;
-	bool isPlayingNote ;
+    int lastRowForTimbre[ NUMBER_OF_TIMBRES ];
+    void onUserChangedRow();
+    int getLastRowForTimbre( int timbre ) const;
+    void setLastRowForTimbre( int timbre, int row );
+
+	bool isPlayingNote;
 	char playingNote;
 	char playingTimbre;
 

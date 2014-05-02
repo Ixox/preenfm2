@@ -407,6 +407,7 @@ SynthState::SynthState() {
     fullState.midiConfigValue[MIDICONFIG_LED_CLOCK] = 1;
     fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET] = 0;
     fullState.midiConfigValue[MIDICONFIG_OLED_SAVER] = 0;
+	fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] = 0;
     fullState.firstMenu = 0;
 
     for (int k=0; k<12; k++) {
@@ -416,8 +417,13 @@ SynthState::SynthState() {
     // edit with timbre 0
     currentTimbre = 0;
     currentRow = 0;
-
-
+	if ( fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] ) {
+		for (int t=0; t < NUMBER_OF_TIMBRES; ++t)
+			lastRowForTimbre[t] = 0;
+	} else {
+		for (int t=0; t < NUMBER_OF_TIMBRES; ++t)
+			lastRowForTimbre[t] = -1;
+	}
     stepSelect[0] = 0;
     stepSelect[1] = 0;
     patternSelect = 0;
@@ -572,6 +578,7 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
                     break;
                 case BUTTON_ENV:
                     changeSynthModeRow(BUTTON_MATRIX , -1);
+                    onUserChangedRow();
                     break;
                 case BUTTON_LFO:
                     currentRow = ROW_MATRIX6;
@@ -624,6 +631,7 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
 
     if (oldCurrentRow != currentRow) {
         propagateNewCurrentRow(currentRow);
+        onUserChangedRow();
     }
 }
 
@@ -641,6 +649,7 @@ void SynthState::encoderTurnedWhileButtonPressed(int encoder, int ticks, int but
         case BUTTON_LFO:
             if (likely(fullState.synthMode == SYNTH_MODE_EDIT)) {
                 changeSynthModeRow(button , ticks>0 ? 1 : -1);
+                onUserChangedRow();
             }
             break;
         case BUTTON_BACK:
@@ -962,7 +971,7 @@ void SynthState::resetDisplay() {
     propagateNewSynthMode();
 }
 
-bool SynthState::isCurrentRowAvailable() {
+bool SynthState::isCurrentRowAvailable() const {
 
     switch (currentRow) {
     case ROW_OSC_MIX2:
@@ -1140,6 +1149,7 @@ void SynthState::buttonPressed(int button) {
         case BUTTON_MATRIX:
         case BUTTON_LFO:
             changeSynthModeRow(button , 1);
+            onUserChangedRow();
             break;
         case BUTTON_ENCODER:
             currentRow = ROW_PERFORMANCE1;
@@ -1152,10 +1162,20 @@ void SynthState::buttonPressed(int button) {
             fullState.currentMenuItem = MenuItemUtil::getMenuItem(MAIN_MENU);
             break;
         case BUTTON_BACK:
+        {
+            setLastRowForTimbre( currentTimbre, currentRow ); // remember row for when we return to this timbre
             currentTimbre++;
-            currentTimbre &= 3;
+            currentTimbre &= (NUMBER_OF_TIMBRES-1);
             propagateNewTimbre(currentTimbre);
-            break;
+
+            int last = getLastRowForTimbre( currentTimbre );
+            if ( last >= 0 )
+                currentRow = last;
+            if ( !isCurrentRowAvailable() && currentRow >= ROW_ENGINE_FIRST && currentRow <= ROW_ENGINE_LAST) {
+                  changeSynthModeRow( BUTTON_SYNTH, -1 );
+            }
+        }
+        break;
         }
     } else {
         // Any button when done is display makes the synth go back to edit mode.
@@ -1717,4 +1737,36 @@ void SynthState::analyseSysexBuffer(uint8_t *buffer) {
     propagateBeforeNewParamsLoad(currentTimbre);
     storage->decodeBufferAndApplyPreset(buffer, params);
     propagateAfterNewParamsLoad(currentTimbre);
+}
+
+void SynthState::onUserChangedRow() {
+
+	if ( !fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] ) {
+		// Reset the row so it uses the same for each instrument
+		for (int t = 0; t < NUMBER_OF_TIMBRES; ++t )
+			lastRowForTimbre[t] = -1;
+	}
+}
+
+
+int SynthState::getLastRowForTimbre( int timbre ) const
+{
+    if ( fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] )
+        return lastRowForTimbre[ timbre ];
+    else
+        return lastRowForTimbre[ 0 ];
+}
+
+void SynthState::setLastRowForTimbre( int timbre, int row )
+{
+    if ( fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] ) {
+        lastRowForTimbre[ timbre ] = row;
+    } else {
+        // Only remember row if there currently isn't one set; this means
+        // we are cycling through the instruments and want to return to
+        // the row that was set when the cycle started. This saved row is
+        // invalidated when the user manually changes row.
+        if ( lastRowForTimbre[ 0 ] < 0 )
+            lastRowForTimbre[ 0 ] = row;
+    }
 }
