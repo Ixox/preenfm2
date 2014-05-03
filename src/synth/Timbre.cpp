@@ -64,6 +64,17 @@ inline static int __canChangeDir( int _direction ) {
 	}
 }
 
+inline static int __canTranspose( int _direction ) {
+	switch( _direction ) {
+	case ARPEGGIO_DIRECTION_SHIFT_UP:
+	case ARPEGGIO_DIRECTION_SHIFT_DOWN:
+	case ARPEGGIO_DIRECTION_SHIFT_UP_DOWN:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
 enum NewNoteType {
 	NEW_NOTE_FREE = 0,
 	NEW_NOTE_RELEASE,
@@ -80,6 +91,7 @@ arp_pattern_t lut_res_arpeggiator_patterns[ ARPEGGIATOR_PRESET_PATTERN_COUNT ]  
   ARP_PATTERN(22359), ARP_PATTERN(28527), ARP_PATTERN(30431), ARP_PATTERN(43281),
   ARP_PATTERN(28609), ARP_PATTERN(53505)
 };
+
 uint16_t Timbre::getArpeggiatorPattern() const
 {
   const int pattern = (int)params.engineArp2.pattern;
@@ -1076,7 +1088,8 @@ void Timbre::Tick() {
 				uint8_t note = noteEntry.note;
 				uint8_t velocity = noteEntry.velocity;
 				note += 12 * current_octave_;
-				note += transpose;
+				if ( __canTranspose( direction ) )
+					 note += transpose;
 
 				while (note > 127) {
 					note -= 12;
