@@ -303,7 +303,7 @@ private:
     void OnMidiStart();
     void OnMidiStop();
     void OnMidiClock();
-
+	void SendNote(uint8_t note, uint8_t velocity);
 
     int timbreNumber;
     struct OneSynthParams params;
@@ -371,6 +371,7 @@ private:
     int8_t current_direction_;
     int8_t current_octave_;
     int8_t current_step_;
+	int8_t start_step_;
     uint8_t ignore_note_off_messages_;
     uint8_t recording_;
     // Low pass filter

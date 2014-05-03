@@ -20,13 +20,49 @@
 #include "Timbre.h"
 #include "Voice.h"
 
+//#define DEBUG_ARP_STEP
 enum ArpeggiatorDirection {
-  ARPEGGIO_DIRECTION_UP = 0,
-  ARPEGGIO_DIRECTION_DOWN,
-  ARPEGGIO_DIRECTION_UP_DOWN,
-  ARPEGGIO_DIRECTION_PLAYED,
-  ARPEGGIO_DIRECTION_RANDOM
+    ARPEGGIO_DIRECTION_UP = 0,
+    ARPEGGIO_DIRECTION_DOWN,
+    ARPEGGIO_DIRECTION_UP_DOWN,
+    ARPEGGIO_DIRECTION_PLAYED,
+    ARPEGGIO_DIRECTION_RANDOM,
+    ARPEGGIO_DIRECTION_CHORD,
+   /*
+    * ROTATE modes rotate the first note played, e.g. UP: C-E-G -> E-G-C -> G-C-E -> repeat
+    */
+    ARPEGGIO_DIRECTION_ROTATE_UP, ARPEGGIO_DIRECTION_ROTATE_DOWN, ARPEGGIO_DIRECTION_ROTATE_UP_DOWN,
+   /*
+    * SHIFT modes rotate and extend with transpose, e.g. UP: C-E-G -> E-G-C1 -> G-C1-E1 -> repeat
+    */
+    ARPEGGIO_DIRECTION_SHIFT_UP, ARPEGGIO_DIRECTION_SHIFT_DOWN, ARPEGGIO_DIRECTION_SHIFT_UP_DOWN,
+
+    ARPEGGIO_DIRECTION_COUNT
 };
+
+// TODO Maybe add something like struct ArpDirectionParams { dir, can_change, use_start_step }
+
+inline static int __getDirection( int _direction ) {
+	switch( _direction ) {
+	case ARPEGGIO_DIRECTION_DOWN:
+	case ARPEGGIO_DIRECTION_ROTATE_DOWN:
+	case ARPEGGIO_DIRECTION_SHIFT_DOWN:
+		return -1;
+	default:
+		return 1;
+	}
+}
+
+inline static int __canChangeDir( int _direction ) {
+	switch( _direction ) {
+	case ARPEGGIO_DIRECTION_UP_DOWN:
+	case ARPEGGIO_DIRECTION_ROTATE_UP_DOWN:
+	case ARPEGGIO_DIRECTION_SHIFT_UP_DOWN:
+		return 1;
+	default:
+		return 0;
+	}
+}
 
 enum NewNoteType {
 	NEW_NOTE_FREE = 0,
@@ -939,7 +975,18 @@ void Timbre::OnMidiClock() {
 }
 
 
+void Timbre::SendNote(uint8_t note, uint8_t velocity) {
 
+	// If there are some Note Off messages for the note about to be triggeered
+	// remove them from the queue and process them now.
+	if (event_scheduler.Remove(note, 0)) {
+		preenNoteOff(note);
+	}
+
+	// Send a note on and schedule a note off later.
+	preenNoteOn(note, velocity);
+	event_scheduler.Schedule(note, 0, midi_clock_tick_per_step[(int)params.engineArp2.duration] - 1, 0);
+}
 
 void Timbre::SendLater(uint8_t note, uint8_t velocity, uint8_t when, uint8_t tag) {
 	event_scheduler.Schedule(note, velocity, when, tag);
@@ -995,27 +1042,53 @@ void Timbre::Tick() {
 		tick_ = 0;
 		uint16_t pattern = getArpeggiatorPattern();
 		uint8_t has_arpeggiator_note = (bitmask_ & pattern) ? 255 : 0;
-		if (note_stack.size() && has_arpeggiator_note) {
-			StepArpeggio();
-			const NoteEntry &noteEntry = ARPEGGIO_DIRECTION_PLAYED == params.engineArp1.direction
-			  ? note_stack.played_note(current_step_)
-			  : note_stack.sorted_note(current_step_);
+		const int num_notes = note_stack.size();
+		const int direction = params.engineArp1.direction;
 
-			uint8_t note = noteEntry.note;
-			uint8_t velocity = noteEntry.velocity;
-			note += 12 * current_octave_;
+		if (num_notes && has_arpeggiator_note) {
+			if ( ARPEGGIO_DIRECTION_CHORD != direction ) {
+				StepArpeggio();
+				int step, transpose = 0;
+				if ( current_direction_ > 0 ) {
+					step = start_step_ + current_step_;
+					if ( step >= num_notes ) {
+						step -= num_notes;
+						transpose = 12;
+					}
+				} else {
+					step = (num_notes - 1) - (start_step_ + current_step_);
+					if ( step < 0 ) {
+						step += num_notes;
+						transpose = -12;
+					}
+				}
+#ifdef DEBUG_ARP_STEP
+				lcd.setRealTimeAction(true);
+				lcd.setCursor(16,0);
+				lcd.print( current_direction_ > 0 ? '+' : '-' );
+				lcd.print( step );
+				lcd.setRealTimeAction(false);
+#endif
+				const NoteEntry &noteEntry = ARPEGGIO_DIRECTION_PLAYED == direction
+					? note_stack.played_note(step)
+					: note_stack.sorted_note(step);
 
-	    	while (note > 127) {
-				note -= 12;
+				uint8_t note = noteEntry.note;
+				uint8_t velocity = noteEntry.velocity;
+				note += 12 * current_octave_;
+				note += transpose;
+
+				while (note > 127) {
+					note -= 12;
+				}
+
+				SendNote(note, velocity);
+			} else {
+				for (int i = 0; i < note_stack.size(); ++i ) {
+					const NoteEntry& noteEntry = note_stack.sorted_note(i);
+					SendNote(noteEntry.note, noteEntry.velocity);
+				}
 			}
-			// If there are some Note Off messages for the note about to be triggeered
-			// remove them from the queue and process them now.
-			if (event_scheduler.Remove(note, 0)) {
-				preenNoteOff(note);
-			}
-			// Send a note on and schedule a note off later.
-			preenNoteOn(note, velocity);
-			event_scheduler.Schedule(note, 0, midi_clock_tick_per_step[(int)params.engineArp2.duration] - 1, 0);
 		}
 		bitmask_ <<= 1;
 		if (!bitmask_) {
@@ -1033,8 +1106,9 @@ void Timbre::StepArpeggio() {
 		return;
 	}
 
+	int direction = params.engineArp1.direction;
 	uint8_t num_notes = note_stack.size();
-	if (params.engineArp1.direction == ARPEGGIO_DIRECTION_RANDOM) {
+	if (direction == ARPEGGIO_DIRECTION_RANDOM) {
 		uint8_t random_byte = *(uint8_t*)noise;
 		current_octave_ = random_byte & 0xf;
 		current_step_ = (random_byte & 0xf0) >> 4;
@@ -1045,19 +1119,26 @@ void Timbre::StepArpeggio() {
 			current_step_ -= num_notes;
 		}
 	} else {
-		current_step_ += current_direction_;
-		uint8_t change_octave = 0;
-		if (current_step_ >= num_notes) {
+		// NOTE: We always count [0 - num_notes) here; the actual handling of direction is in Tick()
+
+		uint8_t trigger_change = 0;
+		if (++current_step_ >= num_notes) {
 			current_step_ = 0;
-			change_octave = 1;
-		} else if (current_step_ < 0) {
-			current_step_ = num_notes - 1;
-			change_octave = 1;
+			trigger_change = 1;
 		}
-		if (change_octave) {
+
+		// special case the 'ROTATE' and 'SHIFT' modes, they might not change the octave until the cycle is through
+		if (trigger_change && (direction >= ARPEGGIO_DIRECTION_ROTATE_UP ) ) {
+			if ( ++start_step_ >= num_notes )
+				start_step_ = 0;
+			else
+				trigger_change = 0;
+		}
+
+		if (trigger_change) {
 			current_octave_ += current_direction_;
 			if (current_octave_ >= params.engineArp1.octave || current_octave_ < 0) {
-				if (params.engineArp1.direction == ARPEGGIO_DIRECTION_UP_DOWN) {
+				if ( __canChangeDir(direction) ) {
 					current_direction_ = -current_direction_;
 					StartArpeggio();
 					if (num_notes > 1 || params.engineArp1.octave > 1) {
@@ -1073,13 +1154,13 @@ void Timbre::StepArpeggio() {
 
 void Timbre::StartArpeggio() {
 
-  if (current_direction_ == 1) {
-    current_octave_ = 0;
-    current_step_ = 0;
-  } else {
-    current_step_ = note_stack.size() - 1;
-    current_octave_ = params.engineArp1.octave - 1;
-  }
+	current_step_ = 0;
+	start_step_ = 0;
+	if (current_direction_ == 1) {
+		current_octave_ = 0;
+	} else {
+		current_octave_ = params.engineArp1.octave - 1;
+	}
 }
 
 void Timbre::Start() {
@@ -1088,7 +1169,7 @@ void Timbre::Start() {
 	running_ = 1;
 	tick_ = midi_clock_tick_per_step[(int)params.engineArp2.division] - 1;
     current_octave_ = 127;
-	current_direction_ = (params.engineArp1.direction == ARPEGGIO_DIRECTION_DOWN ? -1 : 1);
+	current_direction_ = __getDirection( params.engineArp1.direction );
 }
 
 
@@ -1112,7 +1193,7 @@ void Timbre::setLatchMode(uint8_t value) {
 
 void Timbre::setDirection(uint8_t value) {
 	// When changing the arpeggio direction, reset the pattern.
-	current_direction_ = (value == ARPEGGIO_DIRECTION_DOWN ? -1 : 1);
+	current_direction_ = __getDirection(value);
 	StartArpeggio();
 }
 
