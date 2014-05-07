@@ -371,37 +371,43 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
 
     if (receives == 1 || receives ==3) {
         switch (midiEvent.value[0]) {
+        case CC_ALGO:
+            this->synth->setNewValueFromMidi(timbre, ROW_ENGINE, ENCODER_ENGINE_ALGO,
+                    (float)midiEvent.value[1]);
+            break;
         case CC_IM1:
         case CC_IM2:
+            this->synth->setNewValueFromMidi(timbre, ROW_MODULATION1, ENCODER_ENGINE_IM1  + (midiEvent.value[0] - CC_IM1) * 2,
+                    (float)midiEvent.value[1] * .1f);
+            break;
         case CC_IM3:
         case CC_IM4:
-			this->synth->setNewValueFromMidi(timbre, ROW_MODULATION1, ENCODER_ENGINE_IM1  + midiEvent.value[0] - CC_IM1,
+			this->synth->setNewValueFromMidi(timbre, ROW_MODULATION2, ENCODER_ENGINE_IM3  + (midiEvent.value[0] - CC_IM3) *2,
 					(float)midiEvent.value[1] * .1f);
             break;
         case CC_IM5:
-        case CC_IM6:
-			this->synth->setNewValueFromMidi(timbre, ROW_MODULATION2, ENCODER_ENGINE_IM5  + midiEvent.value[0] - CC_IM5,
+			this->synth->setNewValueFromMidi(timbre, ROW_MODULATION3, ENCODER_ENGINE_IM5  + (midiEvent.value[0] - CC_IM5),
 					(float)midiEvent.value[1] * .1f);
             break;
         case CC_MIX1:
         case CC_MIX2:
             this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX1, ENCODER_ENGINE_MIX1 + (midiEvent.value[0] - CC_MIX1),
-                    (float)midiEvent.value[1] * .01f);
+                    (float)midiEvent.value[1] * .00787401574803149606f);
             break;
         case CC_MIX3:
         case CC_MIX4:
             this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX2, ENCODER_ENGINE_MIX3 + (midiEvent.value[0] - CC_MIX3),
-                    (float)midiEvent.value[1] * .01f);
+                    (float)midiEvent.value[1] * .00787401574803149606f);
             break;
         case CC_PAN1:
         case CC_PAN2:
             this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX1, ENCODER_ENGINE_PAN1 + (midiEvent.value[0] - CC_PAN1),
-                    (float)midiEvent.value[1] * .02f - 1.0f);
+                    (float)midiEvent.value[1] * .00787401574803149606f * 2.0f - 1.0f);
             break;
         case CC_PAN3:
         case CC_PAN4:
             this->synth->setNewValueFromMidi(timbre, ROW_OSC_MIX2, ENCODER_ENGINE_PAN3 + (midiEvent.value[0] - CC_PAN3),
-                    (float)midiEvent.value[1] * .02f - 1.0f);
+                    (float)midiEvent.value[1] * .00787401574803149606f * 2.0f - 1.0f);
             break;
         case CC_OSC1_FREQ:
         case CC_OSC2_FREQ:
@@ -655,17 +661,30 @@ void MidiDecoder::newParamValue(int timbre, int currentrow,
         cc.value[0] = 0;
 
         switch (currentrow) {
+        case ROW_ENGINE:
+            if (encoder == ENCODER_ENGINE_ALGO) {
+                cc.value[1] = newValue;
+                cc.value[0] = CC_ALGO;
+            }
+            break;
         case ROW_MODULATION1:
-
-			cc.value[1] = newValue * 10;
-			cc.value[0] = CC_IM1 + encoder;
-
+            if ((encoder & 0x1) == 0) {
+                cc.value[1] = newValue * 10 + .001f;
+                cc.value[0] = CC_IM1 + (encoder >> 1);
+            }
             break;
         case ROW_MODULATION2:
-        	cc.value[1] = newValue * 10;
-			cc.value[0] = CC_IM5 + encoder;
-
+            if ((encoder & 0x1) == 0) {
+                cc.value[1] = newValue * 10 + .001f;
+                cc.value[0] = CC_IM3 + encoder;
+            }
 			break;
+        case ROW_MODULATION3:
+            if ((encoder & 0x1) == 0) {
+                cc.value[1] = newValue * 10 + .001f;
+                cc.value[0] = CC_IM5 + encoder;
+            }
+            break;
         case ROW_OSC_MIX1:
             cc.value[0] = CC_MIX1 + encoder;
             if ((encoder & 0x1) == 0) {

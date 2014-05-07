@@ -517,7 +517,8 @@ void Synth::setNewValueFromMidi(int timbre, int row, int encoder, float newValue
     int index = row * NUMBER_OF_ENCODERS + encoder;
     float oldValue = ((float*)this->timbres[timbre].getParamRaw())[index];
     this->timbres[timbre].setNewValue(index, param, newValue);
-    this->synthState->propagateNewParamValueFromExternal(timbre, row, encoder, param, oldValue, newValue);
+    float newNewValue = ((float*)this->timbres[timbre].getParamRaw())[index];
+    this->synthState->propagateNewParamValueFromExternal(timbre, row, encoder, param, oldValue, newNewValue);
 }
 
 
