@@ -520,7 +520,10 @@ void MidiDecoder::sendCurrentPatchAsNrpns(int timbre) {
 
             int valueToSend;
 
-            if (param->displayType == DISPLAY_TYPE_FLOAT || param->displayType == DISPLAY_TYPE_FLOAT_OSC_FREQUENCY || param->displayType == DISPLAY_TYPE_FLOAT_LFO_FREQUENCY) {
+            if (param->displayType == DISPLAY_TYPE_FLOAT
+                    || param->displayType == DISPLAY_TYPE_FLOAT_OSC_FREQUENCY
+                    || param->displayType == DISPLAY_TYPE_FLOAT_LFO_FREQUENCY
+                    || param->displayType == DISPLAY_TYPE_LFO_KSYN) {
                 valueToSend = (floatValue - param->minValue) * 100.0f + .1f ;
             } else {
                 valueToSend = floatValue + .1f ;
@@ -561,7 +564,10 @@ void MidiDecoder::decodeNrpn(int timbre) {
 
 
         if (row < NUMBER_OF_ROWS) {
-            if (param->displayType == DISPLAY_TYPE_FLOAT || param->displayType == DISPLAY_TYPE_FLOAT_OSC_FREQUENCY || param->displayType == DISPLAY_TYPE_FLOAT_LFO_FREQUENCY) {
+            if (param->displayType == DISPLAY_TYPE_FLOAT
+                    || param->displayType == DISPLAY_TYPE_FLOAT_OSC_FREQUENCY
+                    || param->displayType == DISPLAY_TYPE_FLOAT_LFO_FREQUENCY
+                    || param->displayType == DISPLAY_TYPE_LFO_KSYN) {
             	value = value * .01f + param->minValue;
             }
             this->synth->setNewValueFromMidi(timbre, row, encoder, value);
@@ -629,7 +635,10 @@ void MidiDecoder::newParamValue(int timbre, int currentrow,
             // performance do not send NRPN
             int valueToSend;
 
-            if (param->displayType == DISPLAY_TYPE_FLOAT || param->displayType == DISPLAY_TYPE_FLOAT_OSC_FREQUENCY || param->displayType == DISPLAY_TYPE_FLOAT_LFO_FREQUENCY) {
+            if (param->displayType == DISPLAY_TYPE_FLOAT
+                    || param->displayType == DISPLAY_TYPE_FLOAT_OSC_FREQUENCY
+                    || param->displayType == DISPLAY_TYPE_FLOAT_LFO_FREQUENCY
+                    || param->displayType == DISPLAY_TYPE_LFO_KSYN) {
                 valueToSend = (newValue - param->minValue) * 100.0f + .1f ;
             } else {
                 valueToSend = newValue + .1f ;

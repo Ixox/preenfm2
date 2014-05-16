@@ -196,11 +196,11 @@ void FMDisplay::printFloatWithSpace(float value) {
             lcd->print(valueTimes100);
         }
     } else {
-        int integer = (int) value;
+        int integer = (int) (value + .0005f);
         lcd->print(integer);
         lcd->print('.');
         value -= integer;
-        lcd->print((int)(value*10));
+        lcd->print((int)(value*10 + .0005f ));
     }
 }
 
@@ -284,8 +284,8 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
         lcd->print(param->valueName[newValue]);
         break;
     case DISPLAY_TYPE_FLOAT_LFO_FREQUENCY:
-        if (newFloatValue*10.0f > 240.0) {
-            int stringIndex = newFloatValue * 10;
+        if (newFloatValue * 10.0f > 240.0) {
+            int stringIndex = newFloatValue * 10.0f + .005f;
             lcd->setCursor(encoder*5, 3);
 #ifdef DEBUG
             if (likely(stringIndex <= LFO_MIDICLOCK_MC_TIME_8)) {
@@ -598,7 +598,6 @@ void FMDisplay::newTimbre(int timbre) {
         refreshStatus = 12;
     }
 }
-
 
 
 // Update FMDisplay regarding the callbacks from SynthState

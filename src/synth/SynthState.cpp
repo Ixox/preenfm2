@@ -721,8 +721,10 @@ void SynthState::encoderTurned(int encoder, int ticks) {
             float inc = param->incValue;
 
             // Slow down LFO frequency
-            if (param->displayType == DISPLAY_TYPE_FLOAT_LFO_FREQUENCY && oldValue < 1.0f) {
-                inc = inc * .1f;
+            if (unlikely(param->displayType == DISPLAY_TYPE_FLOAT_LFO_FREQUENCY)) {
+                if (oldValue < 1.0f) {
+                    inc = inc * .1f;
+                }
             }
 
             int tickIndex = (value - param->minValue) / inc + .0005f + ticks;
