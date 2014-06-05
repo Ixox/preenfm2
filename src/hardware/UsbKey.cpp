@@ -333,7 +333,7 @@ int UsbKey::preenFMComboReadNextFileName(struct BankFile* combo) {
 }
 
 bool UsbKey::isPreenFMComboFile(char *name, int size)  {
-	if (size != 525536) {
+	if (size != 525536 && size != 525632) {
 		return false;
 	}
 
