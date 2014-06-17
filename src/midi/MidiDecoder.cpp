@@ -513,6 +513,29 @@ void MidiDecoder::sendCurrentPatchAsNrpns(int timbre) {
     }
     cc.channel = channel;
 
+
+    // Send the title
+    for (unsigned int k=0; k<12; k++) {
+        int valueToSend = this->synthState->params->presetName[k];
+        cc.value[0] = 99;
+        cc.value[1] = 1;
+        sendMidiCCOut(&cc, false);
+        cc.value[0] = 98;
+        cc.value[1] = 100+k;
+        sendMidiCCOut(&cc, false);
+        cc.value[0] = 6;
+        cc.value[1] = (unsigned char) (valueToSend >> 7);
+        sendMidiCCOut(&cc, false);
+        cc.value[0] = 38;
+        cc.value[1] = (unsigned char) (valueToSend & 127);
+        sendMidiCCOut(&cc, false);
+
+        flushMidiOut();
+        // Wait for midi to be flushed
+        while (usartBufferOut.getCount()>0) {}
+    }
+
+    // flush all parameters
     for (int currentrow = 0; currentrow < NUMBER_OF_ROWS; currentrow++) {
         for (int encoder = 0; encoder < NUMBER_OF_ENCODERS; encoder++) {
             struct ParameterDisplay* param = &allParameterRows.row[currentrow]->params[encoder];
@@ -551,6 +574,29 @@ void MidiDecoder::sendCurrentPatchAsNrpns(int timbre) {
             while (usartBufferOut.getCount()>0) {}
         }
     }
+
+    // Step Seq
+    for (int whichStepSeq = 0; whichStepSeq < 2; whichStepSeq++) {
+         for (int step = 0; step<16; step++) {
+             cc.value[0] = 99;
+             cc.value[1] = whichStepSeq + 2;
+             sendMidiCCOut(&cc, false);
+             cc.value[0] = 98;
+             cc.value[1] = step;
+             sendMidiCCOut(&cc, false);
+             cc.value[0] = 6;
+             cc.value[1] = 0;
+             sendMidiCCOut(&cc, false);
+             cc.value[0] = 38;
+             StepSequencerSteps * seqSteps = &((StepSequencerSteps * )(&this->synthState->params->lfoSteps1))[whichStepSeq];
+             cc.value[1] = seqSteps->steps[step];
+             sendMidiCCOut(&cc, false);
+
+             flushMidiOut();
+             // Wait for midi to be flushed
+             while (usartBufferOut.getCount()>0) {}
+         }
+     }
 
 }
 
