@@ -106,13 +106,7 @@ public:
     void newcurrentRow(int timbre, int newcurrentRow);
     void updateStepSequencer(int currentRow, int encoder, int oldValue, int newValue);
     void updateArpPattern(int currentRow, int encoder, int oldValue, int newValue);
-    void newPresetName(bool cleanFirst) {
-    	if (cleanFirst) {
-    		lcd->setCursor(7,0);
-    		lcd->print("            ");
-    	}
-    	displayPreset();
-    };
+    void newPresetName();
 
     void showAlgo() {
     	displayAlgo(this->synthState->params->engine1.algo);

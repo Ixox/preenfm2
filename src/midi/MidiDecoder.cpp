@@ -619,7 +619,9 @@ void MidiDecoder::decodeNrpn(int timbre) {
             this->synth->setNewValueFromMidi(timbre, row, encoder, value);
         } else if (index >= 228 && index < 240) {
             this->synthState->params->presetName[index - 228] = (char) value;
-            this->synthState->propagateNewPresetName((value == 0));
+            if (index == 239) {
+                this->synthState->propagateNewPresetName();
+            }
         }
     } else if (this->currentNrpn[timbre].paramMSB < 4)  {
         unsigned int whichStepSeq = this->currentNrpn[timbre].paramMSB -2;
@@ -678,7 +680,6 @@ void MidiDecoder::newParamValue(int timbre, int currentrow,
                 flushMidiOut();
             }
         } else {
-            // performance do not send NRPN
             int valueToSend;
 
             if (param->displayType == DISPLAY_TYPE_FLOAT

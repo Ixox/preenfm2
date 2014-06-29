@@ -364,9 +364,9 @@ public:
         }
     }
 
-	void propagateNewPresetName(bool cleanFirst) {
+	void propagateNewPresetName() {
 		for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-			listener->newPresetName(cleanFirst);
+			listener->newPresetName();
 		}
 	}
 

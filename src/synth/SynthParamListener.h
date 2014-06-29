@@ -61,7 +61,7 @@ public:
     virtual void playNote(int timbre, char note, char velocity) = 0;
     virtual void stopNote(int timbre, char note) = 0;
 
-    virtual void newPresetName(bool cleanFirst) {};
+    virtual void newPresetName() {};
 
     SynthParamListener* nextListener;
 };

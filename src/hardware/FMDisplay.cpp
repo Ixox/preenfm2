@@ -561,6 +561,21 @@ void FMDisplay::updateEncoderValue(int refreshStatus) {
 }
 
 
+void FMDisplay::newPresetName() {
+    int l = getLength(this->synthState->params->presetName);
+
+    lcd->setCursor(3,0);
+    lcd->print(this->synthState->params->presetName);
+    if (presetModifed[currentTimbre]) {
+        lcd->print('*');
+        l++;
+    }
+    for (int k=l; k< 13; k++) {
+        lcd->print(' ');
+    }
+};
+
+
 void FMDisplay::displayPreset() {
     FullState* fullState = &this->synthState->fullState;
 
