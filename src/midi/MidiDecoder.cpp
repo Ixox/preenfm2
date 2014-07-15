@@ -505,6 +505,9 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
 
 void MidiDecoder::sendCurrentPatchAsNrpns(int timbre) {
     struct MidiEvent cc;
+
+    OneSynthParams * paramsToSend = this->synth->getTimbre(timbre)->getParamRaw();
+
     cc.eventType = MIDI_CONTROL_CHANGE;
     // Si channel = ALL envoie sur 1
     int channel = this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL1 + timbre] -1;
@@ -516,7 +519,7 @@ void MidiDecoder::sendCurrentPatchAsNrpns(int timbre) {
 
     // Send the title
     for (unsigned int k=0; k<12; k++) {
-        int valueToSend = this->synthState->params->presetName[k];
+        int valueToSend = paramsToSend->presetName[k];
         cc.value[0] = 99;
         cc.value[1] = 1;
         sendMidiCCOut(&cc, false);
@@ -539,7 +542,7 @@ void MidiDecoder::sendCurrentPatchAsNrpns(int timbre) {
     for (int currentrow = 0; currentrow < NUMBER_OF_ROWS; currentrow++) {
         for (int encoder = 0; encoder < NUMBER_OF_ENCODERS; encoder++) {
             struct ParameterDisplay* param = &allParameterRows.row[currentrow]->params[encoder];
-            float floatValue = ((float*)this->synthState->params)[currentrow * NUMBER_OF_ENCODERS + encoder];
+            float floatValue = ((float*)paramsToSend)[currentrow * NUMBER_OF_ENCODERS + encoder];
 
             int valueToSend;
 
@@ -588,7 +591,7 @@ void MidiDecoder::sendCurrentPatchAsNrpns(int timbre) {
              cc.value[1] = 0;
              sendMidiCCOut(&cc, false);
              cc.value[0] = 38;
-             StepSequencerSteps * seqSteps = &((StepSequencerSteps * )(&this->synthState->params->lfoSteps1))[whichStepSeq];
+             StepSequencerSteps * seqSteps = &((StepSequencerSteps * )(&paramsToSend->lfoSteps1))[whichStepSeq];
              cc.value[1] = seqSteps->steps[step];
              sendMidiCCOut(&cc, false);
 
