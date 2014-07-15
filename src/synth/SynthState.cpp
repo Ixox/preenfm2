@@ -558,10 +558,10 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
                 currentRow = ROW_ENGINE;
                 break;
             case BUTTON_ENV:
-                currentRow = ROW_ARPEGGIATOR1;
+                currentRow = ROW_MODULATION1;
                 break;
             case BUTTON_MATRIX:
-                currentRow = ROW_MODULATION1;
+                currentRow = ROW_ARPEGGIATOR1;
                 break;
             case BUTTON_LFO:
                 currentRow = ROW_EFFECT;
