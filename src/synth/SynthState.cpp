@@ -183,7 +183,7 @@ struct FilterRowDisplay filterRowDisplay[FILTER_LAST] = {
         { "Freq", "Res ", "Gain" },
         { "Freq", "Res ", "Gain" },
         { "LoFr", "Boos", "Gain" },
-        { "Freq", "Res ", "Gain" },
+        { "Freq", "Q   ", "Gain" },
         { "Samp", "Bits", "Gain" },
 };
 

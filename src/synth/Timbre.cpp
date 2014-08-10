@@ -960,7 +960,7 @@ void Timbre::setNewEffecParam(int encoder) {
         //        k = b0/a0;
 
         // frequency must be up to SR / 2.... So 1024 * param1 :
-        // 1000 instead of 102 to get rid of strange border effect....
+        // 1000 instead of 1024 to get rid of strange border effect....
         float param1Square = params.effect.param1 * params.effect.param1;
         float sn1 = sinTable[(int)(12 + 1000 * param1Square)];
         // sin(x) = cos( PI/2 - x)
@@ -974,31 +974,13 @@ void Timbre::setNewEffecParam(int encoder) {
         if (params.effect.param2 > 0) {
             alpha1 = sn1 / ( 8 * params.effect.param2);
         }
-    //        BPF:        H(s) = (s/Q) / (s^2 + s/Q + 1)      (constant 0 dB peak gain)
+
         float A0 = 1.0f + alpha1;
         float B0 = alpha1;
         fxParamB1 = 0.0;
         fxParamB2 = - alpha1 / A0;
         fxParamA1 = -2.0f * cs1 / A0;
         fxParamA2 = (1.0f - alpha1) / A0;
-
-
-    //        BPF:        H(s) = s / (s^2 + s/Q + 1)  (constant skirt gain, peak gain = Q)
-    //
-    //                    b0 =   sin(w0)/2  =   Q*alpha
-    //                    b1 =   0
-    //                    b2 =  -sin(w0)/2  =  -Q*alpha
-    //                    a0 =   1 + alpha
-    //                    a1 =  -2*cos(w0)
-    //                    a2 =   1 - alpha
-
-//        float A0 = 1.0f + alpha1;
-//        float B0 = sn1 * .5f;
-//        fxParamB1 = 0.0f;
-//        fxParamB2 = -B0 / A0;
-//        fxParamA1 = -2 * cs1 / A0;
-//        fxParamA2 = (1 - alpha1) / A0;
-
 
         fxParam1 = B0 / A0;
 
