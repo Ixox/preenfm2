@@ -57,6 +57,7 @@ public:
     virtual void afterNewParamsLoad(int timbre) = 0;
     virtual void afterNewComboLoad() = 0;
     virtual void showAlgo() = 0;
+    virtual void showIMInformation() = 0;
 
     virtual void playNote(int timbre, char note, char velocity) = 0;
     virtual void stopNote(int timbre, char note) = 0;

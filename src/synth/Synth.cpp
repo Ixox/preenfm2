@@ -391,65 +391,65 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
                 break;
             }
             break;
-            case ROW_ARPEGGIATOR2:
-                if (unlikely(encoder == ENCODER_ARPEGGIATOR_LATCH)) {
-                    timbres[timbre].setLatchMode((uint8_t) newValue);
-                }
-                break;
-            case ROW_ARPEGGIATOR3:
-                break;
-            case ROW_EFFECT:
-                timbres[timbre].setNewEffecParam(encoder);
-                break;
-            case ROW_ENV1a:
-                timbres[timbre].env1.reloadADSR(encoder);
-                break;
-            case ROW_ENV1b:
-                timbres[timbre].env1.reloadADSR(encoder + 4);
-                break;
-            case ROW_ENV2a:
-                timbres[timbre].env2.reloadADSR(encoder);
-                break;
-            case ROW_ENV2b:
-                timbres[timbre].env2.reloadADSR(encoder + 4);
-                break;
-            case ROW_ENV3a:
-                timbres[timbre].env3.reloadADSR(encoder);
-                break;
-            case ROW_ENV3b:
-                timbres[timbre].env3.reloadADSR(encoder + 4);
-                break;
-            case ROW_ENV4a:
-                timbres[timbre].env4.reloadADSR(encoder);
-                break;
-            case ROW_ENV4b:
-                timbres[timbre].env4.reloadADSR(encoder + 4);
-                break;
-            case ROW_ENV5a:
-                timbres[timbre].env5.reloadADSR(encoder);
-                break;
-            case ROW_ENV5b:
-                timbres[timbre].env5.reloadADSR(encoder + 4);
-                break;
-            case ROW_ENV6a:
-                timbres[timbre].env6.reloadADSR(encoder);
-                break;
-            case ROW_ENV6b:
-                timbres[timbre].env6.reloadADSR(encoder + 4);
-                break;
-            case ROW_MATRIX_FIRST ... ROW_MATRIX_LAST:
-            if (encoder == ENCODER_MATRIX_DEST) {
-                // Reset old destination
-                timbres[timbre].matrix.resetDestination(oldValue);
+        case ROW_ARPEGGIATOR2:
+            if (unlikely(encoder == ENCODER_ARPEGGIATOR_LATCH)) {
+                timbres[timbre].setLatchMode((uint8_t) newValue);
             }
             break;
-            case ROW_LFO_FIRST ... ROW_LFO_LAST:
-            // timbres[timbre].lfo[currentRow - ROW_LFOOSC1]->valueChanged(encoder);
-            timbres[timbre].lfoValueChange(currentRow, encoder, newValue);
+        case ROW_ARPEGGIATOR3:
             break;
-            case ROW_PERFORMANCE1:
-                timbres[timbre].matrix.setSource((enum SourceEnum)(MATRIX_SOURCE_CC1 + encoder), newValue);
-                break;
+        case ROW_EFFECT:
+            timbres[timbre].setNewEffecParam(encoder);
+            break;
+        case ROW_ENV1a:
+            timbres[timbre].env1.reloadADSR(encoder);
+            break;
+        case ROW_ENV1b:
+            timbres[timbre].env1.reloadADSR(encoder + 4);
+            break;
+        case ROW_ENV2a:
+            timbres[timbre].env2.reloadADSR(encoder);
+            break;
+        case ROW_ENV2b:
+            timbres[timbre].env2.reloadADSR(encoder + 4);
+            break;
+        case ROW_ENV3a:
+            timbres[timbre].env3.reloadADSR(encoder);
+            break;
+        case ROW_ENV3b:
+            timbres[timbre].env3.reloadADSR(encoder + 4);
+            break;
+        case ROW_ENV4a:
+            timbres[timbre].env4.reloadADSR(encoder);
+            break;
+        case ROW_ENV4b:
+            timbres[timbre].env4.reloadADSR(encoder + 4);
+            break;
+        case ROW_ENV5a:
+            timbres[timbre].env5.reloadADSR(encoder);
+            break;
+        case ROW_ENV5b:
+            timbres[timbre].env5.reloadADSR(encoder + 4);
+            break;
+        case ROW_ENV6a:
+            timbres[timbre].env6.reloadADSR(encoder);
+            break;
+        case ROW_ENV6b:
+            timbres[timbre].env6.reloadADSR(encoder + 4);
+            break;
+        case ROW_MATRIX_FIRST ... ROW_MATRIX_LAST:
+        if (encoder == ENCODER_MATRIX_DEST) {
+            // Reset old destination
+            timbres[timbre].matrix.resetDestination(oldValue);
+        }
+        break;
+        case ROW_LFO_FIRST ... ROW_LFO_LAST:
+        // timbres[timbre].lfo[currentRow - ROW_LFOOSC1]->valueChanged(encoder);
+        timbres[timbre].lfoValueChange(currentRow, encoder, newValue);
+        break;
+        case ROW_PERFORMANCE1:
+            timbres[timbre].matrix.setSource((enum SourceEnum)(MATRIX_SOURCE_CC1 + encoder), newValue);
+            break;
     }
 }
 
@@ -519,6 +519,11 @@ void Synth::setNewValueFromMidi(int timbre, int row, int encoder, float newValue
     this->timbres[timbre].setNewValue(index, param, newValue);
     float newNewValue = ((float*)this->timbres[timbre].getParamRaw())[index];
     this->synthState->propagateNewParamValueFromExternal(timbre, row, encoder, param, oldValue, newNewValue);
+}
+
+
+void Synth::setNewSymbolInPresetName(int timbre, int index, int value) {
+    this->timbres[timbre].getParamRaw()->presetName[index] = value;
 }
 
 

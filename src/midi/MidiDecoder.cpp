@@ -621,7 +621,7 @@ void MidiDecoder::decodeNrpn(int timbre) {
             }
             this->synth->setNewValueFromMidi(timbre, row, encoder, value);
         } else if (index >= 228 && index < 240) {
-            this->synthState->params->presetName[index - 228] = (char) value;
+            this->synth->setNewSymbolInPresetName(timbre, index - 228, value);
             if (index == 239) {
                 this->synthState->propagateNewPresetName();
             }

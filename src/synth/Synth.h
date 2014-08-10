@@ -82,6 +82,8 @@ public:
     void afterNewComboLoad();
     void updateNumberOfActiveTimbres();
     void showAlgo() { }
+    void showIMInformation() {}
+
 
     void midiClockSetSongPosition(int songPosition) {
         // nothing to do
@@ -143,6 +145,7 @@ public:
     }
 
     void setNewValueFromMidi(int timbre, int row, int encoder, float newValue);
+    void setNewSymbolInPresetName(int timbre, int index, int value);
     void loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int patchNumber);
     void setHoldPedal(int timbre, int value);
 

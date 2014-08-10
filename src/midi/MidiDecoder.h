@@ -127,6 +127,7 @@ public:
     void afterNewParamsLoad(int timbre) {}
     void afterNewComboLoad() {}
     void showAlgo() {}
+    void showIMInformation() {}
 
     void sendMidiCCOut(struct MidiEvent *toSend, bool flush);
     void flushMidiOut();

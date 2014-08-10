@@ -112,6 +112,9 @@ public:
     	displayAlgo(this->synthState->params->engine1.algo);
     }
 
+    void showIMInformation() {
+        displayIMInformation(this->synthState->params->engine1.algo);
+    }
 
     void beforeNewParamsLoad(int timbre) { };
     void afterNewParamsLoad(int timbre);
@@ -148,6 +151,7 @@ public:
 
     bool wakeUpFromScreenSaver();
     void displayAlgo(int algo);
+    void displayIMInformation(int algo);
 
 private:
 	LiquidCrystal* lcd;
@@ -162,6 +166,7 @@ private:
 	// Midi info
 	int noteOnCounter[4];
 	int algoCounter;
+	bool algoCounterForIMInformation;
 	unsigned screenSaveTimer;
 	bool screenSaverMode;
 };

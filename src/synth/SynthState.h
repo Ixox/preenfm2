@@ -224,6 +224,8 @@ enum FILTER_TYPE {
 	FILTER_LP,
 	FILTER_HP,
 	FILTER_BASS,
+	FILTER_BP,
+	FILTER_CRUSHER,
 	FILTER_LAST,
 	FILTER_LP4
 };
@@ -400,6 +402,13 @@ public:
 			listener->showAlgo();
 		}
 	}
+
+    void propagateShowIMInformation() {
+        for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+            listener->showIMInformation();
+        }
+    }
+
 
     void propagateNoteOff() {
     	if (this->isPlayingNote && canPlayNote()) {

@@ -51,7 +51,7 @@ void FMDisplay::init(LiquidCrystal* lcd, Storage* storage) {
     customCharsInit();
     screenSaveTimer = 0;
     screenSaverMode = false;
-
+    algoCounterForIMInformation = false;
     lcd->clear();
 }
 
@@ -702,10 +702,11 @@ void FMDisplay::newParamValue(int timbre, int currentRow, int encoder, Parameter
             return;
         }
 
-        if (likely(currentRow != ROW_ENGINE || encoder != ENCODER_ENGINE_ALGO)) {
-            if (unlikely(algoCounter > 0)) {
+        if (likely(currentRow != ROW_ENGINE || encoder != ENCODER_ENGINE_ALGO || algoCounterForIMInformation)) {
+            if (unlikely(algoCounter > 0  || algoCounterForIMInformation)) {
                 // New value with Algo on screen so we must redraw the full screen
                 algoCounter = 0;
+                algoCounterForIMInformation = false;
                 // Refresh
                 newTimbre(this->currentTimbre);
                 return;
@@ -1083,6 +1084,7 @@ void FMDisplay::tempoClick() {
     if (algoCounter > 0) {
         algoCounter --;
         if (algoCounter == 0) {
+            algoCounterForIMInformation = false;
             // call new timbre to refresh the whole page
             newTimbre(this->currentTimbre);
         }
@@ -1126,8 +1128,182 @@ bool FMDisplay::wakeUpFromScreenSaver() {
     return false;
 }
 
+void FMDisplay::displayIMInformation(int algo) {
+    algoCounter = 50;
+    algoCounterForIMInformation = true;
+
+
+    const char *da[4] = {NULL, NULL, NULL, NULL};
+    int x = 13;
+
+    switch (algo) {
+    case ALGO1:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 3 >1           ";
+        da[2] = "IM3: 3 >2           ";
+
+        break;
+    case ALGO2:
+        da[0] = "IM1: 3 >1           ";
+        da[1] = "IM2: 3 >2           ";
+        break;
+    case ALGO3:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 3 >1           ";
+        da[2] = "IM3: 4 >1           ";
+        da[3] = "IM4: 3 >4           ";
+        break;
+    case ALGO4:
+        da[0] = "IM1: 3 >1           ";
+        da[1] = "IM2: 4 >2           ";
+        da[2] = "IM3: 3 >2           ";
+        da[3] = "IM4: 4 >3           ";
+        break;
+    case ALGO5:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 3 >2           ";
+        da[2] = "IM3: 4 >3           ";
+        da[3] = "IM4: 4 >2           ";
+        break;
+    case ALGO6:
+        da[0] = "IM1: 4 >1           ";
+        da[1] = "IM2: 4 >2           ";
+        da[2] = "IM3: 4 >3           ";
+        break;
+    case ALGO7:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 4 >3           ";
+        da[2] = "IM3: 6 >5           ";
+        da[3] = "IM4: 4 >6           ";
+        break;
+    case ALGO8:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 3 >1           ";
+        da[2] = "IM3: 4 >1           ";
+        da[3] = "IM4: 6 >5           ";
+        break;
+    case ALGO9:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 3 >1           ";
+        da[2] = "IM3: 5 >4           ";
+        da[3] = "IM4: 6 >5           ";
+        break;
+    case ALG10:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 4 >3           ";
+        da[2] = "IM3: 5 >4           ";
+        da[3] = "IM4: 6 >5           ";
+        break;
+    case ALG11:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 3 >2           ";
+        da[2] = "IM3: 5 >4           ";
+        da[3] = "IM4: 6 >5           ";
+        break;
+    case ALG12:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 4 >3           ";
+        da[2] = "IM3: 6 >5           ";
+        break;
+    case ALG13:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 4 >3           ";
+        da[2] = "IM3: 5 >3           ";
+        da[3] = "IM4: 6 >5           ";
+        break;
+    case ALG14:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 3 >2           ";
+        da[2] = "IM3: 5 >4           ";
+        da[3] = "IM4: 6 >4           ";
+        break;
+    case ALG15:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 4 >3           ";
+        da[2] = "IM3: 5 >3           ";
+        da[3] = "IM4: 6 >3           ";
+        break;
+    case ALG16:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 4 >3           ";
+        da[2] = "IM3: 5 >4           ";
+        da[3] = "IM4: 6 >4           ";
+        break;
+    case ALG17:
+        da[0] = "IM1: 2 >1  IM5: 6 >5";
+        da[1] = "IM2: 3 >1           ";
+        da[2] = "IM3: 4 >3           ";
+        da[3] = "IM4: 5 >1           ";
+        break;
+    case ALG18:
+        da[0] = "IM1: 2 >1  IM5: 6 >5";
+        da[1] = "IM2: 3 >1           ";
+        da[2] = "IM3: 4 >1           ";
+        da[3] = "IM4: 5 >4           ";
+        break;
+    case ALG19:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 3 >2           ";
+        da[2] = "IM3: 6 >4           ";
+        da[3] = "IM4: 6 >5           ";
+        break;
+    case ALG20:
+        da[0] = "IM1: 3 >1           ";
+        da[1] = "IM2: 3 >2           ";
+        da[2] = "IM3: 5 >4           ";
+        da[3] = "IM4: 6 >4           ";
+        break;
+    case ALG21:
+        da[0] = "IM1: 3 >1           ";
+        da[1] = "IM2: 3 >2           ";
+        da[2] = "IM3: 6 >4           ";
+        da[3] = "IM4: 6 >5           ";
+        break;
+    case ALG22:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 6 >3           ";
+        da[2] = "IM3: 6 >4           ";
+        da[3] = "IM4: 6 >5           ";
+        break;
+    case ALG23:
+        da[0] = "IM1: 6 >3           ";
+        da[1] = "IM2: 6 >4           ";
+        da[2] = "IM3: 6 >5           ";
+        break;
+    case ALG24:
+        da[0] = "IM1: 2 >1           ";
+        da[1] = "IM2: 4 >3           ";
+        da[2] = "IM3: 5 >4           ";
+        break;
+    case ALG25:
+        da[0] = "IM1: 4 >3           ";
+        da[1] = "IM2: 6 >5           ";
+        break;
+    case ALG26:
+        da[0] = "IM1: 4 >3           ";
+        da[1] = "IM2: 5 >4           ";
+        break;
+    case ALG27:
+        da[0] = "No IM :-(           ";
+        break;
+    case ALG28:
+        da[0] = "IM1: 6 >5           ";
+        break;
+    }
+
+    for (int y=0; y<4; y++) {
+        lcd->setCursor(0,y);
+        if (da[y] == NULL) {
+            lcd->print("                    ");
+        } else {
+            lcd->print(da[y]);
+        }
+    }
+}
+
 void FMDisplay::displayAlgo(int algo) {
     algoCounter = 50;
+    algoCounterForIMInformation = false;
 
     const char *da[4] = {NULL, NULL, NULL, NULL};
     int x = 13;
@@ -1295,6 +1471,5 @@ void FMDisplay::displayAlgo(int algo) {
         }
     }
 }
-
 
 

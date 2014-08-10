@@ -522,7 +522,7 @@ void Storage::convertMemoryToParams(const struct FlashSynthParams* memory, struc
     if (params->effect.type == 0.0f && params->effect.param1 == 0.0f && params->effect.param2 == 0.0f && params->effect.param3 == 0.0f) {
     	params->effect.param1 = 0.5f;
     	params->effect.param2 = 0.5f;
-    	params->effect.param3 = 0.5f;
+    	params->effect.param3 = 1.0f;
     }
 
 }

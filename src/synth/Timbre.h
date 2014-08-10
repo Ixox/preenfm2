@@ -376,8 +376,11 @@ private:
     uint8_t recording_;
     // Low pass filter
     float fxParam1, fxParam2, fxParam3;
+    float fxParamA1, fxParamA2;
+    float fxParamB1, fxParamB2;
     float v0L, v1L;
     float v0R, v1R;
+    float fxPhase;
 };
 
 #endif /* TIMBRE_H_ */

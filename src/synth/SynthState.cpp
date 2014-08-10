@@ -164,7 +164,7 @@ struct ParameterRowDisplay engineMix3ParameterRow = {
 };
 
 
-const char* fxName []=  { "Off ", "Mix ", "LP  ", "HP  ", "Bass" } ;
+const char* fxName []=  { "Off ", "Mix ", "LP  ", "HP  ", "Bass", "BP  ", "Crsh" } ;
 
 struct ParameterRowDisplay effectParameterRow = {
         "Filter" ,
@@ -182,7 +182,9 @@ struct FilterRowDisplay filterRowDisplay[FILTER_LAST] = {
         { "Pan ", NULL, "Gain" },
         { "Freq", "Res ", "Gain" },
         { "Freq", "Res ", "Gain" },
-        { "LoFr", "Boos", "Gain" }
+        { "LoFr", "Boos", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Samp", "Bits", "Gain" },
 };
 
 
@@ -552,6 +554,11 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
             case BUTTON_MENUSELECT:
                 if (fullState.synthMode  == SYNTH_MODE_EDIT) {
                     propagateShowAlgo();
+                }
+                break;
+            case BUTTON_BACK:
+                if (fullState.synthMode  == SYNTH_MODE_EDIT) {
+                    propagateShowIMInformation();
                 }
                 break;
             case BUTTON_OSC:

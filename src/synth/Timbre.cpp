@@ -542,7 +542,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     	float localv0R = v0R;
     	float localv1R = v1R;
 
-    	for (int k=0 ; k<BLOCK_SIZE  ; k++) {
+    	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 
     		// Left voice
     		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1)* (*sp);
@@ -598,7 +598,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     	float localv0R = v0R;
     	float localv1R = v1R;
 
-    	for (int k=0 ; k<BLOCK_SIZE ; k++) {
+    	for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
     		// Left voice
     		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1) * (*sp);
@@ -662,7 +662,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     	float localv0L = v0L;
     	float localv0R = v0R;
 
-    	for (int k=0 ; k<BLOCK_SIZE ; k++) {
+    	for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
     		localv0L = ((*sp) + localv0L * fxParam1) * fxParam3;
     		(*sp) = ((*sp) + localv0L * fxParam2) * mixerGain;
@@ -701,7 +701,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     	if (pan <= 0) {
         	float onePlusPan = 1 + pan;
         	float minusPan = - pan;
-        	for (int k=0 ; k<BLOCK_SIZE  ; k++) {
+        	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 				sampleL = *(sp);
 				sampleR = *(sp + 1);
 
@@ -713,7 +713,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     	} else if (pan > 0) {
         	float oneMinusPan = 1 - pan;
         	float adjustedmixerGain = (pan * .5) * mixerGain;
-        	for (int k=0 ; k<BLOCK_SIZE ; k++) {
+        	for (int k=0 ; k < BLOCK_SIZE ; k++) {
 				sampleL = *(sp);
 				sampleR = *(sp + 1);
 
@@ -725,89 +725,124 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     	}
     }
     break;
+    case FILTER_CRUSHER:
+    {
+        // Algo from http://www.musicdsp.org/archive.php?classid=4#139
+        // Lo-Fi Crusher
+        // Type : Quantizer / Decimator with smooth control
+        // References : Posted by David Lowenfels
+
+
+        float fxFreq = params.effect.param1 ;
+
+        float *sp = this->sampleBlock;
+        float sampleR, sampleL;
+
+        float localv0L = v0L;
+        float localv0R = v0R;
+        float localPhase = fxPhase;
+        float localPower = fxParam1;
+        float localStep = fxParam2;
+
+        for (int k=0 ; k < BLOCK_SIZE ; k++) {
+            localPhase += fxFreq;
+            if (unlikely(localPhase > 1.0f)) {
+                localPhase -= 1.0f;
+                // Simulate floor by making the conversion always positive
+                int iL =  localPower + ((*sp) * localPower + .5);
+                int iR =  localPower + ((*(sp + 1)) * localPower + .5);
+                localv0L = localStep * (((float)iL) - localPower);
+                localv0R = localStep * (((float)iR) - localPower);
+            }
+
+            *sp++ = localv0L * mixerGain;
+            *sp++ = localv0R * mixerGain;
+        }
+        v0L = localv0L;
+        v0R = localv0R;
+        fxPhase = localPhase;
+
+    }
+    break;
+    case FILTER_BP:
+    {
+//        float input;                    // input sample
+//        float output;                   // output sample
+//        float v;                        // This is the intermediate value that
+//                                        //    gets stored in the delay registers
+//        float old1;                     // delay register 1, initialized to 0
+//        float old2;                     // delay register 2, initialized to 0
+//
+//        /* filter coefficients */
+//        omega1  = 2 * PI * f/srate; // f is your center frequency
+//        sn1 = (float)sin(omega1);
+//        cs1 = (float)cos(omega1);
+//        alpha1 = sn1/(2*Qvalue);        // Qvalue is none other than Q!
+//        a0 = 1.0f + alpha1;     // a0
+//        b0 = alpha1;            // b0
+//        b1 = 0.0f;          // b1/b0
+//        b2= -alpha1/b0          // b2/b0
+//        a1= -2.0f * cs1/a0;     // a1/a0
+//        a2= (1.0f - alpha1)/a0;          // a2/a0
+//        k = b0/a0;
+//
+//        /* The filter code */
+//
+//        v = k*input - a1*old1 - a2*old2;
+//        output = v + b1*old1 + b2*old2;
+//        old2 = old1;
+//        old1 = v;
+
+        // fxParam1 v
+        //
+
+        float localv0L = v0L;
+        float localv0R = v0R;
+        float localv1L = v1L;
+        float localv1R = v1R;
+        float *sp = this->sampleBlock;
+
+        for (int k=0 ; k < BLOCK_SIZE ; k++) {
+            float localV = fxParam1 /* k */ * (*sp) - fxParamA1 * localv0L - fxParamA2 * localv1L;
+            *sp++ = (localV + /* fxParamB1 (==0) * localv0L  + */ fxParamB2 * localv1L) * mixerGain;
+            if (unlikely(*sp > ratioTimbres)) {
+                *sp = ratioTimbres;
+            }
+            if (unlikely(*sp < -ratioTimbres)) {
+                *sp = -ratioTimbres;
+            }
+            localv1L = localv0L;
+            localv0L = localV;
+
+            localV = fxParam1 /* k */ * (*sp) - fxParamA1 * localv0R - fxParamA2 * localv1R;
+            *sp++ = (localV + /* fxParamB1 (==0) * localv0R + */ fxParamB2 * localv1R) * mixerGain;
+            if (unlikely(*sp > ratioTimbres)) {
+                *sp = ratioTimbres;
+            }
+            if (unlikely(*sp < -ratioTimbres)) {
+                *sp = -ratioTimbres;
+            }
+            localv1R = localv0R;
+            localv0R = localV;
+
+
+        }
+
+        v0L = localv0L;
+        v0R = localv0R;
+        v1L = localv1L;
+        v1R = localv1R;
+
+        break;
+    }
     case FILTER_OFF:
     {
     	// Filter off has gain...
     	float *sp = this->sampleBlock;
-    	for (int k=0 ; k<BLOCK_SIZE ; k++) {
+    	for (int k=0 ; k < BLOCK_SIZE ; k++) {
 			*sp++ = (*sp) * mixerGain;
 			*sp++ = (*sp) * mixerGain;
 		}
-    }
-    break;
-    case FILTER_LP4:
-    {
-    	// musicdsp.org
-    	//
-		//    	Perfect LP4 filter
-		//
-		//    	Type : LP
-		//    	References : Posted by azertopia at free dot fr
-		//
-		//    	Notes :
-		//    	hacked from the exemple of user script in FL Edison
-
-//    	float Frq = params.effect.param1 * PREENFM_FREQUENCY / 2;
-//    	float res = params.effect.param2;
-//    	float SR = PREENFM_FREQUENCY;
-//    	float f = (Frq+Frq) / SR;
-//    	float p = f * (1.8 - 0.8 * f);
-//    	float k=p+p-1.0;
-//    	float t=(1.0-p)*1.386249;
-//    	float t2=12.0+t*t;
-//    	float r = res*(t2+6.0*t)/(t2-6.0*t);
-//
-//    	float *sp = this->sampleBlock;
-
-
-//    	while (sp < this->sbMax) {
-//    		  f := (Frq+Frq) / SR;
-//    		  p:=f*(1.8-0.8*f);
-//    		  k:=p+p-1.0;
-//    		  t:=(1.0-p)*1.386249;
-//    		  t2:=12.0+t*t;
-//    		  r := res*(t2+6.0*t)/(t2-6.0*t);
-
-//    		  x := inp - r*y4;
-//    		  y1:=x*p + oldx*p - k*y1;
-//    		  y2:=y1*p+oldy1*p - k*y2;
-//    		  y3:=y2*p+oldy2*p - k*y3;
-//    		  y4:=y3*p+oldy3*p - k*y4;
-//    		  y4 := y4 - ((y4*y4*y4)/6.0);
-//    		  oldx := x;
-//    		  oldy1 := y1+_kd;
-//    		  oldy2 := y2+_kd;;
-//    		  oldy3 := y3+_kd;;
-//    		  outlp := y4;
-
-//    		float x = (*sp) - r * v4L;
-//    		v5L= x * p + v0L * p - k * v5L;
-//    		v6L= v5L * p + v1L * p - k * v6L;
-//    		v7L= v6L * p + v2L * p - k * v7L;
-//    		v4L= v7L * p + v3L * p - k * v4L;
-//    		v4L = v4L - ((v4L*v4L*v4L)/6.0);
-//    		v0L = x;
-//        	v1L = v5L;
-//        	v2L = v6L;
-//        	v3L = v7L;
-//        	*sp = v4L;
-//    		sp++;
-//
-//    		x = (*sp) - r * v4R;
-//    		v5R= x * p + v0R * p - k * v5R;
-//    		v6R= v5R * p + v1R * p - k * v6R;
-//    		v7R= v6R * p + v2R * p - k * v7R;
-//    		v4R= v7R * p + v3R * p - k * v4R;
-//    		v4R = v4R - ((v4R*v4R*v4R)/6.0);
-//    		v0R = x;
-//        	v1R = v5R;
-//        	v2R = v6R;
-//        	v3R = v7R;
-//        	*sp = v4R;
-//    		sp++;
-
-
-//    	}
     }
     break;
 
@@ -872,6 +907,9 @@ void Timbre::setNewEffecParam(int encoder) {
 	if (encoder == 0) {
 	    v0L = v1L = 0.0f;
 	    v0R = v1R = 0.0f;
+	    for (int k=1; k<NUMBER_OF_ENCODERS; k++) {
+	        setNewEffecParam(k);
+	    }
 	}
 	switch ((int)params.effect.type) {
 	case FILTER_BASS:
@@ -899,8 +937,74 @@ void Timbre::setNewEffecParam(int encoder) {
 			break;
 		}
     	break;
-	}
+    case FILTER_CRUSHER:
+    {
+        int fxBit = 1.0f + 15.0f * params.effect.param2;
+        fxParam1 = pow(2, fxBit);
+        fxParam2 = 1 / fxParam1;
+        break;
+    }
+    case FILTER_BP:
+    {
+        //        /* filter coefficients */
+        //        omega1  = 2 * PI * f/srate; // f is your center frequency
+        //        sn1 = (float)sin(omega1);
+        //        cs1 = (float)cos(omega1);
+        //        alpha1 = sn1/(2*Qvalue);        // Qvalue is none other than Q!
+        //        a0 = 1.0f + alpha1;     // a0
+        //        b0 = alpha1;            // b0
+        //        b1 = 0.0f;          // b1/b0
+        //        b2= -alpha1/b0          // b2/b0
+        //        a1= -2.0f * cs1/a0;     // a1/a0
+        //        a2= (1.0f - alpha1)/a0;          // a2/a0
+        //        k = b0/a0;
 
+        // frequency must be up to SR / 2.... So 1024 * param1 :
+        // 1000 instead of 102 to get rid of strange border effect....
+        float param1Square = params.effect.param1 * params.effect.param1;
+        float sn1 = sinTable[(int)(12 + 1000 * param1Square)];
+        // sin(x) = cos( PI/2 - x)
+        int cosPhase = 500 - 1000 * param1Square;
+        if (cosPhase < 0) {
+            cosPhase += 2048;
+        }
+        float cs1 = sinTable[cosPhase];
+
+        float alpha1 = sn1 * 12.5;
+        if (params.effect.param2 > 0) {
+            alpha1 = sn1 / ( 8 * params.effect.param2);
+        }
+    //        BPF:        H(s) = (s/Q) / (s^2 + s/Q + 1)      (constant 0 dB peak gain)
+        float A0 = 1.0f + alpha1;
+        float B0 = alpha1;
+        fxParamB1 = 0.0;
+        fxParamB2 = - alpha1 / A0;
+        fxParamA1 = -2.0f * cs1 / A0;
+        fxParamA2 = (1.0f - alpha1) / A0;
+
+
+    //        BPF:        H(s) = s / (s^2 + s/Q + 1)  (constant skirt gain, peak gain = Q)
+    //
+    //                    b0 =   sin(w0)/2  =   Q*alpha
+    //                    b1 =   0
+    //                    b2 =  -sin(w0)/2  =  -Q*alpha
+    //                    a0 =   1 + alpha
+    //                    a1 =  -2*cos(w0)
+    //                    a2 =   1 - alpha
+
+//        float A0 = 1.0f + alpha1;
+//        float B0 = sn1 * .5f;
+//        fxParamB1 = 0.0f;
+//        fxParamB2 = -B0 / A0;
+//        fxParamA1 = -2 * cs1 / A0;
+//        fxParamA2 = (1 - alpha1) / A0;
+
+
+        fxParam1 = B0 / A0;
+
+        break;
+    }
+	}
 }
 
 
