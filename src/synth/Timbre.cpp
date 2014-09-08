@@ -166,6 +166,7 @@ Timbre::Timbre() {
 
     // Init FX variables
     v0L = v1L = v0R = v1R = 0.0f;
+    fxParam1PlusMatrix = -1.0;
 }
 
 Timbre::~Timbre() {
@@ -796,6 +797,19 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
         // fxParam1 v
         //
 
+        float fxParam1PlusMatrixTmp = params.effect.param1 + matrix.getDestination(FILTER_FREQUENCY);
+        if (unlikely(fxParam1PlusMatrixTmp > 1.0f)) {
+            fxParam1PlusMatrixTmp = 1.0f;
+        }
+        if (unlikely(fxParam1PlusMatrixTmp < 0.0f)) {
+            fxParam1PlusMatrixTmp = 0.0f;
+        }
+
+        if (fxParam1PlusMatrix != fxParam1PlusMatrixTmp) {
+            fxParam1PlusMatrix = fxParam1PlusMatrixTmp;
+            recomputeBPValues();
+        }
+
         float localv0L = v0L;
         float localv0R = v0R;
         float localv1L = v1L;
@@ -903,6 +917,48 @@ void Timbre::setNewValue(int index, struct ParameterDisplay* param, float newVal
     ((float*)&params)[index] = newValue;
 }
 
+void Timbre::recomputeBPValues() {
+    //        /* filter coefficients */
+    //        omega1  = 2 * PI * f/srate; // f is your center frequency
+    //        sn1 = (float)sin(omega1);
+    //        cs1 = (float)cos(omega1);
+    //        alpha1 = sn1/(2*Qvalue);        // Qvalue is none other than Q!
+    //        a0 = 1.0f + alpha1;     // a0
+    //        b0 = alpha1;            // b0
+    //        b1 = 0.0f;          // b1/b0
+    //        b2= -alpha1/b0          // b2/b0
+    //        a1= -2.0f * cs1/a0;     // a1/a0
+    //        a2= (1.0f - alpha1)/a0;          // a2/a0
+    //        k = b0/a0;
+
+    // frequency must be up to SR / 2.... So 1024 * param1 :
+    // 1000 instead of 1024 to get rid of strange border effect....
+    float param1Square = fxParam1PlusMatrix * fxParam1PlusMatrix;
+    float sn1 = sinTable[(int)(12 + 1000 * param1Square)];
+    // sin(x) = cos( PI/2 - x)
+    int cosPhase = 500 - 1000 * param1Square;
+    if (cosPhase < 0) {
+        cosPhase += 2048;
+    }
+    float cs1 = sinTable[cosPhase];
+
+    float alpha1 = sn1 * 12.5;
+    if (params.effect.param2 > 0) {
+        alpha1 = sn1 / ( 8 * params.effect.param2);
+    }
+
+    float A0 = 1.0f + alpha1;
+    float A0Inv = 1 / A0;
+
+    float B0 = alpha1;
+    fxParamB1 = 0.0;
+    fxParamB2 = - alpha1 * A0Inv;
+    fxParamA1 = -2.0f * cs1 * A0Inv;
+    fxParamA2 = (1.0f - alpha1) * A0Inv;
+
+    fxParam1 = B0 * A0Inv;
+}
+
 void Timbre::setNewEffecParam(int encoder) {
 	if (encoder == 0) {
 	    v0L = v1L = 0.0f;
@@ -946,44 +1002,7 @@ void Timbre::setNewEffecParam(int encoder) {
     }
     case FILTER_BP:
     {
-        //        /* filter coefficients */
-        //        omega1  = 2 * PI * f/srate; // f is your center frequency
-        //        sn1 = (float)sin(omega1);
-        //        cs1 = (float)cos(omega1);
-        //        alpha1 = sn1/(2*Qvalue);        // Qvalue is none other than Q!
-        //        a0 = 1.0f + alpha1;     // a0
-        //        b0 = alpha1;            // b0
-        //        b1 = 0.0f;          // b1/b0
-        //        b2= -alpha1/b0          // b2/b0
-        //        a1= -2.0f * cs1/a0;     // a1/a0
-        //        a2= (1.0f - alpha1)/a0;          // a2/a0
-        //        k = b0/a0;
-
-        // frequency must be up to SR / 2.... So 1024 * param1 :
-        // 1000 instead of 1024 to get rid of strange border effect....
-        float param1Square = params.effect.param1 * params.effect.param1;
-        float sn1 = sinTable[(int)(12 + 1000 * param1Square)];
-        // sin(x) = cos( PI/2 - x)
-        int cosPhase = 500 - 1000 * param1Square;
-        if (cosPhase < 0) {
-            cosPhase += 2048;
-        }
-        float cs1 = sinTable[cosPhase];
-
-        float alpha1 = sn1 * 12.5;
-        if (params.effect.param2 > 0) {
-            alpha1 = sn1 / ( 8 * params.effect.param2);
-        }
-
-        float A0 = 1.0f + alpha1;
-        float B0 = alpha1;
-        fxParamB1 = 0.0;
-        fxParamB2 = - alpha1 / A0;
-        fxParamA1 = -2.0f * cs1 / A0;
-        fxParamA2 = (1.0f - alpha1) / A0;
-
-        fxParam1 = B0 / A0;
-
+        fxParam1PlusMatrix = -1.0;
         break;
     }
 	}

@@ -58,6 +58,7 @@ public:
     void afterNewParamsLoad();
     void setNewValue(int index, struct ParameterDisplay* param, float newValue);
     void setNewEffecParam(int encoder);
+    void recomputeBPValues();
     // Arpegiator
     void arpeggiatorNoteOn(char note, char velocity);
     void arpeggiatorNoteOff(char note);
@@ -381,6 +382,8 @@ private:
     float v0L, v1L;
     float v0R, v1R;
     float fxPhase;
+    // save float fxParam1 to detect modification
+    float fxParam1PlusMatrix;
 };
 
 #endif /* TIMBRE_H_ */
