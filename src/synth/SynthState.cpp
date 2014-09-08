@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "stm32f4xx_rng.h"
 #include "SynthState.h"
 #include "Hexter.h"
 
@@ -410,7 +411,13 @@ SynthState::SynthState() {
     fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET] = 0;
     fullState.midiConfigValue[MIDICONFIG_OLED_SAVER] = 0;
 	fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] = 0;
+    fullState.midiConfigValue[MIDICONFIG_BOOT_SOUND] = 0;
     fullState.firstMenu = 0;
+    // Init randomizer values to 1
+    fullState.randomizer.OpFr = 1;
+    fullState.randomizer.EnvT = 1;
+    fullState.randomizer.IM = 1;
+    fullState.randomizer.Modl = 1;
 
     for (int k=0; k<12; k++) {
         fullState.name[k] = 0;
@@ -686,6 +693,45 @@ void SynthState::encoderTurnedWhileButtonPressed(int encoder, int ticks, int but
     }
 }
 
+
+bool SynthState::newRandomizerValue(int encoder, int ticks) {
+    bool changed = false;
+    char oldValue = 0;
+    char newValue = 0;
+    switch (encoder) {
+    case 0:
+        oldValue = fullState.randomizer.OpFr;
+        fullState.randomizer.OpFr += (ticks > 0 ? 1 : -1);
+        fullState.randomizer.OpFr = fullState.randomizer.OpFr > 3 ? 3 : fullState.randomizer.OpFr;
+        fullState.randomizer.OpFr = fullState.randomizer.OpFr < 0 ? 0 : fullState.randomizer.OpFr;
+        newValue = fullState.randomizer.OpFr;
+        break;
+    case 1:
+        oldValue = fullState.randomizer.EnvT;
+        fullState.randomizer.EnvT += (ticks > 0 ? 1 : -1);
+        fullState.randomizer.EnvT = fullState.randomizer.EnvT > 3 ? 3 : fullState.randomizer.EnvT;
+        fullState.randomizer.EnvT = fullState.randomizer.EnvT < 0 ? 0 : fullState.randomizer.EnvT;
+        newValue = fullState.randomizer.EnvT;
+        break;
+    case 2:
+        oldValue = fullState.randomizer.IM;
+        fullState.randomizer.IM += (ticks > 0 ? 1 : -1);
+        fullState.randomizer.IM = fullState.randomizer.IM > 3 ? 3 : fullState.randomizer.IM;
+        fullState.randomizer.IM = fullState.randomizer.IM < 0 ? 0 : fullState.randomizer.IM;
+        newValue = fullState.randomizer.IM;
+        break;
+    case 3:
+        oldValue = fullState.randomizer.Modl;
+        fullState.randomizer.Modl += (ticks > 0 ? 1 : -1);
+        fullState.randomizer.Modl = fullState.randomizer.Modl > 3 ? 3 : fullState.randomizer.Modl;
+        fullState.randomizer.Modl = fullState.randomizer.Modl < 0 ? 0 : fullState.randomizer.Modl;
+        newValue = fullState.randomizer.Modl;
+        break;
+    }
+    return newValue != oldValue;
+}
+
+
 void SynthState::encoderTurned(int encoder, int ticks) {
     if (fullState.synthMode == SYNTH_MODE_EDIT) {
 
@@ -766,13 +812,25 @@ void SynthState::encoderTurned(int encoder, int ticks) {
         }
     } else if (fullState.synthMode == SYNTH_MODE_MENU) {
         int oldMenuSelect = fullState.menuSelect;
-        if (encoder==0) {
+
+        if (unlikely(fullState.currentMenuItem->menuState == MENU_LOAD_RANDOMIZER)) {
+
+            if (newRandomizerValue(encoder, ticks)) {
+                // Only propagate if value really changed
+                propagateNewMenuSelect();
+            }
+            return;
+        }
+
+        switch (encoder) {
+        case 0:
             if (ticks>0) {
                 fullState.menuSelect = fullState.menuSelect + 1;
             } else if (ticks<0) {
                 fullState.menuSelect = fullState.menuSelect - 1;
             }
-        } else if (encoder==1) {
+        break;
+        case 1:
             if (isEnterNameState(fullState.currentMenuItem->menuState)) {
                 fullState.name[fullState.menuSelect] = (fullState.name[fullState.menuSelect] + (ticks>0? 1: -1));
                 if (fullState.name[fullState.menuSelect]<28) {
@@ -795,7 +853,8 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                     fullState.menuSelect = fullState.menuSelect - 1;
                 }
             }
-        } else if (encoder==2) {
+        break;
+        case 2:
             if (isEnterNameState(fullState.currentMenuItem->menuState)) {
                 fullState.name[fullState.menuSelect] = (fullState.name[fullState.menuSelect] + (ticks>0? 1: -1));
                 if (fullState.name[fullState.menuSelect]<1) {
@@ -818,7 +877,8 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                     fullState.menuSelect = fullState.menuSelect - 1;
                 }
             }
-        } else if (encoder==3) {
+        break;
+        case 3:
             if (isEnterNameState(fullState.currentMenuItem->menuState)) {
                 fullState.name[fullState.menuSelect] = (fullState.name[fullState.menuSelect] + (ticks>0? 1: -1));
                 if (fullState.name[fullState.menuSelect]<0) {
@@ -850,6 +910,7 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                     fullState.menuSelect = fullState.menuSelect - 1;
                 }
             }
+        break;
         }
 
         if (fullState.menuSelect> fullState.currentMenuItem->maxValue - 1) {
@@ -1189,6 +1250,16 @@ void SynthState::buttonPressed(int button) {
     } else {
         // Any button when done is display makes the synth go back to edit mode.
         // MENU MODE
+
+        // Special treatment for Randomizer
+        if (unlikely(fullState.currentMenuItem->menuState == MENU_LOAD_RANDOMIZER)) {
+            if (button != BUTTON_MENUSELECT && button != BUTTON_BACK) {
+                propagateBeforeNewParamsLoad(currentTimbre);
+                randomizePreset();
+                propagateAfterNewParamsLoad(currentTimbre);
+            }
+        }
+
         switch (button) {
         case BUTTON_MENUSELECT:
             fullState.currentMenuItem = afterButtonPressed();
@@ -1349,14 +1420,13 @@ const MenuItem* SynthState::afterButtonPressed() {
         }
         fullState.dx7BankNumber = fullState.menuSelect;
         break;
-    case MENU_LOAD_SELECT_BANK_PRESET:
-        copySynthParams((char*)params, (char*)&backupParams);
-        break;
     case MENU_LOAD_SELECT_COMBO_PRESET:
         loadPreenFMCombo(fullState.preenFMCombo, fullState.menuSelect);
         copySynthParams((char*)params, (char*)&backupParams);
         break;
     case MENU_LOAD_SELECT_DX7_PRESET:
+    case MENU_LOAD_SELECT_BANK_PRESET:
+    case MENU_LOAD_RANDOMIZER:
         copySynthParams((char*)params, (char*)&backupParams);
         break;
     case MENU_SAVE_SELECT_BANK_PRESET:
@@ -1660,15 +1730,22 @@ const MenuItem* SynthState::menuBack() {
     case MENU_SAVE_SELECT_COMBO_PRESET:
         fullState.menuSelect = fullState.preenFMComboNumber;
         break;
-    case MENU_LOAD_SELECT_BANK_PRESET:
-        propagateNoteOff();
-        fullState.menuSelect = fullState.preenFMBankNumber;
+    case MENU_LOAD_SELECT_COMBO_PRESET:
+        fullState.menuSelect = fullState.preenFMComboNumber;
         propagateBeforeNewParamsLoad(currentTimbre);
         copySynthParams((char*)&backupParams, (char*)params);
         propagateAfterNewParamsLoad(currentTimbre);
         break;
-    case MENU_LOAD_SELECT_COMBO_PRESET:
-        fullState.menuSelect = fullState.preenFMComboNumber;
+    case MENU_LOAD_RANDOMIZER:
+        // Put back original preset
+        propagateNoteOff();
+        propagateBeforeNewParamsLoad(currentTimbre);
+        copySynthParams((char*)&backupParams, (char*)params);
+        propagateAfterNewParamsLoad(currentTimbre);
+        break;
+    case MENU_LOAD_SELECT_BANK_PRESET:
+        propagateNoteOff();
+        fullState.menuSelect = fullState.preenFMBankNumber;
         propagateBeforeNewParamsLoad(currentTimbre);
         copySynthParams((char*)&backupParams, (char*)params);
         propagateAfterNewParamsLoad(currentTimbre);
@@ -1777,5 +1854,326 @@ void SynthState::setLastRowForTimbre( int timbre, int row )
         // invalidated when the user manually changes row.
         if ( lastRowForTimbre[ 0 ] < 0 )
             lastRowForTimbre[ 0 ] = row;
+    }
+}
+
+
+/*
+ * Randomizer
+ */
+
+int getRandomInt(int max) {
+    while (RNG_GetFlagStatus(RNG_FLAG_DRDY)== RESET)   {
+    };
+    return RNG_GetRandomNumber() % max;
+}
+
+float getRandomFloat(float min, float max) {
+    while (RNG_GetFlagStatus(RNG_FLAG_DRDY)== RESET)   {
+    };
+    float f = ((float)(RNG_GetRandomNumber() % 100000)) / 100000.0f;
+    return f * (max - min) + min;
+}
+
+
+float getRandomShape(int operatorRandom) {
+    int shape = getRandomInt(7);
+    switch (operatorRandom) {
+    case 1:
+        if (shape > 2) {
+            shape = 0;
+        }
+        break;
+    case 2:
+        shape = getRandomInt(8);
+        if (shape == 6) { // Rand
+            shape = 0;
+        }
+        break;
+    case 3:
+        break;
+    }
+    return shape;
+}
+
+float getRandomFrequencyType(int operatorRandom) {
+    int freqType = getRandomInt(32);
+    if (freqType > 1) { // Keyboard 5 times out of 6
+        freqType = 0;
+    }
+    return freqType;
+}
+
+float getRandomFrequency(int operatorRandom) {
+    float random1Frequency[] = { .5f, 1.0f, 2.0f, 4.0f};
+    float random2Frequency[] = { .25, .5f, 1.0f, 1.5, 2.0f, 3.0f, 4.0f};
+    float freq = 0;
+    switch (operatorRandom) {
+    case 1:
+        freq = random1Frequency[getRandomInt(4)];
+        break;
+    case 2:
+        freq = random2Frequency[getRandomInt(7)];
+        break;
+    case 3:
+        freq = getRandomInt(24) * .25 + .25;
+        break;
+    }
+    return freq;
+}
+
+float getFineTune(int operatorRandom) {
+    float fineTune = 0;
+    switch (operatorRandom) {
+    case 2:
+        fineTune = getRandomInt(10) * .01 - .05;
+        if (fineTune < 0.03 || fineTune > 0.03) {
+            fineTune = 0;
+        }
+        break;
+    case 3:
+        fineTune = getRandomInt(20) * .01 - .05;
+        if (fineTune < 0.07 || fineTune > 0.07) {
+            fineTune = 0;
+        }
+        break;
+    }
+    return fineTune;
+}
+
+void SynthState::randomizePreset() {
+    int operatorRandom = fullState.randomizer.OpFr;
+    int envelopeTypeRandom = fullState.randomizer.EnvT;
+    int imRandom = fullState.randomizer.IM;
+    int modulationRandom = fullState.randomizer.Modl;
+
+
+    // general
+    params->engineMix1.mixOsc1 = 1.0;
+    params->engineMix1.mixOsc2 = 1.0;
+    params->engineMix2.mixOsc3 = 1.0;
+    params->engineMix2.mixOsc4 = 1.0;
+    params->engineMix3.mixOsc5 = 1.0;
+    params->engineMix3.mixOsc6 = 1.0;
+
+    params->engineMix1.panOsc1 = 0.0;
+    params->engineMix1.panOsc2 = 0.25f;
+    params->engineMix2.panOsc3 = -0.25;
+    params->engineMix2.panOsc4 = 0.5f;
+    params->engineMix3.panOsc5 = -0.5f;
+    params->engineMix3.panOsc6 = 0.5f;
+
+    params->engine1.velocity = 8;
+
+
+    if (operatorRandom > 0) {
+        params->engine1.algo = getRandomInt(ALGO_END);
+        if (getRandomInt(6) == 0) {
+            params->engine1.numberOfVoice = 1;
+            params->engine1.glide = getRandomInt(6) + 3;
+        } else {
+            params->engine1.numberOfVoice = 3;
+        }
+        for (int o = 0; o < 6; o++) {
+            struct OscillatorParams* currentOsc =  &((struct OscillatorParams*)&params->osc1)[o];
+            currentOsc->shape = getRandomShape(operatorRandom);
+            currentOsc->frequencyMul = getRandomFrequency(operatorRandom);
+            currentOsc->frequencyType = getRandomFrequencyType(operatorRandom);
+            currentOsc->detune = getFineTune(operatorRandom);
+        }
+
+        // FX
+        params->effect.param1 = getRandomFloat(0.25, 0.75);
+        params->effect.param2 = getRandomFloat(0.25, 0.75);
+        int effect = getRandomInt(15);
+        if (effect == 1 || effect > 6) {
+            params->effect.param3 = 1.0;
+            params->effect.type = 0;
+        } else {
+            params->effect.param3 = 0.6;
+            params->effect.type= effect;
+        }
+    }
+
+
+
+
+    for (int e = 0; e < 6; e++) {
+        struct EnvelopeParamsA* enva =  &((struct EnvelopeParamsA*)&params->env1a)[e * 2];
+        struct EnvelopeParamsB* envb =  &((struct EnvelopeParamsB*)&params->env1b)[e * 2];
+
+        switch (envelopeTypeRandom) {
+        case 1:
+            enva->attackLevel = 1.0;
+            enva->attackTime = getRandomFloat(0, 0.3f);
+            enva->decayLevel= getRandomFloat(0.5f, 1.0f);
+            enva->decayTime = getRandomFloat(0.05, 0.5f);
+
+            envb->sustainLevel =  getRandomFloat(0.0f, 1.0f);
+            envb->sustainTime =  getRandomFloat(0.02, 1.0f);
+            envb->releaseLevel = 0.0f;
+            envb->releaseTime =  getRandomFloat(0.2, 5.0f);;
+
+            break;
+        case 2:
+            enva->attackLevel = getRandomFloat(0.25f, 1.0f);
+            enva->attackTime = getRandomFloat(0.5f, 3.0f);
+            enva->decayLevel= getRandomFloat(0.5f, 1.0f);
+            enva->decayTime = getRandomFloat(1.0f, 5.0f);
+
+            envb->sustainLevel =  getRandomFloat(0.0f, 1.0f);
+            envb->sustainTime =  getRandomFloat(2.0f, 5.0f);
+            envb->releaseLevel = 0.0f;
+            envb->releaseTime =  getRandomFloat(1.0f, 8.0f);
+            break;
+        case 3:
+            enva->attackLevel = getRandomFloat(0, 1.0f);
+            enva->attackTime = getRandomFloat(0, 1.0f);
+            enva->decayLevel = getRandomFloat(0, 1.0f);
+            enva->decayTime = getRandomFloat(0, 1.0f);
+
+            envb->sustainLevel =  getRandomFloat(0, 1.0f);
+            envb->sustainTime = getRandomFloat(0, 1.0f);
+            envb->releaseLevel =  getRandomFloat(0, 1.0f);
+            envb->releaseTime = getRandomFloat(0, 4.0f);
+            break;
+        }
+    }
+
+    if (imRandom > 0) {
+        struct EngineIm1* im1 =  (struct EngineIm1*)&params->engineIm1;
+        struct EngineIm2* im2 =  (struct EngineIm2*)&params->engineIm2;
+        struct EngineIm3* im3 =  (struct EngineIm3*)&params->engineIm3;
+
+        float min = 0;
+        float max = 0;
+        float minVelo = 0;
+        float maxVelo = 0;
+
+        switch (imRandom) {
+        case 1:
+            min = 0.0f;
+            max = 2.0f;
+            minVelo = 0.0f;
+            maxVelo = 1.0f;
+            break;
+        case 2:
+            min = .5f;
+            max = 4.0f;
+            minVelo = 1.0f;
+            maxVelo = 2.0f;
+            break;
+        case 3:
+            min = 1.0f;
+            max = 6.0f;
+            minVelo = 1.0f;
+            maxVelo = 6.0f;
+            break;
+        }
+        im1->modulationIndex1 = getRandomFloat(min, max);
+        im1->modulationIndexVelo1 = getRandomFloat(minVelo, maxVelo);
+        im1->modulationIndex2 = getRandomFloat(min, max);
+        im1->modulationIndexVelo2 = getRandomFloat(minVelo, maxVelo);
+        im2->modulationIndex3 = getRandomFloat(min, max);
+        im2->modulationIndexVelo3 = getRandomFloat(minVelo, maxVelo);
+        im2->modulationIndex4 = getRandomFloat(min, max);
+        im2->modulationIndexVelo4 = getRandomFloat(minVelo, maxVelo);
+        im3->modulationIndex5 = getRandomFloat(min, max);
+        im3->modulationIndexVelo5 = getRandomFloat(minVelo, maxVelo);
+    }
+
+    if (modulationRandom > 0) {
+
+        params->matrixRowState1.source = MATRIX_SOURCE_LFO1;
+        params->matrixRowState2.source = MATRIX_SOURCE_LFO1;
+        params->matrixRowState3.source = MATRIX_SOURCE_LFO2;
+        params->matrixRowState4.source = MATRIX_SOURCE_LFO2;
+        params->matrixRowState5.source = MATRIX_SOURCE_LFO3;
+        params->matrixRowState6.source = MATRIX_SOURCE_LFOENV1;
+        params->matrixRowState7.source = MATRIX_SOURCE_LFOENV2;
+        params->matrixRowState8.source = MATRIX_SOURCE_LFOSEQ1;
+        params->matrixRowState9.source = MATRIX_SOURCE_LFOSEQ2;
+
+        params->matrixRowState10.source = MATRIX_SOURCE_MODWHEEL;
+        params->matrixRowState10.mul = 2.0f;
+        params->matrixRowState10.destination = INDEX_ALL_MODULATION;
+
+        params->matrixRowState11.source = MATRIX_SOURCE_PITCHBEND;
+        params->matrixRowState11.mul = 1.0f;
+        params->matrixRowState11.destination = ALL_OSC_FREQ;
+
+        params->matrixRowState12.source = MATRIX_SOURCE_AFTERTOUCH;
+        params->matrixRowState12.mul = 1.0f;
+        params->matrixRowState12.destination = INDEX_MODULATION1;
+
+        for (int m = 1; m<=9; m++) {
+            struct MatrixRowParams* matrixRow =  &((struct MatrixRowParams*)&params->matrixRowState1)[m - 1];
+            matrixRow->mul = 0;
+            matrixRow->destination = 0;
+        }
+
+
+        float dest[] = { INDEX_ALL_MODULATION, OSC1_FREQ, ALL_PAN, OSC2_FREQ, INDEX_MODULATION1, PAN_OSC1 };
+        for (int i = 0; i < 2; i++) {
+            struct MatrixRowParams* matrixRow =  &((struct MatrixRowParams*)&params->matrixRowState1)[getRandomInt(10)];
+            matrixRow->mul = getRandomFloat(0.1f, 1.0f);
+            matrixRow->destination = dest[getRandomInt(6)];
+        }
+
+        if (modulationRandom >= 2) {
+            for (int i = 0; i < 3; i++) {
+                struct MatrixRowParams* matrixRow =  &((struct MatrixRowParams*)&params->matrixRowState1)[getRandomInt(10)];
+                matrixRow->mul = getRandomFloat(1.0f, 2.0f);
+                matrixRow->destination = getRandomInt(DESTINATION_MAX);
+            }
+        }
+
+        if (modulationRandom >=3) {
+            for (int i = 0; i < 5; i++) {
+                struct MatrixRowParams* matrixRow =  &((struct MatrixRowParams*)&params->matrixRowState1)[getRandomInt(10)];
+                float mm = getRandomFloat(2.0f, 5.0f);
+                matrixRow->mul = getRandomFloat(-mm, mm);
+                matrixRow->destination = getRandomInt(DESTINATION_MAX);
+            }
+        }
+
+        for (int o = 0; o < 3; o++) {
+            struct LfoParams* osc =  &((struct LfoParams*)&params->lfoOsc1)[o];
+            osc->shape = getRandomInt(4);
+            osc->freq = getRandomFloat(0.2, 3 + modulationRandom*2 );
+            if (getRandomInt(5) > 1) {
+                osc->bias = getRandomFloat(-1.0f, 1.0f);
+            } else {
+                osc->bias = 0;
+            }
+            osc->keybRamp = getRandomFloat(0.0f, 3.0f);
+        }
+        for (int e = 0; e < 2; e++) {
+            struct EnvelopeParams* env =  &((struct EnvelopeParams*)&params->lfoEnv1)[e];
+            env->attack = getRandomFloat(0.05f, 1.0f);
+            env->decay = getRandomFloat(0.05f, 1.0f);
+            env->sustain = getRandomFloat(0.05f, 1.0f);
+            if (e==0) {
+                env->release = getRandomFloat(0.05f, 1.0f);
+            } else {
+                params->lfoEnv2.loop = getRandomInt(2);
+            }
+        }
+
+        int bpm = getRandomInt(120) + 60;
+        for (int s = 0; s < 2; s++) {
+            struct StepSequencerParams* stepSeq =  &((struct StepSequencerParams*)&params->lfoSeq1)[s];
+            stepSeq->bpm = bpm;
+            stepSeq->gate = getRandomFloat(0.25, 1);
+
+            struct StepSequencerSteps* steps =  &((struct StepSequencerSteps*)&params->lfoSteps1)[s];
+            for (int k =0; k<16; k++) {
+                if ((k % 4) == 0) {
+                    steps->steps[k] = getRandomInt(5) + 11;
+                } else {
+                    steps->steps[k] = getRandomInt(10) ;
+                }
+            }
+        }
     }
 }

@@ -874,6 +874,10 @@ void FMDisplay::newMenuState(FullState* fullState) {
         lcd->setCursor(1, menuRow);
         lcd->print("Send Patch ?");
         break;
+    case MENU_LOAD_RANDOMIZER:
+        lcd->setCursor(1, menuRow);
+        lcd->print("OpFr EnvT IMs  Modl");
+        break;
     }
 
     newMenuSelect(fullState);
@@ -1016,6 +1020,17 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
             lcd->print(' ');
         }
         break;
+    case MENU_LOAD_RANDOMIZER:
+        eraseRow(menuRow + 1);
+        lcd->setCursor(1, menuRow + 1);
+        lcd->print((int)fullState->randomizer.OpFr);
+        lcd->setCursor(6, menuRow + 1);
+        lcd->print((int)fullState->randomizer.EnvT);
+        lcd->setCursor(11, menuRow + 1);
+        lcd->print((int)fullState->randomizer.IM);
+        lcd->setCursor(16, menuRow + 1);
+        lcd->print((int)fullState->randomizer.Modl);
+        break;
     default:
         break;
     }
@@ -1033,6 +1048,9 @@ void FMDisplay::menuBack(enum MenuState oldMenuState, FullState* fullState) {
         return;
     }
     eraseRow(menuRow);
+    if (fullState->currentMenuItem->menuState == MENU_LOAD_RANDOMIZER) {
+        eraseRow(menuRow + 1);
+    }
     menuRow -= rowInc(oldMenuState);
     // new menu will add it again...
     menuRow -= rowInc(fullState->currentMenuItem->menuState);

@@ -41,6 +41,7 @@ enum {
     MIDICONFIG_ARPEGGIATOR_IN_PRESET,
     MIDICONFIG_OLED_SAVER,
     MIDICONFIG_UNLINKED_EDITING,
+    MIDICONFIG_BOOT_SOUND,
     MIDICONFIG_SIZE
 };
 
@@ -65,6 +66,7 @@ enum MenuState {
     MENU_LOAD_SELECT_BANK,
     MENU_LOAD_SELECT_BANK_PRESET,
     MENU_LOAD_SELECT_DX7_BANK,
+    MENU_LOAD_RANDOMIZER,
     MENU_LOAD_SELECT_DX7_PRESET,
     MENU_LOAD_SELECT_COMBO,
     MENU_LOAD_SELECT_COMBO_PRESET,
@@ -109,7 +111,13 @@ struct MenuItem {
     MenuState subMenu[4];
 };
 
-
+struct Randomizer {
+    // lcd->print("OpFr EnvT IM   Modl");
+    char OpFr;
+    char EnvT;
+    char IM;
+    char Modl;
+};
 
 struct FullState {
     SynthEditMode synthMode;
@@ -134,6 +142,8 @@ struct FullState {
     short dx7BankNumber;
     unsigned char dx7PresetNumber;
     const struct BankFile* dx7Bank;
+
+    struct Randomizer randomizer;
 };
 
 struct MidiConfig {

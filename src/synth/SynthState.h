@@ -465,6 +465,9 @@ public:
 	void loadPreenFMCombo(BankFile const *bank, int patchNumber);
 	void loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int patchNumber, struct OneSynthParams* params);
 
+	bool newRandomizerValue(int encoder, int ticks);
+	void randomizePreset();
+
     int currentTimbre;
     struct OneSynthParams *params;
     float *performanceValues;

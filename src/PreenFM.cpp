@@ -155,19 +155,21 @@ void setup() {
     		GPIO_ResetBits(GPIOB, GPIO_Pin_6);
     	}
 
-    	switch (r) {
-    	case 0:
-        	synth.noteOn(0, 40, 120);
-        	break;
-    	case 1:
-    		synth.noteOff(0, 40);
-    		break;
-    	case 3:
-        	synth.noteOn(0, 52, 120);
-        	break;
-    	case 4:
-    		synth.noteOff(0,52);
-    		break;
+    	if (synthState.fullState.midiConfigValue[MIDICONFIG_BOOT_SOUND] > 0) {
+            switch (r) {
+            case 0:
+                synth.noteOn(0, 40, 120);
+                break;
+            case 1:
+                synth.noteOff(0, 40);
+                break;
+            case 3:
+                synth.noteOn(0, 52, 120);
+                break;
+            case 4:
+                synth.noteOff(0,52);
+                break;
+            }
     	}
 
     	for (char s=1; s<6; s++) {

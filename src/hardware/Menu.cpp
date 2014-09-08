@@ -146,6 +146,12 @@ const struct MidiConfig midiConfig[]  = {
                 2,
                 yesNo
         },
+        {
+                "Boot sound: ",
+                "bootsound",
+                2,
+                yesNo
+        },
         // Don't count in MIDICONFIG_SIZE
         {
                 "Firmware: ",
@@ -169,8 +175,8 @@ const struct MenuItem allMenus[]  = {
                 MENU_LOAD,
                 "Load",
                 true,
-                3,
-                {MENU_LOAD_SELECT_BANK, MENU_LOAD_SELECT_COMBO, MENU_LOAD_SELECT_DX7_BANK}
+                4,
+                {MENU_LOAD_SELECT_BANK, MENU_LOAD_SELECT_COMBO, MENU_LOAD_SELECT_DX7_BANK, MENU_LOAD_RANDOMIZER}
         },
         {
                 MENU_LOAD_SELECT_BANK,
@@ -192,6 +198,13 @@ const struct MenuItem allMenus[]  = {
                 false,
                 NUMBEROFDX7BANKS,
                 {MENU_LOAD_SELECT_DX7_PRESET}
+        },
+        {
+                MENU_LOAD_RANDOMIZER,
+                "Rand",
+                false,
+                4,
+                {MENU_DONE}
         },
         {
                 MENU_LOAD_SELECT_BANK_PRESET,
