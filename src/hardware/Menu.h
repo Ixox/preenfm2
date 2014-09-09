@@ -113,7 +113,7 @@ struct MenuItem {
 
 struct Randomizer {
     // lcd->print("OpFr EnvT IM   Modl");
-    char OpFr;
+    char Oper;
     char EnvT;
     char IM;
     char Modl;

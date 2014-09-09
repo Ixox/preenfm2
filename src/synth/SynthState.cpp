@@ -414,7 +414,7 @@ SynthState::SynthState() {
     fullState.midiConfigValue[MIDICONFIG_BOOT_SOUND] = 0;
     fullState.firstMenu = 0;
     // Init randomizer values to 1
-    fullState.randomizer.OpFr = 1;
+    fullState.randomizer.Oper = 1;
     fullState.randomizer.EnvT = 1;
     fullState.randomizer.IM = 1;
     fullState.randomizer.Modl = 1;
@@ -700,11 +700,11 @@ bool SynthState::newRandomizerValue(int encoder, int ticks) {
     char newValue = 0;
     switch (encoder) {
     case 0:
-        oldValue = fullState.randomizer.OpFr;
-        fullState.randomizer.OpFr += (ticks > 0 ? 1 : -1);
-        fullState.randomizer.OpFr = fullState.randomizer.OpFr > 3 ? 3 : fullState.randomizer.OpFr;
-        fullState.randomizer.OpFr = fullState.randomizer.OpFr < 0 ? 0 : fullState.randomizer.OpFr;
-        newValue = fullState.randomizer.OpFr;
+        oldValue = fullState.randomizer.Oper;
+        fullState.randomizer.Oper += (ticks > 0 ? 1 : -1);
+        fullState.randomizer.Oper = fullState.randomizer.Oper > 3 ? 3 : fullState.randomizer.Oper;
+        fullState.randomizer.Oper = fullState.randomizer.Oper < 0 ? 0 : fullState.randomizer.Oper;
+        newValue = fullState.randomizer.Oper;
         break;
     case 1:
         oldValue = fullState.randomizer.EnvT;
@@ -1942,31 +1942,32 @@ float getFineTune(int operatorRandom) {
 }
 
 void SynthState::randomizePreset() {
-    int operatorRandom = fullState.randomizer.OpFr;
+    int operatorRandom = fullState.randomizer.Oper;
     int envelopeTypeRandom = fullState.randomizer.EnvT;
     int imRandom = fullState.randomizer.IM;
     int modulationRandom = fullState.randomizer.Modl;
 
 
     // general
-    params->engineMix1.mixOsc1 = 1.0;
-    params->engineMix1.mixOsc2 = 1.0;
-    params->engineMix2.mixOsc3 = 1.0;
-    params->engineMix2.mixOsc4 = 1.0;
-    params->engineMix3.mixOsc5 = 1.0;
-    params->engineMix3.mixOsc6 = 1.0;
-
-    params->engineMix1.panOsc1 = 0.0;
-    params->engineMix1.panOsc2 = 0.25f;
-    params->engineMix2.panOsc3 = -0.25;
-    params->engineMix2.panOsc4 = 0.5f;
-    params->engineMix3.panOsc5 = -0.5f;
-    params->engineMix3.panOsc6 = 0.5f;
 
     params->engine1.velocity = 8;
 
 
     if (operatorRandom > 0) {
+        params->engineMix1.mixOsc1 = getRandomFloat(0.6f, 1.0f);
+        params->engineMix1.mixOsc2 = getRandomFloat(0.6f, 1.0f);
+        params->engineMix2.mixOsc3 = getRandomFloat(0.6f, 1.0f);
+        params->engineMix2.mixOsc4 = getRandomFloat(0.6f, 1.0f);
+        params->engineMix3.mixOsc5 = getRandomFloat(0.6f, 1.0f);
+        params->engineMix3.mixOsc6 = getRandomFloat(0.6f, 1.0f);
+
+        params->engineMix1.panOsc1 = 0.0;
+        params->engineMix1.panOsc2 = getRandomFloat(-0.3f, 0.3f);
+        params->engineMix2.panOsc3 = getRandomFloat(-0.3f, 0.3f);
+        params->engineMix2.panOsc4 = getRandomFloat(-0.5f, 0.5f);
+        params->engineMix3.panOsc5 = getRandomFloat(-0.5f, 0.5f);
+        params->engineMix3.panOsc6 = getRandomFloat(-0.7f, 0.7f);
+
         params->engine1.algo = getRandomInt(ALGO_END);
         if (getRandomInt(6) == 0) {
             params->engine1.numberOfVoice = 1;
@@ -1983,8 +1984,8 @@ void SynthState::randomizePreset() {
         }
 
         // FX
-        params->effect.param1 = getRandomFloat(0.25, 0.75);
-        params->effect.param2 = getRandomFloat(0.25, 0.75);
+        params->effect.param1 = getRandomFloat(0.2f, 0.8f);
+        params->effect.param2 = getRandomFloat(0.2f, 0.8f);
         int effect = getRandomInt(15);
         if (effect == 1 || effect > 6) {
             params->effect.param3 = 1.0;
@@ -2052,22 +2053,22 @@ void SynthState::randomizePreset() {
 
         switch (imRandom) {
         case 1:
-            min = 0.0f;
+            min = 0.25f;
             max = 2.0f;
-            minVelo = 0.0f;
+            minVelo = 0.2f;
             maxVelo = 1.0f;
             break;
         case 2:
             min = .5f;
-            max = 4.0f;
+            max = 3.0f;
             minVelo = 1.0f;
             maxVelo = 2.0f;
             break;
         case 3:
             min = 1.0f;
-            max = 6.0f;
+            max = 5.0f;
             minVelo = 1.0f;
-            maxVelo = 6.0f;
+            maxVelo = 4.0f;
             break;
         }
         im1->modulationIndex1 = getRandomFloat(min, max);
@@ -2113,23 +2114,23 @@ void SynthState::randomizePreset() {
         }
 
 
-        float dest[] = { INDEX_ALL_MODULATION, OSC1_FREQ, ALL_PAN, OSC2_FREQ, INDEX_MODULATION1, PAN_OSC1 };
+        float dest[] = { INDEX_ALL_MODULATION, OSC1_FREQ, ALL_PAN, OSC2_FREQ, INDEX_MODULATION1, PAN_OSC1, INDEX_ALL_MODULATION };
         for (int i = 0; i < 2; i++) {
             struct MatrixRowParams* matrixRow =  &((struct MatrixRowParams*)&params->matrixRowState1)[getRandomInt(10)];
-            matrixRow->mul = getRandomFloat(0.1f, 1.0f);
-            matrixRow->destination = dest[getRandomInt(6)];
+            matrixRow->mul = getRandomFloat(0.2f, 3.0f);
+            matrixRow->destination = dest[getRandomInt(7)];
         }
 
         if (modulationRandom >= 2) {
             for (int i = 0; i < 3; i++) {
                 struct MatrixRowParams* matrixRow =  &((struct MatrixRowParams*)&params->matrixRowState1)[getRandomInt(10)];
-                matrixRow->mul = getRandomFloat(1.0f, 2.0f);
+                matrixRow->mul = getRandomFloat(1.0f, 3.0f);
                 matrixRow->destination = getRandomInt(DESTINATION_MAX);
             }
         }
 
         if (modulationRandom >=3) {
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 6; i++) {
                 struct MatrixRowParams* matrixRow =  &((struct MatrixRowParams*)&params->matrixRowState1)[getRandomInt(10)];
                 float mm = getRandomFloat(2.0f, 5.0f);
                 matrixRow->mul = getRandomFloat(-mm, mm);
@@ -2139,14 +2140,19 @@ void SynthState::randomizePreset() {
 
         for (int o = 0; o < 3; o++) {
             struct LfoParams* osc =  &((struct LfoParams*)&params->lfoOsc1)[o];
-            osc->shape = getRandomInt(4);
+            osc->shape = getRandomInt(5);
             osc->freq = getRandomFloat(0.2, 3 + modulationRandom*2 );
-            if (getRandomInt(5) > 1) {
-                osc->bias = getRandomFloat(-1.0f, 1.0f);
-            } else {
+            if (getRandomInt(4) > 1) {
                 osc->bias = 0;
+            } else {
+                osc->bias = getRandomFloat(-1.0f, 1.0f);
             }
-            osc->keybRamp = getRandomFloat(0.0f, 3.0f);
+            // PAD
+            if (envelopeTypeRandom == 2) {
+                osc->keybRamp = getRandomFloat(0.0f, 4.0f);
+            } else {
+                osc->keybRamp = getRandomFloat(0.0f, 1.0f);
+            }
         }
         for (int e = 0; e < 2; e++) {
             struct EnvelopeParams* env =  &((struct EnvelopeParams*)&params->lfoEnv1)[e];
@@ -2156,7 +2162,7 @@ void SynthState::randomizePreset() {
             if (e==0) {
                 env->release = getRandomFloat(0.05f, 1.0f);
             } else {
-                params->lfoEnv2.loop = getRandomInt(2);
+                params->lfoEnv2.loop = getRandomInt(2) + 1;
             }
         }
 
