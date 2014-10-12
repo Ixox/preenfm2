@@ -226,7 +226,7 @@ void LfoOsc::nextValueInMatrix() {
 
 void LfoOsc::noteOn() {
     if (ramp >= 0.0f) {
-        currentRamp = (ramp == 0.0) * 1.0f;
+        currentRamp = 0.0f;
         if ((lfo->freq * 10.0f) < LFO_MIDICLOCK_MC_DIV_16) {
             phase = 0;
         }
@@ -235,6 +235,7 @@ void LfoOsc::noteOn() {
             currentRandomValue = noise[0];
         }
     } else {
+        // For KSyn Off
         currentRamp = 1; // greater than 0 :
     }
 }

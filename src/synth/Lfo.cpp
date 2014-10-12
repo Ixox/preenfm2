@@ -33,9 +33,9 @@ void Lfo::init(Matrix *matrix, SourceEnum source, DestinationEnum dest) {
 
     if (initTab == 0) {
         initTab = 1;
-        for (float k=1; k<2048; k += 1.0f) {
-            invTab[(int)(k + .005f)] = 1 / k;
+        for (int k=1; k<2048; k++) {
+            invTab[k] = 1.0f / ((float)k);
         }
-        invTab[0] = 10000;
+        invTab[0] = 1.0;
     }
 }
