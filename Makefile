@@ -1,4 +1,4 @@
-PFM2_VERSION_NUMBER=1.06
+PFM2_VERSION_NUMBER=1.07b1
 PFM2_BIN_NUMBER=$(subst .,,${PFM2_VERSION_NUMBER})
 PFM2_BOOTLOADER_VERSION_NUMBER=1.11
 PFM2_VERSION=\"${PFM2_VERSION_NUMBER}\"
@@ -17,8 +17,8 @@ SYMBOLS_FIRMWARE_O=build/symbols_p2_${PFM2_VERSION_NUMBER}o.txt
 
 BIN_SYSEX=build/p2_${PFM2_VERSION_NUMBER}.syx
 
-C      = arm-none-eabi-gcc 
-CC      = arm-none-eabi-c++ 
+C      = arm-none-eabi-gcc
+CC      = arm-none-eabi-c++
 LD      = arm-none-eabi-ld -v
 CP      = arm-none-eabi-objcopy
 OD      = arm-none-eabi-objdump
@@ -63,8 +63,14 @@ SRC_FIRMWARE = src/PreenFM.cpp \
 	src/hardware/FMDisplay.cpp \
 	src/hardware/Encoders.cpp \
 	src/hardware/LiquidCrystal.cpp \
-	src/hardware/UsbKey.cpp \
-	src/hardware/Storage.cpp \
+	src/filesystem/ComboBank.cpp \
+	src/filesystem/ConfigurationFile.cpp \
+	src/filesystem/DX7SysexFile.cpp \
+	src/filesystem/PatchBank.cpp \
+	src/filesystem/ScalaFile.cpp \
+	src/filesystem/Storage.cpp \
+	src/filesystem/FileSystemUtils.cpp \
+	src/filesystem/PreenFMFileType.cpp \
 	src/midi/MidiDecoder.cpp \
 	src/synth/Env.cpp \
 	src/synth/Lfo.cpp \
@@ -86,7 +92,7 @@ SRC_FIRMWARE = src/PreenFM.cpp \
 	src/library/fat_fs/src/ff.c \
 	src/library/fat_fs/src/fattime.c  \
 	src/midipal/note_stack.cpp \
-	src/midipal/event_scheduler.cpp 
+	src/midipal/event_scheduler.cpp
 
 
 SRC_BOOTLOADER = src/bootloader/BootLoader.cpp \
@@ -97,8 +103,8 @@ SRC_BOOTLOADER = src/bootloader/BootLoader.cpp \
 	usr/usb/usb_bsp.c \
 	src/hardware/Encoders.cpp \
 	src/hardware/LiquidCrystal.cpp \
-	src/hardware/UsbKey.cpp \
-	src/hardware/Storage.cpp \
+	src/filesystem/Storage.cpp \
+	src/filesystem/FirmwareFile.cpp \
 	src/synth/Common.cpp \
 	src/third/system_stm32f4xx.c \
 	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c \
@@ -127,22 +133,22 @@ SRC_BOOTLOADER = src/bootloader/BootLoader.cpp \
 	src/library/STM32_USB_Device_Library/Class/msc/src/usbd_msc_core.c \
 	src/library/STM32_USB_Device_Library/Class/msc/src/usbd_msc_data.c \
 	src/library/STM32_USB_Device_Library/Class/msc/src/usbd_msc_scsi.c \
-	src/library/STM32F4xx_StdPeriph_Driver/src/misc.c 
+	src/library/STM32F4xx_StdPeriph_Driver/src/misc.c
 
-INCLUDESDIR = -I./src/third/ -I./src/library/STM32_USB_HOST_Library/Class/MSC/inc -I./src/library/STM32_USB_HOST_Library/Core/inc -I./src/library/STM32_USB_OTG_Driver/inc -I./src/library/fat_fs/inc -I./src/library/STM32_USB_Device_Library/Core/inc -I./src/library/STM32_USB_Device_Library/Class/midi/inc -I./src/library/STM32F4xx_StdPeriph_Driver/inc/ -I./src/library/CMSIS/Include/ -I./src/utils/ -I./src/hardware -I./src/usb -I./src/synth -I./src/midi -I./src/midipal -I./src -I./src/library/STM32_USB_Device_Library/Class/msc/inc
-SMALLBINOPTS = -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions  -Wl,--gc-sections  
+INCLUDESDIR = -I./src/third/ -I./src/library/STM32_USB_HOST_Library/Class/MSC/inc -I./src/library/STM32_USB_HOST_Library/Core/inc -I./src/library/STM32_USB_OTG_Driver/inc -I./src/library/fat_fs/inc -I./src/library/STM32_USB_Device_Library/Core/inc -I./src/library/STM32_USB_Device_Library/Class/midi/inc -I./src/library/STM32F4xx_StdPeriph_Driver/inc/ -I./src/library/CMSIS/Include/ -I./src/utils/ -I./src/filesystem -I./src/hardware -I./src/usb -I./src/synth -I./src/midi -I./src/midipal -I./src -I./src/library/STM32_USB_Device_Library/Class/msc/inc
+SMALLBINOPTS = -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions  -Wl,--gc-sections
 
-# 
+#
 DEFINE = -DPFM2_VERSION=${PFM2_VERSION} -DPFM2_BOOTLOADER_VERSION=${PFM2_BOOTLOADER_VERSION}
 
 ifeq ($(DEBUG),1)
 DEFINE += -DDEBUG
 endif
 
-CFLAGS = -Ofast $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char 
-AFLAGS  = -ahls -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16    
+CFLAGS = -Ofast $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
+AFLAGS  = -ahls -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 LFLAGS  = -Tlinker/stm32f4xx.ld  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -gc-sections    --specs=nano.specs
-LFLAGS_BOOTLOADER  = -Tlinker_bootloader/stm32f4xx.ld  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -gc-sections --specs=nano.specs  
+LFLAGS_BOOTLOADER  = -Tlinker_bootloader/stm32f4xx.ld  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -gc-sections --specs=nano.specs
 CPFLAGS = -Obinary
 
 STARTUP = build/startup_firmware.o
@@ -157,7 +163,7 @@ OBJTMP_BOOTLOADER = $(addprefix $(OBJDIR),$(notdir $(SRC_BOOTLOADER:.c=.o)))
 OBJ_BOOTLOADER = $(OBJTMP_BOOTLOADER:.cpp=.o)
 
 
-all: 
+all:
 	@echo "You must chose a target"
 	@echo "   clean : remove build directory"
 	@echo "   pfm : build pfm2 firmware"
@@ -173,16 +179,16 @@ all:
 
 zip: pfm2_$(PFM2_VERSION_NUMBER).zip
 
-pfm2_$(PFM2_VERSION_NUMBER).zip : 
+pfm2_$(PFM2_VERSION_NUMBER).zip :
 	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_FIRMWARE)) -s 0x8040000" > build/install_firmware.cmd
 	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_FIRMWARE_O)) -s 0x8040000" > build/install_firmware_overclocked.cmd
 	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_BOOTLOADER)) -s 0x8000000" > build/install_bootloader.cmd
 	zip pfm2_$(PFM2_VERSION_NUMBER).zip build/*.bin build/*.syx build/*.cmd
 
-pfm: $(BIN_FIRMWARE) 
+pfm: $(BIN_FIRMWARE)
 
 pfmo: CFLAGS += -DOVERCLOCK
-pfmo: $(BIN_FIRMWARE_O) 
+pfmo: $(BIN_FIRMWARE_O)
 
 boot: CFLAGS += -DBOOTLOADER -I./src/bootloader -Os
 boot: $(BIN_BOOTLOADER)
@@ -234,12 +240,12 @@ $(BIN_FIRMWARE_O): $(ELF_FIRMWARE_O)
 
 $(ELF_FIRMWARE): $(OBJ_FIRMWARE) $(STARTUP)
 	$(CC) $(LFLAGS) $^ -o $@
-	arm-none-eabi-nm -l -S -n $(ELF_FIRMWARE) > $(SYMBOLS_FIRMWARE) 
+	arm-none-eabi-nm -l -S -n $(ELF_FIRMWARE) > $(SYMBOLS_FIRMWARE)
 	arm-none-eabi-readelf -S $(ELF_FIRMWARE)
 
 $(ELF_FIRMWARE_O): $(OBJ_FIRMWARE) $(STARTUP)
 	@$(CC) $(LFLAGS) $^ -o $@
-	arm-none-eabi-nm -l -S -n $(ELF_FIRMWARE_O) > $(SYMBOLS_FIRMWARE_O) 
+	arm-none-eabi-nm -l -S -n $(ELF_FIRMWARE_O) > $(SYMBOLS_FIRMWARE_O)
 	arm-none-eabi-readelf -S $(ELF_FIRMWARE_O)
 
 
@@ -249,7 +255,7 @@ $(BIN_BOOTLOADER): $(ELF_BOOTLOADER)
 
 $(ELF_BOOTLOADER): $(OBJ_BOOTLOADER) $(STARTUP_BOOTLOADER)
 	$(CC) $(LFLAGS_BOOTLOADER) $^ -o $@
-	arm-none-eabi-nm -l -S -n $(ELF_BOOTLOADER) > $(SYMBOLS_BOOTLOADER) 
+	arm-none-eabi-nm -l -S -n $(ELF_BOOTLOADER) > $(SYMBOLS_BOOTLOADER)
 	arm-none-eabi-readelf -S $(ELF_BOOTLOADER)
 
 
@@ -293,6 +299,10 @@ build/%.o: src/synth/%.cpp
 	@$(CC) $(CFLAGS) $< -o $@
 
 build/%.o: src/hardware/%.cpp
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) $< -o $@
+
+build/%.o: src/filesystem/%.cpp
 	@echo "Compiling $<..."
 	@$(CC) $(CFLAGS) $< -o $@
 
@@ -344,4 +354,3 @@ clean:
 cleanall:
 	@ echo ".clean all"
 	rm -rf *.lst build/*
-

@@ -38,6 +38,7 @@ public:
 	void updateEncoderName(int row, int encoder);
 	void printValueWithSpace(int value);
     void printFloatWithSpace(float value);
+    void printScalaFrequency(float value);
 	bool shouldThisValueShowUp(int row, int encoder);
 	void updateEncoderValue(int refreshStatus);
 	void updateCCValue(int refreshStatus);

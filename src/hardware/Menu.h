@@ -97,7 +97,11 @@ enum MenuState {
     MENU_RENAME_BANK,
 	MENU_RENAME_SELECT_COMBO,
 	MENU_RENAME_COMBO,
-
+	MENU_SCALA,
+	MENU_SCALA_ENABLE,
+	MENU_SCALA_FILENAME,
+	MENU_SCALA_FREQUENCY,
+	MENU_SCALA_MAPPING,
     LAST_MENU
 } ;
 
@@ -119,6 +123,7 @@ struct Randomizer {
     char Modl;
 };
 
+
 struct FullState {
     SynthEditMode synthMode;
     int menuSelect;
@@ -126,22 +131,27 @@ struct FullState {
     const MenuItem* currentMenuItem;
     char name[13];
 
+    unsigned char firstMenu;
     unsigned char loadWhat;
     unsigned char saveWhat;
-    unsigned char firstMenu;
+    unsigned char toolsWhat;
+    unsigned char scalaWhat;
     unsigned char  menuPosition[5];
     char  midiConfigValue[MIDICONFIG_SIZE + 1];
 
     unsigned char preenFMBankNumber;
     unsigned char preenFMPresetNumber;
-    const struct BankFile* preenFMBank;
+    const struct PFM2File* preenFMBank;
+
     unsigned char preenFMComboNumber;
     unsigned char preenFMComboPresetNumber;
-    const struct BankFile* preenFMCombo;
+    const struct PFM2File* preenFMCombo;
 
     short dx7BankNumber;
     unsigned char dx7PresetNumber;
-    const struct BankFile* dx7Bank;
+    const struct PFM2File* dx7Bank;
+
+    struct ScalaScaleConfig scalaScaleConfig;
 
     struct Randomizer randomizer;
 };

@@ -460,9 +460,9 @@ public:
     bool getIsPlayingNote() {
     	return isPlayingNote;
     }
-	void loadPreenFMPatch(int timbre, BankFile const *bank, int patchNumber, struct OneSynthParams* params);
-	void loadDx7Patch(int timbre, BankFile const *bank, int patchNumber, struct OneSynthParams* params);
-	void loadPreenFMCombo(BankFile const *bank, int patchNumber);
+	void loadPreenFMPatch(int timbre, PFM2File const *bank, int patchNumber, struct OneSynthParams* params);
+	void loadDx7Patch(int timbre, PFM2File const *bank, int patchNumber, struct OneSynthParams* params);
+	void loadPreenFMCombo(PFM2File const *bank, int patchNumber);
 	void loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int patchNumber, struct OneSynthParams* params);
 
 	bool newRandomizerValue(int encoder, int ticks);

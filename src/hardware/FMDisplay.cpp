@@ -207,6 +207,15 @@ void FMDisplay::printFloatWithSpace(float value) {
     }
 }
 
+void FMDisplay::printScalaFrequency(float value) {
+    int integer = (int) (value + .0005f);
+    lcd->print(integer);
+    lcd->print('.');
+	value -= integer;
+	lcd->print((int)(value*10 + .0005f ));
+}
+
+
 bool FMDisplay::shouldThisValueShowUp(int row, int encoder) {
     int algo = this->synthState->params->engine1.algo;
     switch (row) {
@@ -921,6 +930,7 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
     case MENU_DEFAULT_COMBO:
     case MENU_RENAME:
     case MENU_CREATE:
+    case MENU_SCALA:
         for (int k=0; k<fullState->currentMenuItem->maxValue; k++) {
             lcd->setCursor(fullState->menuPosition[k], menuRow);
             lcd->print(' ');
@@ -932,12 +942,15 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
     case MENU_LOAD_SELECT_DX7_PRESET:
         displayPatchSelect(fullState->menuSelect, this->synthState->params->presetName);
         break;
+    case MENU_SCALA_FILENAME:
+        displayBankSelect(fullState->menuSelect, (fullState->scalaScaleConfig.scalaFile->fileType != FILE_EMPTY), fullState->scalaScaleConfig.scalaFile->name);
+    	break;
     case MENU_SAVE_SELECT_BANK_PRESET:
-        displayPatchSelect(fullState->menuSelect, storage->loadPreenFMPatchName(fullState->preenFMBank, fullState->menuSelect));
+        displayPatchSelect(fullState->menuSelect, storage->getPatchBank()->loadPreenFMPatchName(fullState->preenFMBank, fullState->menuSelect));
         break;
     case MENU_LOAD_SELECT_COMBO_PRESET:
     case MENU_SAVE_SELECT_COMBO_PRESET:
-        displayPatchSelect(fullState->menuSelect, storage->loadPreenFMComboName(fullState->preenFMCombo, fullState->menuSelect));
+        displayPatchSelect(fullState->menuSelect, storage->getComboBank()->loadPreenFMComboName(fullState->preenFMCombo, fullState->menuSelect));
         break;
     case MENU_LOAD_SELECT_DX7_BANK:
         displayBankSelect(fullState->menuSelect, (fullState->dx7Bank->fileType != FILE_EMPTY), fullState->dx7Bank->name);
@@ -946,13 +959,13 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
         displayBankSelect(fullState->menuSelect, (fullState->preenFMBank->fileType == FILE_OK), fullState->preenFMBank->name);
         break;
     case MENU_RENAME_SELECT_BANK:
-        displayBankSelect(fullState->menuSelect, (storage->getPreenFMBank(fullState->menuSelect)->fileType != FILE_EMPTY), storage->getPreenFMBank(fullState->menuSelect)->name);
+        displayBankSelect(fullState->menuSelect, (storage->getPatchBank()->getFile(fullState->menuSelect)->fileType != FILE_EMPTY), storage->getPatchBank()->getFile(fullState->menuSelect)->name);
         break;
     case MENU_LOAD_SELECT_BANK:
         displayBankSelect(fullState->menuSelect, (fullState->preenFMBank->fileType != FILE_EMPTY), fullState->preenFMBank->name);
         break;
     case MENU_RENAME_SELECT_COMBO:
-        displayBankSelect(fullState->menuSelect, (storage->getPreenFMCombo(fullState->menuSelect)->fileType != FILE_EMPTY), storage->getPreenFMCombo(fullState->menuSelect)->name);
+        displayBankSelect(fullState->menuSelect, (storage->getComboBank()->getFile(fullState->menuSelect)->fileType != FILE_EMPTY), storage->getComboBank()->getFile(fullState->menuSelect)->name);
         break;
     case MENU_SAVE_SELECT_COMBO:
         displayBankSelect(fullState->menuSelect, (fullState->preenFMCombo->fileType == FILE_OK), fullState->preenFMCombo->name);
@@ -1034,6 +1047,26 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
         lcd->setCursor(16, menuRow + 1);
         lcd->print(otherRandomizer[(int)fullState->randomizer.Modl]);
         break;
+    case MENU_SCALA_ENABLE:
+        lcd->setCursor(1, menuRow);
+    	if (fullState->scalaScaleConfig.scalaEnabled) {
+    		lcd->print("On ");
+    	} else {
+    		lcd->print("Off");
+    	}
+    	break;
+    case MENU_SCALA_FREQUENCY:
+        lcd->setCursor(1, menuRow);
+        printScalaFrequency(fullState->scalaScaleConfig.scalaFreq);
+        break;
+    case MENU_SCALA_MAPPING:
+        lcd->setCursor(1, menuRow);
+    	if (fullState->scalaScaleConfig.keyboardMapping) {
+    		lcd->print("Keyboard  ");
+    	} else {
+    		lcd->print("Continuous");
+    	}
+    	break;
     default:
         break;
     }

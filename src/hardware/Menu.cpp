@@ -343,8 +343,8 @@ const struct MenuItem allMenus[]  = {
                 MENU_TOOLS,
                 "Tools",
                 true,
-                3,
-                {MENU_CONFIG_SETTINGS, MENU_CREATE, MENU_RENAME}
+                4,
+                {MENU_CONFIG_SETTINGS, MENU_CREATE, MENU_RENAME, MENU_SCALA}
         },
         {
                 MENU_CONFIG_SETTINGS,
@@ -362,7 +362,7 @@ const struct MenuItem allMenus[]  = {
         },
         {
                 MENU_CREATE,
-                "Create",
+                "Crea",
                 true,
                 2,
                 { MENU_CREATE_BANK, MENU_CREATE_COMBO }
@@ -383,7 +383,7 @@ const struct MenuItem allMenus[]  = {
         },
         {
                 MENU_RENAME,
-                "Rename",
+                "Ren",
                 true,
                 3,
                 {MENU_RENAME_PATCH, MENU_RENAME_SELECT_BANK, MENU_RENAME_SELECT_COMBO}
@@ -423,5 +423,42 @@ const struct MenuItem allMenus[]  = {
                 8,
                 {MENU_DONE}
         },
+        // SCALA
+        {
+        		MENU_SCALA,
+        		"Scala",
+        		true,
+        		4,
+        		{MENU_SCALA_ENABLE, MENU_SCALA_FILENAME, MENU_SCALA_FREQUENCY, MENU_SCALA_MAPPING}
+        },
+		{
+				MENU_SCALA_ENABLE,
+				"Enbl",
+				false,
+				2,
+				{MENU_DONE}
+		},
+		{
+				MENU_SCALA_FILENAME,
+				"Scal",
+				false,
+				NUMBEROFSCALASCALEFILES,
+				{MENU_DONE}
+		},
+		{
+				MENU_SCALA_FREQUENCY,
+				"Frq",
+				false,
+				10000,
+				{MENU_DONE}
+		},
+		{
+				MENU_SCALA_MAPPING,
+				"Map",
+				false,
+				2,
+				{MENU_DONE}
+		}
+
 };
 

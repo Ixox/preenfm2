@@ -391,8 +391,16 @@ SynthState::SynthState() {
     fullState.preenFMComboPresetNumber = 0;
     fullState.dx7BankNumber = 0;
     fullState.dx7PresetNumber = 0;
+    fullState.scalaScaleConfig.scalaFile = NULL;
+    fullState.scalaScaleConfig.scalaEnabled = false;
+    fullState.scalaScaleConfig.keyboardMapping = true;
+    // https://en.wikipedia.org/wiki/C_(musical_note)
+    // Frequency of note 60 C4 :
+    fullState.scalaScaleConfig.scalaFreq = 261.6f;
     fullState.loadWhat = 0;
     fullState.saveWhat = 0;
+    fullState.toolsWhat = 0;
+    fullState.scalaWhat = 0;
     fullState.midiConfigValue[MIDICONFIG_USB] = 2;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL1] = 1;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL2] = 2;
@@ -638,7 +646,7 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
             synth.showCycles();
         }
         if (button2 == BUTTON_MENUSELECT) {
-            storage->testMemoryPreset();
+            storage->getPatchBank()->testMemoryPreset();
         }
     }
 #endif
@@ -752,7 +760,6 @@ void SynthState::encoderTurned(int encoder, int ticks) {
         float newValue;
         float oldValue;
 
-
         if (param->displayType == DISPLAY_TYPE_STRINGS) {
             // Do not use encoder acceleration
             ticks = ticks > 0 ? 1 : -1;
@@ -824,14 +831,24 @@ void SynthState::encoderTurned(int encoder, int ticks) {
 
         switch (encoder) {
         case 0:
-            if (ticks>0) {
-                fullState.menuSelect = fullState.menuSelect + 1;
-            } else if (ticks<0) {
-                fullState.menuSelect = fullState.menuSelect - 1;
-            }
+        	if (unlikely(fullState.currentMenuItem->menuState == MENU_SCALA_FREQUENCY)) {
+				fullState.scalaScaleConfig.scalaFreq += .1f * (float)ticks;
+				propagateNewMenuSelect();
+				oldMenuSelect ++;
+        	} else {
+				if (ticks>0) {
+					fullState.menuSelect = fullState.menuSelect + 1;
+				} else if (ticks<0) {
+					fullState.menuSelect = fullState.menuSelect - 1;
+				}
+        	}
         break;
         case 1:
-            if (isEnterNameState(fullState.currentMenuItem->menuState)) {
+        	if (unlikely(fullState.currentMenuItem->menuState == MENU_SCALA_FREQUENCY)) {
+				fullState.scalaScaleConfig.scalaFreq += 1.0f * (float)ticks;
+				propagateNewMenuSelect();
+				fullState.menuSelect = (fullState.menuSelect == 1) ? 2 : 1;
+        	} else if (isEnterNameState(fullState.currentMenuItem->menuState)) {
                 fullState.name[fullState.menuSelect] = (fullState.name[fullState.menuSelect] + (ticks>0? 1: -1));
                 if (fullState.name[fullState.menuSelect]<28) {
                     fullState.name[fullState.menuSelect]=28;
@@ -924,8 +941,8 @@ void SynthState::encoderTurned(int encoder, int ticks) {
             switch (fullState.currentMenuItem->menuState) {
             case MENU_LOAD_SELECT_DX7_BANK:
                 // Did we really change DX7 bank?
-                if (fullState.dx7Bank != storage->getDx7Bank(fullState.menuSelect)) {
-                    fullState.dx7Bank = storage->getDx7Bank(fullState.menuSelect);
+                if (fullState.dx7Bank != storage->getDX7SysexFile()->getFile(fullState.menuSelect)) {
+                    fullState.dx7Bank = storage->getDX7SysexFile()->getFile(fullState.menuSelect);
                     fullState.dx7PresetNumber = 0;
                 }
                 break;
@@ -937,29 +954,29 @@ void SynthState::encoderTurned(int encoder, int ticks) {
             case MENU_LOAD_SELECT_BANK:
             case MENU_SAVE_SELECT_BANK:
                 // Did we really change bank?
-                if (fullState.preenFMBank != storage->getPreenFMBank(fullState.menuSelect)) {
-                    fullState.preenFMBank = storage->getPreenFMBank(fullState.menuSelect);
+                if (fullState.preenFMBank != storage->getPatchBank()->getFile(fullState.menuSelect)) {
+                    fullState.preenFMBank = storage->getPatchBank()->getFile(fullState.menuSelect);
                     fullState.preenFMPresetNumber = 0;
                 }
                 break;
             case MENU_RENAME_SELECT_BANK:
                 // Did we really change bank?
-                if (fullState.preenFMBank != storage->getPreenFMBank(fullState.menuSelect)) {
-                    fullState.preenFMBank = storage->getPreenFMBank(fullState.menuSelect);
+                if (fullState.preenFMBank != storage->getPatchBank()->getFile(fullState.menuSelect)) {
+                    fullState.preenFMBank = storage->getPatchBank()->getFile(fullState.menuSelect);
                 }
                 break;
             case MENU_LOAD_SELECT_COMBO:
             case MENU_SAVE_SELECT_COMBO:
                 // Did we really change bank?
-                if (fullState.preenFMCombo != storage->getPreenFMCombo(fullState.menuSelect)) {
-                    fullState.preenFMCombo = storage->getPreenFMCombo(fullState.menuSelect);
+                if (fullState.preenFMCombo != storage->getComboBank()->getFile(fullState.menuSelect)) {
+                    fullState.preenFMCombo = storage->getComboBank()->getFile(fullState.menuSelect);
                     fullState.preenFMComboPresetNumber = 0;
                 }
                 break;
             case MENU_RENAME_SELECT_COMBO:
                 // Did we really change combo?
-                if (fullState.preenFMCombo != storage->getPreenFMCombo(fullState.menuSelect)) {
-                    fullState.preenFMCombo = storage->getPreenFMCombo(fullState.menuSelect);
+                if (fullState.preenFMCombo != storage->getComboBank()->getFile(fullState.menuSelect)) {
+                    fullState.preenFMCombo = storage->getComboBank()->getFile(fullState.menuSelect);
                 }
                 break;
             case MENU_LOAD_SELECT_BANK_PRESET:
@@ -974,27 +991,49 @@ void SynthState::encoderTurned(int encoder, int ticks) {
             case MENU_SAVE_SELECT_COMBO_PRESET:
                 fullState.preenFMComboPresetNumber = fullState.menuSelect;
                 break;
+            case MENU_SCALA_MAPPING:
+            	fullState.scalaScaleConfig.keyboardMapping = (fullState.menuSelect == 0);
+        		storage->getScalaFile()->applyScalaScale(&fullState.scalaScaleConfig);
+            	break;
+            case MENU_SCALA_FREQUENCY:
+        		storage->getScalaFile()->applyScalaScale(&fullState.scalaScaleConfig);
+            	break;
+            case MENU_SCALA_FILENAME:
+                // Did we really change bank?
+            	if (fullState.scalaScaleConfig.scalaFile != storage->getScalaFile()->getFile(fullState.menuSelect)) {
+            		fullState.scalaScaleConfig.scalaFile = storage->getScalaFile()->getFile(fullState.menuSelect);
+            	}
+        		storage->getScalaFile()->loadScalaScale(&fullState.scalaScaleConfig);
+            	break;
+            case MENU_SCALA_ENABLE:
+            	fullState.scalaScaleConfig.scalaEnabled = (fullState.menuSelect > 0);
+            	if (fullState.scalaScaleConfig.scalaEnabled) {
+            		storage->getScalaFile()->loadScalaScale(&fullState.scalaScaleConfig);
+            	} else {
+            		storage->getScalaFile()->clearScalaScale();
+            	}
+            	break;
             }
             propagateNewMenuSelect();
         }
     }
 }
 
-void SynthState::loadPreenFMPatch(int timbre, BankFile const *bank, int patchNumber, struct OneSynthParams* params) {
+void SynthState::loadPreenFMPatch(int timbre, PFM2File const *bank, int patchNumber, struct OneSynthParams* params) {
     propagateBeforeNewParamsLoad(timbre);
-    storage->loadPreenFMPatch(bank, patchNumber, params);
+    storage->getPatchBank()->loadPreenFMPatch(bank, patchNumber, params);
     propagateAfterNewParamsLoad(timbre);
 }
 
-void SynthState::loadDx7Patch(int timbre, BankFile const *bank, int patchNumber, struct OneSynthParams* params) {
+void SynthState::loadDx7Patch(int timbre, PFM2File const *bank, int patchNumber, struct OneSynthParams* params) {
     propagateBeforeNewParamsLoad(timbre);
-    hexter->loadHexterPatch(storage->dx7LoadPatch(bank, patchNumber), params);
+    hexter->loadHexterPatch(storage->getDX7SysexFile()->dx7LoadPatch(bank, patchNumber), params);
     propagateAfterNewParamsLoad(timbre);
 }
 
-void SynthState::loadPreenFMCombo(BankFile const *bank, int patchNumber) {
+void SynthState::loadPreenFMCombo(PFM2File const *bank, int patchNumber) {
     propagateBeforeNewParamsLoad(currentTimbre);
-    storage->loadPreenFMCombo(bank, patchNumber);
+    storage->getComboBank()->loadPreenFMCombo(bank, patchNumber);
     // Update and clean all timbres
     this->currentTimbre = 0;
     propagateNewTimbre(currentTimbre);
@@ -1006,7 +1045,7 @@ void SynthState::loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int
     switch (bank) {
     case 0:
     {
-        BankFile const *bank = storage->getPreenFMBank(bankLSB);
+        PFM2File const *bank = storage->getPatchBank()->getFile(bankLSB);
         if (bank->fileType != FILE_EMPTY) {
             loadPreenFMPatch(timbre, bank, patchNumber, params);
         }
@@ -1014,7 +1053,7 @@ void SynthState::loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int
     break;
     case 1:
     {
-        BankFile const *bank = storage->getPreenFMCombo(bankLSB);
+        PFM2File const *bank = storage->getComboBank()->getFile(bankLSB);
         if (bank->fileType != FILE_EMPTY) {
             loadPreenFMCombo(bank, patchNumber);
         }
@@ -1025,7 +1064,7 @@ void SynthState::loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int
     case 4:
     {
         int dx7bank = bank - 2;
-        BankFile const *bank = storage->getDx7Bank(bankLSB + dx7bank * 128);
+        PFM2File const *bank = storage->getDX7SysexFile()->getFile(bankLSB + dx7bank * 128);
         if (bank->fileType != FILE_EMPTY) {
             loadDx7Patch(timbre, bank, patchNumber, params);
         }
@@ -1444,7 +1483,7 @@ const MenuItem* SynthState::afterButtonPressed() {
     case MENU_SAVE_SELECT_COMBO_PRESET:
     {
         // const char* comboName = storage->readComboName(fullState.menuSelect);
-        const char* comboName = storage->loadPreenFMComboName(fullState.preenFMCombo, fullState.preenFMComboPresetNumber);
+        const char* comboName = storage->getComboBank()->loadPreenFMComboName(fullState.preenFMCombo, fullState.preenFMComboPresetNumber);
         for (int k=0; k<12 && comboName[k] != 0; k++) {
             for (int j=0; j<getLength(allChars); j++) {
                 if (comboName[k] == allChars[j]) {
@@ -1467,7 +1506,7 @@ const MenuItem* SynthState::afterButtonPressed() {
             params->presetName[k] = allChars[(int)fullState.name[k]];
         }
         params->presetName[length] = '\0';
-        storage->savePreenFMPatch(fullState.preenFMBank, fullState.preenFMPresetNumber, params);
+        storage->getPatchBank()->savePreenFMPatch(fullState.preenFMBank, fullState.preenFMPresetNumber, params);
         break;
     case MENU_SAVE_ENTER_COMBO_NAME:
         for (length=12; fullState.name[length-1] == 0; length--);
@@ -1476,11 +1515,11 @@ const MenuItem* SynthState::afterButtonPressed() {
             comboName[k] = allChars[(int)fullState.name[k]];
         }
         comboName[length] = '\0';
-        storage->savePreenFMCombo(fullState.preenFMCombo, fullState.preenFMComboPresetNumber, comboName);
+        storage->getComboBank()->savePreenFMCombo(fullState.preenFMCombo, fullState.preenFMComboPresetNumber, comboName);
         break;
     case MENU_SAVE_SYSEX_PATCH:
         //PresetUtil::sendCurrentPatchToSysex();
-        storage->sendPreenFMPatchAsSysex(params);
+        storage->getPatchBank()->sendPreenFMPatchAsSysex(params);
         break;
     case MENU_RENAME_COMBO:
         for (length=0; length<8 && fullState.name[length]!=0; length++) {
@@ -1491,7 +1530,7 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.name[length++] = 'm';
         fullState.name[length++] = 'b';
         fullState.name[length++] = '\0';
-        if (storage->renameCombo(fullState.preenFMCombo, fullState.name) > 0) {
+        if (storage->getComboBank()->renameFile(fullState.preenFMCombo, fullState.name) > 0) {
             rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
         }
 
@@ -1505,7 +1544,7 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.name[length++] = 'n';
         fullState.name[length++] = 'k';
         fullState.name[length++] = '\0';
-        if (storage->renameBank(fullState.preenFMBank, fullState.name) > 0) {
+        if (storage->getPatchBank()->renameFile(fullState.preenFMBank, fullState.name) > 0) {
             rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
         }
         break;
@@ -1525,13 +1564,13 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.name[length++] = 'n';
         fullState.name[length++] = 'k';
         fullState.name[length] = '\0';
-        if (!storage->bankNameExist(fullState.name)) {
+        if (!storage->getPatchBank()->nameExists(fullState.name)) {
             cmi = fullState.currentMenuItem;
             // Update display while formating
             lcd.setRealTimeAction(true);
             fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
             propagateNewMenuState();
-            storage->createPatchBank(fullState.name);
+            storage->getPatchBank()->create(fullState.name);
             lcd.setRealTimeAction(false);
             fullState.currentMenuItem = cmi;
         } else {
@@ -1551,13 +1590,13 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.name[length++] = 'b';
         fullState.name[length] = '\0';
 
-        if (!storage->comboNameExist(fullState.name)) {
+        if (!storage->getComboBank()->nameExists(fullState.name)) {
             cmi = fullState.currentMenuItem;
             // Update display while formating
             lcd.setRealTimeAction(true);
             fullState.currentMenuItem = MenuItemUtil::getMenuItem(MENU_IN_PROGRESS);
             propagateNewMenuState();
-            storage->createComboBank(fullState.name);
+            storage->getComboBank()->createComboBank(fullState.name);
             lcd.setRealTimeAction(false);
             fullState.currentMenuItem = cmi;
         } else {
@@ -1565,19 +1604,38 @@ const MenuItem* SynthState::afterButtonPressed() {
         }
         break;
     case MENU_CONFIG_SETTINGS_SAVE:
-        storage->saveConfig(fullState.midiConfigValue);
+        storage->getConfigurationFile()->saveConfig(fullState.midiConfigValue);
         break;
     case MENU_DEFAULT_COMBO_SAVE:
-        storage->saveDefaultCombo();
+        storage->getComboBank()->saveDefaultCombo();
         break;
     case MENU_DEFAULT_COMBO_RESET:
-        storage->removeDefaultCombo();
+        storage->getComboBank()->removeDefaultCombo();
         break;
     case MENU_LOAD:
         fullState.loadWhat = fullState.menuSelect;
         break;
     case MENU_SAVE:
         fullState.saveWhat = fullState.menuSelect;
+        break;
+    case MENU_TOOLS:
+        fullState.toolsWhat = fullState.menuSelect;
+        break;
+    case MENU_SCALA:
+        fullState.scalaWhat = fullState.menuSelect;
+        break;
+    case MENU_SCALA_FILENAME:
+        storage->getConfigurationFile()->saveScalaConfig(&fullState.scalaScaleConfig);
+        if (fullState.scalaScaleConfig.scalaFile->fileType != FILE_OK) {
+            return fullState.currentMenuItem;
+        }
+        break;
+    case MENU_SCALA_ENABLE:
+        storage->getConfigurationFile()->saveScalaConfig(&fullState.scalaScaleConfig);
+        break;
+    case MENU_SCALA_MAPPING:
+    case MENU_SCALA_FREQUENCY:
+        storage->getConfigurationFile()->saveScalaConfig(&fullState.scalaScaleConfig);
         break;
     default:
         break;
@@ -1677,27 +1735,51 @@ const MenuItem* SynthState::afterButtonPressed() {
         loadDx7Patch(currentTimbre, fullState.dx7Bank, fullState.dx7PresetNumber, params);
         fullState.menuSelect = fullState.dx7PresetNumber;
         break;
+    case MENU_TOOLS:
+        fullState.menuSelect = fullState.toolsWhat;
+        break;
     case MENU_LOAD:
         fullState.menuSelect = fullState.loadWhat;
         break;
     case MENU_SAVE:
         fullState.menuSelect = fullState.saveWhat;
         break;
+    case MENU_SCALA:
+    	fullState.menuSelect = fullState.scalaWhat;
+        break;
     case MENU_RENAME_SELECT_BANK:
     case MENU_LOAD_SELECT_BANK:
     case MENU_SAVE_SELECT_BANK:
         fullState.menuSelect = fullState.preenFMBankNumber;
-        fullState.preenFMBank = storage->getPreenFMBank(fullState.menuSelect);
+        fullState.preenFMBank = storage->getPatchBank()->getFile(fullState.menuSelect);
         break;
     case MENU_RENAME_SELECT_COMBO:
     case MENU_LOAD_SELECT_COMBO:
     case MENU_SAVE_SELECT_COMBO:
         fullState.menuSelect = fullState.preenFMComboNumber;
-        fullState.preenFMCombo = storage->getPreenFMCombo(fullState.menuSelect);
+        fullState.preenFMCombo = storage->getComboBank()->getFile(fullState.menuSelect);
         break;
     case MENU_LOAD_SELECT_DX7_BANK:
         fullState.menuSelect = fullState.dx7BankNumber;
-        fullState.dx7Bank = storage->getDx7Bank(fullState.menuSelect);
+        fullState.dx7Bank = storage->getDX7SysexFile()->getFile(fullState.menuSelect);
+        break;
+    case MENU_SCALA_FILENAME:
+   		fullState.menuSelect = 0;
+    	if (fullState.scalaScaleConfig.scalaFile != NULL) {
+			int scalaIndex = storage->getScalaFile()->getFileIndex(fullState.scalaScaleConfig.scalaFile);
+			// can be <0 if file has been removed
+			if (scalaIndex >= 0) {
+				fullState.menuSelect = scalaIndex;
+			}
+		} else {
+			fullState.scalaScaleConfig.scalaFile = storage->getScalaFile()->getFile(0);
+		}
+        break;
+    case MENU_SCALA_MAPPING:
+    	fullState.menuSelect = fullState.scalaScaleConfig.keyboardMapping ? 0 : 1;
+        break;
+    case MENU_SCALA_ENABLE:
+    	fullState.menuSelect = fullState.scalaScaleConfig.scalaEnabled ? 1 : 0;
         break;
     default:
         fullState.menuSelect = 0;
@@ -1821,7 +1903,7 @@ void SynthState::copySynthParams(char* source, char* dest) {
 
 void SynthState::analyseSysexBuffer(uint8_t *buffer) {
     propagateBeforeNewParamsLoad(currentTimbre);
-    storage->decodeBufferAndApplyPreset(buffer, params);
+    storage->getPatchBank()->decodeBufferAndApplyPreset(buffer, params);
     propagateAfterNewParamsLoad(currentTimbre);
 }
 

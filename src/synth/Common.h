@@ -20,6 +20,8 @@
 
 #include <stdint.h>
 
+// #define DEBUG 1
+
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
 #define ARRAY_SIZE(x)  ( sizeof(x) / sizeof((x)[0]) )
@@ -29,7 +31,6 @@
 #define NUMBER_OF_ENCODERS 4
 #define NUMBER_OF_BUTTONS 8
 
-#define SYSEX_NEW_PFM2_BYTE_PATCH 5
 
 
 #define MAX_NUMBER_OF_VOICES 16
@@ -52,17 +53,6 @@
 
 #define NUMBER_OF_WAVETABLES 8
 
-#ifndef BOOTLOADER
-#define NUMBEROFDX7BANKS 256
-#define NUMBEROFPREENFMBANKS 64
-#define NUMBEROFPREENFMCOMBOS 8
-#endif
-
-#ifdef BOOTLOADER
-#define NUMBEROFDX7BANKS 1
-#define NUMBEROFPREENFMBANKS 1
-#define NUMBEROFPREENFMCOMBOS 1
-#endif
 
 typedef enum {
     FILE_OK = 0,
@@ -505,6 +495,14 @@ enum DestinationEnum {
 };
 
 int strcmp(const char *s1, const char *s2);
+
+// In separate structure to be easily sent to config saver/loader
+struct ScalaScaleConfig {
+    const struct PFM2File* scalaFile;
+    float scalaFreq;
+    bool scalaEnabled;
+    bool keyboardMapping;
+};
 
 
 #endif /* COMMON_H_ */

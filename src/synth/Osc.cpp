@@ -22,6 +22,7 @@ float noise[32] __attribute__ ((section(".ccmnoload")));
 
 #include "../waveforms/waves.c"
 
+float *frequencyToUse;
 
 float* Osc::oscValues[4] __attribute__ ((section(".ccmnoload")));
 float oscValues1[32] __attribute__ ((section(".ccmnoload")));
@@ -109,6 +110,8 @@ void Osc::init(Matrix* matrix, struct OscillatorParams *oscParams, DestinationEn
 		for (int k=0; k<NUMBER_OF_WAVETABLES; k++) {
 			waveTables[k].precomputedValue = (waveTables[k].max + 1) * waveTables[k].useFreq * PREENFM_FREQUENCY_INVERSED;
 		}
+		// Set frequencyToUse  to frequency (no Scala scale defined)
+		frequencyToUse = frequency;
 	}
 	if (oscValuesCpt == 1) {
 		oscValues[0] = oscValues1;
@@ -123,7 +126,7 @@ void Osc::newNote(struct OscState* oscState, int note) {
 	oscState->index = waveTables[(int) oscillator->shape].max * .25f;
 	switch ((int)oscillator->frequencyType) {
 	case OSC_FT_KEYBOARD:
-		oscState->mainFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .05f);
+		oscState->mainFrequency = frequencyToUse[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .05f);
 		break;
 	case OSC_FT_FIXE:
 		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f + oscillator->detune * 100.0f;
@@ -139,7 +142,7 @@ void Osc::newNote(struct OscState* oscState, int note) {
 void Osc::glideToNote(struct OscState* oscState, int note) {
 	switch ((int)oscillator->frequencyType) {
 	case OSC_FT_KEYBOARD:
-		oscState->nextFrequency = frequency[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .05f);
+		oscState->nextFrequency = frequencyToUse[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .05f);
 		break;
 	case OSC_FT_FIXE:
 		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f + oscillator->detune * 100.0f;

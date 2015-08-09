@@ -29,16 +29,8 @@ extern USB_OTG_CORE_HANDLE          usbOTGHost;
 extern USBH_HOST                    usbHost;
 
 
-#define DEFAULT_COMBO_NAME       "0:/pfm2/DfltCmbo.pfm"
-#define PROPERTIES_NAME          "0:/pfm2/Settings.txt"
 
-#define FIRMWARE_DIR             "0:/pfm2"
-#define DX7_DIR                  "0:/pfm2/dx7"
-#define PREENFM_DIR              "0:/pfm2"
-
-#define USB_PATCH_SIZE 1024
-#define USB_PATCH_ZERO USB_PATCH_SIZE-PFM_PATCH_SIZE
-
+Erreur (((
 
 class UsbKey : public Storage {
 public:
@@ -48,12 +40,13 @@ public:
     // not in storage.. specific to USB
     // Used by bootloader
 
-    const struct BankFile* getDx7Bank(int bankNumber);
-    const struct BankFile* getPreenFMBank(int bankNumber);
-    const struct BankFile* getPreenFMCombo(int comboNumber);
+    const struct PFM2File* getDx7Bank(int bankNumber);
+    const struct PFM2File* getPreenFMBank(int bankNumber);
+    const struct PFM2File* getPreenFMCombo(int comboNumber);
+    const struct PFM2File* getScalaScaleFile(int scaleNumber);
 
-    int renameBank(const struct BankFile* bank, const char* newName);
-    int renameCombo(const struct BankFile* bank, const char* newName);
+    int renameBank(const struct PFM2File* bank, const char* newName);
+    int renameCombo(const struct PFM2File* bank, const char* newName);
 
 #ifdef BOOTLOADER
     int firmwareInit();
@@ -66,37 +59,43 @@ public:
 #endif
 
 private:
-    int renameFile(const struct BankFile* bank, const char* newName);
+    int renameFile(const struct PFM2File* bank, const char* newName);
 
-    void sortBankFile(struct BankFile* bankFiles, int numberOfFiles);
-	void swapBankFile(struct BankFile* bankFiles, int i, int j);
+    void sortBankFile(struct PFM2File* bankFiles, int numberOfFiles);
+	void swapBankFile(struct PFM2File* bankFiles, int i, int j);
 
-	const struct BankFile*  addEmptyBank(const char* newBankName);
-	const struct BankFile*  addEmptyCombo(const char* newBankName);
+	const struct PFM2File*  addEmptyBank(const char* newBankName);
+	const struct PFM2File*  addEmptyCombo(const char* newBankName);
 
     const char* getDX7BankFullName(const char* bankName);
     const char* getPreenFMFullName(const char* bankName);
+    const char* getScalaFileFullName(const char* bankName);
+    
     void usbProcess();
     int save(FILE_ENUM file, int seek, void* bytes, int size);
     int save(const char* fileName, int seek, void* bytes, int size);
     int load(FILE_ENUM file, int seek, void* bytes, int size);
     int load(const char* fileName, int seek, void* bytes, int size);
-   	int remove(FILE_ENUM file);
     int checkSize(FILE_ENUM file);
+    int checkSize(const char* filename);
 
     const char* getFileName(FILE_ENUM file);
 
     int dx7Init();
-    int dx7ReadNextFileName(struct BankFile* bank);
+    int dx7ReadNextFileName(struct PFM2File* bank);
     bool isDX7SysexFile(char *name, int size);
 
     int preenFMBankInit();
-    int preenFMBankReadNextFileName(struct BankFile* bank);
+    int preenFMBankReadNextFileName(struct PFM2File* bank);
     bool isPreenFMBankFile(char *name, int size);
 
     int preenFMComboInit();
-    int preenFMComboReadNextFileName(struct BankFile* combo);
+    int preenFMComboReadNextFileName(struct PFM2File* combo);
     bool isPreenFMComboFile(char *name, int size);
+
+    int scalaScaleInit();
+    int scalaScaleReadNextFileName(struct PFM2File* scala);
+    bool isScalaScaleFile(char *name, int size);
 
 
     const char* getFullName(const char* pathName, const char* fileName) ;
@@ -104,25 +103,28 @@ private:
 
 #ifndef BOOTLOADER
     bool dx7BankInitialized;
-    struct BankFile dx7Bank[NUMBEROFDX7BANKS];
+    struct PFM2File dx7Bank[NUMBEROFDX7BANKS];
     int dx7NumberOfBanks;
 
     bool preenFMBankInitialized;
-    struct BankFile preenFMBank[NUMBEROFPREENFMBANKS];
+    struct PFM2File preenFMBank[NUMBEROFPREENFMBANKS];
     int preenFMNumberOfBanks;
 
     bool preenFMComboInitialized;
-    struct BankFile preenFMCombo[NUMBEROFPREENFMCOMBOS];
+    struct PFM2File preenFMCombo[NUMBEROFPREENFMCOMBOS];
     int preenFMNumberOfCombos;
 
-    struct BankFile errorDX7Bank;
-    struct BankFile errorPreenFMBank;
-    struct BankFile errorPreenFMCombo;
+    bool scalaScaleInitialized;
+    struct PFM2File scalaScaleFile[NUMBEROFSCALASCALEFILES];
+    int scalaScaleNumberOfFiles;
+
+
+    struct PFM2File errorDX7Bank;
+    struct PFM2File errorPreenFMBank;
+    struct PFM2File errorPreenFMCombo;
+    struct PFM2File errorScalaScale;
 #endif
 
-    char fullName[40];
 };
 
 #endif /*__USBKEY_H__*/
-
-

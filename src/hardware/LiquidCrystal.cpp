@@ -346,7 +346,7 @@ void LiquidCrystal::print(float f) {
     }
     if (f < 10.0f) {
         int integer = (int) f;
-        print((char)integer+'0');
+        print((char)((char)integer+'0'));
         print('.');
         f -= integer;
         int valueTimes100 = (int)(f*100+.0005);
