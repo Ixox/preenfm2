@@ -23,10 +23,11 @@ extern LiquidCrystal lcd;
 
 extern float noise[32];
 
-void LfoOsc::init(struct LfoParams *lfoParams, Matrix *matrix, SourceEnum source, DestinationEnum dest) {
+void LfoOsc::init(struct LfoParams *lfoParams, float* phase, Matrix *matrix, SourceEnum source, DestinationEnum dest) {
     Lfo::init(matrix, source, dest);
-    this->type = LFO_SAW;
+    this->type = LFO_TRIANGLE;
     this->ramp = 0;
+    this->initPhase = phase;
     this->rampInv = 10000000 ;
     this->currentRamp = 0;
     this->lfo = lfoParams;
@@ -168,7 +169,7 @@ void LfoOsc::nextValueInMatrix() {
     phase += currentFreq * PREENFM_FREQUENCY_INVERSED_LFO;
 
     switch ((int)lfo->shape) {
-    case LFO_SAW:
+    case LFO_TRIANGLE:
     {
         phase -= (phase >= 1.0f) * 1.0f;
         if (phase < .5f) {
@@ -178,7 +179,7 @@ void LfoOsc::nextValueInMatrix() {
         }
         break;
     }
-    case LFO_RAMP:
+    case LFO_SAW:
         if (unlikely(phase >= 1.0f)) {
             phase -= 1;
         }
@@ -228,7 +229,7 @@ void LfoOsc::noteOn() {
     if (ramp >= 0.0f) {
         currentRamp = 0.0f;
         if ((lfo->freq * 10.0f) < LFO_MIDICLOCK_MC_DIV_16) {
-            phase = 0;
+            phase = *this->initPhase;
         }
         // Retriger value if random...
         if (unlikely(lfo->shape == LFO_RANDOM)) {

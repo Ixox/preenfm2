@@ -27,7 +27,7 @@ class LfoOsc: public Lfo {
 public:
     virtual ~LfoOsc() {};
 
-	void init(struct LfoParams *lfoParams, Matrix* matrix, SourceEnum source, DestinationEnum dest);
+	void init(struct LfoParams *lfoParams, float* lfoPhase, Matrix* matrix, SourceEnum source, DestinationEnum dest);
 
 	void valueChanged(int encoder) {
 	    if (encoder == 3) {
@@ -53,6 +53,7 @@ private:
 	LfoParams* lfo ;
     float currentRamp, ramp, rampInv;
     float phase;
+    float* initPhase;
     DestinationEnum destination;
     float currentRandomValue;
 

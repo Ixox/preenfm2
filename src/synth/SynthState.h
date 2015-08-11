@@ -147,6 +147,13 @@ enum {
     ENCODER_STEPSEQ_GATE
 };
 
+enum {
+    ENCODER_NOTECURVE_BEFORE = 0,
+    ENCODER_NOTECURVE_BREAK_NOTE,
+    ENCODER_NOTECURVE_AFTER
+};
+
+
 
 typedef unsigned char uchar;
 
@@ -198,13 +205,19 @@ enum OscShape {
 
 enum LfoType {
 	LFO_SIN = 0,
-	LFO_RAMP,
 	LFO_SAW,
+	LFO_TRIANGLE,
 	LFO_SQUARE,
 	LFO_RANDOM,
 	LFO_TYPE_MAX
 };
 
+enum MidiNoteCurve {
+    MIDI_NOTE_CURVE_FLAT = 0,
+    MIDI_NOTE_CURVE_LINEAR,
+    MIDI_NOTE_CURVE_EXP,
+    MIDI_NOTE_CURVE_MAX
+};
 
 enum OscFrequencyType {
 	OSC_FT_KEYBOARD = 0,
@@ -453,7 +466,7 @@ public:
 
     void tempoClick();
 
-    void setParamsAndTimbre(struct OneSynthParams *newParams, int newCurrentTimbre, float* performanceValues);
+    void setParamsAndTimbre(struct OneSynthParams *newParams, int newCurrentTimbre);
 
     void resetDisplay();
 
@@ -470,7 +483,6 @@ public:
 
     int currentTimbre;
     struct OneSynthParams *params;
-    float *performanceValues;
     struct OneSynthParams backupParams;
 	struct FullState fullState;
 	char stepSelect[2];

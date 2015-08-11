@@ -299,7 +299,11 @@ void PreenFMFileType::convertParamsToMemory(const struct OneSynthParams* params,
 	fsu->copyFloat((float*)&params->lfoEnv1, (float*)&memory->lfoEnv1, 4);
 	fsu->copyFloat((float*)&params->lfoEnv2, (float*)&memory->lfoEnv2, 4);
 	fsu->copyFloat((float*)&params->lfoSeq1, (float*)&memory->lfoSeq1, 4 * 2);
-	for (int s=0; s<16; s++) {
+
+    fsu->copyFloat((float*)&params->midiNoteCurve, (float*)&memory->midiNoteCurve, 4);
+    fsu->copyFloat((float*)&params->lfoPhases, (float*)&memory->lfoPhases, 4);
+
+    for (int s=0; s<16; s++) {
 		memory->lfoSteps1.steps[s] = params->lfoSteps1.steps[s];
 		memory->lfoSteps2.steps[s] = params->lfoSteps2.steps[s];
 	}
@@ -339,6 +343,10 @@ void PreenFMFileType::convertMemoryToParams(const struct FlashSynthParams* memor
 	fsu->copyFloat((float*)&memory->lfoEnv1, (float*)&params->lfoEnv1, 4);
 	fsu->copyFloat((float*)&memory->lfoEnv2, (float*)&params->lfoEnv2, 4);
 	fsu->copyFloat((float*)&memory->lfoSeq1, (float*)&params->lfoSeq1, 4 * 2);
+
+	fsu->copyFloat((float*)&memory->lfoPhases, (float*)&params->lfoPhases, 4);
+    fsu->copyFloat((float*)&memory->midiNoteCurve, (float*)&params->midiNoteCurve, 4);
+
 	for (int s=0; s<16; s++) {
 		params->lfoSteps1.steps[s] = memory->lfoSteps1.steps[s];
 		params->lfoSteps2.steps[s] = memory->lfoSteps2.steps[s];
@@ -352,6 +360,7 @@ void PreenFMFileType::convertMemoryToParams(const struct FlashSynthParams* memor
 	params->performance1.perf3 = 0.0f;
 	params->performance1.perf4 = 0.0f;
 
+	// Initialized not initialize params in memory
     if (params->engineArp1.BPM < 10) {
 		params->engineArp1.clock = 0;
     	params->engineArp1.BPM = 90;
@@ -366,6 +375,13 @@ void PreenFMFileType::convertMemoryToParams(const struct FlashSynthParams* memor
     	params->effect.param1 = 0.5f;
     	params->effect.param2 = 0.5f;
     	params->effect.param3 = 1.0f;
+    }
+
+    if (params->midiNoteCurve.breakNote == 0.0f) {
+        params->midiNoteCurve.breakNote = 64;
+        // MIDI_NOTE_CURVE_LINEAR = 1
+        params->midiNoteCurve.curveAfter  = 1;
+        params->midiNoteCurve.curveBefore = 1;
     }
 
 }

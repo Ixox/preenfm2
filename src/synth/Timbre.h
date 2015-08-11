@@ -85,9 +85,6 @@ public:
             numberOfVoiceInverse = 1.0f;
         }
     }
-    float* getPerformanceValuesAddress() {
-        return &matrix.sources[MATRIX_SOURCE_KEY];
-    }
 
     void lfoNoteOn() {
         lfoOsc[0].noteOn();

@@ -189,7 +189,7 @@ struct FilterRowDisplay filterRowDisplay[FILTER_LAST] = {
 };
 
 
-const char* oscShapeNames []=  {"sin ", "saw ", "squa", "s^2 ", "szer", "spos", "rand", "off "} ;
+const char* oscShapeNames []=  {"sin ", "tria", "squa", "s^2 ", "szer", "spos", "rand", "off "} ;
 
 
 
@@ -251,7 +251,7 @@ struct ParameterRowDisplay lfoEnv2ParameterRow = {
 };
 
 const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "env2", "seq1", "seq2",
-        "ModW", "PitB", "AftT",  "Velo", "Key ", "p1  ", "p2  ", "p3  ", "p4  " } ;
+        "ModW", "PitB", "AftT",  "Velo", "Note", "p1  ", "p2  ", "p3  ", "p4  " } ;
 
 const char* matrixDestNames [] = {
         "None", "Gate", "IM1 ", "IM2 ", "IM3 ", "IM4 ", "IM* ",
@@ -277,7 +277,7 @@ struct ParameterRowDisplay matrixParameterRow = {
 
 const char* lfoOscMidiClock[] =  { "M/16", "MC/8", "MC/4", "MC/2", "MClk", "MC*2", "MC*3", "MC*4", "MC*8"};
 
-const char* lfoShapeNames [] =  { "Sin ", "Ramp",  "Saw ","Squa", "Rand" } ;
+const char* lfoShapeNames [] =  { "Sin ", "Saw",  "Tria","Squa", "Rand" } ;
 
 
 struct ParameterRowDisplay lfoParameterRow = {
@@ -314,6 +314,31 @@ struct ParameterRowDisplay performanceParameterRow = {
                 { -1 , 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder},
                 { -1 , 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder},
                 { -1 , 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder}
+        }
+};
+
+struct ParameterRowDisplay lfoPhaseParameterRow = {
+        "LFO Phase",
+        { "Lfo1", "Lfo2", "Lfo3", "    " },
+        {
+                { 0 , 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder},
+                { 0 , 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder},
+                { 0 , 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder},
+                { 0, 0, 0, DISPLAY_TYPE_NONE, nullNames, nullNamesOrder, nullNamesOrder }
+        }
+};
+
+const char* midiNoteCurves[] =  { "Flat", "Lin ", "Exp " };
+
+
+struct ParameterRowDisplay midiNoteParameterRow = {
+        "Midi Note Scaling",
+        { "Befo", "Brk ", "Afte", "    " },
+        {
+                { MIDI_NOTE_CURVE_FLAT, MIDI_NOTE_CURVE_MAX-1, MIDI_NOTE_CURVE_MAX, DISPLAY_TYPE_STRINGS,  midiNoteCurves, nullNamesOrder, nullNamesOrder},
+                { 5 , 122, 118, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder},
+                { MIDI_NOTE_CURVE_FLAT, MIDI_NOTE_CURVE_MAX-1, MIDI_NOTE_CURVE_MAX, DISPLAY_TYPE_STRINGS,  midiNoteCurves, nullNamesOrder, nullNamesOrder},
+                { 0, 0, 0, DISPLAY_TYPE_NONE, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -364,10 +389,12 @@ struct AllParameterRowsDisplay allParameterRows = {
                 &lfoParameterRow,
                 &lfoParameterRow,
                 &lfoParameterRow,
+                &lfoPhaseParameterRow,
                 &lfoEnvParameterRow,
                 &lfoEnv2ParameterRow,
                 &lfoStepParameterRow,
-                &lfoStepParameterRow
+                &lfoStepParameterRow,
+                &midiNoteParameterRow
         }
 };
 
@@ -744,13 +771,13 @@ void SynthState::encoderTurned(int encoder, int ticks) {
     if (fullState.synthMode == SYNTH_MODE_EDIT) {
 
         // Step sequencer special case
-        if (currentRow >= ROW_LFOSEQ1) {
+        if (unlikely(currentRow == ROW_LFOSEQ1 || currentRow == ROW_LFOSEQ2)) {
             if (encoder >= 2) {
                 encoderTurnedForStepSequencer(currentRow, encoder, ticks);
                 return;
             }
         };
-        if (currentRow == ROW_ARPEGGIATOR3) {
+        if (unlikely(currentRow == ROW_ARPEGGIATOR3)) {
             encoderTurnedForArpPattern(currentRow, encoder, ticks);
             return;
         }
@@ -1887,10 +1914,9 @@ void SynthState::tempoClick() {
     }
 }
 
-void SynthState::setParamsAndTimbre(struct OneSynthParams *newParams, int newCurrentTimbre, float* performanceValues) {
+void SynthState::setParamsAndTimbre(struct OneSynthParams *newParams, int newCurrentTimbre) {
     this->params = newParams;
     this->currentTimbre = newCurrentTimbre;
-    this->performanceValues = performanceValues;
 }
 
 

@@ -114,6 +114,8 @@ struct FlashSynthParams {
     struct FlashEngineVeloIm2 flashEngineVeloIm2;
     struct EffectRowParams effect;
     struct EngineArpUserPatterns engineArpUserPatterns;
+    struct LfoPhaseRowParams lfoPhases;
+    struct MidiNoteCurveRowParams midiNoteCurve;
 };
 
 #define USB_PATCH_SIZE 1024

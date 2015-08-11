@@ -32,6 +32,10 @@ extern USB_OTG_CORE_HANDLE          usbOTGDevice;
 uint8_t sysexBuffer[SYSEX_BUFFER_SIZE];
 
 
+#include "LiquidCrystal.h"
+extern LiquidCrystal lcd;
+
+
 #ifdef LCDDEBUG
 
 #include "LiquidCrystal.h"
@@ -75,6 +79,12 @@ MidiDecoder::MidiDecoder() {
     	omniOn[t] = false;
         bankNumber[t] = 0;
         bankNumberLSB[t] = 0;
+        for (int n=0; n<128; n++) {
+            midiNoteScale[t][n] = INV127 * (float)n;
+        }
+        breakNote[t] = 64;
+        curveBefore[t] = MIDI_NOTE_CURVE_LINEAR;
+        curveAfter[t] = MIDI_NOTE_CURVE_LINEAR;
     }
 
     usbBufRead = usbBuf;
@@ -281,7 +291,7 @@ void MidiDecoder::midiEventReceived(MidiEvent midiEvent) {
         } else {
             for (int tk = 0; tk< timbreIndex; tk++ ) {
                 this->synth->noteOn(timbres[tk], midiEvent.value[0], midiEvent.value[1]);
-                this->synth->getTimbre(timbres[tk])->getMatrix()->setSource(MATRIX_SOURCE_KEY, INV127*midiEvent.value[0]);
+                this->synth->getTimbre(timbres[tk])->getMatrix()->setSource(MATRIX_SOURCE_NOTE, midiNoteScale[timbres[tk]][midiEvent.value[0]]);
 
                 this->synth->getTimbre(timbres[tk])->getMatrix()->setSource(MATRIX_SOURCE_VELOCITY, INV127*midiEvent.value[1]);
 
@@ -638,12 +648,20 @@ void MidiDecoder::decodeNrpn(int timbre) {
 }
 
 void MidiDecoder::newParamValueFromExternal(int timbre, int currentrow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
-    // Do nothing here...
+    // Update Note Scaling
+    if (unlikely(currentrow == ROW_MIDINOTECURVE)) {
+        updateMidiNoteScale(timbre, encoder, newValue);
+    }
 }
 
 
 void MidiDecoder::newParamValue(int timbre, int currentrow,
     int encoder, ParameterDisplay* param, float oldValue, float newValue) {
+
+    // Update Note Scaling
+    if (unlikely(currentrow == ROW_MIDINOTECURVE)) {
+        updateMidiNoteScale(timbre, encoder, newValue);
+    }
 
     int sendCCOrNRPN = this->synthState->fullState.midiConfigValue[MIDICONFIG_SENDS] ;
     int channel = this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL1 + timbre] -1;
@@ -659,7 +677,7 @@ void MidiDecoder::newParamValue(int timbre, int currentrow,
     // Do we send NRPN ?
     if (sendCCOrNRPN == 2) {
         // Special case for Step sequencer
-        if (currentrow >= ROW_LFOSEQ1 && encoder >=2) {
+        if ((currentrow == ROW_LFOSEQ1 || currentrow == ROW_LFOSEQ2) && encoder >=2) {
             if (encoder == 2) {
                 return;
             }
@@ -930,4 +948,92 @@ void MidiDecoder::flushMidiOut() {
 
 	USART_ITConfig(USART3, USART_IT_TXE, ENABLE);
 }
+
+
+
+void MidiDecoder::updateMidiNoteScale(int timbre, int encoder, float newValue) {
+    switch (encoder) {
+    case ENCODER_NOTECURVE_BEFORE:
+        curveBefore[timbre] = newValue;
+        break;
+    case ENCODER_NOTECURVE_BREAK_NOTE:
+        breakNote[timbre] = newValue;
+        break;
+    case ENCODER_NOTECURVE_AFTER:
+        curveAfter[timbre] = newValue;
+        break;
+    }
+
+    int intBreakNote = breakNote[timbre];
+    float floatBreakNote = intBreakNote;
+
+    switch (curveBefore[timbre]) {
+    // FLAT
+    case 0:
+        for (int n=0; n <= intBreakNote ; n++) {
+            midiNoteScale[timbre][n] = 0;
+        }
+        break;
+    // LINEAR
+    case 1:
+        for (int n=0; n <= intBreakNote ; n++) {
+            float fn = n;
+            midiNoteScale[timbre][n] = fn * INV127;
+        }
+        break;
+    // EXP
+    case 2:
+        for (int n=0; n <= intBreakNote ; n++) {
+            float fn = n;
+            fn = fn * fn / floatBreakNote;
+            // Should start fast and finish slowly
+            midiNoteScale[timbre][intBreakNote - n] = (floatBreakNote - fn) * INV127;
+        }
+        break;
+    }
+
+    float floatAfterBreakNote = 127 - floatBreakNote;
+    int intAfterBreakNote = 127 - breakNote[timbre];
+
+
+    switch (curveAfter[timbre]) {
+    // FLAT
+    case 0:
+        for (int n = intBreakNote + 1; n < 128 ; n++) {
+            midiNoteScale[timbre][n] = midiNoteScale[timbre][intBreakNote];
+        }
+        break;
+    // LINEAR
+    case 1:
+        for (int n = intBreakNote + 1; n < 128 ; n++) {
+            float fn = n - floatBreakNote;
+            midiNoteScale[timbre][n] = midiNoteScale[timbre][intBreakNote] + fn  * INV127;
+        }
+        break;
+    // EXP
+    case 2:
+        for (int n = intBreakNote + 1; n < 128 ; n++) {
+            float fn = n - floatBreakNote;
+            midiNoteScale[timbre][n] = midiNoteScale[timbre][intBreakNote] + fn  * fn  / floatAfterBreakNote * INV127;
+        }
+        break;
+    }
+/*
+    lcd.setCursor(0,0);
+    lcd.print((int)(midiNoteScale[timbre][25] * 127.0f));
+    lcd.print(" ");
+    lcd.setCursor(10,0);
+    lcd.print((int)(midiNoteScale[timbre][intBreakNote - 5] * 127.0f));
+    lcd.print(" ");
+    lcd.setCursor(0,1);
+    lcd.print((int)(midiNoteScale[timbre][intBreakNote + 5] * 127.0f));
+    lcd.print(" ");
+    lcd.setCursor(10,1);
+    lcd.print((int)(midiNoteScale[timbre][102] * 127.0f));
+    lcd.print(" ");
+*/
+
+}
+
+
 

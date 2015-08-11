@@ -526,15 +526,19 @@ void FMDisplay::refreshAllScreenByStep() {
                     lcd->setCursor(0,1);
                     lcd->print(allParameterRows.row[row]->rowName);
                 }
+                if (row >= ROW_MATRIX_FIRST && row != ROW_PERFORMANCE1 && row != ROW_LFOPHASES && row != ROW_MIDINOTECURVE) {
+                    lcd->print(' ');
+                    lcd->print(getRowNumberToDiplay(row));
+                }
             } else {
                 lcd->setCursor(0,1);
                 lcd->print(allParameterRows.row[row]->rowName);
+                if (row > ROW_ENGINE_LAST && row != ROW_PERFORMANCE1 && row != ROW_LFOPHASES && row != ROW_MIDINOTECURVE) {
+                    lcd->print(' ');
+                    lcd->print(getRowNumberToDiplay(row));
+                }
             }
-            if (row> ROW_ENGINE_LAST && row != ROW_PERFORMANCE1) {
-                lcd->print(' ');
-                lcd->print(getRowNumberToDiplay(row));
-            }
-            if (row == ROW_ARPEGGIATOR3) {
+            if (unlikely(row == ROW_ARPEGGIATOR3)) {
                 lcd->setCursor(8,1);
                 lcd->print("Usr");
                 lcd->print(1+(int)this->synthState->params->engineArp2.pattern - ARPEGGIATOR_PRESET_PATTERN_COUNT);
@@ -560,15 +564,7 @@ void FMDisplay::refreshAllScreenByStep() {
 void FMDisplay::updateEncoderValue(int refreshStatus) {
     int row = this->synthState->getCurrentRow();
     struct ParameterDisplay param = allParameterRows.row[row]->params[refreshStatus -1];
-    float newValue;
-    if (row < ROW_LFOSEQ1) {
-        newValue = ((float*)this->synthState->params)[row*NUMBER_OF_ENCODERS+refreshStatus -1];
-    } else if (row == ROW_LFOSEQ1) {
-        newValue = ((float*)&this->synthState->params->lfoSeq1)[refreshStatus -1];
-    } else if (row == ROW_LFOSEQ2) {
-        newValue = ((float*)&this->synthState->params->lfoSeq2)[refreshStatus -1];
-    }
-
+    float newValue = ((float*)this->synthState->params)[row*NUMBER_OF_ENCODERS+refreshStatus -1];
     updateEncoderValue(this->synthState->getCurrentRow(), refreshStatus -1, &param, newValue);
 }
 

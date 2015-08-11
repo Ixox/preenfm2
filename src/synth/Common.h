@@ -138,11 +138,13 @@ enum {
     ROW_LFOOSC1 = ROW_LFO_FIRST,
     ROW_LFOOSC2 ,
     ROW_LFOOSC3 ,
+    ROW_LFOPHASES,
     ROW_LFOENV1 ,
     ROW_LFOENV2 ,
     ROW_LFOSEQ1 ,
     ROW_LFOSEQ2 ,
-    ROW_LFO_LAST = ROW_LFOSEQ2
+    ROW_MIDINOTECURVE,
+    ROW_LFO_LAST = ROW_MIDINOTECURVE
 };
 
 
@@ -368,6 +370,19 @@ struct PerformanceRowParams {
 	float perf4;
 };
 
+struct LfoPhaseRowParams {
+    float phaseLfo1;
+    float phaseLfo2;
+    float phaseLfo3;
+    float unused1;
+};
+
+struct MidiNoteCurveRowParams {
+    float curveBefore;
+    float breakNote;
+    float curveAfter;
+    float unused1;
+};
 
 
 struct OneSynthParams {
@@ -416,10 +431,12 @@ struct OneSynthParams {
     struct LfoParams lfoOsc1;
     struct LfoParams lfoOsc2;
     struct LfoParams lfoOsc3;
+    struct LfoPhaseRowParams lfoPhases;
     struct EnvelopeParams lfoEnv1;
     struct Envelope2Params lfoEnv2;
     struct StepSequencerParams lfoSeq1;
     struct StepSequencerParams lfoSeq2;
+    struct MidiNoteCurveRowParams midiNoteCurve;
     struct StepSequencerSteps lfoSteps1;
     struct StepSequencerSteps lfoSteps2;
     char presetName[13];
@@ -438,7 +455,7 @@ enum SourceEnum {
     MATRIX_SOURCE_PITCHBEND,
     MATRIX_SOURCE_AFTERTOUCH,
     MATRIX_SOURCE_VELOCITY,
-    MATRIX_SOURCE_KEY,
+    MATRIX_SOURCE_NOTE,
     MATRIX_SOURCE_CC1,
     MATRIX_SOURCE_CC2,
     MATRIX_SOURCE_CC3,

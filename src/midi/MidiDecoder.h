@@ -166,6 +166,15 @@ private:
     // int bank number
     char bankNumber[NUMBER_OF_TIMBRES];
     char bankNumberLSB[NUMBER_OF_TIMBRES];
+
+    // Midi Note Scale
+    void updateMidiNoteScale(int timbre, int encoder, float newValue);
+    void updateMidiNoteScaleBefore();
+    void updateMidiNoteScaleAfter();
+    unsigned char breakNote[NUMBER_OF_TIMBRES];
+    unsigned char curveBefore[NUMBER_OF_TIMBRES];
+    unsigned char curveAfter[NUMBER_OF_TIMBRES];
+    float midiNoteScale[NUMBER_OF_TIMBRES][128];
 };
 
 #endif /* MIDIDECODER_H_ */
