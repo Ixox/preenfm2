@@ -5,7 +5,7 @@
  *      Author: xavier
  */
 
-#include <Math.h>
+#include <math.h>
 #include "ScalaFile.h"
 
 #include "LiquidCrystal.h"
