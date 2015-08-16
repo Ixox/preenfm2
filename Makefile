@@ -1,4 +1,4 @@
-PFM2_VERSION_NUMBER=1.07b1
+PFM2_VERSION_NUMBER=1.07b2
 PFM2_BIN_NUMBER=$(subst .,,${PFM2_VERSION_NUMBER})
 PFM2_BOOTLOADER_VERSION_NUMBER=1.11
 PFM2_VERSION=\"${PFM2_VERSION_NUMBER}\"
@@ -182,7 +182,7 @@ zip: pfm2_$(PFM2_VERSION_NUMBER).zip
 pfm2_$(PFM2_VERSION_NUMBER).zip :
 	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_FIRMWARE)) -s 0x8040000" > build/install_firmware.cmd
 	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_FIRMWARE_O)) -s 0x8040000" > build/install_firmware_overclocked.cmd
-	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_BOOTLOADER)) -s 0x8000000" > build/install_bootloader.cmd
+#	echo "dfu-util -a0 -d 0x0483:0xdf11 -D $(notdir $(BIN_BOOTLOADER)) -s 0x8000000" > build/install_bootloader.cmd
 	zip pfm2_$(PFM2_VERSION_NUMBER).zip build/*.bin build/*.syx build/*.cmd
 
 pfm: $(BIN_FIRMWARE)

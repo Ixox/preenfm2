@@ -377,13 +377,11 @@ void PreenFMFileType::convertMemoryToParams(const struct FlashSynthParams* memor
     	params->effect.param3 = 1.0f;
     }
 
-    if (params->midiNoteCurve.breakNote == 0.0f) {
-        params->midiNoteCurve.breakNote = 64;
-        // MIDI_NOTE_CURVE_LINEAR = 1
+    if (params->midiNoteCurve.breakNote == 0.0f && params->midiNoteCurve.curveAfter == 0.0f && params->midiNoteCurve.curveBefore == 0.0f) {
+        // Default compatibility value
+        // FLAT 0 +Lin
         params->midiNoteCurve.curveAfter  = 1;
-        params->midiNoteCurve.curveBefore = 1;
     }
-
 }
 
 

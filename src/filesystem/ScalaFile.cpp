@@ -35,7 +35,8 @@ const char* ScalaFile::getFolderName() {
 
 
 void ScalaFile::loadScalaScale(const struct ScalaScaleConfig* config) {
-	if (!config->scalaEnabled) {
+	if (!config->scalaEnabled || config->scalaFile->fileType == FILE_EMPTY) {
+        clearScalaScale();
 		return;
 	}
 
@@ -89,10 +90,10 @@ void ScalaFile::loadScalaScale(const struct ScalaScaleConfig* config) {
 }
 
 void ScalaFile::applyScalaScale(const struct ScalaScaleConfig* config) {
-	if (!config->scalaEnabled) {
-		return;
-	}
-
+    if (!config->scalaEnabled || config->scalaFile->fileType == FILE_EMPTY) {
+        clearScalaScale();
+        return;
+    }
 
 	float octaveRatio = interval[numberOfDegrees-1];
 	int octaveDegree = numberOfDegrees;

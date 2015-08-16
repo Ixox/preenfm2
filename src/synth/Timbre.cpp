@@ -20,6 +20,12 @@
 #include "Timbre.h"
 #include "Voice.h"
 
+#define INV127 .00787401574803149606f
+#define INV16 .0625
+// Regular memory
+float midiNoteScale[NUMBER_OF_TIMBRES][128];
+
+
 //#define DEBUG_ARP_STEP
 enum ArpeggiatorDirection {
     ARPEGGIO_DIRECTION_UP = 0,
@@ -208,6 +214,11 @@ void Timbre::init(int timbreNumber) {
         lfoStepSeq[k].init(stepseqparams[k], stepseqs[k], &matrix, (SourceEnum)(MATRIX_SOURCE_LFOSEQ1+k), (DestinationEnum)(LFOSEQ1_GATE+k));
     }
     this->timbreNumber = timbreNumber;
+
+    for (int n=0; n<128; n++) {
+        midiNoteScale[timbreNumber][n] = INV127 * (float)n;
+    }
+
 }
 
 void Timbre::setVoiceNumber(int v, int n) {
@@ -897,6 +908,8 @@ void Timbre::afterNewParamsLoad() {
     for (int k=0; k<NUMBER_OF_ENCODERS; k++) {
     	setNewEffecParam(k);
     }
+    // Update midi note scale
+    updateMidiNoteScale();
 }
 
 
@@ -1334,6 +1347,110 @@ void Timbre::lfoValueChange(int currentRow, int encoder, float newValue) {
 		lfoStepSeq[currentRow - ROW_LFOSEQ1].valueChanged(encoder);
 		break;
 	}
+}
+
+void Timbre::updateMidiNoteScale() {
+
+    int intBreakNote = params.midiNoteCurve.breakNote;
+    int curveBefore =  params.midiNoteCurve.curveBefore;
+    int curveAfter =  params.midiNoteCurve.curveAfter;
+    float floatBreakNote = intBreakNote;
+    float multiplier = 1.0f;
+
+
+    switch (curveBefore) {
+    case MIDI_NOTE_CURVE_FLAT:
+        for (int n=0; n < intBreakNote ; n++) {
+            midiNoteScale[timbreNumber][n] = 0;
+        }
+        break;
+    case MIDI_NOTE_CURVE_M_LINEAR:
+        multiplier = -1.0f;
+        goto linearBefore;
+    case MIDI_NOTE_CURVE_M_LINEAR2:
+        multiplier = -8.0f;
+        goto linearBefore;
+    case MIDI_NOTE_CURVE_LINEAR2:
+        multiplier = 8.0f;
+        goto linearBefore;
+    case MIDI_NOTE_CURVE_LINEAR:
+        linearBefore:
+        for (int n=0; n < intBreakNote ; n++) {
+            float fn = (floatBreakNote - n);
+            midiNoteScale[timbreNumber][n] = fn * INV127 * multiplier;
+        }
+        break;
+    case MIDI_NOTE_CURVE_M_EXP:
+        multiplier = -1.0f;
+    case MIDI_NOTE_CURVE_EXP:
+        for (int n=0; n < intBreakNote ; n++) {
+            float fn = (floatBreakNote - n);
+            fn = fn * fn / floatBreakNote;
+            midiNoteScale[timbreNumber][n] = fn * INV16 * multiplier;
+        }
+        break;
+    }
+
+    // BREAK NOTE = 0;
+    midiNoteScale[timbreNumber][intBreakNote] = 0;
+
+
+    float floatAfterBreakNote = 127 - floatBreakNote;
+    int intAfterBreakNote = 127 - intBreakNote;
+
+
+    switch (curveAfter) {
+    case MIDI_NOTE_CURVE_FLAT:
+        for (int n = intBreakNote + 1; n < 128 ; n++) {
+            midiNoteScale[timbreNumber][n] = 0;
+        }
+        break;
+    case MIDI_NOTE_CURVE_M_LINEAR:
+        multiplier = -1.0f;
+        goto linearAfter;
+    case MIDI_NOTE_CURVE_M_LINEAR2:
+        multiplier = -8.0f;
+        goto linearAfter;
+    case MIDI_NOTE_CURVE_LINEAR2:
+        multiplier = 8.0f;
+        goto linearAfter;
+    case MIDI_NOTE_CURVE_LINEAR:
+        linearAfter:
+        for (int n = intBreakNote + 1; n < 128 ; n++) {
+            float fn = n - floatBreakNote;
+            midiNoteScale[timbreNumber][n] = fn  * INV127 * multiplier;
+        }
+        break;
+    case MIDI_NOTE_CURVE_M_EXP:
+        multiplier = -1.0f;
+    case MIDI_NOTE_CURVE_EXP:
+        for (int n = intBreakNote + 1; n < 128 ; n++) {
+            float fn = n - floatBreakNote;
+            fn = fn * fn / floatBreakNote;
+            midiNoteScale[timbreNumber][n] = fn * INV16 * multiplier;
+        }
+        break;
+    }
+/*
+    lcd.setCursor(0,0);
+    lcd.print((int)(midiNoteScale[timbreNumber][25] * 127.0f));
+    lcd.print(" ");
+    lcd.setCursor(10,0);
+    lcd.print((int)(midiNoteScale[timbreNumber][intBreakNote - 5] * 127.0f));
+    lcd.print(" ");
+    lcd.setCursor(0,1);
+    lcd.print((int)(midiNoteScale[timbreNumber][intBreakNote + 5] * 127.0f));
+    lcd.print(" ");
+    lcd.setCursor(10,1);
+    lcd.print((int)(midiNoteScale[timbreNumber][102] * 127.0f));
+    lcd.print(" ");
+*/
+
+}
+
+
+void Timbre::setMatrixSourceSource(unsigned char midiNote) {
+    matrix.setSource(MATRIX_SOURCE_NOTE, midiNoteScale[timbreNumber][midiNote]);
 }
 
 

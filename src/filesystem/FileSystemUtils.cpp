@@ -74,7 +74,7 @@ int FileSystemUtils::printInt(char *target, int i) {
 	} else if (i < 100) {
 		target[wptr++] = '0' + (i / 10);
 		target[wptr++] = '0' + (i % 10);
-	} else if (i < 100) {
+	} else if (i < 1000) {
 		target[wptr++] = '0' + (i / 100);
 		target[wptr++] = '0' + ((i % 100) / 10);
 		target[wptr++] = '0' + (i % 10);

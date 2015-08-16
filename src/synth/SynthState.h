@@ -212,10 +212,16 @@ enum LfoType {
 	LFO_TYPE_MAX
 };
 
+// const char* midiNoteCurves[] =  { "Flat", "+Ln ", "+Ln2", "+Exp", "-Ln ", "-Ln2", "-Exp" };
+
 enum MidiNoteCurve {
     MIDI_NOTE_CURVE_FLAT = 0,
     MIDI_NOTE_CURVE_LINEAR,
+    MIDI_NOTE_CURVE_LINEAR2,
     MIDI_NOTE_CURVE_EXP,
+    MIDI_NOTE_CURVE_M_LINEAR,
+    MIDI_NOTE_CURVE_M_LINEAR2,
+    MIDI_NOTE_CURVE_M_EXP,
     MIDI_NOTE_CURVE_MAX
 };
 

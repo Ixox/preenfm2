@@ -81,7 +81,7 @@ const struct OneSynthParams defaultPreset  = {
         { 100, .8,  0, 0}  ,
         { 100, .8, 0, 0},
         // Midi note scale
-        { 1, 64, 1, 0},
+        { 0, 0, 1, 0},
         {{ 3, 0, 7,  0,  12,  15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}} ,
         {{ 3, 0, 7,  0,  12,  15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}} ,
         // Name
@@ -147,7 +147,7 @@ const struct OneSynthParams preenMainPreset  = {
 		{ MATRIX_SOURCE_VELOCITY, 0, INDEX_MODULATION4, 0} ,
 		{ MATRIX_SOURCE_MODWHEEL, 0, PAN_OSC1, 0} ,
 		{ MATRIX_SOURCE_LFO2, 0, PAN_OSC2, 0} ,
-		{ MATRIX_SOURCE_LFO3, 0, PAN_OSC1, 0} ,
+		{ MATRIX_SOURCE_NOTE, -0.8f, INDEX_ALL_MODULATION, 0} ,
 		// Init Performance
 		{ 0, 0, 0, 0},
 		// LFOs
@@ -161,7 +161,7 @@ const struct OneSynthParams preenMainPreset  = {
 		{ 110, .5,  0, 0}  ,
 		{ 140, .6, 0, 0},
         // Midi note scale
-        { 1, 64, 1, 0},
+        { 0, 60, 2, 0},
 
 		{{ 0,7,15,15,15,0,15,15,  0,15,15,15,0,15,15,15}} ,
 		{{ 15, 4, 2, 0, 15, 2, 0, 8, 15, 0, 12, 0, 8, 0, 15, 0}} ,

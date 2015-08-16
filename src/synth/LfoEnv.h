@@ -71,7 +71,6 @@ public:
 	}
 
 	void noteOn() {
-        // index is decremented in the first call...
         env.currentValue = 0;
         env.envState = ENV_STATE_ON_A;
         newState();

@@ -48,7 +48,7 @@ struct EnvData {
 
 struct table {
 	float* table;
-	int size;
+	uint8_t size;
 };
 
 extern float envLinear[];
@@ -245,7 +245,7 @@ private:
     float stateTarget[ENV_NUMBER_OF_STATES];
     // float
     float stateInc[ENV_NUMBER_OF_STATES];
-    int nextState[ENV_NUMBER_OF_STATES];
+    uint8_t nextState[ENV_NUMBER_OF_STATES];
     struct table tables[ENV_NUMBER_OF_STATES];
 
     EnvelopeParamsA* envParamsA;

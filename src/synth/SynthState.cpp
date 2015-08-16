@@ -277,7 +277,7 @@ struct ParameterRowDisplay matrixParameterRow = {
 
 const char* lfoOscMidiClock[] =  { "M/16", "MC/8", "MC/4", "MC/2", "MClk", "MC*2", "MC*3", "MC*4", "MC*8"};
 
-const char* lfoShapeNames [] =  { "Sin ", "Saw",  "Tria","Squa", "Rand" } ;
+const char* lfoShapeNames [] =  { "Sin ", "Saw ",  "Tria","Squa", "Rand" } ;
 
 
 struct ParameterRowDisplay lfoParameterRow = {
@@ -328,7 +328,7 @@ struct ParameterRowDisplay lfoPhaseParameterRow = {
         }
 };
 
-const char* midiNoteCurves[] =  { "Flat", "Lin ", "Exp " };
+const char* midiNoteCurves[] =  { "Flat", "+Lin", "+Ln8", "+Exp", "-Lin", "-Ln8", "-Exp" };
 
 
 struct ParameterRowDisplay midiNoteParameterRow = {
@@ -336,7 +336,7 @@ struct ParameterRowDisplay midiNoteParameterRow = {
         { "Befo", "Brk ", "Afte", "    " },
         {
                 { MIDI_NOTE_CURVE_FLAT, MIDI_NOTE_CURVE_MAX-1, MIDI_NOTE_CURVE_MAX, DISPLAY_TYPE_STRINGS,  midiNoteCurves, nullNamesOrder, nullNamesOrder},
-                { 5 , 122, 118, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder},
+                { 0 , 127, 128, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder},
                 { MIDI_NOTE_CURVE_FLAT, MIDI_NOTE_CURVE_MAX-1, MIDI_NOTE_CURVE_MAX, DISPLAY_TYPE_STRINGS,  midiNoteCurves, nullNamesOrder, nullNamesOrder},
                 { 0, 0, 0, DISPLAY_TYPE_NONE, nullNames, nullNamesOrder, nullNamesOrder }
         }

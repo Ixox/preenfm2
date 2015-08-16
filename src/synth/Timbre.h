@@ -290,6 +290,12 @@ public:
 
     // Needed for debuging
     char voiceNumber[MAX_NUMBER_OF_VOICES];
+
+    // Midi note response
+    // Midi Note Scale
+    void updateMidiNoteScale();
+    void setMatrixSourceSource(unsigned char midiNote);
+
 private:
 
     // MiniPal Arpegiator

@@ -57,7 +57,6 @@ protected:
 	Matrix *matrix;
     DestinationEnum destination;
 	SourceEnum source;
-	int index;
 	// Midi Clock sync
 	int ticks;
 

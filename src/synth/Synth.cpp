@@ -65,6 +65,7 @@ void Synth::init() {
 
 void Synth::noteOn(int timbre, char note, char velocity) {
     timbres[timbre].noteOn(note, velocity);
+
 }
 
 void Synth::noteOff(int timbre, char note) {
@@ -438,17 +439,22 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
             timbres[timbre].env6.reloadADSR(encoder + 4);
             break;
         case ROW_MATRIX_FIRST ... ROW_MATRIX_LAST:
-        if (encoder == ENCODER_MATRIX_DEST) {
-            // Reset old destination
-            timbres[timbre].matrix.resetDestination(oldValue);
-        }
-        break;
-        case ROW_LFO_FIRST ... ROW_LFO_LAST:
-        // timbres[timbre].lfo[currentRow - ROW_LFOOSC1]->valueChanged(encoder);
-        timbres[timbre].lfoValueChange(currentRow, encoder, newValue);
-        break;
+            if (encoder == ENCODER_MATRIX_DEST) {
+                // Reset old destination
+                timbres[timbre].matrix.resetDestination(oldValue);
+            }
+            break;
+        case ROW_LFOOSC1 ... ROW_LFOOSC3:
+        case ROW_LFOENV1 ... ROW_LFOENV2:
+        case ROW_LFOSEQ1 ... ROW_LFOSEQ2:
+            // timbres[timbre].lfo[currentRow - ROW_LFOOSC1]->valueChanged(encoder);
+            timbres[timbre].lfoValueChange(currentRow, encoder, newValue);
+            break;
         case ROW_PERFORMANCE1:
             timbres[timbre].matrix.setSource((enum SourceEnum)(MATRIX_SOURCE_CC1 + encoder), newValue);
+            break;
+        case ROW_MIDINOTECURVE:
+            timbres[timbre].updateMidiNoteScale();
             break;
     }
 }

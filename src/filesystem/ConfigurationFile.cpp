@@ -91,7 +91,7 @@ void ConfigurationFile::saveConfig(const char* midiConfigBytes) {
     	}
     	wptr += fsu->copy_string((char*)propertyFile + wptr, midiConfig[k].nameInFile);
     	propertyFile[wptr++] = '=';
-    	wptr += fsu->printInt(propertyFile, midiConfigBytes[k]);
+    	wptr += fsu->printInt((char*)propertyFile + wptr, (int)midiConfigBytes[k]);
     	propertyFile[wptr++] = '\n';
     	propertyFile[wptr++] = '\n';
     }

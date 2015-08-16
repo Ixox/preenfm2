@@ -239,9 +239,11 @@ void setup() {
     	USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &usbdMidiDescriptor, &midiCallback, &midiStreamingUsrCallback);
     }
 
-    if (usbKey.getComboBank()->loadDefaultCombo()) {
-    	synthState.propagateAfterNewComboLoad();
-    }
+    // Lad default combo if any
+    usbKey.getComboBank()->loadDefaultCombo();
+    // In any case init tables
+    synthState.propagateAfterNewComboLoad();
+
 
     fmDisplay.init(&lcd, &usbKey);
 
