@@ -1274,7 +1274,7 @@ float sawTable[]  __attribute__ ((section(".ccm")))  = {
 0.103408108424      , 0.069016371627      , 0.034531497709
 };
 
-float sinPosTable[]  __attribute__ ((section(".ccm")))  = {
+float sinPosTable[]  = {
  // =================================================================
  // SINPOS : order 20 / 1024 steps
  // average : 0.6366177749955104 / amplitude : 1.0
@@ -1485,7 +1485,7 @@ float sinPosTable[]  __attribute__ ((section(".ccm")))  = {
 -1.224153092945     , -1.236422090179     , -1.24869247342      , -1.260963780693
 };
 
-float sinOrZeroTable[]  __attribute__ ((section(".ccm")))  = {
+float sinOrZeroTable[]   = {
  // =================================================================
  // SINORZERO : order 20 / 1024 steps
  // average : 0.31830888749775543 / amplitude : 1.0
@@ -1696,7 +1696,7 @@ float sinOrZeroTable[]  __attribute__ ((section(".ccm")))  = {
 -0.636617774996     , -0.636617774996     , -0.636617774996     , -0.636617774996
 };
 
-float sinSquareTable[]  __attribute__ ((section(".ccm")))  = {
+float sinSquareTable[]  = {
  // =================================================================
  // SINSQUARE : order 20 / 1024 steps
  // average : 0.49999999999999994 / amplitude : 1.0
