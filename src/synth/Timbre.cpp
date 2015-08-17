@@ -153,7 +153,6 @@ Timbre::Timbre() {
 
 
     this->recomputeNext = true;
-    this->currentGate = 0;
     this->sbMax = &this->sampleBlock[64];
     this->holdPedal = false;
 
@@ -179,40 +178,22 @@ Timbre::~Timbre() {
 }
 
 void Timbre::init(int timbreNumber) {
-    struct LfoParams* lfoParams[] = { &params.lfoOsc1, &params.lfoOsc2, &params.lfoOsc3};
-    struct StepSequencerParams* stepseqparams[] = { &params.lfoSeq1, &params.lfoSeq2};
-    struct StepSequencerSteps* stepseqs[] = { &params.lfoSteps1, &params.lfoSteps2};
 
-    matrix.init(&params.matrixRowState1);
 
-	env1.init(&matrix, &params.env1a,  &params.env1b, ENV1_ATTACK);
-	env2.init(&matrix, &params.env2a,  &params.env2b, ENV2_ATTACK);
-	env3.init(&matrix, &params.env3a,  &params.env3b, ENV3_ATTACK);
-	env4.init(&matrix, &params.env4a,  &params.env4b, ENV4_ATTACK);
-	env5.init(&matrix, &params.env5a,  &params.env5b, ENV5_ATTACK);
-	env6.init(&matrix, &params.env6a,  &params.env6b, ENV6_ATTACK);
+	env1.init(&params.env1a,  &params.env1b, ENV1_ATTACK);
+	env2.init(&params.env2a,  &params.env2b, ENV2_ATTACK);
+	env3.init(&params.env3a,  &params.env3b, ENV3_ATTACK);
+	env4.init(&params.env4a,  &params.env4b, ENV4_ATTACK);
+	env5.init(&params.env5a,  &params.env5b, ENV5_ATTACK);
+	env6.init(&params.env6a,  &params.env6b, ENV6_ATTACK);
 
-	osc1.init(&matrix, &params.osc1, OSC1_FREQ);
-	osc2.init(&matrix, &params.osc2, OSC2_FREQ);
-	osc3.init(&matrix, &params.osc3, OSC3_FREQ);
-	osc4.init(&matrix, &params.osc4, OSC4_FREQ);
-	osc5.init(&matrix, &params.osc5, OSC5_FREQ);
-	osc6.init(&matrix, &params.osc6, OSC6_FREQ);
+	osc1.init(&params.osc1, OSC1_FREQ);
+	osc2.init(&params.osc2, OSC2_FREQ);
+	osc3.init(&params.osc3, OSC3_FREQ);
+	osc4.init(&params.osc4, OSC4_FREQ);
+	osc5.init(&params.osc5, OSC5_FREQ);
+	osc6.init(&params.osc6, OSC6_FREQ);
 
-    // OSC
-    for (int k = 0; k < NUMBER_OF_LFO_OSC; k++) {
-        float* phase = ((float*)&params.lfoPhases) + k;
-        lfoOsc[k].init(lfoParams[k], phase, &this->matrix, (SourceEnum)(MATRIX_SOURCE_LFO1 + k), (DestinationEnum)(LFO1_FREQ + k));
-    }
-
-    // ENV
-    lfoEnv[0].init(&params.lfoEnv1 , &this->matrix, MATRIX_SOURCE_LFOENV1, (DestinationEnum)0);
-    lfoEnv2[0].init(&params.lfoEnv2 , &this->matrix, MATRIX_SOURCE_LFOENV2, (DestinationEnum)LFOENV2_SILENCE);
-
-    // Step sequencer
-    for (int k = 0; k< NUMBER_OF_LFO_STEP; k++) {
-        lfoStepSeq[k].init(stepseqparams[k], stepseqs[k], &matrix, (SourceEnum)(MATRIX_SOURCE_LFOSEQ1+k), (DestinationEnum)(LFOSEQ1_GATE+k));
-    }
     this->timbreNumber = timbreNumber;
 
     for (int n=0; n<128; n++) {
@@ -369,6 +350,9 @@ void Timbre::preenNoteOn(char note, char velocity) {
 			break;
 		}
 
+		// Update voice matrix with midi note and velocity
+		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE, midiNoteScale[timbreNumber][note]);
+		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY, INV127*velocity);
 	}
 }
 
@@ -460,24 +444,9 @@ void Timbre::prepareForNextBlock() {
 		arpegiatorStep+=1.0f;
 		if (unlikely((arpegiatorStep) > ticksEveryNCalls)) {
 			arpegiatorStep -= ticksEveyNCallsInteger;
-
 			Tick();
 		}
 	}
-
-	this->lfoOsc[0].nextValueInMatrix();
-	this->lfoOsc[1].nextValueInMatrix();
-	this->lfoOsc[2].nextValueInMatrix();
-	this->lfoEnv[0].nextValueInMatrix();
-	this->lfoEnv2[0].nextValueInMatrix();
-	this->lfoStepSeq[0].nextValueInMatrix();
-	this->lfoStepSeq[1].nextValueInMatrix();
-
-    this->matrix.computeAllFutureDestintationAndSwitch();
-
-    updateAllModulationIndexes();
-    updateAllMixOscsAndPans();
-
 }
 
 void Timbre::cleanNextBlock() {
@@ -499,33 +468,9 @@ void Timbre::cleanNextBlock() {
 #define GATE_INC 0.02f
 
 void Timbre::fxAfterBlock(float ratioTimbres) {
-    // Gate algo !!
-    float gate = this->matrix.getDestination(MAIN_GATE);
-    if (unlikely(gate > 0 || currentGate > 0)) {
-		gate *=.72547132656922730694f; // 0 < gate < 1.0
-		if (gate > 1.0f) {
-			gate = 1.0f;
-		}
-		float incGate = (gate - currentGate) * .03125f; // ( *.03125f = / 32)
-		// limit the speed.
-		if (incGate > 0.002f) {
-			incGate = 0.002f;
-		} else if (incGate < -0.002f) {
-			incGate = -0.002f;
-		}
 
-		float *sp = this->sampleBlock;
-		float coef;
-    	for (int k=0 ; k< BLOCK_SIZE ; k++) {
-			currentGate += incGate;
-			coef = 1.0f - currentGate;
-			*sp = *sp * coef;
-			sp++;
-			*sp = *sp * coef;
-			sp++;
-		}
-    //    currentGate = gate;
-    }
+    float matrixFilterFrequency = voices[0]->matrix.getDestination(FILTER_FREQUENCY);
+
 
     // LP Algo
     int effectType = params.effect.type;
@@ -535,7 +480,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     switch (effectType) {
     case FILTER_LP:
     {
-    	float fxParamTmp = params.effect.param1 + matrix.getDestination(FILTER_FREQUENCY);
+    	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
     	fxParamTmp *= fxParamTmp;
 
     	// Low pass... on the Frequency
@@ -595,7 +540,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     break;
     case FILTER_HP:
     {
-    	float fxParamTmp = params.effect.param1 + matrix.getDestination(FILTER_FREQUENCY);
+    	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
     	fxParamTmp *= fxParamTmp;
 
     	// Low pass... on the Frequency
@@ -809,7 +754,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
         // fxParam1 v
         //
 
-        float fxParam1PlusMatrixTmp = params.effect.param1 + matrix.getDestination(FILTER_FREQUENCY);
+        float fxParam1PlusMatrixTmp = params.effect.param1 + matrixFilterFrequency;
         if (unlikely(fxParam1PlusMatrixTmp > 1.0f)) {
             fxParam1PlusMatrixTmp = 1.0f;
         }
@@ -881,8 +826,13 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
 
 
 void Timbre::afterNewParamsLoad() {
-    this->matrix.resetSources();
-    this->matrix.resetAllDestination();
+
+
+    for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+        voices[k]->afterNewParamsLoad();
+    }
+
+
 	 for (int j=0; j<NUMBER_OF_ENCODERS * 2; j++) {
 		this->env1.reloadADSR(j);
 		this->env2.reloadADSR(j);
@@ -892,15 +842,6 @@ void Timbre::afterNewParamsLoad() {
 		this->env6.reloadADSR(j);
 	}
 
-	for (int j=0; j<NUMBER_OF_ENCODERS; j++) {
-		this->lfoOsc[0].valueChanged(j);
-		this->lfoOsc[1].valueChanged(j);
-		this->lfoOsc[2].valueChanged(j);
-		this->lfoEnv[0].valueChanged(j);
-		this->lfoEnv2[0].valueChanged(j);
-		this->lfoStepSeq[0].valueChanged(j);
-		this->lfoStepSeq[1].valueChanged(j);
-	}
 
     resetArpeggiator();
     v0L = v1L = 0.0f;
@@ -1330,23 +1271,9 @@ void Timbre::setDirection(uint8_t value) {
 }
 
 void Timbre::lfoValueChange(int currentRow, int encoder, float newValue) {
-	switch (currentRow) {
-	case ROW_LFOOSC1:
-	case ROW_LFOOSC2:
-	case ROW_LFOOSC3:
-		lfoOsc[currentRow - ROW_LFOOSC1].valueChanged(encoder);
-		break;
-	case ROW_LFOENV1:
-		lfoEnv[0].valueChanged(encoder);
-		break;
-	case ROW_LFOENV2:
-		lfoEnv2[0].valueChanged(encoder);
-		break;
-	case ROW_LFOSEQ1:
-	case ROW_LFOSEQ2:
-		lfoStepSeq[currentRow - ROW_LFOSEQ1].valueChanged(encoder);
-		break;
-	}
+    for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+        voices[k]->lfoValueChange(currentRow, encoder, newValue);
+    }
 }
 
 void Timbre::updateMidiNoteScale() {
@@ -1449,8 +1376,49 @@ void Timbre::updateMidiNoteScale() {
 }
 
 
-void Timbre::setMatrixSourceSource(unsigned char midiNote) {
-    matrix.setSource(MATRIX_SOURCE_NOTE, midiNoteScale[timbreNumber][midiNote]);
+
+
+void Timbre::midiClockContinue(int songPosition) {
+
+    for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+        voices[k]->midiClockContinue(songPosition);
+    }
+
+    this->recomputeNext = ((songPosition&0x1)==0);
+    OnMidiContinue();
 }
 
 
+void Timbre::midiClockStart() {
+
+    for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+        voices[k]->midiClockStart();
+    }
+
+    this->recomputeNext = true;
+    OnMidiStart();
+}
+
+void Timbre::midiClockSongPositionStep(int songPosition) {
+
+    for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+        voices[k]->midiClockSongPositionStep(songPosition,  this->recomputeNext);
+    }
+
+    if ((songPosition & 0x1)==0) {
+        this->recomputeNext = true;
+    }
+}
+
+
+void Timbre::resetMatrixDestination(float oldValue) {
+    for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+        voices[k]->matrix.resetDestination(oldValue);
+    }
+}
+
+void Timbre::setMatrixSource(int encoder, float newValue) {
+    for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+        voices[k]->matrix.setSource((enum SourceEnum)(MATRIX_SOURCE_CC1 + encoder), newValue);
+    }
+}

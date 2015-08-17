@@ -99,11 +99,10 @@ struct WaveTable waveTables[NUMBER_OF_WAVETABLES] __attribute__ ((section(".ccm"
 };
 
 
-void Osc::init(Matrix* matrix, struct OscillatorParams *oscParams, DestinationEnum df) {
+void Osc::init(struct OscillatorParams *oscParams, DestinationEnum df) {
 	silence[0] = 0;
 
 	this->destFreq = df;
-	this->matrix = matrix;
 	this->oscillator = oscParams;
 
 	if (waveTables[0].precomputedValue <= 0) {

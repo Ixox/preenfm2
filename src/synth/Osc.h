@@ -51,14 +51,14 @@ public:
     Osc() {};
     virtual ~Osc() {};
 
-    void init(Matrix* matrix, struct OscillatorParams *oscParams, DestinationEnum df);
+    void init(struct OscillatorParams *oscParams, DestinationEnum df);
 
     void newNote(struct OscState* oscState, int note);
     void glideToNote(struct OscState* oscState, int note);
     void glideStep(struct OscState* oscState, float phase);
 
-    inline void calculateFrequencyWithMatrix(struct OscState *oscState) {
-		oscState->mainFrequencyPlusMatrix = oscState->mainFrequency + ((oscState->mainFrequency   * (this->matrix->getDestination(destFreq) + this->matrix->getDestination(ALL_OSC_FREQ)))) * .1f;
+    inline void calculateFrequencyWithMatrix(struct OscState *oscState, Matrix* matrix) {
+		oscState->mainFrequencyPlusMatrix = oscState->mainFrequency + ((oscState->mainFrequency   * (matrix->getDestination(destFreq) + matrix->getDestination(ALL_OSC_FREQ)))) * .1f;
     }
 
     inline float getNextSample(struct OscState *oscState)  {

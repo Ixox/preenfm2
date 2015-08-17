@@ -53,12 +53,19 @@ public:
 
 
     void resetUsedFuturDestination() {
-        for (int k=0; k< MATRIX_SIZE; ) {
-        	futurDestinations[(int)rows[k++].destination] = 0;
-            futurDestinations[(int)rows[k++].destination] = 0;
-            futurDestinations[(int)rows[k++].destination] = 0;
-            futurDestinations[(int)rows[k++].destination] = 0;
-        }
+        int k=0;
+        futurDestinations[(int)rows[k++].destination] = 0;
+        futurDestinations[(int)rows[k++].destination] = 0;
+        futurDestinations[(int)rows[k++].destination] = 0;
+        futurDestinations[(int)rows[k++].destination] = 0;
+        futurDestinations[(int)rows[k++].destination] = 0;
+        futurDestinations[(int)rows[k++].destination] = 0;
+        futurDestinations[(int)rows[k++].destination] = 0;
+        futurDestinations[(int)rows[k++].destination] = 0;
+        futurDestinations[(int)rows[k++].destination] = 0;
+        futurDestinations[(int)rows[k++].destination] = 0;
+        futurDestinations[(int)rows[k++].destination] = 0;
+        futurDestinations[(int)rows[k++].destination] = 0;
     }
 
     void computeAllFutureDestintationAndSwitch() {

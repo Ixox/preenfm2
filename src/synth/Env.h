@@ -89,7 +89,7 @@ public:
     virtual ~Env(void) {
     }
 
-    void init(Matrix* matrix, struct EnvelopeParamsA *envParamsA, struct EnvelopeParamsB *envParamsB, DestinationEnum da);
+    void init(struct EnvelopeParamsA *envParamsA, struct EnvelopeParamsB *envParamsB, DestinationEnum da);
 
     void reloadADSR(int encoder) {
     	// 0 Attack time
@@ -192,7 +192,7 @@ public:
 
     void noteOn(struct EnvData* env) {
 
-    	float attack = envParamsA->attackTime + this->matrix->getDestination(destAttack) + this->matrix->getDestination(ALL_ENV_ATTACK);
+    	float attack = envParamsA->attackTime;
     	if (attack < 0.0f) {
             attack = 0.0f;
         }
@@ -219,7 +219,7 @@ public:
     }
 
     void noteOff(struct EnvData* env) {
-        float release = envParamsB->releaseTime + this->matrix->getDestination(ALL_ENV_RELEASE);
+        float release = envParamsB->releaseTime;
     	if (release < 0.0f) {
     		release = 0.0f;
         }
@@ -250,7 +250,6 @@ private:
 
     EnvelopeParamsA* envParamsA;
     EnvelopeParamsB* envParamsB;
-    Matrix* matrix;
     DestinationEnum destAttack;
 
     static int initTab;

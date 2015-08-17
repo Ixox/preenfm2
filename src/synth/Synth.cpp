@@ -53,7 +53,7 @@ void Synth::init() {
     this->writeCursor = 0;
     this->readCursor = 0;
     for (int k = 0; k < MAX_NUMBER_OF_VOICES; k++) {
-        voices[k].init(&timbres[0], &timbres[1], &timbres[2], &timbres[3]);
+        voices[k].init();
     }
     rebuidVoiceTimbre();
     refreshNumberOfOsc();
@@ -139,7 +139,6 @@ void Synth::buildNewSampleBlock() {
         }
     }
     CYCLE_MEASURE_END();
-
 
     CYCLE_MEASURE_START(cycles_voices2);
     // render all voices in their timbre sample block...
@@ -441,7 +440,7 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
         case ROW_MATRIX_FIRST ... ROW_MATRIX_LAST:
             if (encoder == ENCODER_MATRIX_DEST) {
                 // Reset old destination
-                timbres[timbre].matrix.resetDestination(oldValue);
+                timbres[timbre].resetMatrixDestination(oldValue);
             }
             break;
         case ROW_LFOOSC1 ... ROW_LFOOSC3:
@@ -451,7 +450,7 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
             timbres[timbre].lfoValueChange(currentRow, encoder, newValue);
             break;
         case ROW_PERFORMANCE1:
-            timbres[timbre].matrix.setSource((enum SourceEnum)(MATRIX_SOURCE_CC1 + encoder), newValue);
+            timbres[timbre].setMatrixSource((enum SourceEnum)(MATRIX_SOURCE_CC1 + encoder), newValue);
             break;
         case ROW_MIDINOTECURVE:
             timbres[timbre].updateMidiNoteScale();
