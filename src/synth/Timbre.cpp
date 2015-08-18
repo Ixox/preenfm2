@@ -1417,8 +1417,8 @@ void Timbre::resetMatrixDestination(float oldValue) {
     }
 }
 
-void Timbre::setMatrixSource(int encoder, float newValue) {
+void Timbre::setMatrixSource(enum SourceEnum source, float newValue) {
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
-        voices[k]->matrix.setSource((enum SourceEnum)(MATRIX_SOURCE_CC1 + encoder), newValue);
+        voices[k]->matrix.setSource(source, newValue);
     }
 }

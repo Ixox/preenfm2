@@ -103,7 +103,7 @@ public:
 
 
     void resetMatrixDestination(float oldValue);
-    void setMatrixSource(int encoder, float newValue);
+    void setMatrixSource(enum SourceEnum source, float newValue);
 
     void midiClockStop() {
         OnMidiStop();
@@ -133,7 +133,6 @@ public:
     // Midi note response
     // Midi Note Scale
     void updateMidiNoteScale();
-    void setMatrixSourceSource(unsigned char midiNote);
 
 private:
 
