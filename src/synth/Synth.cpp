@@ -452,8 +452,11 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
         case ROW_PERFORMANCE1:
             timbres[timbre].setMatrixSource((enum SourceEnum)(MATRIX_SOURCE_CC1 + encoder), newValue);
             break;
-        case ROW_MIDINOTECURVE:
-            timbres[timbre].updateMidiNoteScale();
+        case ROW_MIDINOTE1CURVE:
+            timbres[timbre].updateMidiNoteScale(0);
+            break;
+        case ROW_MIDINOTE2CURVE:
+            timbres[timbre].updateMidiNoteScale(1);
             break;
     }
 }

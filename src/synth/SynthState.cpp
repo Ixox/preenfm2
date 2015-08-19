@@ -251,7 +251,7 @@ struct ParameterRowDisplay lfoEnv2ParameterRow = {
 };
 
 const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "env2", "seq1", "seq2",
-        "ModW", "PitB", "AftT",  "Velo", "Note", "p1  ", "p2  ", "p3  ", "p4  " } ;
+        "ModW", "PitB", "AftT",  "Velo", "Not1", "p1  ", "p2  ", "p3  ", "p4  ", "Not2" } ;
 
 const char* matrixDestNames [] = {
         "None", "Gate", "IM1 ", "IM2 ", "IM3 ", "IM4 ", "IM* ",
@@ -263,12 +263,14 @@ const char* matrixDestNames [] = {
         "FlHz"
 } ;
 
+const unsigned char  matrixSourceOrder[] =        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17, 13, 14, 15, 16 };
+const unsigned char  matrixSourceOrderReverse[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 13 };
 
 struct ParameterRowDisplay matrixParameterRow = {
         "Matrix",
         { "Srce", "Mult", "Dest", "    " },
         {
-                { MATRIX_SOURCE_NONE, MATRIX_SOURCE_MAX-1, MATRIX_SOURCE_MAX, DISPLAY_TYPE_STRINGS, matrixSourceNames, nullNamesOrder, nullNamesOrder},
+                { MATRIX_SOURCE_NONE, MATRIX_SOURCE_MAX-1, MATRIX_SOURCE_MAX, DISPLAY_TYPE_STRINGS, matrixSourceNames, matrixSourceOrder, matrixSourceOrderReverse},
                 { -10, 10, 2001, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { DESTINATION_NONE, DESTINATION_MAX-1, DESTINATION_MAX, DISPLAY_TYPE_STRINGS, matrixDestNames, nullNamesOrder, nullNamesOrder},
                 { 0, 0, 0, DISPLAY_TYPE_NONE, nullNames, nullNamesOrder, nullNamesOrder }
@@ -331,8 +333,19 @@ struct ParameterRowDisplay lfoPhaseParameterRow = {
 const char* midiNoteCurves[] =  { "Flat", "+Lin", "+Ln8", "+Exp", "-Lin", "-Ln8", "-Exp" };
 
 
-struct ParameterRowDisplay midiNoteParameterRow = {
-        "Midi Note Scaling",
+struct ParameterRowDisplay midiNote1ParameterRow = {
+        "Note1 Midi Scaling",
+        { "Befo", "Brk ", "Afte", "    " },
+        {
+                { MIDI_NOTE_CURVE_FLAT, MIDI_NOTE_CURVE_MAX-1, MIDI_NOTE_CURVE_MAX, DISPLAY_TYPE_STRINGS,  midiNoteCurves, nullNamesOrder, nullNamesOrder},
+                { 0 , 127, 128, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder},
+                { MIDI_NOTE_CURVE_FLAT, MIDI_NOTE_CURVE_MAX-1, MIDI_NOTE_CURVE_MAX, DISPLAY_TYPE_STRINGS,  midiNoteCurves, nullNamesOrder, nullNamesOrder},
+                { 0, 0, 0, DISPLAY_TYPE_NONE, nullNames, nullNamesOrder, nullNamesOrder }
+        }
+};
+
+struct ParameterRowDisplay midiNote2ParameterRow = {
+        "Note2 Midi Scaling",
         { "Befo", "Brk ", "Afte", "    " },
         {
                 { MIDI_NOTE_CURVE_FLAT, MIDI_NOTE_CURVE_MAX-1, MIDI_NOTE_CURVE_MAX, DISPLAY_TYPE_STRINGS,  midiNoteCurves, nullNamesOrder, nullNamesOrder},
@@ -394,7 +407,8 @@ struct AllParameterRowsDisplay allParameterRows = {
                 &lfoEnv2ParameterRow,
                 &lfoStepParameterRow,
                 &lfoStepParameterRow,
-                &midiNoteParameterRow
+                &midiNote1ParameterRow,
+                &midiNote2ParameterRow
         }
 };
 
@@ -485,7 +499,6 @@ SynthState::SynthState() {
         }
     }
 }
-
 
 void SynthState::encoderTurnedForStepSequencer(int row, int encoder, int ticks) {
     int whichStepSeq = row - ROW_LFOSEQ1;

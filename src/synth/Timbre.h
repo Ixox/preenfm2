@@ -132,7 +132,7 @@ public:
 
     // Midi note response
     // Midi Note Scale
-    void updateMidiNoteScale();
+    void updateMidiNoteScale(int scale);
 
 private:
 
@@ -147,7 +147,7 @@ private:
     void OnMidiClock();
 	void SendNote(uint8_t note, uint8_t velocity);
 
-    int timbreNumber;
+	int8_t timbreNumber;
     struct OneSynthParams params;
     float sampleBlock[BLOCK_SIZE * 2];
     float *sbMax;
@@ -155,6 +155,7 @@ private:
     float mixerGain;
     Voice *voices[MAX_NUMBER_OF_VOICES];
     bool holdPedal;
+    int8_t lastPlayedNote;
 
 
     // 6 oscillators Max
@@ -176,6 +177,7 @@ private:
 
     // Must recompute LFO steps ?
     bool recomputeNext;
+    float currentGate;
     // Arpeggiator
 
     // TO REFACTOR

@@ -526,14 +526,14 @@ void FMDisplay::refreshAllScreenByStep() {
                     lcd->setCursor(0,1);
                     lcd->print(allParameterRows.row[row]->rowName);
                 }
-                if (row >= ROW_MATRIX_FIRST && row != ROW_PERFORMANCE1 && row != ROW_LFOPHASES && row != ROW_MIDINOTECURVE) {
+                if (row >= ROW_MATRIX_FIRST && row != ROW_PERFORMANCE1 && row != ROW_LFOPHASES && row < ROW_MIDINOTE1CURVE) {
                     lcd->print(' ');
                     lcd->print(getRowNumberToDiplay(row));
                 }
             } else {
                 lcd->setCursor(0,1);
                 lcd->print(allParameterRows.row[row]->rowName);
-                if (row > ROW_ENGINE_LAST && row != ROW_PERFORMANCE1 && row != ROW_LFOPHASES && row != ROW_MIDINOTECURVE) {
+                if (row > ROW_ENGINE_LAST && row != ROW_PERFORMANCE1 && row != ROW_LFOPHASES && row < ROW_MIDINOTE1CURVE) {
                     lcd->print(' ');
                     lcd->print(getRowNumberToDiplay(row));
                 }

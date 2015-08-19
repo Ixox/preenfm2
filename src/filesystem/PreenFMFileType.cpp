@@ -300,7 +300,8 @@ void PreenFMFileType::convertParamsToMemory(const struct OneSynthParams* params,
 	fsu->copyFloat((float*)&params->lfoEnv2, (float*)&memory->lfoEnv2, 4);
 	fsu->copyFloat((float*)&params->lfoSeq1, (float*)&memory->lfoSeq1, 4 * 2);
 
-    fsu->copyFloat((float*)&params->midiNoteCurve, (float*)&memory->midiNoteCurve, 4);
+    fsu->copyFloat((float*)&params->midiNote1Curve, (float*)&memory->midiNote1Curve, 4);
+    fsu->copyFloat((float*)&params->midiNote2Curve, (float*)&memory->midiNote2Curve, 4);
     fsu->copyFloat((float*)&params->lfoPhases, (float*)&memory->lfoPhases, 4);
 
     for (int s=0; s<16; s++) {
@@ -345,7 +346,8 @@ void PreenFMFileType::convertMemoryToParams(const struct FlashSynthParams* memor
 	fsu->copyFloat((float*)&memory->lfoSeq1, (float*)&params->lfoSeq1, 4 * 2);
 
 	fsu->copyFloat((float*)&memory->lfoPhases, (float*)&params->lfoPhases, 4);
-    fsu->copyFloat((float*)&memory->midiNoteCurve, (float*)&params->midiNoteCurve, 4);
+    fsu->copyFloat((float*)&memory->midiNote1Curve, (float*)&params->midiNote1Curve, 4);
+    fsu->copyFloat((float*)&memory->midiNote2Curve, (float*)&params->midiNote2Curve, 4);
 
 	for (int s=0; s<16; s++) {
 		params->lfoSteps1.steps[s] = memory->lfoSteps1.steps[s];
@@ -377,10 +379,17 @@ void PreenFMFileType::convertMemoryToParams(const struct FlashSynthParams* memor
     	params->effect.param3 = 1.0f;
     }
 
-    if (params->midiNoteCurve.breakNote == 0.0f && params->midiNoteCurve.curveAfter == 0.0f && params->midiNoteCurve.curveBefore == 0.0f) {
+    if (params->midiNote1Curve.breakNote == 0.0f && params->midiNote1Curve.curveAfter == 0.0f && params->midiNote1Curve.curveBefore == 0.0f) {
         // Default compatibility value
         // FLAT 0 +Lin
-        params->midiNoteCurve.curveAfter  = 1;
+        params->midiNote1Curve.curveAfter  = 1;
+    }
+    if (params->midiNote2Curve.breakNote == 0.0f && params->midiNote2Curve.curveAfter == 0.0f && params->midiNote2Curve.curveBefore == 0.0f) {
+        // Default compatibility value
+        // FLAT 0 +Lin
+        params->midiNote2Curve.curveBefore = 4;
+        params->midiNote2Curve.curveAfter  = 1;
+        params->midiNote2Curve.breakNote = 60;
     }
 }
 

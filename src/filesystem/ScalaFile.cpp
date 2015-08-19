@@ -8,9 +8,10 @@
 #include <math.h>
 #include "ScalaFile.h"
 
+/*
 #include "LiquidCrystal.h"
 extern LiquidCrystal      lcd;
-
+*/
 
 float scalaFrequency[128];
 
@@ -140,6 +141,7 @@ void ScalaFile::applyScalaScale(const struct ScalaScaleConfig* config) {
 	}
 
     frequencyToUse = scalaFrequency;
+
 }
 
 

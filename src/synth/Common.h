@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 
-#define DEBUG 1
+// #define DEBUG 1
 
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
@@ -148,8 +148,9 @@ enum {
     ROW_LFOENV2 ,
     ROW_LFOSEQ1 ,
     ROW_LFOSEQ2 ,
-    ROW_MIDINOTECURVE,
-    ROW_LFO_LAST = ROW_MIDINOTECURVE
+    ROW_MIDINOTE1CURVE,
+    ROW_MIDINOTE2CURVE,
+    ROW_LFO_LAST = ROW_MIDINOTE2CURVE
 };
 
 
@@ -441,7 +442,8 @@ struct OneSynthParams {
     struct Envelope2Params lfoEnv2;
     struct StepSequencerParams lfoSeq1;
     struct StepSequencerParams lfoSeq2;
-    struct MidiNoteCurveRowParams midiNoteCurve;
+    struct MidiNoteCurveRowParams midiNote1Curve;
+    struct MidiNoteCurveRowParams midiNote2Curve;
     struct StepSequencerSteps lfoSteps1;
     struct StepSequencerSteps lfoSteps2;
     char presetName[13];
@@ -460,11 +462,12 @@ enum SourceEnum {
     MATRIX_SOURCE_PITCHBEND,
     MATRIX_SOURCE_AFTERTOUCH,
     MATRIX_SOURCE_VELOCITY,
-    MATRIX_SOURCE_NOTE,
+    MATRIX_SOURCE_NOTE1,
     MATRIX_SOURCE_CC1,
     MATRIX_SOURCE_CC2,
     MATRIX_SOURCE_CC3,
     MATRIX_SOURCE_CC4,
+    MATRIX_SOURCE_NOTE2,
     MATRIX_SOURCE_MAX
 };
 

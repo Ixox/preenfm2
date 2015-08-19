@@ -23,7 +23,7 @@
 #define INV127 .00787401574803149606f
 #define INV16 .0625
 // Regular memory
-float midiNoteScale[NUMBER_OF_TIMBRES][128];
+float midiNoteScale[2][NUMBER_OF_TIMBRES][128];
 
 
 //#define DEBUG_ARP_STEP
@@ -153,9 +153,10 @@ Timbre::Timbre() {
 
 
     this->recomputeNext = true;
+	this->currentGate = 0;
     this->sbMax = &this->sampleBlock[64];
     this->holdPedal = false;
-
+    this->lastPlayedNote = 0;
     // arpegiator
     setNewBPMValue(90);
     arpegiatorStep = 0.0;
@@ -196,8 +197,10 @@ void Timbre::init(int timbreNumber) {
 
     this->timbreNumber = timbreNumber;
 
-    for (int n=0; n<128; n++) {
-        midiNoteScale[timbreNumber][n] = INV127 * (float)n;
+    for (int s=0; s<2; s++) {
+        for (int n=0; n<128; n++) {
+            midiNoteScale[s][timbreNumber][n] = INV127 * (float)n;
+        }
     }
 
 }
@@ -351,8 +354,10 @@ void Timbre::preenNoteOn(char note, char velocity) {
 		}
 
 		// Update voice matrix with midi note and velocity
-		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE, midiNoteScale[timbreNumber][note]);
+		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE1, midiNoteScale[0][timbreNumber][note]);
+        voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE2, midiNoteScale[1][timbreNumber][note]);
 		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY, INV127*velocity);
+		this->lastPlayedNote = voiceToUse;
 	}
 }
 
@@ -469,7 +474,35 @@ void Timbre::cleanNextBlock() {
 
 void Timbre::fxAfterBlock(float ratioTimbres) {
 
-    float matrixFilterFrequency = voices[0]->matrix.getDestination(FILTER_FREQUENCY);
+    // Gate algo !!
+    float gate = voices[this->lastPlayedNote]->matrix.getDestination(MAIN_GATE);
+    if (unlikely(gate > 0 || currentGate > 0)) {
+		gate *=.72547132656922730694f; // 0 < gate < 1.0
+		if (gate > 1.0f) {
+			gate = 1.0f;
+		}
+		float incGate = (gate - currentGate) * .03125f; // ( *.03125f = / 32)
+		// limit the speed.
+		if (incGate > 0.002f) {
+			incGate = 0.002f;
+		} else if (incGate < -0.002f) {
+			incGate = -0.002f;
+		}
+
+		float *sp = this->sampleBlock;
+		float coef;
+    	for (int k=0 ; k< BLOCK_SIZE ; k++) {
+			currentGate += incGate;
+			coef = 1.0f - currentGate;
+			*sp = *sp * coef;
+			sp++;
+			*sp = *sp * coef;
+			sp++;
+		}
+    //    currentGate = gate;
+    }
+
+    float matrixFilterFrequency = voices[this->lastPlayedNote]->matrix.getDestination(FILTER_FREQUENCY);
 
 
     // LP Algo
@@ -850,7 +883,8 @@ void Timbre::afterNewParamsLoad() {
     	setNewEffecParam(k);
     }
     // Update midi note scale
-    updateMidiNoteScale();
+    updateMidiNoteScale(0);
+    updateMidiNoteScale(1);
 }
 
 
@@ -1276,11 +1310,20 @@ void Timbre::lfoValueChange(int currentRow, int encoder, float newValue) {
     }
 }
 
-void Timbre::updateMidiNoteScale() {
+void Timbre::updateMidiNoteScale(int scale) {
 
-    int intBreakNote = params.midiNoteCurve.breakNote;
-    int curveBefore =  params.midiNoteCurve.curveBefore;
-    int curveAfter =  params.midiNoteCurve.curveAfter;
+    int intBreakNote;
+    int curveBefore;
+    int curveAfter;
+    if (scale == 0) {
+        intBreakNote = params.midiNote1Curve.breakNote;
+        curveBefore = params.midiNote1Curve.curveBefore;
+        curveAfter = params.midiNote1Curve.curveAfter;
+    } else {
+        intBreakNote = params.midiNote2Curve.breakNote;
+        curveBefore = params.midiNote2Curve.curveBefore;
+        curveAfter = params.midiNote2Curve.curveAfter;
+    }
     float floatBreakNote = intBreakNote;
     float multiplier = 1.0f;
 
@@ -1288,7 +1331,7 @@ void Timbre::updateMidiNoteScale() {
     switch (curveBefore) {
     case MIDI_NOTE_CURVE_FLAT:
         for (int n=0; n < intBreakNote ; n++) {
-            midiNoteScale[timbreNumber][n] = 0;
+            midiNoteScale[scale][timbreNumber][n] = 0;
         }
         break;
     case MIDI_NOTE_CURVE_M_LINEAR:
@@ -1304,7 +1347,7 @@ void Timbre::updateMidiNoteScale() {
         linearBefore:
         for (int n=0; n < intBreakNote ; n++) {
             float fn = (floatBreakNote - n);
-            midiNoteScale[timbreNumber][n] = fn * INV127 * multiplier;
+            midiNoteScale[scale][timbreNumber][n] = fn * INV127 * multiplier;
         }
         break;
     case MIDI_NOTE_CURVE_M_EXP:
@@ -1313,13 +1356,13 @@ void Timbre::updateMidiNoteScale() {
         for (int n=0; n < intBreakNote ; n++) {
             float fn = (floatBreakNote - n);
             fn = fn * fn / floatBreakNote;
-            midiNoteScale[timbreNumber][n] = fn * INV16 * multiplier;
+            midiNoteScale[scale][timbreNumber][n] = fn * INV16 * multiplier;
         }
         break;
     }
 
     // BREAK NOTE = 0;
-    midiNoteScale[timbreNumber][intBreakNote] = 0;
+    midiNoteScale[scale][timbreNumber][intBreakNote] = 0;
 
 
     float floatAfterBreakNote = 127 - floatBreakNote;
@@ -1329,7 +1372,7 @@ void Timbre::updateMidiNoteScale() {
     switch (curveAfter) {
     case MIDI_NOTE_CURVE_FLAT:
         for (int n = intBreakNote + 1; n < 128 ; n++) {
-            midiNoteScale[timbreNumber][n] = 0;
+            midiNoteScale[scale][timbreNumber][n] = 0;
         }
         break;
     case MIDI_NOTE_CURVE_M_LINEAR:
@@ -1345,7 +1388,7 @@ void Timbre::updateMidiNoteScale() {
         linearAfter:
         for (int n = intBreakNote + 1; n < 128 ; n++) {
             float fn = n - floatBreakNote;
-            midiNoteScale[timbreNumber][n] = fn  * INV127 * multiplier;
+            midiNoteScale[scale][timbreNumber][n] = fn  * INV127 * multiplier;
         }
         break;
     case MIDI_NOTE_CURVE_M_EXP:
@@ -1354,7 +1397,7 @@ void Timbre::updateMidiNoteScale() {
         for (int n = intBreakNote + 1; n < 128 ; n++) {
             float fn = n - floatBreakNote;
             fn = fn * fn / floatBreakNote;
-            midiNoteScale[timbreNumber][n] = fn * INV16 * multiplier;
+            midiNoteScale[scale][timbreNumber][n] = fn * INV16 * multiplier;
         }
         break;
     }
