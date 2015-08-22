@@ -140,6 +140,12 @@ public:
     void sendSysexByte(uint8_t byte);
     void sendSysexFinished();
 
+    // Firmware 2.00
+    // Phase LFO1/3 added not at the right place so nrpm and params row are now
+    // unlinked for compatibility reason....
+    int getNrpnRowFromParamRow(int paramRow);
+    int getParamRowFromNrpnRow(int nrpmRow);
+
 private:
     struct MidiEventState currentEventState;
     struct MidiEvent currentEvent;

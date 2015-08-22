@@ -1,5 +1,4 @@
 /*
- * Copyright 2013 Xavier Hosxe
  *
  * Author: Xavier Hosxe (xavier . hosxe (at) gmail . com)
  *
@@ -633,7 +632,7 @@ void FMDisplay::newParamValueFromExternal(int timbre, int currentRow, int encode
     if (timbre == currentTimbre) {
         checkPresetModified(timbre);
         if (this->synthState->getSynthMode() == SYNTH_MODE_EDIT && currentRow == this->displayedRow) {
-            if (currentRow >= ROW_LFOSEQ1 && encoder>1) {
+            if (unlikely((currentRow == ROW_LFOSEQ1 || currentRow == ROW_LFOSEQ2) && encoder>1)) {
                 updateStepSequencer(currentRow, encoder, oldValue, newValue);
                 return;
             }
