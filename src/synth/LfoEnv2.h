@@ -70,8 +70,8 @@ public:
         env.nextStateValue = stateTarget[env.envState];
         env.currentPhase = 0;
         if (env.envState == ENV2_STATE_ON_S) {
-            if (this->matrix->getDestination(this->destination) != 0) {
-                float silencePlusMatrix = envParams->silence + this->matrix->getDestination(this->destination);
+            if (this->matrix->getDestination((enum DestinationEnum)this->destination) != 0) {
+                float silencePlusMatrix = envParams->silence + this->matrix->getDestination((enum DestinationEnum)this->destination);
                 if (silencePlusMatrix <= 0) {
                     stateInc[ENV2_STATE_ON_S] = 1.0;
                 } else if (silencePlusMatrix > 8) {
@@ -88,15 +88,15 @@ public:
     void nextValueInMatrix() {
         env.currentPhase += stateInc[env.envState];
 
-        if (env.currentPhase  >= 1.0f) {
+        if (unlikely(env.currentPhase  >= 1.0f)) {
             env.currentValue = env.nextStateValue;
             env.envState++;
             newState();
-        } else if (stateInc[env.envState] > 0) {
+        } else if (likely(stateInc[env.envState] > 0)) {
             env.currentValue = env.previousStateValue * (1- env.currentPhase) + env.nextStateValue * env.currentPhase;
         }
 
-		matrix->setSource(source, env.currentValue);
+		matrix->setSource((enum SourceEnum)source, env.currentValue);
 	}
 
 	void noteOn() {

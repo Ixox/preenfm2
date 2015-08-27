@@ -33,6 +33,10 @@ public:
 	    if (encoder == 3) {
 			this->rampInv = 50 * invTab[(int)(lfo->keybRamp * 50.0f)];
 			this->ramp = lfo->keybRamp;
+			if (this->ramp < 0 ) {
+			    // resync all LFO
+			    phase = 0;
+			}
 	    }
 	}
 

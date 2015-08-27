@@ -137,12 +137,14 @@ void Synth::buildNewSampleBlock() {
                 this->voices[timbres[t].voiceNumber[0]].glide();
             }
         }
+        timbres[t].prepareMatrixForNewBlock();
     }
     CYCLE_MEASURE_END();
 
     CYCLE_MEASURE_START(cycles_voices2);
     // render all voices in their timbre sample block...
     // 16 voices
+
     if (this->voices[0].isPlaying()) {
         this->voices[0].nextBlock();
     }
@@ -266,11 +268,17 @@ void Synth::afterNewParamsLoad(int timbre) {
     rebuidVoiceTimbre();
     updateNumberOfActiveTimbres();
     timbres[timbre].numberOfVoicesChanged();
+
+    // values to force check lfo used
+    timbres[timbre].verifyLfoUsed(ENCODER_MATRIX_SOURCE, 0.0f, 1.0f);
+
 }
 
 void Synth::afterNewComboLoad() {
     for (int t=0; t<NUMBER_OF_TIMBRES ; t++) {
         timbres[t].afterNewParamsLoad();
+        // values to force check lfo used
+        timbres[t].verifyLfoUsed(ENCODER_MATRIX_SOURCE, 0.0f, 1.0f);
     }
     rebuidVoiceTimbre();
     refreshNumberOfOsc();
@@ -438,6 +446,7 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
             timbres[timbre].env6.reloadADSR(encoder + 4);
             break;
         case ROW_MATRIX_FIRST ... ROW_MATRIX_LAST:
+            timbres[timbre].verifyLfoUsed(encoder, oldValue, newValue);
             if (encoder == ENCODER_MATRIX_DEST) {
                 // Reset old destination
                 timbres[timbre].resetMatrixDestination(oldValue);

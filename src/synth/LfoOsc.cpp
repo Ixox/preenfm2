@@ -221,7 +221,7 @@ void LfoOsc::nextValueInMatrix() {
 
     lfoValue += lfo->bias;
 
-    matrix->setSource(source, lfoValue);
+    matrix->setSource((enum SourceEnum)source, lfoValue);
 }
 
 

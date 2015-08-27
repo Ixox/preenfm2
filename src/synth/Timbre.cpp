@@ -181,12 +181,12 @@ Timbre::~Timbre() {
 void Timbre::init(int timbreNumber) {
 
 
-	env1.init(&params.env1a,  &params.env1b, ENV1_ATTACK);
-	env2.init(&params.env2a,  &params.env2b, ENV2_ATTACK);
-	env3.init(&params.env3a,  &params.env3b, ENV3_ATTACK);
-	env4.init(&params.env4a,  &params.env4b, ENV4_ATTACK);
-	env5.init(&params.env5a,  &params.env5b, ENV5_ATTACK);
-	env6.init(&params.env6a,  &params.env6b, ENV6_ATTACK);
+	env1.init(&params.env1a,  &params.env1b);
+	env2.init(&params.env2a,  &params.env2b);
+	env3.init(&params.env3a,  &params.env3b);
+	env4.init(&params.env4a,  &params.env4b);
+	env5.init(&params.env5a,  &params.env5b);
+	env6.init(&params.env6a,  &params.env6b);
 
 	osc1.init(&params.osc1, OSC1_FREQ);
 	osc2.init(&params.osc2, OSC2_FREQ);
@@ -201,6 +201,9 @@ void Timbre::init(int timbreNumber) {
         for (int n=0; n<128; n++) {
             midiNoteScale[s][timbreNumber][n] = INV127 * (float)n;
         }
+    }
+    for (int lfo=0; lfo<NUMBER_OF_LFO; lfo++) {
+        lfoUSed[lfo] = 0;
     }
 
 }
@@ -289,6 +292,7 @@ void Timbre::preenNoteOn(char note, char velocity) {
 		lcd.print("S:");
 		lcd.print(n);
 #endif
+		    preenNoteOnUpdateMatrix(n, note, velocity);
 			voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++);
 			return;
 		}
@@ -343,6 +347,10 @@ void Timbre::preenNoteOn(char note, char velocity) {
 		}
 		lcd.print(voiceToUse);
 #endif
+
+
+		preenNoteOnUpdateMatrix(voiceToUse, note, velocity);
+
 		switch (newNoteType) {
 		case NEW_NOTE_FREE:
 			voices[voiceToUse]->noteOn(note, velocity, voiceIndex++);
@@ -353,14 +361,16 @@ void Timbre::preenNoteOn(char note, char velocity) {
 			break;
 		}
 
-		// Update voice matrix with midi note and velocity
-		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE1, midiNoteScale[0][timbreNumber][note]);
-        voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE2, midiNoteScale[1][timbreNumber][note]);
-		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY, INV127*velocity);
 		this->lastPlayedNote = voiceToUse;
 	}
 }
 
+void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
+    // Update voice matrix with midi note and velocity
+    voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE1, midiNoteScale[0][timbreNumber][note]);
+    voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE2, midiNoteScale[1][timbreNumber][note]);
+    voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY, INV127*velocity);
+}
 
 void Timbre::preenNoteOff(char note) {
 	int iNov = (int) params.engine1.numberOfVoice;
@@ -468,6 +478,12 @@ void Timbre::cleanNextBlock() {
 	}
 }
 
+
+void Timbre::prepareMatrixForNewBlock() {
+    for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+        voices[k]->prepareMatrixForNewBlock();
+    }
+}
 
 
 #define GATE_INC 0.02f
@@ -581,6 +597,9 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     	if (unlikely(fxParam1 > 1.0)) {
     		fxParam1 = 1.0;
     	}
+        if (unlikely(fxParam1 < 0.0f)) {
+            fxParam1 = 0.0f;
+        }
     	float pattern = (1 - fxParam2 * fxParam1);
 
     	float *sp = this->sampleBlock;
@@ -723,8 +742,32 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
         // Type : Quantizer / Decimator with smooth control
         // References : Posted by David Lowenfels
 
+        //        function output = crusher( input, normfreq, bits );
+        //            step = 1/2^(bits);
+        //            phasor = 0;
+        //            last = 0;
+        //
+        //            for i = 1:length(input)
+        //               phasor = phasor + normfreq;
+        //               if (phasor >= 1.0)
+        //                  phasor = phasor - 1.0;
+        //                  last = step * floor( input(i)/step + 0.5 ); %quantize
+        //               end
+        //               output(i) = last; %sample and hold
+        //            end
+        //        end
 
-        float fxFreq = params.effect.param1 ;
+
+        float fxParamTmp = params.effect.param1 + matrixFilterFrequency +.005f;
+        if (unlikely(fxParamTmp > 1.0)) {
+            fxParamTmp = 1.0;
+        }
+        if (unlikely(fxParamTmp < 0.005f)) {
+            fxParamTmp = 0.005f;
+        }
+        fxParamA1 = (fxParamTmp + 9.0f * fxParamA1) * .1f;
+        // Low pass... on the Sampling rate
+        float fxFreq = fxParamA1;
 
         float *sp = this->sampleBlock;
         float sampleR, sampleL;
@@ -732,8 +775,13 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
         float localv0L = v0L;
         float localv0R = v0R;
         float localPhase = fxPhase;
+
         float localPower = fxParam1;
         float localStep = fxParam2;
+
+        //        localPower = fxParam1 = pow(2, (int)(1.0f + 15.0f * params.effect.param2));
+        //        localStep = fxParam2 = 1 / fxParam1;
+
 
         for (int k=0 ; k < BLOCK_SIZE ; k++) {
             localPhase += fxFreq;
@@ -859,28 +907,25 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
 
 
 void Timbre::afterNewParamsLoad() {
-
-
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
         voices[k]->afterNewParamsLoad();
     }
 
-
-	 for (int j=0; j<NUMBER_OF_ENCODERS * 2; j++) {
-		this->env1.reloadADSR(j);
-		this->env2.reloadADSR(j);
-		this->env3.reloadADSR(j);
-		this->env4.reloadADSR(j);
-		this->env5.reloadADSR(j);
-		this->env6.reloadADSR(j);
-	}
+    for (int j=0; j<NUMBER_OF_ENCODERS * 2; j++) {
+        this->env1.reloadADSR(j);
+        this->env2.reloadADSR(j);
+        this->env3.reloadADSR(j);
+        this->env4.reloadADSR(j);
+        this->env5.reloadADSR(j);
+        this->env6.reloadADSR(j);
+    }
 
 
     resetArpeggiator();
     v0L = v1L = 0.0f;
     v0R = v1R = 0.0f;
     for (int k=0; k<NUMBER_OF_ENCODERS; k++) {
-    	setNewEffecParam(k);
+        setNewEffecParam(k);
     }
     // Update midi note scale
     updateMidiNoteScale(0);
@@ -993,9 +1038,10 @@ void Timbre::setNewEffecParam(int encoder) {
     	break;
     case FILTER_CRUSHER:
     {
-        int fxBit = 1.0f + 15.0f * params.effect.param2;
-        fxParam1 = pow(2, fxBit);
-        fxParam2 = 1 / fxParam1;
+        if (encoder == ENCODER_EFFECT_PARAM2) {
+            fxParam1 = pow(2, (int)(1.0f + 15.0f * params.effect.param2));
+            fxParam2 = 1 / fxParam1;
+        }
         break;
     }
     case FILTER_BP:
@@ -1473,4 +1519,38 @@ void Timbre::setMatrixSource(enum SourceEnum source, float newValue) {
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
         voices[k]->matrix.setSource(source, newValue);
     }
+}
+
+
+void Timbre::verifyLfoUsed(int encoder, float oldValue, float newValue) {
+    // No need to recompute
+    if (params.engine1.numberOfVoice == 0.0f) {
+        return;
+    }
+    if ((encoder == ENCODER_MATRIX_MUL || encoder == ENCODER_MATRIX_DEST) && oldValue != 0.0f && newValue != 0.0f) {
+        return;
+    }
+
+    for (int lfo=0; lfo < NUMBER_OF_LFO; lfo++) {
+        lfoUSed[lfo] = 0;
+    }
+
+    MatrixRowParams* matrixRows = &params.matrixRowState1;
+    for (int r = 0; r < MATRIX_SIZE; r++) {
+        if (matrixRows[r].source >= MATRIX_SOURCE_LFO1 && matrixRows[r].source <= MATRIX_SOURCE_LFOSEQ2
+                && matrixRows[r].mul != 0.0f
+                && matrixRows[r].destination != 0.0f) {
+            lfoUSed[(int)matrixRows[r].source - MATRIX_SOURCE_LFO1]++;
+        }
+    }
+
+    /*
+    lcd.setCursor(11, 1);
+    lcd.print('>');
+    for (int lfo=0; lfo < NUMBER_OF_LFO; lfo++) {
+        lcd.print((int)lfoUSed[lfo]);
+    }
+    lcd.print('<');
+*/
+
 }

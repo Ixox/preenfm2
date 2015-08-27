@@ -160,70 +160,153 @@ public:
 
 
     void midiClockSongPositionStep(int songPosition, bool recomputeNext) {
-        lfoOsc[0].midiClock(songPosition, recomputeNext);
-        lfoOsc[1].midiClock(songPosition, recomputeNext);
-        lfoOsc[2].midiClock(songPosition, recomputeNext);
-        lfoEnv[0].midiClock(songPosition, recomputeNext);
-        lfoEnv2[0].midiClock(songPosition, recomputeNext);
-        lfoStepSeq[0].midiClock(songPosition, recomputeNext);
-        lfoStepSeq[1].midiClock(songPosition, recomputeNext);
+        if (likely(currentTimbre->isLfoUsed(0))) {
+            lfoOsc[0].midiClock(songPosition, recomputeNext);
+        }
+        if (likely(currentTimbre->isLfoUsed(1))) {
+            lfoOsc[1].midiClock(songPosition, recomputeNext);
+        }
+        if (likely(currentTimbre->isLfoUsed(2))) {
+            lfoOsc[2].midiClock(songPosition, recomputeNext);
+        }
+        if (likely(currentTimbre->isLfoUsed(3))) {
+            lfoEnv[0].midiClock(songPosition, recomputeNext);
+        }
+        if (likely(currentTimbre->isLfoUsed(4))) {
+            lfoEnv2[0].midiClock(songPosition, recomputeNext);
+        }
+        if (likely(currentTimbre->isLfoUsed(5))) {
+            lfoStepSeq[0].midiClock(songPosition, recomputeNext);
+        }
+        if (likely(currentTimbre->isLfoUsed(6))) {
+            lfoStepSeq[1].midiClock(songPosition, recomputeNext);
+        }
     }
 
     void midiClockContinue(int songPosition) {
-        lfoOsc[0].midiClock(songPosition, false);
-        lfoOsc[1].midiClock(songPosition, false);
-        lfoOsc[2].midiClock(songPosition, false);
-        lfoEnv[0].midiClock(songPosition, false);
-        lfoEnv2[0].midiClock(songPosition, false);
-        lfoStepSeq[0].midiClock(songPosition, false);
-        lfoStepSeq[1].midiClock(songPosition, false);
+        if (likely(currentTimbre->isLfoUsed(0))) {
+            lfoOsc[0].midiClock(songPosition, false);
+        }
+        if (likely(currentTimbre->isLfoUsed(1))) {
+            lfoOsc[1].midiClock(songPosition, false);
+        }
+        if (likely(currentTimbre->isLfoUsed(2))) {
+            lfoOsc[2].midiClock(songPosition, false);
+        }
+        if (likely(currentTimbre->isLfoUsed(3))) {
+            lfoEnv[0].midiClock(songPosition, false);
+        }
+        if (likely(currentTimbre->isLfoUsed(4))) {
+            lfoEnv2[0].midiClock(songPosition, false);
+        }
+        if (likely(currentTimbre->isLfoUsed(5))) {
+            lfoStepSeq[0].midiClock(songPosition, false);
+        }
+        if (likely(currentTimbre->isLfoUsed(6))) {
+            lfoStepSeq[1].midiClock(songPosition, false);
+        }
     }
 
 
     void midiClockStart() {
-        lfoOsc[0].midiContinue();
-        lfoOsc[1].midiContinue();
-        lfoOsc[2].midiContinue();
-        lfoEnv[0].midiContinue();
-        lfoEnv2[0].midiContinue();
-        lfoStepSeq[0].midiContinue();
-        lfoStepSeq[1].midiContinue();
+        if (likely(currentTimbre->isLfoUsed(0))) {
+            lfoOsc[0].midiContinue();
+        }
+        if (likely(currentTimbre->isLfoUsed(1))) {
+            lfoOsc[1].midiContinue();
+        }
+        if (likely(currentTimbre->isLfoUsed(2))) {
+            lfoOsc[2].midiContinue();
+        }
+        if (likely(currentTimbre->isLfoUsed(3))) {
+            lfoEnv[0].midiContinue();
+        }
+        if (likely(currentTimbre->isLfoUsed(4))) {
+            lfoEnv2[0].midiContinue();
+        }
+        if (likely(currentTimbre->isLfoUsed(5))) {
+            lfoStepSeq[0].midiContinue();
+        }
+        if (likely(currentTimbre->isLfoUsed(6))) {
+            lfoStepSeq[1].midiContinue();
+        }
     }
 
 
     void lfoNoteOn() {
-        lfoOsc[0].noteOn();
-        lfoOsc[1].noteOn();
-        lfoOsc[2].noteOn();
-        lfoEnv[0].noteOn();
-        lfoEnv2[0].noteOn();
-        lfoStepSeq[0].noteOn();
-        lfoStepSeq[1].noteOn();
+        if (likely(currentTimbre->isLfoUsed(0))) {
+            lfoOsc[0].noteOn();
+        }
+        if (likely(currentTimbre->isLfoUsed(1))) {
+            lfoOsc[1].noteOn();
+        }
+        if (likely(currentTimbre->isLfoUsed(2))) {
+            lfoOsc[2].noteOn();
+        }
+        if (likely(currentTimbre->isLfoUsed(3))) {
+            lfoEnv[0].noteOn();
+        }
+        if (likely(currentTimbre->isLfoUsed(4))) {
+            lfoEnv2[0].noteOn();
+        }
+        if (likely(currentTimbre->isLfoUsed(5))) {
+            lfoStepSeq[0].noteOn();
+        }
+        if (likely(currentTimbre->isLfoUsed(6))) {
+            lfoStepSeq[1].noteOn();
+        }
     }
 
     void lfoNoteOff() {
-        lfoOsc[0].noteOff();
-        lfoOsc[1].noteOff();
-        lfoOsc[2].noteOff();
-        lfoEnv[0].noteOff();
-        lfoEnv2[0].noteOff();
-        lfoStepSeq[0].noteOff();
-        lfoStepSeq[1].noteOff();
+        if (likely(currentTimbre->isLfoUsed(0))) {
+            lfoOsc[0].noteOff();
+        }
+        if (likely(currentTimbre->isLfoUsed(1))) {
+            lfoOsc[1].noteOff();
+        }
+        if (likely(currentTimbre->isLfoUsed(2))) {
+            lfoOsc[2].noteOff();
+        }
+        if (likely(currentTimbre->isLfoUsed(3))) {
+            lfoEnv[0].noteOff();
+        }
+        if (likely(currentTimbre->isLfoUsed(4))) {
+            lfoEnv2[0].noteOff();
+        }
+        if (likely(currentTimbre->isLfoUsed(5))) {
+            lfoStepSeq[0].noteOff();
+        }
+        if (likely(currentTimbre->isLfoUsed(6))) {
+            lfoStepSeq[1].noteOff();
+        }
     }
 
-    void prepareForNewBlock() {
+    void prepareMatrixForNewBlock() {
 
-        this->lfoOsc[0].nextValueInMatrix();
-        this->lfoOsc[1].nextValueInMatrix();
-        this->lfoOsc[2].nextValueInMatrix();
-        this->lfoEnv[0].nextValueInMatrix();
-        this->lfoEnv2[0].nextValueInMatrix();
-        this->lfoStepSeq[0].nextValueInMatrix();
-        this->lfoStepSeq[1].nextValueInMatrix();
+        if (likely(currentTimbre->isLfoUsed(0))) {
+            this->lfoOsc[0].nextValueInMatrix();
+        }
+        if (likely(currentTimbre->isLfoUsed(1))) {
+            this->lfoOsc[1].nextValueInMatrix();
+        }
+        if (likely(currentTimbre->isLfoUsed(2))) {
+            this->lfoOsc[2].nextValueInMatrix();
+        }
+        if (likely(currentTimbre->isLfoUsed(3))) {
+            this->lfoEnv[0].nextValueInMatrix();
+        }
+        if (likely(currentTimbre->isLfoUsed(4))) {
+            this->lfoEnv2[0].nextValueInMatrix();
+        }
+        if (likely(currentTimbre->isLfoUsed(5))) {
+            this->lfoStepSeq[0].nextValueInMatrix();
+        }
+        if (likely(currentTimbre->isLfoUsed(6))) {
+            this->lfoStepSeq[1].nextValueInMatrix();
+        }
 
-        this->matrix.computeAllFutureDestintationAndSwitch();
+        this->matrix.computeAllDestintations();
         updateAllModulationIndexes();
-        updateAllMixOscsAndPans();
     }
 
 
@@ -273,6 +356,7 @@ private:
     char note;
     float velocity;
     float im1, im2, im3, im4, im5;
+    bool newNotePlayed;
     //
     float freqAi, freqAo;
     float freqBi, freqBo;

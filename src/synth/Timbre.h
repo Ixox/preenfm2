@@ -54,6 +54,7 @@ public:
     void initVoicePointer(int n, Voice* voice);
     void prepareForNextBlock();
     void cleanNextBlock();
+    void prepareMatrixForNewBlock();
     void fxAfterBlock(float ratioTimbres);
     void afterNewParamsLoad();
     void setNewValue(int index, struct ParameterDisplay* param, float newValue);
@@ -77,6 +78,7 @@ public:
     void noteOff(char note);
 
     void preenNoteOn(char note, char velocity);
+    inline void preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity);
     void preenNoteOff(char note);
     void numberOfVoicesChanged() {
         if (params.engine1.numberOfVoice > 0) {
@@ -104,6 +106,7 @@ public:
 
     void resetMatrixDestination(float oldValue);
     void setMatrixSource(enum SourceEnum source, float newValue);
+    void verifyLfoUsed(int encoder, float oldValue, float newValue);
 
     void midiClockStop() {
         OnMidiStop();
@@ -133,6 +136,11 @@ public:
     // Midi note response
     // Midi Note Scale
     void updateMidiNoteScale(int scale);
+
+    // Do matrix use LFO
+    bool isLfoUsed(int lfo) {
+        return  lfoUSed[lfo] > 0;
+    }
 
 private:
 
@@ -221,6 +229,10 @@ private:
     float fxPhase;
     // save float fxParam1 to detect modification
     float fxParam1PlusMatrix;
+
+    // lfoUsed
+    uint8_t lfoUSed[NUMBER_OF_LFO];
+
 };
 
 #endif /* TIMBRE_H_ */

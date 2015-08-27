@@ -57,6 +57,7 @@ void Voice::init() {
 	this->newNotePending = false;
 	this->note = 0;
 	this->holdedByPedal = false;
+    this->newNotePlayed = false;
 }
 
 
@@ -126,6 +127,8 @@ void Voice::glide() {
 }
 
 void Voice::noteOn(short newNote, short velocity, unsigned int index) {
+
+
 	this->released = false;
 	this->playing = true;
 	this->note = newNote;
@@ -151,12 +154,16 @@ void Voice::noteOn(short newNote, short velocity, unsigned int index) {
 	currentTimbre->osc5.newNote(&oscState5, newNote);
 	currentTimbre->osc6.newNote(&oscState6, newNote);
 
-	currentTimbre->env1.noteOn(&envState1);
-	currentTimbre->env2.noteOn(&envState2);
-	currentTimbre->env3.noteOn(&envState3);
-	currentTimbre->env4.noteOn(&envState4);
-	currentTimbre->env5.noteOn(&envState5);
-	currentTimbre->env6.noteOn(&envState6);
+	/* Firmware v2.0  Env must be initialized after matrix computation so in
+	currentTimbre->env1.noteOn(&envState1, &matrix);
+	currentTimbre->env2.noteOn(&envState2, &matrix);
+	currentTimbre->env3.noteOn(&envState3, &matrix);
+	currentTimbre->env4.noteOn(&envState4, &matrix);
+	currentTimbre->env5.noteOn(&envState5, &matrix);
+	currentTimbre->env6.noteOn(&envState6, &matrix);
+	*/
+	// Tell nextBlock() to init Env...
+    this->newNotePlayed = true;
 
 	lfoNoteOn();
 }
@@ -193,12 +200,12 @@ void Voice::noteOff() {
 	this->gliding = false;
 	this->holdedByPedal = false;
 
-	currentTimbre->env1.noteOff(&envState1);
-	currentTimbre->env2.noteOff(&envState2);
-	currentTimbre->env3.noteOff(&envState3);
-	currentTimbre->env4.noteOff(&envState4);
-	currentTimbre->env5.noteOff(&envState5);
-	currentTimbre->env6.noteOff(&envState6);
+	currentTimbre->env1.noteOff(&envState1, &matrix);
+	currentTimbre->env2.noteOff(&envState2, &matrix);
+	currentTimbre->env3.noteOff(&envState3, &matrix);
+	currentTimbre->env4.noteOff(&envState4, &matrix);
+	currentTimbre->env5.noteOff(&envState5, &matrix);
+	currentTimbre->env6.noteOff(&envState6, &matrix);
 
 	lfoNoteOff();
 }
@@ -219,8 +226,18 @@ void Voice::killNow() {
 
 
 void Voice::nextBlock() {
+    updateAllMixOscsAndPans();
+    // After matrix
+    if (unlikely(this->newNotePlayed)) {
+        this->newNotePlayed = false;
 
-    prepareForNewBlock();
+        currentTimbre->env1.noteOnAfterMatrixCompute(&envState1, &matrix);
+        currentTimbre->env2.noteOnAfterMatrixCompute(&envState2, &matrix);
+        currentTimbre->env3.noteOnAfterMatrixCompute(&envState3, &matrix);
+        currentTimbre->env4.noteOnAfterMatrixCompute(&envState4, &matrix);
+        currentTimbre->env5.noteOnAfterMatrixCompute(&envState5, &matrix);
+        currentTimbre->env6.noteOnAfterMatrixCompute(&envState6, &matrix);
+    }
 
 	float env1Value;
 	float env2Value;

@@ -19,8 +19,6 @@
 
 
 Matrix::Matrix() {
-	currentDestinations = destinations2;
-	futurDestinations = destinations1;
 }
 
 Matrix::~Matrix() {

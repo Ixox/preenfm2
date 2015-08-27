@@ -139,7 +139,7 @@ void LfoStepSeq::nextValueInMatrix() {
 		currentValue--;
 	}
 	//matrix->setSource(source, expValues[currentValue]);
-	matrix->setSource(source, expValues[currentValue]);
+	matrix->setSource((enum SourceEnum)source, expValues[currentValue]);
 }
 
 void LfoStepSeq::noteOn() {

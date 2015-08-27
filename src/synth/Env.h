@@ -37,13 +37,16 @@ enum EnvState {
 
 struct EnvData {
     // State of the env
-    int envState;
+    uint8_t envState;
     // Current sample
     float currentValue;
     // previous state value and next state value
     float previousStateValue, nextStateValue;
     // currentPhase
     float currentPhase;
+    // Inc attack and Inc Release is per voice since firmware 2.0
+    float stateIncAttack;
+    float stateIncRelease;
 };
 
 struct table {
@@ -61,11 +64,6 @@ public:
     Env() {
         stateTarget[ENV_STATE_ON_QUICK_R] = 0.0f;
         stateTarget[ENV_STATE_DEAD] = 0.0f;
-
-        stateInc[ENV_STATE_DEAD] = 0.0f;
-        stateInc[ENV_STATE_ON_REAL_S] = 0.0f;
-        // quick release : 4 steps = 128 samples...
-        stateInc[ENV_STATE_ON_QUICK_R] = 0.25f;
 
         nextState[ENV_STATE_ON_A] = ENV_STATE_ON_D;
         nextState[ENV_STATE_ON_D] = ENV_STATE_ON_S;
@@ -89,7 +87,7 @@ public:
     virtual ~Env(void) {
     }
 
-    void init(struct EnvelopeParamsA *envParamsA, struct EnvelopeParamsB *envParamsB, DestinationEnum da);
+    void init(struct EnvelopeParamsA *envParamsA, struct EnvelopeParamsB *envParamsB);
 
     void reloadADSR(int encoder) {
     	// 0 Attack time
@@ -128,9 +126,6 @@ public:
 
     void newState(struct EnvData* env) {
 
-//        if (env->envState == ENV_STATE_DEAD) {
-//            env->currentValue = 0;
-//        }
         env->previousStateValue = env->currentValue;
         env->nextStateValue = stateTarget[env->envState];
         env->currentPhase = 0;
@@ -138,39 +133,30 @@ public:
 
 
     inline float getNextAmpExp(struct EnvData* env) {
-		env->currentPhase += stateInc[env->envState];
+        float incPhase;
+
+        switch(env->envState) {
+        case ENV_STATE_ON_A:
+            incPhase = env->stateIncAttack;
+            break;
+        case ENV_STATE_ON_R:
+            incPhase = env->stateIncRelease;
+            break;
+        default:
+            incPhase = stateInc[env->envState];
+            break;
+        }
+		env->currentPhase += incPhase;
 
 		if (unlikely(env->currentPhase  >= 1.0f)) {
 			env->currentValue = env->nextStateValue;
 			env->envState = nextState[env->envState];
 			newState(env);
 
-			/* NO !!! not DX7 compatible !!!
-			if (unlikely(stateInc[env->envState] == 1.0f)) {
-				// Means time is 0 : Move forward
-				// If D or S have 0 timing
-				if (unlikely(env->envState <= ENV_STATE_ON_S)) {
-					if (env->envState != ENV_STATE_ON_S) {
-						env->envState = nextState[env->envState];
-						newState(env);
-					} else {
-						// If sustain jum directly to Release
-						noteOff(env);
-					}
-					// If D was 0 AND S is also 0
-					if (unlikely(stateInc[env->envState] == 1.0f)) {
-						// Means time is 0 : Move forward
-						if (unlikely(env->envState == ENV_STATE_ON_S)) {
-							noteOff(env);
-						}
-					}
-				}
-			}
-			*/
 	        return env->currentValue;
 		}
 
-		if (likely(stateInc[env->envState] > 0)) {
+		if (likely(incPhase > 0)) {
 			float fIndex = env->currentPhase * tables[env->envState].size;
 			int index = (int)fIndex;
 
@@ -188,20 +174,18 @@ public:
 		return env->currentValue;
       }
 
-
-
-    void noteOn(struct EnvData* env) {
-
-    	float attack = envParamsA->attackTime;
-    	if (attack < 0.0f) {
-            attack = 0.0f;
-        }
-        stateInc[ENV_STATE_ON_A] = incTab[(int)(attack * 100.0f)];
-
-
+    void noteOnAfterMatrixCompute(struct EnvData* env, Matrix* matrix) {
+        //
         env->currentValue = 0;
         env->envState = ENV_STATE_ON_A;
         newState(env);
+
+        float attack = envParamsA->attackTime + matrix->getDestination(ALL_ENV_ATTACK);
+        if (attack < 0.0f) {
+            attack = 0.0f;
+        }
+        //stateInc[ENV_STATE_ON_A] = incTab[(int)(attack * 100.0f)];
+        env->stateIncAttack = incTab[(int)(attack * 100.0f)];
     }
 
     void noteOffQuick(struct EnvData* env) {
@@ -218,8 +202,8 @@ public:
 
     }
 
-    void noteOff(struct EnvData* env) {
-        float release = envParamsB->releaseTime;
+    void noteOff(struct EnvData* env, Matrix* matrix) {
+        float release = envParamsB->releaseTime + matrix->getDestination(ALL_ENV_RELEASE);
     	if (release < 0.0f) {
     		release = 0.0f;
         }
@@ -229,8 +213,7 @@ public:
     	} else {
     		release *= (1.0f + (stateTarget[ENV_STATE_ON_R] - env->currentValue)) / 2.0f;
     	}
-        stateInc[ENV_STATE_ON_R] = incTab[(int)(release * 100.0f)];
-
+        env->stateIncRelease = incTab[(int)(release * 100.0f)];
     	env->envState = ENV_STATE_ON_R;
         newState(env);
     }
@@ -244,13 +227,13 @@ private:
     // target values of ADSR
     float stateTarget[ENV_NUMBER_OF_STATES];
     // float
+
     float stateInc[ENV_NUMBER_OF_STATES];
     uint8_t nextState[ENV_NUMBER_OF_STATES];
     struct table tables[ENV_NUMBER_OF_STATES];
 
     EnvelopeParamsA* envParamsA;
     EnvelopeParamsB* envParamsB;
-    DestinationEnum destAttack;
 
     static int initTab;
     static float incTab[1601];

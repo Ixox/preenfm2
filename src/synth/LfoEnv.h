@@ -59,15 +59,15 @@ public:
     void nextValueInMatrix() {
         env.currentPhase += stateInc[env.envState];
 
-        if (env.currentPhase  >= 1.0f) {
+        if (unlikely(env.currentPhase  >= 1.0f)) {
             env.currentValue = env.nextStateValue;
             env.envState++;
             newState();
-        } else if (stateInc[env.envState] > 0) {
+        } else if (likely(stateInc[env.envState] > 0)) {
             env.currentValue = env.previousStateValue * (1- env.currentPhase) + env.nextStateValue * env.currentPhase;
         }
 
-		matrix->setSource(source, env.currentValue);
+		matrix->setSource((enum SourceEnum) source, env.currentValue);
 	}
 
 	void noteOn() {
