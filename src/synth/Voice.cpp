@@ -3217,7 +3217,7 @@ void Voice::setCurrentTimbre(Timbre *timbre) {
 
     // OSC
     for (int k = 0; k < NUMBER_OF_LFO_OSC; k++) {
-        float* phase = ((float*)&timbre->getParamRaw()->lfoPhases) + k;
+        float* phase = &((float*)&timbre->getParamRaw()->lfoPhases.phaseLfo1)[k];
         lfoOsc[k].init(lfoParams[k], phase, &this->matrix, (SourceEnum)(MATRIX_SOURCE_LFO1 + k), (DestinationEnum)(LFO1_FREQ + k));
     }
 

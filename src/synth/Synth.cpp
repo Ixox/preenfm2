@@ -24,7 +24,7 @@
 #include "hardware/dwt.h"
 
 #ifdef DEBUG
-CYCCNT_buffer cycles_rng, cycles_voices1, cycles_voices2, cycles_fx, cycles_timbres;
+CYCCNT_buffer cycles_all;
 #endif
 
 extern float noise[32];
@@ -37,7 +37,7 @@ Synth::~Synth(void) {
 }
 
 void Synth::init() {
-    int numberOfVoices[]= { 6, 0, 0, 0};
+    int numberOfVoices[]= { 6, 0, 0, 0 };
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
         for (int k=0; k<sizeof(struct OneSynthParams)/sizeof(float); k++) {
             ((float*)&timbres[t].params)[k] = ((float*)&preenMainPreset)[k];
@@ -56,7 +56,6 @@ void Synth::init() {
         voices[k].init();
     }
     rebuidVoiceTimbre();
-    refreshNumberOfOsc();
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
         timbres[t].numberOfVoicesChanged();
     }
@@ -112,8 +111,14 @@ bool Synth::isPlaying() {
 }
 
 
+#ifdef DEBUG
+int cptDisplay = 0;
+float totalCycles = 0;
+#endif
+
+
 void Synth::buildNewSampleBlock() {
-    CYCLE_MEASURE_START(cycles_rng);
+    CYCLE_MEASURE_START(cycles_all);
 
     // We consider the random number is always ready here...
     uint32_t random32bit = RNG_GetRandomNumber();
@@ -124,10 +129,7 @@ void Synth::buildNewSampleBlock() {
         noise[noiseIndex++] =  (random32bit & 0xffff) * .000030518f - 1.0f; // value between -1 and 1.
         noise[noiseIndex++] = (random32bit >> 16) * .000030518f - 1.0f; // value between -1 and 1.
     }
-    CYCLE_MEASURE_END();
 
-
-    CYCLE_MEASURE_START(cycles_voices1);
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
         timbres[t].cleanNextBlock();
         if (likely(timbres[t].params.engine1.numberOfVoice > 0)) {
@@ -139,64 +141,16 @@ void Synth::buildNewSampleBlock() {
         }
         timbres[t].prepareMatrixForNewBlock();
     }
-    CYCLE_MEASURE_END();
 
-    CYCLE_MEASURE_START(cycles_voices2);
     // render all voices in their timbre sample block...
     // 16 voices
 
-    if (this->voices[0].isPlaying()) {
-        this->voices[0].nextBlock();
+    for (int v = 0; v < MAX_NUMBER_OF_VOICES; v++) {
+        if (likely(this->voices[v].isPlaying())) {
+            this->voices[v].nextBlock();
+        }
     }
-    if (this->voices[1].isPlaying()) {
-        this->voices[1].nextBlock();
-    }
-    if (this->voices[2].isPlaying()) {
-        this->voices[2].nextBlock();
-    }
-    if (this->voices[3].isPlaying()) {
-        this->voices[3].nextBlock();
-    }
-    if (this->voices[4].isPlaying()) {
-        this->voices[4].nextBlock();
-    }
-    if (this->voices[5].isPlaying()) {
-        this->voices[5].nextBlock();
-    }
-    if (this->voices[6].isPlaying()) {
-        this->voices[6].nextBlock();
-    }
-    if (this->voices[7].isPlaying()) {
-        this->voices[7].nextBlock();
-    }
-    if (this->voices[8].isPlaying()) {
-        this->voices[8].nextBlock();
-    }
-    if (this->voices[9].isPlaying()) {
-        this->voices[9].nextBlock();
-    }
-    if (this->voices[10].isPlaying()) {
-        this->voices[10].nextBlock();
-    }
-    if (this->voices[11].isPlaying()) {
-        this->voices[11].nextBlock();
-    }
-    if (this->voices[12].isPlaying()) {
-        this->voices[12].nextBlock();
-    }
-    if (this->voices[13].isPlaying()) {
-        this->voices[13].nextBlock();
-    }
-    if (this->voices[14].isPlaying()) {
-        this->voices[14].nextBlock();
-    }
-    if (this->voices[15].isPlaying()) {
-        this->voices[15].nextBlock();
-    }
-    CYCLE_MEASURE_END();
 
-
-    CYCLE_MEASURE_START(cycles_fx);
     // Add timbre per timbre because gate and eventual other effect are per timbre
     if (likely(timbres[0].params.engine1.numberOfVoice > 0)) {
         timbres[0].fxAfterBlock(ratioTimbre);
@@ -210,9 +164,7 @@ void Synth::buildNewSampleBlock() {
     if (likely(timbres[3].params.engine1.numberOfVoice > 0)) {
         timbres[3].fxAfterBlock(ratioTimbre);
     }
-    CYCLE_MEASURE_END();
 
-    CYCLE_MEASURE_START(cycles_timbres);
     const float *sampleFromTimbre1 = timbres[0].getSampleBlock();
     const float *sampleFromTimbre2 = timbres[1].getSampleBlock();
     const float *sampleFromTimbre3 = timbres[2].getSampleBlock();
@@ -228,10 +180,26 @@ void Synth::buildNewSampleBlock() {
         *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + toAdd);
     }
 
-    CYCLE_MEASURE_END();
-
     writeCursor = (writeCursor + 64) & 255;
 
+    CYCLE_MEASURE_END();
+
+#ifdef DEBUG
+    if (cptDisplay++ > 500) {
+        totalCycles += cycles_all.remove();
+
+        if (cptDisplay == 600) {
+            float max = SystemCoreClock * 32.0f * PREENFM_FREQUENCY_INVERSED;
+            float percent = totalCycles / max;
+            lcd.setCursor(14, 1);
+            lcd.print('>');
+            lcd.printWithOneDecimal(percent);
+            lcd.print('%');
+            cptDisplay = 0;
+            totalCycles = 0;
+        }
+    }
+#endif
 }
 
 void Synth::beforeNewParamsLoad(int timbre) {
@@ -245,47 +213,67 @@ void Synth::beforeNewParamsLoad(int timbre) {
     allSoundOff();
 };
 
+
+int Synth::getNumberOfFreeVoicesForThisTimbre(int timbre) {
+    int maxNumberOfFreeVoice = 0;
+    for (int t=0 ; t< NUMBER_OF_TIMBRES; t++) {
+        if (t != timbre) {
+            maxNumberOfFreeVoice += timbres[t].params.engine1.numberOfVoice;
+        }
+    }
+    maxNumberOfFreeVoice =  MAX_NUMBER_OF_VOICES - maxNumberOfFreeVoice;
+
+    int freeOsc = getNumberOfFreeOscForThisTimbre(timbre);
+    int maxNumberOfFreeVoicesWithOperators = freeOsc / algoInformation[(int)timbres[timbre].params.engine1.algo].osc ;
+
+    return maxNumberOfFreeVoicesWithOperators < maxNumberOfFreeVoice ? maxNumberOfFreeVoicesWithOperators : maxNumberOfFreeVoice;
+}
+
 void Synth::afterNewParamsLoad(int timbre) {
-    timbres[timbre].afterNewParamsLoad();
     // Reset to 0 the number of voice then try to set the right value
     int numberOfVoice = timbres[timbre].params.engine1.numberOfVoice;
-    timbres[timbre].params.engine1.numberOfVoice = 0;
+    int voicesMax = getNumberOfFreeVoicesForThisTimbre(timbre);
+    timbres[timbre].params.engine1.numberOfVoice = numberOfVoice < voicesMax ? numberOfVoice : voicesMax;
 
-
-    // refresh a first time with numberofvoice = 0
-    refreshNumberOfOsc();
-
-    int freeOsc = MAX_NUMBER_OF_OPERATORS - this->numberOfOsc;
-    float voicesMax = (float)freeOsc / (float)algoInformation[(int)timbres[timbre].params.engine1.algo].osc ;
-
-    if (numberOfVoice > voicesMax) {
-        timbres[timbre].params.engine1.numberOfVoice = (int)voicesMax;
-    } else {
-        timbres[timbre].params.engine1.numberOfVoice = numberOfVoice;
-    }
-    // Refresh again so that the value is up to date
-    refreshNumberOfOsc();
     rebuidVoiceTimbre();
     updateNumberOfActiveTimbres();
-    timbres[timbre].numberOfVoicesChanged();
 
+    timbres[timbre].numberOfVoicesChanged();
+    timbres[timbre].afterNewParamsLoad();
     // values to force check lfo used
     timbres[timbre].verifyLfoUsed(ENCODER_MATRIX_SOURCE, 0.0f, 1.0f);
 
 }
 
 void Synth::afterNewComboLoad() {
+
+
+    // If combo have been saved with 16 voices
+    // Reduce number of voices of timbre with more voices
+    int timbreMax = -1;
+    int voicesOfTimbreMax = -1;
     for (int t=0; t<NUMBER_OF_TIMBRES ; t++) {
+        int numberOfVoice = timbres[t].params.engine1.numberOfVoice;
+        if (numberOfVoice > voicesOfTimbreMax) {
+            timbreMax = t;
+            voicesOfTimbreMax = numberOfVoice;
+        }
+    }
+    if (timbreMax >= 0) {
+        int voicesMax = getNumberOfFreeVoicesForThisTimbre(timbreMax);
+        timbres[timbreMax].params.engine1.numberOfVoice = voicesMax < voicesOfTimbreMax ? voicesMax : voicesOfTimbreMax;
+    }
+
+    rebuidVoiceTimbre();
+    updateNumberOfActiveTimbres();
+
+    for (int t=0; t<NUMBER_OF_TIMBRES ; t++) {
+        timbres[t].numberOfVoicesChanged();
         timbres[t].afterNewParamsLoad();
         // values to force check lfo used
         timbres[t].verifyLfoUsed(ENCODER_MATRIX_SOURCE, 0.0f, 1.0f);
+        //
     }
-    rebuidVoiceTimbre();
-    refreshNumberOfOsc();
-    for (int t=0; t<NUMBER_OF_TIMBRES ; t++) {
-        timbres[t].numberOfVoicesChanged();
-    }
-    updateNumberOfActiveTimbres();
 }
 
 void Synth::updateNumberOfActiveTimbres() {
@@ -334,22 +322,10 @@ int Synth::getFreeVoice() {
 // can prevent some value change...
 void Synth::checkNewParamValue(int timbre, int currentRow, int encoder, float oldValue, float *newValue) {
     if (unlikely(currentRow == ROW_ENGINE)) {
-
-        int freeOsc = MAX_NUMBER_OF_OPERATORS - numberOfOsc;
-        if (unlikely(encoder == ENCODER_ENGINE_ALGO)) {
-            // If one voice exactly and not enough free osc to change algo
-            // If more than 1 voice, it's OK, the number of voice will be reduced later.
-            if (timbres[timbre].params.engine1.numberOfVoice < 1.5f && timbres[timbre].params.engine1.numberOfVoice > 0.5f
-                    &&  freeOsc < (algoInformation[(int)(*newValue)].osc - algoInformation[(int)oldValue].osc)) {
-                // not enough free osc
-                *newValue = oldValue;
-            }
-        }
         if (unlikely(encoder == ENCODER_ENGINE_VOICE)) {
-
             // Increase number of voice ?
             if ((*newValue)> oldValue) {
-                if (freeOsc < ((*newValue) - oldValue) * algoInformation[(int)timbres[timbre].params.engine1.algo].osc) {
+                if ((*newValue) > getNumberOfFreeVoicesForThisTimbre(timbre)) {
                     *newValue = oldValue;
                 }
             }
@@ -362,7 +338,6 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
     case ROW_ENGINE:
         switch (encoder) {
         case ENCODER_ENGINE_ALGO:
-            refreshNumberOfOsc();
             fixMaxNumberOfVoices(timbre);
             break;
         case ENCODER_ENGINE_VOICE:
@@ -370,13 +345,11 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
                 for (int v=(int)oldValue; v < (int)newValue; v++) {
                     timbres[timbre].setVoiceNumber(v, getFreeVoice());
                 }
-                refreshNumberOfOsc();
             } else {
                 for (int v=(int)newValue; v < (int)oldValue; v++) {
                     voices[timbres[timbre].voiceNumber[v]].killNow();
                     timbres[timbre].setVoiceNumber(v, -1);
                 }
-                refreshNumberOfOsc();
             }
             timbres[timbre].numberOfVoicesChanged();
             if (newValue == 0.0f || oldValue == 0.0f) {
@@ -482,9 +455,7 @@ void Synth::newTimbre(int timbre)  {
  *
  */
 bool Synth::fixMaxNumberOfVoices(int timbre) {
-    int freeOsc = MAX_NUMBER_OF_OPERATORS - this->numberOfOsc;
-
-    int voicesMax = (float)timbres[timbre].params.engine1.numberOfVoice + .001f + (float)freeOsc / (float)algoInformation[(int)timbres[timbre].params.engine1.algo].osc ;
+    int voicesMax = getNumberOfFreeVoicesForThisTimbre(timbre) ;
 
     if (this->timbres[timbre].params.engine1.numberOfVoice > voicesMax) {
         int oldValue = this->timbres[timbre].params.engine1.numberOfVoice;
@@ -501,7 +472,6 @@ bool Synth::fixMaxNumberOfVoices(int timbre) {
 
 void Synth::rebuidVoiceTimbre() {
     int voices = 0;
-    int activeTimbre = 0;
 
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
         int nv = timbres[t].params.engine1.numberOfVoice;
@@ -515,13 +485,17 @@ void Synth::rebuidVoiceTimbre() {
     }
 }
 
-void Synth::refreshNumberOfOsc() {
-    this->numberOfOsc = 0;
+int Synth::getNumberOfFreeOscForThisTimbre(int timbre) {
+    int numberOfOsc = 0;
 
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
-        int nv = timbres[t].params.engine1.numberOfVoice + .0001f;
-        this->numberOfOsc += algoInformation[(int)timbres[t].params.engine1.algo].osc * nv;
+        if (t != timbre) {
+            int nv = timbres[t].params.engine1.numberOfVoice + .0001f;
+            numberOfOsc += algoInformation[(int)timbres[t].params.engine1.algo].osc * nv;
+        }
     }
+
+    return MAX_NUMBER_OF_OPERATORS - numberOfOsc;
 }
 
 void Synth::loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int patchNumber) {
@@ -570,7 +544,10 @@ void Synth::debugVoice() {
         lcd.setCursor(4, k);
         lcd.print((int)voices[n].getNextPendingNote());
 
-        lcd.setCursor(18, k);
+        lcd.setCursor(8, k);
+        lcd.print(n);
+
+        lcd.setCursor(12, k);
         lcd.print((int)voices[n].getIndex());
 
         lcd.setCursor(18, k);
@@ -585,6 +562,20 @@ void Synth::showCycles() {
     lcd.clearActions();
     lcd.clear();
 
+    float max = SystemCoreClock * 32.0f * PREENFM_FREQUENCY_INVERSED;
+    int cycles = cycles_all.remove();
+    float percent = (float)cycles * 100.0f / max;
+    lcd.setCursor(10, 0);
+    lcd.print('>');
+    lcd.print(cycles);
+    lcd.print('<');
+    lcd.setCursor(10, 1);
+    lcd.print('>');
+    lcd.print(percent);
+    lcd.print('%');
+    lcd.print('<');
+
+/*
     lcd.setCursor( 0, 0 );
     lcd.print( "RNG: " );
     lcd.print( cycles_rng.remove() );
@@ -602,6 +593,7 @@ void Synth::showCycles() {
     lcd.print( cycles_timbres.remove() );
 
     lcd.setRealTimeAction(false);
+    */
 }
 
 #endif

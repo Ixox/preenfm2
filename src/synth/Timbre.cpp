@@ -26,6 +26,26 @@
 float midiNoteScale[2][NUMBER_OF_TIMBRES][128];
 
 
+/*
+#include "LiquidCrystal.h"
+extern LiquidCrystal lcd;
+void myVoiceError(char info, int t, int t2) {
+    lcd.setRealTimeAction(true);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print('!');
+    lcd.print(info);
+    lcd.print(t);
+    lcd.print(' ');
+    lcd.print(t2);
+    while (true) {};
+}
+
+...
+        if (voiceNumber[k] < 0) myVoiceError('A', voiceNumber[k], k);
+
+*/
+
 //#define DEBUG_ARP_STEP
 enum ArpeggiatorDirection {
     ARPEGGIO_DIRECTION_UP = 0,
@@ -481,7 +501,7 @@ void Timbre::cleanNextBlock() {
 
 void Timbre::prepareMatrixForNewBlock() {
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
-        voices[k]->prepareMatrixForNewBlock();
+        voices[voiceNumber[k]]->prepareMatrixForNewBlock();
     }
 }
 
@@ -767,31 +787,32 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
         }
         fxParamA1 = (fxParamTmp + 9.0f * fxParamA1) * .1f;
         // Low pass... on the Sampling rate
-        float fxFreq = fxParamA1;
+        register float fxFreq = fxParamA1;
 
-        float *sp = this->sampleBlock;
-        float sampleR, sampleL;
+        register float *sp = this->sampleBlock;
 
-        float localv0L = v0L;
-        float localv0R = v0R;
-        float localPhase = fxPhase;
-
-        float localPower = fxParam1;
-        float localStep = fxParam2;
+        register float localPhase = fxPhase;
 
         //        localPower = fxParam1 = pow(2, (int)(1.0f + 15.0f * params.effect.param2));
         //        localStep = fxParam2 = 1 / fxParam1;
 
+        register float localPower = fxParam1;
+        register float localStep = fxParam2;
+
+        register float localv0L = v0L;
+        register float localv0R = v0R;
+
 
         for (int k=0 ; k < BLOCK_SIZE ; k++) {
             localPhase += fxFreq;
-            if (unlikely(localPhase > 1.0f)) {
+            if (unlikely(localPhase >= 1.0f)) {
                 localPhase -= 1.0f;
                 // Simulate floor by making the conversion always positive
-                int iL =  localPower + ((*sp) * localPower + .5);
-                int iR =  localPower + ((*(sp + 1)) * localPower + .5);
-                localv0L = localStep * (((float)iL) - localPower);
-                localv0R = localStep * (((float)iR) - localPower);
+                // simplify version
+                register int iL =  (*sp) * localPower + .75f;
+                register int iR =  (*(sp + 1)) * localPower + .75f;
+                localv0L = localStep * iL;
+                localv0R = localStep * iR;
             }
 
             *sp++ = localv0L * mixerGain;
@@ -908,7 +929,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
 
 void Timbre::afterNewParamsLoad() {
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
-        voices[k]->afterNewParamsLoad();
+        voices[voiceNumber[k]]->afterNewParamsLoad();
     }
 
     for (int j=0; j<NUMBER_OF_ENCODERS * 2; j++) {
@@ -1361,7 +1382,7 @@ void Timbre::setDirection(uint8_t value) {
 
 void Timbre::lfoValueChange(int currentRow, int encoder, float newValue) {
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
-        voices[k]->lfoValueChange(currentRow, encoder, newValue);
+        voices[voiceNumber[k]]->lfoValueChange(currentRow, encoder, newValue);
     }
 }
 
@@ -1479,7 +1500,7 @@ void Timbre::updateMidiNoteScale(int scale) {
 void Timbre::midiClockContinue(int songPosition) {
 
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
-        voices[k]->midiClockContinue(songPosition);
+        voices[voiceNumber[k]]->midiClockContinue(songPosition);
     }
 
     this->recomputeNext = ((songPosition&0x1)==0);
@@ -1490,7 +1511,7 @@ void Timbre::midiClockContinue(int songPosition) {
 void Timbre::midiClockStart() {
 
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
-        voices[k]->midiClockStart();
+        voices[voiceNumber[k]]->midiClockStart();
     }
 
     this->recomputeNext = true;
@@ -1500,7 +1521,7 @@ void Timbre::midiClockStart() {
 void Timbre::midiClockSongPositionStep(int songPosition) {
 
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
-        voices[k]->midiClockSongPositionStep(songPosition,  this->recomputeNext);
+        voices[voiceNumber[k]]->midiClockSongPositionStep(songPosition,  this->recomputeNext);
     }
 
     if ((songPosition & 0x1)==0) {
@@ -1511,13 +1532,13 @@ void Timbre::midiClockSongPositionStep(int songPosition) {
 
 void Timbre::resetMatrixDestination(float oldValue) {
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
-        voices[k]->matrix.resetDestination(oldValue);
+        voices[voiceNumber[k]]->matrix.resetDestination(oldValue);
     }
 }
 
 void Timbre::setMatrixSource(enum SourceEnum source, float newValue) {
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
-        voices[k]->matrix.setSource(source, newValue);
+        voices[voiceNumber[k]]->matrix.setSource(source, newValue);
     }
 }
 
@@ -1554,3 +1575,6 @@ void Timbre::verifyLfoUsed(int encoder, float oldValue, float newValue) {
 */
 
 }
+
+
+

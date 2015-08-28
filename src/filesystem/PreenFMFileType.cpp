@@ -11,8 +11,6 @@
 struct FlashSynthParams reachableFlashParam;
 
 char propertyFile [PROPERTY_FILE_SIZE];
-// define in PreenFM.c
-void fillSoundBuffer();
 
 
 PreenFMFileType::PreenFMFileType() {
@@ -24,7 +22,6 @@ PreenFMFileType::PreenFMFileType() {
     	errorFile.name[k] = empty[k];
     }
     errorFile.fileType = FILE_EMPTY;
-
 }
 
 PreenFMFileType::~PreenFMFileType() {
@@ -126,7 +123,6 @@ int PreenFMFileType::checkSize(const char* fileName) {
 void PreenFMFileType::usbProcess() {
     commandParams.commandResult = COMMAND_FAILED;
     while (commandParams.commandState != COMMAND_NONE) {
-        fillSoundBuffer();
         USBH_Process(&usbOTGHost, &usbHost);
     }
     for (int k=0; k<10; k++) {

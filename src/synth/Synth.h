@@ -69,8 +69,10 @@ public:
 
     int getFreeVoice();
     void rebuidVoiceTimbre();
-    void refreshNumberOfOsc();
     bool fixMaxNumberOfVoices(int timbre);
+
+    int getNumberOfFreeVoicesForThisTimbre(int timbre);
+    int getNumberOfFreeOscForThisTimbre(int timbre);
 
     void newcurrentRow(int timbre, int newcurrentRow)  {
         // Nothing to do
@@ -163,7 +165,6 @@ private:
     float ratioTimbre;
     float ratioTimbreLP;
 
-    int numberOfOsc;
     Voice voices[MAX_NUMBER_OF_VOICES];
     Timbre timbres[NUMBER_OF_TIMBRES];
 

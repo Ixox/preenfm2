@@ -1,3 +1,13 @@
+2.00b1
+. Rel* at Att* are back and Per voice :)
+. polyphony fixed in instruments 2,3,4
+. LFO phase now works when LFO freq is midi synced
+. Optimization when LFOs or MAtrix rows are not used.
+. Decreased number of voices max when to 14.
+. Midi NRPN ready for editor
+. Bit crusher optimization (it took a lot of CPU). 
+
+
 TODO (temporary list, grow over time) : 
 
 

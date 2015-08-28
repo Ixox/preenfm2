@@ -60,6 +60,7 @@ void printHex32bits(unsigned int dec) {
 
 
 void StackDebug(unsigned int * hardfault_args) {
+
     lcd.setRealTimeAction(true);
     lcd.clear();
     lcd.setCursor(0,0);

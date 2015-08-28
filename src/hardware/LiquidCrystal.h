@@ -100,6 +100,7 @@ public:
   void print(int n);
   void print(unsigned int n);
   void print(float f);
+  void printWithOneDecimal(float f);
   void realTimeAction(LCDAction *action, void (*callback)());
 
 private:

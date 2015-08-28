@@ -148,6 +148,8 @@ void setup() {
     synth.buildNewSampleBlock();
 
     // shorten the release value for init sound...
+    float v1 = ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env1b.releaseTime;
+    float v2 = ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env4b.releaseTime;
     ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env1b.releaseTime = 1.1f;
     ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env4b.releaseTime = 0.8f;
 
@@ -243,6 +245,11 @@ void setup() {
     usbKey.getComboBank()->loadDefaultCombo();
     // In any case init tables
     synthState.propagateAfterNewComboLoad();
+
+    // PUT BACK
+    // shorten the release value for init sound...
+    ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env1b.releaseTime = v1;
+    ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env4b.releaseTime = v2;
 
 
     fmDisplay.init(&lcd, &usbKey);
