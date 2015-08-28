@@ -87,7 +87,7 @@ public:
     virtual ~Env(void) {
     }
 
-    void init(struct EnvelopeParamsA *envParamsA, struct EnvelopeParamsB *envParamsB);
+    void init(struct EnvelopeParamsA *envParamsA, struct EnvelopeParamsB *envParamsB, uint8_t envNumber);
 
     void reloadADSR(int encoder) {
     	// 0 Attack time
@@ -180,7 +180,7 @@ public:
         env->envState = ENV_STATE_ON_A;
         newState(env);
 
-        float attack = envParamsA->attackTime + matrix->getDestination(ALL_ENV_ATTACK);
+        float attack = envParamsA->attackTime + matrix->getDestination(ALL_ENV_ATTACK) + matrix->getDestination((enum DestinationEnum)(ENV1_ATTACK + envNumber));
         if (attack < 0.0f) {
             attack = 0.0f;
         }
@@ -234,6 +234,8 @@ private:
 
     EnvelopeParamsA* envParamsA;
     EnvelopeParamsB* envParamsB;
+    uint8_t envNumber;
+
 
     static int initTab;
     static float incTab[1601];

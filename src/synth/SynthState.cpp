@@ -267,33 +267,6 @@ const char* matrixDestNames [] = {
  /*42*/ "Fltr"
 } ;
 
-// [k] = s
-// k is the value, s the string index to display
-const unsigned char matrixTargetOrder[] = {
-        0,  1,   2,  3,  4,  5,  6,
-        7,  8,   9, 10, 11, 12, 13, 14, 15, 16,
-        17, 18, 19, 20, 21, 22, 23,
-        30, 31,
-        32, 33, 34, 35,
-        36, 37, 38, 39, 40 ,41,
-        42,
-        24, 25, 26, 27, 28, 29
-};
-
-// [k] = s
-// k is the value
-// s is the position in the list
-const unsigned char matrixTargetPosition[] = {
-        0,  1,  2,  3,  4,  5,  6,
-        7,  8,  9,  10, 11, 12, 13, 14, 15, 16,
-        17, 18, 19, 20, 21, 22, 23,
-        37, 38, 39, 40, 41, 42,
-        24, 25,
-        26, 27, 28, 29,
-        30, 31, 32, 33, 34, 35,
-        36, 37
-};
-
 
 struct ParameterRowDisplay matrixParameterRow = {
         "Matrix",
@@ -302,7 +275,7 @@ struct ParameterRowDisplay matrixParameterRow = {
                 { MATRIX_SOURCE_NONE, MATRIX_SOURCE_MAX-1, MATRIX_SOURCE_MAX, DISPLAY_TYPE_STRINGS, matrixSourceNames, matrixSourceOrder, matrixSourcePosition},
                 { -10, 10, 2001, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 // We removed 8 destination target in firmware 2.0
-                { DESTINATION_NONE, DESTINATION_MAX -1 - 6, DESTINATION_MAX - 6, DISPLAY_TYPE_STRINGS, matrixDestNames, matrixTargetOrder, matrixTargetPosition},
+                { DESTINATION_NONE, DESTINATION_MAX -1, DESTINATION_MAX, DISPLAY_TYPE_STRINGS, matrixDestNames, nullNamesOrder, nullNamesOrder},
                 { 0, 0, 0, DISPLAY_TYPE_NONE, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };

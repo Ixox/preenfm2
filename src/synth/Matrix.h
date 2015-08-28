@@ -74,44 +74,44 @@ public:
 
 
         mul = rows[0].mul + mul1;
-        if (likely(mul > 0)) {
+        if (likely(mul != 0.0f)) {
             destinations[(int)rows[0].destination] += sources[(int)rows[0].source] * mul;
         }
         mul = rows[1].mul + mul2;
-        if (likely(mul > 0)) {
+        if (likely(mul != 0.0f)) {
             destinations[(int)rows[1].destination] += sources[(int)rows[1].source] * mul;
         }
         mul = rows[2].mul + mul3;
-        if (likely(mul > 0)) {
+        if (likely(mul != 0.0f)) {
             destinations[(int)rows[2].destination] += sources[(int)rows[2].source] * mul;
         }
         mul = rows[3].mul + mul4;
-        if (likely(mul > 0)) {
+        if (likely(mul != 0.0f)) {
             destinations[(int)rows[3].destination] += sources[(int)rows[3].source] * mul;
         }
 
-        if (likely(rows[4].mul > 0)) {
+        if (likely(rows[4].mul != 0.0f)) {
             destinations[(int)rows[4].destination] += sources[(int)rows[4].source] * rows[4].mul;
         }
-        if (likely(rows[5].mul > 0)) {
+        if (likely(rows[5].mul != 0.0f)) {
             destinations[(int)rows[5].destination] += sources[(int)rows[5].source] * rows[5].mul;
         }
-        if (likely(rows[6].mul > 0)) {
+        if (likely(rows[6].mul != 0.0f)) {
             destinations[(int)rows[6].destination] += sources[(int)rows[6].source] * rows[6].mul;
         }
-        if (likely(rows[7].mul > 0)) {
+        if (likely(rows[7].mul != 0.0f)) {
             destinations[(int)rows[7].destination] += sources[(int)rows[7].source] * rows[7].mul;
         }
-        if (likely(rows[8].mul > 0)) {
+        if (likely(rows[8].mul != 0.0f)) {
             destinations[(int)rows[8].destination] += sources[(int)rows[8].source] * rows[8].mul;
         }
-        if (likely(rows[9].mul > 0)) {
+        if (likely(rows[9].mul != 0.0f)) {
             destinations[(int)rows[9].destination] += sources[(int)rows[9].source] * rows[9].mul;
         }
-        if (likely(rows[10].mul > 0)) {
+        if (likely(rows[10].mul != 0.0f)) {
             destinations[(int)rows[10].destination] += sources[(int)rows[10].source] * rows[10].mul;
         }
-        if (likely(rows[11].mul > 0)) {
+        if (likely(rows[11].mul != 0.0f)) {
             destinations[(int)rows[11].destination] += sources[(int)rows[11].source] * rows[11].mul;
         }
     }
