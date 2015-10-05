@@ -34,13 +34,6 @@ struct OscState {
     float nextFrequency;
 };
 
-struct WaveTable {
-	float* table;
-	int max;
-	float useFreq;
-	float floatToAdd;
-	float precomputedValue;
-};
 
 extern struct WaveTable waveTables[];
 

@@ -24,7 +24,7 @@
 
 
 // regular memory 128kb
-char lineBuffer[128];
+char lineBuffer[512];
 
 void Storage::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4) {
     USBH_Init(&usbOTGHost, USB_OTG_HS_CORE_ID, &usbHost, &USBH_MSC_cb, &USR_Callbacks);
@@ -39,6 +39,7 @@ void Storage::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2,
     configurationFile.setScalaFile(&scalaFile);
     dx7SysexFile.setFileSystemUtils(&fsu);
     patchBank.setFileSystemUtils(&fsu);
+    userWaveForm.setFileSystemUtils(&fsu);
 }
 
 

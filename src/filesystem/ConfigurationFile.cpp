@@ -13,7 +13,7 @@
 #define SCALA_FREQUENCY "scala_frequency"
 #define SCALA_KEYBOARD "scala_keyboard"
 
-extern char lineBuffer[128];
+extern char lineBuffer[512];
 
 ConfigurationFile::ConfigurationFile() {
 	numberOfFilesMax = 0;

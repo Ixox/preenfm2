@@ -15,7 +15,7 @@ extern LiquidCrystal      lcd;
 
 float scalaFrequency[128];
 
-extern char lineBuffer[128];
+extern char lineBuffer[512];
 extern float *frequencyToUse;
 extern float frequency[];
 

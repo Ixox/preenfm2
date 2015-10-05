@@ -31,6 +31,9 @@ float oscValues3[32] __attribute__ ((section(".ccmnoload")));
 float oscValues4[32] __attribute__ ((section(".ccmnoload")));
 int Osc::oscValuesCpt = 1;
 
+// User waveforms
+float userWaveform[6][1024];
+
 struct WaveTable waveTables[NUMBER_OF_WAVETABLES] __attribute__ ((section(".ccm"))) = {
 		//		OSC_SHAPE_SIN = 0,
 		{
@@ -95,7 +98,56 @@ struct WaveTable waveTables[NUMBER_OF_WAVETABLES] __attribute__ ((section(".ccm"
 				0.0f,
 				0.0f,
 				0.0f
-		}
+		},
+        //  USER waveform 1
+        {
+                userWaveform[0],
+                0x3ff,
+                1.0f,
+                0.0f,
+                0.0f
+        },
+        //  USER waveform 2
+        {
+                userWaveform[1],
+                0x3ff,
+                1.0f,
+                0.0f,
+                0.0f
+        },
+        //  USER waveform 3
+        {
+                userWaveform[2],
+                0x3ff,
+                1.0f,
+                0.0f,
+                0.0f
+        },
+        //  USER waveform 4
+        {
+                userWaveform[3],
+                0x3ff,
+                1.0f,
+                0.0f,
+                0.0f
+        },
+        //  USER waveform 5
+        {
+                userWaveform[4],
+                0x3ff,
+                1.0f,
+                0.0f,
+                0.0f
+        },
+        //  USER waveform 6
+        {
+                userWaveform[5],
+                0x3ff,
+                1.0f,
+                0.0f,
+                0.0f
+        }
+
 };
 
 

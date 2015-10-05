@@ -56,7 +56,7 @@
 #define PREENFM_FREQUENCY_INVERSED 1.0f/PREENFM_FREQUENCY
 #define PREENFM_FREQUENCY_INVERSED_LFO PREENFM_FREQUENCY_INVERSED*32.0f
 
-#define NUMBER_OF_WAVETABLES 8
+#define NUMBER_OF_WAVETABLES 14
 
 
 typedef enum {
@@ -64,6 +64,15 @@ typedef enum {
     FILE_READ_ONLY,
     FILE_EMPTY
 } FileType;
+
+
+struct WaveTable {
+    float* table;
+    int max;
+    float useFreq;
+    float floatToAdd;
+    float precomputedValue;
+};
 
 struct AlgoInformation {
     unsigned char osc;

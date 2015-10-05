@@ -1,4 +1,4 @@
-PFM2_VERSION_NUMBER=2.00b1
+PFM2_VERSION_NUMBER=2.01
 PFM2_BIN_NUMBER=$(subst .,,${PFM2_VERSION_NUMBER})
 PFM2_BOOTLOADER_VERSION_NUMBER=1.11
 PFM2_VERSION=\"${PFM2_VERSION_NUMBER}\"
@@ -71,6 +71,7 @@ SRC_FIRMWARE = src/PreenFM.cpp \
 	src/filesystem/Storage.cpp \
 	src/filesystem/FileSystemUtils.cpp \
 	src/filesystem/PreenFMFileType.cpp \
+	src/filesystem/UserWaveform.cpp \
 	src/midi/MidiDecoder.cpp \
 	src/synth/Env.cpp \
 	src/synth/Lfo.cpp \

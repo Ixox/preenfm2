@@ -27,7 +27,7 @@
 #include "DX7SysexFile.h"
 #include "PatchBank.h"
 #include "ScalaFile.h"
-
+#include "UserWaveform.h"
 
 
 
@@ -47,6 +47,7 @@ public:
     DX7SysexFile* getDX7SysexFile() { return &dx7SysexFile; }
     PatchBank* getPatchBank() { return &patchBank; }
     ScalaFile* getScalaFile() { return &scalaFile; }
+    UserWaveform* getUserWaveform() { return &userWaveForm; };
 #else
 #endif
 
@@ -58,6 +59,7 @@ private:
     DX7SysexFile dx7SysexFile;
     PatchBank patchBank;
     ScalaFile scalaFile;
+    UserWaveform userWaveForm;
 #else
 #endif
 };

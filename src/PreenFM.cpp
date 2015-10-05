@@ -241,8 +241,10 @@ void setup() {
     	USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &usbdMidiDescriptor, &midiCallback, &midiStreamingUsrCallback);
     }
 
-    // Lad default combo if any
+    // Load default combo if any
     usbKey.getComboBank()->loadDefaultCombo();
+    // Load User waveforms if any
+    usbKey.getUserWaveform()->loadUserWaveforms();
     // In any case init tables
     synthState.propagateAfterNewComboLoad();
 

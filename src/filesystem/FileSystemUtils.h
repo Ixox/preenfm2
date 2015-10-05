@@ -32,7 +32,14 @@ public:
 	void  copyFloat(float* source, float* dest, int n);
 	int getPositionOfSlash(const char *line);
 	int getPositionOfPeriod(const char *line);
+	float stof(const char* s, int &charRead);
+	bool isNumber(char c) {
+	    return (c >= '0' && c <= '9') || c == '.';
+	}
 
+	bool isSeparator(char c) {
+	    return c == ' ' || c == '\t' || c == '\r' || c == '\n' ;
+	}
 
 
 protected:
