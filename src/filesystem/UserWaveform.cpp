@@ -5,12 +5,11 @@
  *      Author: xhosxe
  */
 
-/*
 
+/*
 #include "LiquidCrystal.h"
 extern LiquidCrystal      lcd;
 */
-
 // User waveforms
 extern float userWaveform[6][1024];
 
@@ -38,61 +37,69 @@ const char* UserWaveform::getFolderName() {
 
 void UserWaveform::loadUserWaveforms() {
     char fileName[30];
-/*
-    lcd.clear();
-    lcd.setRealTimeAction(true);
-    */
+
     for (int f=0; f<6; f++) {
-        numberOfSample = 0;
-        userWaveFormNames[f][0] = 0;
+        // Check if bin exists
 
-        fsu->copy_string(fileName, USERWAVEFORM_FILENAME);
+        fsu->copy_string(fileName, USERWAVEFORM_FILENAME_BIN);
         fileName[20] = (char)('1' + f);
+        int sizeBin = checkSize(fileName);
 
-        int size = checkSize(fileName);
-/*
-        if (f<4) {
-            lcd.setCursor(0, 0);
-            lcd.print(f);
-            lcd.print(' ');
-            lcd.print(size);
-            lcd.print(' ');
-            lcd.print((char*)&fileName[16]);
-        }
-*/
-        if (size == -1) {
-            // Does not exist
-            for (int s=0; s<1024; s++) {
-                userWaveform[f][s] = 0.0f;
-            }
+
+        if (sizeBin != -1) {
+            loadUserWaveformFromBin(f, fileName);
         } else {
-            loadUserWaveform(f, fileName, size);
+            fsu->copy_string(fileName, USERWAVEFORM_FILENAME_TXT);
+            fileName[20] = (char)('1' + f);
+
+            int sizeTxt = checkSize(fileName);
+            if (sizeTxt == -1) {
+                // Does not exist. Neither Bin nor txt
+                for (int s=0; s<1024; s++) {
+                    userWaveform[f][s] = 0.0f;
+                }
+            } else {
+                numberOfSample = -1;
+                userWaveFormNames[f][0] = 0;
+                loadUserWaveformFromTxt(f, fileName, sizeTxt);
+                if (numberOfSample > 0) {
+                    fsu->copy_string(fileName, USERWAVEFORM_FILENAME_BIN);
+                    fileName[20] = (char)('1' + f);
+                    saveUserWaveformToBin(f, fileName);
+                    // Reload from Bin
+                    loadUserWaveformFromBin(f, fileName);
+                }
+            }
         }
     }
 }
 
-void UserWaveform::loadUserWaveform(int f, const char* fileName, int size) {
+void UserWaveform::loadUserWaveformFromTxt(int f, const char* fileName, int size) {
     int readIndex = 0;
-    int floatRead = 0;
+    floatRead = 0;
 
 
-    while (size - readIndex > 0) {
+    while (floatRead != numberOfSample) {
         int toRead = (size - readIndex > LINE_BUFFER_SIZE) ? LINE_BUFFER_SIZE : size - readIndex;
         load(fileName, readIndex,  (void*)&lineBuffer, toRead);
 
-        int used = fillUserWaveForm(f, lineBuffer, toRead, floatRead, (readIndex+toRead) >= size);
+        int used = fillUserWaveFormFromTxt(f, lineBuffer, toRead, (readIndex+toRead) >= size);
+        if (used < 0) {
+            return;
+        }
         readIndex += used;
     }
 }
 
 
-int UserWaveform::fillUserWaveForm(int f, char* buffer, int filled, int &floatRead, bool last) {
+int UserWaveform::fillUserWaveFormFromTxt(int f, char* buffer, int filled, bool last) {
     int index = 0;
     bool bStop = false;
     int cpt=0;
     while (!bStop) {
         int floatSize = 0;
 
+        // Init name
         if (userWaveFormNames[f][0] == 0) {
 
             while (fsu->isSeparator(buffer[index])) {
@@ -102,14 +109,24 @@ int UserWaveform::fillUserWaveForm(int f, char* buffer, int filled, int &floatRe
             while (b<4 && !fsu->isSeparator(buffer[index])) {
                 userWaveFormNames[f][b++] = buffer[index++];
             }
-            oscShapeNames[8 + f] = userWaveFormNames[f];
+            // complete with space
+            while (b<4) {
+                userWaveFormNames[f][b++] = ' ';
+            }
         }
-
-        if (numberOfSample == 0) {
+        // init number of sample
+        if (numberOfSample <= 0) {
             while (fsu->isSeparator(buffer[index])) {
                 index++;
             }
             numberOfSample = (int)(fsu->stof(&buffer[index], floatSize) + .5f);
+            if (numberOfSample != 2 && numberOfSample != 4 && numberOfSample != 8 && numberOfSample != 16 && numberOfSample != 32 && numberOfSample != 64
+                    && numberOfSample != 128 && numberOfSample != 256 && numberOfSample != 512 && numberOfSample != 1024  ) {
+                numberOfSample = 0;
+                userWaveFormNames[f][0] = '#';
+                oscShapeNames[8 + f] = userWaveFormNames[f];
+                return -1;
+            }
             waveTables[f + 8].max = (numberOfSample  -1);
             index += floatSize;
         }
@@ -117,9 +134,27 @@ int UserWaveform::fillUserWaveForm(int f, char* buffer, int filled, int &floatRe
         userWaveform[f][floatRead++] = fsu->stof(&buffer[index], floatSize);
         index += floatSize;
 
-        // Stop if index > (filled - 30) Or if last && floatRead != 1024
-        bStop = (last || index > (filled - 40)) && floatRead != 1024;
+        // Stop if index > (filled - 30) Or if last && floatRead == 1024
+        bStop = (!last && index > (filled - 40)) || floatRead == numberOfSample;
     }
     return index;
+}
+
+
+void UserWaveform::loadUserWaveformFromBin(int f, const char* fileName) {
+    load(fileName, 0, userWaveFormNames[f], 4);
+    oscShapeNames[8 + f] = userWaveFormNames[f];
+
+    load(fileName, 4, &numberOfSample, 4);
+    waveTables[f + 8].max = (numberOfSample  -1);
+    waveTables[f + 8].precomputedValue = (waveTables[f + 8].max + 1) * waveTables[f + 8].useFreq * PREENFM_FREQUENCY_INVERSED;
+
+    load(fileName, 8, userWaveform[f], numberOfSample * 4);
+}
+
+void UserWaveform::saveUserWaveformToBin(int f, const char* fileName) {
+    save(fileName, 0, userWaveFormNames[f], 4);
+    save(fileName, 4, &numberOfSample, 4);
+    save(fileName, 8, userWaveform[f], numberOfSample * 4);
 }
 

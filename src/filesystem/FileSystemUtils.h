@@ -34,7 +34,7 @@ public:
 	int getPositionOfPeriod(const char *line);
 	float stof(const char* s, int &charRead);
 	bool isNumber(char c) {
-	    return (c >= '0' && c <= '9') || c == '.';
+	    return (c >= '0' && c <= '9') || c == '.' || c == '-';
 	}
 
 	bool isSeparator(char c) {

@@ -29,7 +29,8 @@ enum FILE_ENUM {
 #define PROPERTIES_NAME          "0:/pfm2/Settings.txt"
 #define SCALA_CONFIG_NAME        "0:/pfm2/ScalaCfg.txt"
 
-#define USERWAVEFORM_FILENAME            "0:/pfm2/waveform/usr#.txt"
+#define USERWAVEFORM_FILENAME_TXT            "0:/pfm2/waveform/usr#.txt"
+#define USERWAVEFORM_FILENAME_BIN            "0:/pfm2/waveform/usr#.bin"
 
 #define DX7_PACKED_PATCH_SIZED 128
 #define DX7_UNPACKED_PATCH_SIZED 155

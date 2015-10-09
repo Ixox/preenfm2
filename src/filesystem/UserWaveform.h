@@ -23,10 +23,13 @@ protected:
     bool isCorrectFile(char *name, int size) { return true; }
 
 private:
-    void loadUserWaveform(int f, const char* fileName, int size);
-    int fillUserWaveForm(int f, char* buffer, int filled, int &floatRead, bool last);
+    void loadUserWaveformFromTxt(int f, const char* fileName, int size);
+    int fillUserWaveFormFromTxt(int f, char* buffer, int filled, bool last);
+    void loadUserWaveformFromBin(int f, const char* fileName);
+    void saveUserWaveformToBin(int f, const char* fileName);
     int numberOfSample;
     char userWaveFormNames[6][5];
+    int floatRead;
 };
 
 #endif /* USERWAVEFORMS_H_ */
