@@ -27,6 +27,10 @@ private:
     int fillUserWaveFormFromTxt(int f, char* buffer, int filled, bool last);
     void loadUserWaveformFromBin(int f, const char* fileName);
     void saveUserWaveformToBin(int f, const char* fileName);
+    void interpolate(float* source, int sourceNumberOfSamples, int targetNumberOfSamples);
+    void normalize(float* buffer, int numberOfSamples);
+    int numberOfSampleError(int f);
+
     int numberOfSample;
     char userWaveFormNames[6][5];
     int floatRead;
