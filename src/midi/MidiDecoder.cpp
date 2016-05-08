@@ -328,7 +328,7 @@ int cccpt = 0;
 void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
     int receives = this->synthState->fullState.midiConfigValue[MIDICONFIG_RECEIVES] ;
 
-    // the following one should always been received...
+    // the following one should always been treated...
     switch (midiEvent.value[0]) {
     case CC_BANK_SELECT:
     	bankNumber[timbre] = midiEvent.value[1];
@@ -370,7 +370,8 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
 
     }
 
-    if (receives == 1 || receives ==3) {
+    // Receive CC enabled?
+    if (receives & 0x01) {
         switch (midiEvent.value[0]) {
         case CC_ALGO:
             this->synth->setNewValueFromMidi(timbre, ROW_ENGINE, ENCODER_ENGINE_ALGO,
@@ -454,11 +455,69 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
                                     break;
 
             break;
+        case CC_FILTER_TYPE:
+            this->synth->setNewValueFromMidi(timbre, ROW_EFFECT, ENCODER_EFFECT_TYPE,
+                    (float)midiEvent.value[1]);
+            break;
+        case CC_FILTER_PARAM1:
+        case CC_FILTER_PARAM2:
+        case CC_FILTER_GAIN:
+            this->synth->setNewValueFromMidi(timbre, ROW_EFFECT, midiEvent.value[0] - CC_FILTER_PARAM1 + 1,
+                    (float)midiEvent.value[1] * .01f);
+            break;
+        case CC_ENV_ATK_OP1:
+        case CC_ENV_ATK_OP2:
+        case CC_ENV_ATK_OP3:
+        case CC_ENV_ATK_OP4:
+        case CC_ENV_ATK_OP5:
+        case CC_ENV_ATK_OP6:
+            this->synth->setNewValueFromMidi(timbre, ROW_ENV1a + (midiEvent.value[0] - CC_ENV_ATK_OP1)* 2, ENCODER_ENV_A,
+                    (float)midiEvent.value[1] * .01562500000000000000f);
+            break;
+        case CC_ENV_ATK_ALL:
+            for (int e = 0; e < 6; e++) {
+                this->synth->setNewValueFromMidi(timbre, ROW_ENV1a + e * 2, ENCODER_ENV_A,
+                        (float)midiEvent.value[1] * .01562500000000000000f);
+            }
+            break;
+        case CC_ENV_REL_OP1:
+        case CC_ENV_REL_OP2:
+        case CC_ENV_REL_OP3:
+        case CC_ENV_REL_OP4:
+        case CC_ENV_REL_OP5:
+        case CC_ENV_REL_OP6:
+            this->synth->setNewValueFromMidi(timbre, ROW_ENV1b + (midiEvent.value[0] - CC_ENV_REL_OP1)* 2, ENCODER_ENV_R,
+                    (float)midiEvent.value[1] * .03125000000000000000f);
+            break;
+        case CC_ENV_REL_ALL:
+            for (int e = 0; e < 6; e++) {
+                this->synth->setNewValueFromMidi(timbre, ROW_ENV1b + e * 2, ENCODER_ENV_R,
+                        (float)midiEvent.value[1] * .03125000000000000000f);
+            }
+            break;
+        case CC_LFO1_PHASE:
+        case CC_LFO2_PHASE:
+        case CC_LFO3_PHASE:
+            this->synth->setNewValueFromMidi(timbre, ROW_LFOPHASES, ENCODER_LFO_PHASE1 + midiEvent.value[0] - CC_LFO1_PHASE,
+                    (float)midiEvent.value[1] * .01f);
+            break;
+        case CC_LFO1_BIAS:
+        case CC_LFO2_BIAS:
+        case CC_LFO3_BIAS:
+            this->synth->setNewValueFromMidi(timbre, ROW_LFOOSC1 + midiEvent.value[0] - CC_LFO1_BIAS, ENCODER_LFO_BIAS,
+                    (float)midiEvent.value[1] * .01f);
+            break;
+        case CC_LFO1_SHAPE:
+        case CC_LFO2_SHAPE:
+        case CC_LFO3_SHAPE:
+            this->synth->setNewValueFromMidi(timbre, ROW_LFOOSC1 + midiEvent.value[0] - CC_LFO1_SHAPE, ENCODER_LFO_SHAPE,
+                    (float)midiEvent.value[1]);
+            break;
         }
     }
 
     // Do we accept NRPN in the menu
-    if (receives == 2 || receives ==3) {
+    if (receives & 0x02) {
         switch (midiEvent.value[0]) {
         case 99:
             this->currentNrpn[timbre].paramMSB = midiEvent.value[1];
@@ -776,9 +835,19 @@ void MidiDecoder::newParamValue(int timbre, int currentrow,
         }
         break;
         case ROW_LFO_FIRST ... ROW_LFOOSC3:
-        if (encoder == ENCODER_LFO_FREQ) {
+        switch (encoder) {
+        case ENCODER_LFO_SHAPE:
+            cc.value[0] = CC_LFO1_SHAPE + (currentrow - ROW_LFO_FIRST);
+            cc.value[1] = newValue + .1f;
+            break;
+        case ENCODER_LFO_FREQ:
             cc.value[0] = CC_LFO1_FREQ + (currentrow - ROW_LFO_FIRST);
             cc.value[1] = newValue * 5.0f + .1f;
+            break;
+        case ENCODER_LFO_BIAS:
+            cc.value[0] = CC_LFO1_BIAS + (currentrow - ROW_LFO_FIRST);
+            cc.value[1] = newValue * 100.0f + .1f;
+            break;
         }
         break;
         case ROW_LFOENV2:
@@ -793,6 +862,42 @@ void MidiDecoder::newParamValue(int timbre, int currentrow,
             cc.value[1] = newValue * 100.0f + .1f;
         }
         break;
+        case ROW_EFFECT:
+            if (encoder == ENCODER_EFFECT_TYPE) {
+                cc.value[0] = CC_FILTER_TYPE;
+                cc.value[1] = newValue + .1f;
+            } else {
+                cc.value[0] = CC_FILTER_PARAM1 + encoder - 1;
+                cc.value[1] = newValue * 100.0f + .1f;
+            }
+            break;
+        case ROW_ENV1a:
+        case ROW_ENV2a:
+        case ROW_ENV3a:
+        case ROW_ENV4a:
+        case ROW_ENV5a:
+        case ROW_ENV6a:
+            if (encoder == ENCODER_ENV_A) {
+                cc.value[0] = CC_ENV_ATK_OP1 + ((currentrow - ROW_ENV1a) >> 1);
+                cc.value[1] = newValue * 64.0f + .1f;
+            }
+            break;
+        case ROW_ENV1b:
+        case ROW_ENV2b:
+        case ROW_ENV3b:
+        case ROW_ENV4b:
+        case ROW_ENV5b:
+        case ROW_ENV6b:
+            if (encoder == ENCODER_ENV_R) {
+                cc.value[0] = CC_ENV_REL_OP1 + ((currentrow - ROW_ENV1b) >> 1);
+                cc.value[1] = newValue * 32.0f + .1f;
+            }
+            break;
+        case ROW_LFOPHASES:
+            cc.value[0] = CC_LFO1_PHASE + encoder;
+            cc.value[1] = newValue * 100.0f + .1f;
+            break;
+
         }
 
         if (cc.value[0] != 0) {

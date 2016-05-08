@@ -116,9 +116,16 @@ enum {
 
 enum {
     ENCODER_ENV_A = 0,
+    ENCODER_ENV_A_LVL,
     ENCODER_ENV_D,
-    ENCODER_ENV_S,
-    ENCODER_ENV_R
+    ENCODER_ENV_D_LVL
+};
+
+enum {
+    ENCODER_ENV_S = 0,
+    ENCODER_ENV_S_LVL,
+    ENCODER_ENV_R,
+    ENCODER_ENV_R_LVL
 };
 
 enum {
@@ -132,6 +139,12 @@ enum {
     ENCODER_LFO_FREQ,
     ENCODER_LFO_BIAS,
     ENCODER_LFO_KSYNC
+};
+
+enum {
+    ENCODER_LFO_PHASE1 = 0,
+    ENCODER_LFO_PHASE2,
+    ENCODER_LFO_PHASE3
 };
 
 enum {

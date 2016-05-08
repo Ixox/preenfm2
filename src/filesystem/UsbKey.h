@@ -30,7 +30,7 @@ extern USBH_HOST                    usbHost;
 
 
 
-Erreur (((
+
 
 class UsbKey : public Storage {
 public:
@@ -70,7 +70,7 @@ private:
     const char* getDX7BankFullName(const char* bankName);
     const char* getPreenFMFullName(const char* bankName);
     const char* getScalaFileFullName(const char* bankName);
-    
+
     void usbProcess();
     int save(FILE_ENUM file, int seek, void* bytes, int size);
     int save(const char* fileName, int seek, void* bytes, int size);

@@ -637,6 +637,11 @@ void FMDisplay::newParamValueFromExternal(int timbre, int currentRow, int encode
                 return;
             }
             updateEncoderValue(currentRow, encoder, param, newValue);
+            if (unlikely(currentRow == ROW_EFFECT)) {
+                if (unlikely(encoder == ENCODER_EFFECT_TYPE)) {
+                    refreshStatus = 8;
+                }
+            }
         }
     }
 }

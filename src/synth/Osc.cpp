@@ -196,10 +196,7 @@ void Osc::glideToNote(struct OscState* oscState, int note) {
 		oscState->nextFrequency = frequencyToUse[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .05f);
 		break;
 	case OSC_FT_FIXE:
-		oscState->mainFrequency = oscillator->frequencyMul* 1000.0f + oscillator->detune * 100.0f;
-		if (oscState->mainFrequency < 0.0f) {
-			oscState->mainFrequency = 0.0f;
-		}
+        oscState->nextFrequency = oscState->mainFrequency;
 		break;
 	}
 	oscState->fromFrequency = oscState->mainFrequency;
