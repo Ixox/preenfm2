@@ -575,10 +575,6 @@ void SynthState::encoderTurnedForArpPattern(int row, int encoder, int ticks) {
 void SynthState::twoButtonsPressed(int button1, int button2) {
     int oldCurrentRow = currentRow;
 
-    if ((fullState.synthMode  != SYNTH_MODE_EDIT)) {
-        return;
-    }
-
     switch (button1) {
     case BUTTON_BACK:
         switch (button2) {
@@ -604,6 +600,13 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
             break;
         }
         break;
+    }
+
+    if ((fullState.synthMode  != SYNTH_MODE_EDIT)) {
+        return;
+    }
+
+    switch (button1) {
         case BUTTON_SYNTH:
             switch (button2) {
             case BUTTON_MENUSELECT:
@@ -630,51 +633,51 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
                 break;
             }
             break;
-            case BUTTON_MATRIX:
-                switch (button2) {
-                case BUTTON_SYNTH:
-                    currentRow = ROW_MATRIX1;
-                    break;
-                case BUTTON_OSC:
-                    changeSynthModeRow(BUTTON_MATRIX , -3);
-                    break;
-                case BUTTON_ENV:
-                    changeSynthModeRow(BUTTON_MATRIX , -1);
-                    onUserChangedRow();
-                    break;
-                case BUTTON_LFO:
-                    currentRow = ROW_MATRIX6;
-                    break;
-                }
+        case BUTTON_MATRIX:
+            switch (button2) {
+            case BUTTON_SYNTH:
+                currentRow = ROW_MATRIX1;
                 break;
-                case BUTTON_LFO:
-                    switch (button2) {
-                    case BUTTON_SYNTH:
-                        currentRow = ROW_LFOOSC1;
-                        break;
-                    case BUTTON_OSC:
-                        currentRow = ROW_LFOENV1;
-                        break;
-                    case BUTTON_ENV:
-                        currentRow = ROW_LFOENV2;
-                        break;
+            case BUTTON_OSC:
+                changeSynthModeRow(BUTTON_MATRIX , -3);
+                break;
+            case BUTTON_ENV:
+                changeSynthModeRow(BUTTON_MATRIX , -1);
+                onUserChangedRow();
+                break;
+            case BUTTON_LFO:
+                currentRow = ROW_MATRIX6;
+                break;
+            }
+            break;
+        case BUTTON_LFO:
+            switch (button2) {
+            case BUTTON_SYNTH:
+                currentRow = ROW_LFOOSC1;
+                break;
+            case BUTTON_OSC:
+                currentRow = ROW_LFOENV1;
+                break;
+            case BUTTON_ENV:
+                currentRow = ROW_LFOENV2;
+                break;
 #ifndef DEBUG
-                    case BUTTON_MATRIX:
-                        currentRow = ROW_LFOSEQ1;
-                        break;
+            case BUTTON_MATRIX:
+                currentRow = ROW_LFOSEQ1;
+                break;
 #endif
-                    case BUTTON_MENUSELECT:
-                        currentRow = ROW_PERFORMANCE1;
-                        break;
-                    }
-                    break;
-                    case BUTTON_MENUSELECT:
-                        switch (button2) {
-                        case BUTTON_LFO:
-                            currentRow = ROW_PERFORMANCE1;
-                            break;
-                        }
-                        break;
+            case BUTTON_MENUSELECT:
+                currentRow = ROW_PERFORMANCE1;
+                break;
+            }
+            break;
+        case BUTTON_MENUSELECT:
+            switch (button2) {
+            case BUTTON_LFO:
+                currentRow = ROW_PERFORMANCE1;
+                break;
+            }
+            break;
     }
 
 #ifdef DEBUG
@@ -1333,9 +1336,13 @@ void SynthState::buttonPressed(int button) {
         // Special treatment for Randomizer
         if (unlikely(fullState.currentMenuItem->menuState == MENU_LOAD_RANDOMIZER)) {
             if (button != BUTTON_MENUSELECT && button != BUTTON_BACK) {
+                storeTestNote();
+                propagateNoteOff();
                 propagateBeforeNewParamsLoad(currentTimbre);
                 randomizePreset();
                 propagateAfterNewParamsLoad(currentTimbre);
+                restoreTestNote();
+                return;
             }
         }
 

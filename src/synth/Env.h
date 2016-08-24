@@ -192,7 +192,7 @@ public:
         env->envState = ENV_STATE_ON_QUICK_R;
         newState(env);
 
-        int duration = 8 * env->currentValue ;
+        int duration = 6 * env->currentValue ;
 
         if (duration == 0) {
         	stateInc[ENV_STATE_ON_QUICK_R] = 1.0f;
@@ -240,4 +240,3 @@ private:
     static int initTab;
     static float incTab[1601];
 };
-

@@ -301,6 +301,9 @@ void Timbre::preenNoteOn(char note, char velocity) {
 //			while (1);
     	}
 #endif
+        if (unlikely(voices[n]->isNewNotePending())) {
+            return;
+        }
 
 		// same note = priority 1 : take the voice immediatly
 		if (unlikely(voices[n]->isPlaying() && voices[n]->getNote() == note)) {
@@ -312,8 +315,10 @@ void Timbre::preenNoteOn(char note, char velocity) {
 		lcd.print("S:");
 		lcd.print(n);
 #endif
-		    preenNoteOnUpdateMatrix(n, note, velocity);
-			voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++);
+
+            preenNoteOnUpdateMatrix(n, note, velocity);
+            voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++);
+
 			return;
 		}
 
@@ -1575,6 +1580,3 @@ void Timbre::verifyLfoUsed(int encoder, float oldValue, float newValue) {
 */
 
 }
-
-
-

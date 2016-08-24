@@ -128,7 +128,6 @@ void Voice::glide() {
 
 void Voice::noteOn(short newNote, short velocity, unsigned int index) {
 
-
 	this->released = false;
 	this->playing = true;
 	this->note = newNote;
@@ -170,7 +169,12 @@ void Voice::noteOn(short newNote, short velocity, unsigned int index) {
 
 void Voice::endNoteOrBeginNextOne() {
     if (this->newNotePending) {
-        noteOn(nextPendingNote, nextVelocity, index);
+		if (nextPendingNote >=0) {
+        	noteOn(nextPendingNote, nextVelocity, index);
+		} else {
+		    // Note off have already been received....
+			this->playing = false;
+		}
         this->newNotePending = false;
     } else {
         this->playing = false;
@@ -191,23 +195,34 @@ void Voice::glideFirstNoteOff() {
 	this->nextGlidingNote = 0;
 }
 
+
 void Voice::noteOff() {
+
 	if (unlikely(!this->playing)) {
 		return;
 	}
-	this->released = true;
-	this->nextPendingNote = 0;
-	this->gliding = false;
-	this->holdedByPedal = false;
+	if (likely(!this->newNotePending)) {
+        if (this->newNotePlayed) {
+            // Note hasn't played
+            killNow();
+            return;
+        }
+		this->released = true;
+		this->gliding = false;
+		this->holdedByPedal = false;
 
-	currentTimbre->env1.noteOff(&envState1, &matrix);
-	currentTimbre->env2.noteOff(&envState2, &matrix);
-	currentTimbre->env3.noteOff(&envState3, &matrix);
-	currentTimbre->env4.noteOff(&envState4, &matrix);
-	currentTimbre->env5.noteOff(&envState5, &matrix);
-	currentTimbre->env6.noteOff(&envState6, &matrix);
+		currentTimbre->env1.noteOff(&envState1, &matrix);
+		currentTimbre->env2.noteOff(&envState2, &matrix);
+		currentTimbre->env3.noteOff(&envState3, &matrix);
+		currentTimbre->env4.noteOff(&envState4, &matrix);
+		currentTimbre->env5.noteOff(&envState5, &matrix);
+		currentTimbre->env6.noteOff(&envState6, &matrix);
 
-	lfoNoteOff();
+		lfoNoteOff();
+	} else {
+		// We receive a note off before the note actually started
+		this->nextPendingNote = -1;
+	}
 }
 
 void Voice::killNow() {
@@ -3230,5 +3245,3 @@ void Voice::setCurrentTimbre(Timbre *timbre) {
         lfoStepSeq[k].init(stepseqparams[k], stepseqs[k], &matrix, (SourceEnum)(MATRIX_SOURCE_LFOSEQ1+k), (DestinationEnum)(LFOSEQ1_GATE+k));
     }
 }
-
-

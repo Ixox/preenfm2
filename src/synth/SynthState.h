@@ -431,6 +431,7 @@ public:
 
     bool canPlayNote() {
     	return (fullState.synthMode == SYNTH_MODE_EDIT)
+                || (fullState.currentMenuItem->menuState == MENU_LOAD_RANDOMIZER)
     			|| (fullState.currentMenuItem->menuState == MENU_LOAD_SELECT_BANK_PRESET)
     			||  (fullState.currentMenuItem->menuState == MENU_LOAD_SELECT_DX7_PRESET);
     }
@@ -473,6 +474,23 @@ public:
 				this->isPlayingNote = true;
 			}
     	}
+    }
+
+    void storeTestNote() {
+        this->storedIsPlayingNote =this->isPlayingNote;
+        this->storedPlayingNote =this->playingNote;
+        this->storedPlayingTimbre = this->playingTimbre;
+    }
+
+    void restoreTestNote() {
+        if (this->storedIsPlayingNote) {
+            for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+                listener->playNote(this->storedPlayingTimbre, this->storedPlayingNote, fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY]);
+            }
+            this->isPlayingNote = this->storedIsPlayingNote;
+            this->playingTimbre = this->storedPlayingTimbre;
+            this->playingNote = this->storedPlayingNote;
+        }
     }
 
     void propagateAfterNewParamsLoad(int timbre);
@@ -529,6 +547,10 @@ private:
 	bool isPlayingNote;
 	char playingNote;
 	char playingTimbre;
+    bool storedIsPlayingNote;
+    char storedPlayingNote;
+    char storedPlayingTimbre;
+
 
 	// Done menu temporisation
 	unsigned int doneClick;

@@ -171,7 +171,9 @@ void LfoOsc::nextValueInMatrix() {
     switch ((int)lfo->shape) {
     case LFO_TRIANGLE:
     {
-        phase -= (phase >= 1.0f) * 1.0f;
+        if (unlikely(phase >= 1.0f)) {
+            phase -= 1;
+        }
         if (phase < .5f) {
             lfoValue = phase * 4.0f -1.0f ;
         } else {
@@ -196,7 +198,9 @@ void LfoOsc::nextValueInMatrix() {
         break;
     }
     case LFO_SQUARE:
-        phase -= (phase >= 1.0f) * 1.0f;
+        if (unlikely(phase >= 1.0f)) {
+            phase -= 1;
+        }
         if (phase < .5) {
             lfoValue = -1.0f;
         } else {
@@ -229,6 +233,7 @@ void LfoOsc::noteOn() {
     if (ramp >= 0.0f) {
         currentRamp = 0.0f;
         if ((lfo->freq * 10.0f) < LFO_MIDICLOCK_MC_DIV_16) {
+
             phase = *this->initPhase;
         }
         // Retriger value if random...
