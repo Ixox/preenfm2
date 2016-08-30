@@ -477,8 +477,8 @@ public:
     }
 
     void storeTestNote() {
-        this->storedIsPlayingNote =this->isPlayingNote;
-        this->storedPlayingNote =this->playingNote;
+        this->storedIsPlayingNote = this->isPlayingNote;
+        this->storedPlayingNote   = this->playingNote;
         this->storedPlayingTimbre = this->playingTimbre;
     }
 

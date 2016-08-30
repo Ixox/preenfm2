@@ -1041,8 +1041,8 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 	params->matrixRowState11.destination = INDEX_ALL_MODULATION;
 
 	params->matrixRowState12.source = MATRIX_SOURCE_PITCHBEND;
-	params->matrixRowState12.mul = 1.0f;
-	params->matrixRowState12.destination = ALL_OSC_FREQ;
+	params->matrixRowState12.mul = .5f;
+	params->matrixRowState12.destination = ALL_OSC_FREQ_HARM;
 }
 
 

@@ -51,16 +51,10 @@ public:
     void glideToNote(struct OscState* oscState, int note);
     void glideStep(struct OscState* oscState, float phase);
 
-    inline void calculateFrequencyWithMatrix(struct OscState *oscState, Matrix* matrix) {
-		oscState->mainFrequencyPlusMatrix = oscState->mainFrequency ;
-        // + ((oscState->mainFrequency   * matrix->getDestination(destFreq) + matrix->getDestination(ALL_OSC_FREQ)))) * .1f;
-        float m = (matrix->getDestination(destFreq) + matrix->getDestination(ALL_OSC_FREQ));
-        if (likely(m != 0.0f))  {
-            float findex = 512 + m * 20;
-            int index = findex;
-            float fp = findex - index;
-            oscState->mainFrequencyPlusMatrix *= (exp2_harm[index]* (1.0f-fp) + exp2_harm[index + 1] * fp );
-        }
+    inline void calculateFrequencyWithMatrix(struct OscState *oscState, Matrix* matrix, float expHarm) {
+        oscState->mainFrequencyPlusMatrix = oscState->mainFrequency;
+        oscState->mainFrequencyPlusMatrix *= expHarm;
+        oscState->mainFrequencyPlusMatrix +=  (oscState->mainFrequency  * (matrix->getDestination(destFreq) + matrix->getDestination(ALL_OSC_FREQ)) * .1f);
     }
 
     inline float getNextSample(struct OscState *oscState)  {

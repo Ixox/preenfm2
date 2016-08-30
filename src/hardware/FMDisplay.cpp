@@ -909,7 +909,10 @@ void FMDisplay::displayBankSelect(int bankNumber, bool usable, const char* name)
 }
 
 void FMDisplay::displayPatchSelect(int presetNumber, const char* name) {
-    eraseRow(menuRow);
+    // Erase row except the note
+    lcd->setCursor(1, menuRow);
+    lcd->print("                   ");
+
     lcd->setCursor(2, menuRow);
     lcd->print(presetNumber);
     lcd->print(" - ");

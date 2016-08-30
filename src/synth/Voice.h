@@ -360,6 +360,8 @@ private:
     //
     float freqAi, freqAo;
     float freqBi, freqBo;
+    // Harm freq shifting
+    float freqHarm, targetFreqHarm;
 
     EnvData envState1;
     EnvData envState2;

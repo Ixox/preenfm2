@@ -190,13 +190,17 @@ struct FilterRowDisplay filterRowDisplay[FILTER_LAST] = {
 
 
 const char* oscShapeNames []=  {"sin ", "saw ", "squa", "s^2 ", "szer", "spos", "rand", "off ", "Usr1", "Usr2", "Usr3", "Usr4", "Usr5", "Usr6"} ;
+const unsigned char  oscShapeNamesOrder[] =        { 7, 0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13};
+//                                                 { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
+const unsigned char  oscShapeNamesPosition[] =     { 1, 2, 3, 4, 5, 6, 7, 0, 8, 9, 10, 11, 12, 13};
+
 
 const char* oscTypeNames [] = { "keyb", "fixe"};
 struct ParameterRowDisplay oscParameterRow = {
         "Oscillator",
         { "Shap", "FTyp", "Freq", "FTun" },
         {
-                { OSC_SHAPE_SIN, OSC_SHAPE_LAST -1, OSC_SHAPE_LAST, DISPLAY_TYPE_STRINGS, oscShapeNames, nullNamesOrder, nullNamesOrder},
+                { OSC_SHAPE_SIN, OSC_SHAPE_LAST -1, OSC_SHAPE_LAST, DISPLAY_TYPE_STRINGS, oscShapeNames, oscShapeNamesOrder, oscShapeNamesPosition},
                 { OSC_FT_KEYBOARD, OSC_FT_FIXE, 2, DISPLAY_TYPE_STRINGS, oscTypeNames, nullNamesOrder, nullNamesOrder},
                 { 0, 16, 193, DISPLAY_TYPE_FLOAT_OSC_FREQUENCY ,  nullNames, nullNamesOrder, nullNamesOrder },
                 { -1, 1, 201, DISPLAY_TYPE_FLOAT_OSC_FREQUENCY,  nullNames, nullNamesOrder, nullNamesOrder }
@@ -262,8 +266,12 @@ const char* matrixDestNames [] = {
  /*30*/ "Att*", "Rel*",
  /*32*/ "mx01", "mx02", "mx03", "mx04",
  /*36*/ "l1Fq", "l2Fq", "l3Fq", "e2si", "s1ga", "s2ga",
- /*42*/ "Fltr"
+ /*42*/ "Fltr",
+ /*43*/ "o*Fh", "Dec*"
 } ;
+const unsigned char  matrixTargetOrder[] =        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 43, 24, 25, 26, 27, 28, 29, 30, 44, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42 };
+//                                                { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43 ,44 };
+const unsigned char  matrixTargetPosition[] =     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29, 30, 31, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 24 ,32 };
 
 
 struct ParameterRowDisplay matrixParameterRow = {
@@ -273,7 +281,7 @@ struct ParameterRowDisplay matrixParameterRow = {
                 { MATRIX_SOURCE_NONE, MATRIX_SOURCE_MAX-1, MATRIX_SOURCE_MAX, DISPLAY_TYPE_STRINGS, matrixSourceNames, matrixSourceOrder, matrixSourcePosition},
                 { -10, 10, 2001, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 // We removed 8 destination target in firmware 2.0
-                { DESTINATION_NONE, DESTINATION_MAX -1, DESTINATION_MAX, DISPLAY_TYPE_STRINGS, matrixDestNames, nullNamesOrder, nullNamesOrder},
+                { DESTINATION_NONE, DESTINATION_MAX -1, DESTINATION_MAX, DISPLAY_TYPE_STRINGS, matrixDestNames, matrixTargetOrder, matrixTargetPosition},
                 { 0, 0, 0, DISPLAY_TYPE_NONE, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
@@ -990,7 +998,6 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                 }
                 break;
             case MENU_LOAD_SELECT_DX7_PRESET:
-                propagateNoteOff();
                 loadDx7Patch(currentTimbre, fullState.dx7Bank, fullState.menuSelect, params);
                 fullState.dx7PresetNumber = fullState.menuSelect;
                 break;
@@ -1023,7 +1030,6 @@ void SynthState::encoderTurned(int encoder, int ticks) {
                 }
                 break;
             case MENU_LOAD_SELECT_BANK_PRESET:
-                propagateNoteOff();
                 loadPreenFMPatch(currentTimbre, fullState.preenFMBank, fullState.menuSelect, params);
                 fullState.preenFMPresetNumber = fullState.menuSelect;
                 break;
@@ -1063,15 +1069,21 @@ void SynthState::encoderTurned(int encoder, int ticks) {
 }
 
 void SynthState::loadPreenFMPatch(int timbre, PFM2File const *bank, int patchNumber, struct OneSynthParams* params) {
+    storeTestNote();
+    propagateNoteOff();
     propagateBeforeNewParamsLoad(timbre);
     storage->getPatchBank()->loadPreenFMPatch(bank, patchNumber, params);
     propagateAfterNewParamsLoad(timbre);
+    restoreTestNote();
 }
 
 void SynthState::loadDx7Patch(int timbre, PFM2File const *bank, int patchNumber, struct OneSynthParams* params) {
+    storeTestNote();
+    propagateNoteOff();
     propagateBeforeNewParamsLoad(timbre);
     hexter->loadHexterPatch(storage->getDX7SysexFile()->dx7LoadPatch(bank, patchNumber), params);
     propagateAfterNewParamsLoad(timbre);
+    restoreTestNote();
 }
 
 void SynthState::loadPreenFMCombo(PFM2File const *bank, int patchNumber) {

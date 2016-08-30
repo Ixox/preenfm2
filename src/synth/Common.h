@@ -508,6 +508,8 @@ enum DestinationEnum {
     LFOSEQ1_GATE,
     LFOSEQ2_GATE,
     FILTER_FREQUENCY,
+    ALL_OSC_FREQ_HARM,
+    ALL_ENV_DECAY,
     DESTINATION_MAX
 };
 

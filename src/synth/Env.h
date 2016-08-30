@@ -47,6 +47,8 @@ struct EnvData {
     // Inc attack and Inc Release is per voice since firmware 2.0
     float stateIncAttack;
     float stateIncRelease;
+    // Inc dacay per voice since firmware 2.05
+    float stateIncDecay;
 };
 
 struct table {
@@ -142,6 +144,9 @@ public:
         case ENV_STATE_ON_R:
             incPhase = env->stateIncRelease;
             break;
+        case ENV_STATE_ON_D:
+            incPhase = env->stateIncDecay;
+            break;
         default:
             incPhase = stateInc[env->envState];
             break;
@@ -181,11 +186,17 @@ public:
         newState(env);
 
         float attack = envParamsA->attackTime + matrix->getDestination(ALL_ENV_ATTACK) + matrix->getDestination((enum DestinationEnum)(ENV1_ATTACK + envNumber));
-        if (attack < 0.0f) {
+        if (unlikely(attack < 0.0f)) {
             attack = 0.0f;
         }
         //stateInc[ENV_STATE_ON_A] = incTab[(int)(attack * 100.0f)];
         env->stateIncAttack = incTab[(int)(attack * 100.0f)];
+
+        float decay = envParamsA->decayTime + matrix->getDestination(ALL_ENV_DECAY);
+        if (unlikely(decay < 0.0f)) {
+            decay = 0.0f;
+        }
+        env->stateIncDecay= incTab[(int)(decay * 100.0f)];
     }
 
     void noteOffQuick(struct EnvData* env) {
