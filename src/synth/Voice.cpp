@@ -138,11 +138,11 @@ void Voice::noteOn(short newNote, short velocity, unsigned int index) {
 	this->holdedByPedal = false;
 	this->index = index;
 
-	this->im1 = currentTimbre->params.engineIm1.modulationIndexVelo1 * (float)velocity * .0078125f;
-	this->im2 = currentTimbre->params.engineIm1.modulationIndexVelo2 * (float)velocity * .0078125f;
-	this->im3 = currentTimbre->params.engineIm2.modulationIndexVelo3 * (float)velocity * .0078125f;
-	this->im4 = currentTimbre->params.engineIm2.modulationIndexVelo4 * (float)velocity * .0078125f;
-	this->im5 = currentTimbre->params.engineIm3.modulationIndexVelo5 * (float)velocity * .0078125f;
+	this->velIm1 = currentTimbre->params.engineIm1.modulationIndexVelo1 * (float)velocity * .0078125f;
+	this->velIm2 = currentTimbre->params.engineIm1.modulationIndexVelo2 * (float)velocity * .0078125f;
+	this->velIm3 = currentTimbre->params.engineIm2.modulationIndexVelo3 * (float)velocity * .0078125f;
+	this->velIm4 = currentTimbre->params.engineIm2.modulationIndexVelo4 * (float)velocity * .0078125f;
+	this->velIm5 = currentTimbre->params.engineIm3.modulationIndexVelo5 * (float)velocity * .0078125f;
 
 	int zeroVelo = (16 - currentTimbre->params.engine1.velocity) * 8;
 	int newVelocity = zeroVelo + ((velocity * (128 - zeroVelo)) >> 7);
@@ -302,9 +302,9 @@ void Voice::nextBlock() {
 		 */
 
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -376,8 +376,8 @@ void Voice::nextBlock() {
 			   |Mix1  |Mix2
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -441,10 +441,10 @@ void Voice::nextBlock() {
 				 '---'
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -529,10 +529,10 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -620,10 +620,10 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -709,9 +709,9 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -790,10 +790,10 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -900,10 +900,10 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -1014,10 +1014,10 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -1139,10 +1139,10 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -1267,10 +1267,10 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -1388,9 +1388,9 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -1492,10 +1492,10 @@ void Voice::nextBlock() {
 		   |Mix1     |Mix2
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -1608,10 +1608,10 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -1723,10 +1723,10 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -1832,10 +1832,10 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -1951,11 +1951,11 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
-		float voiceIm5 = this->im5 + modulationIndex5;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
+		float voiceIm5 = modulationIndex5;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -2079,11 +2079,11 @@ void Voice::nextBlock() {
 							|Mix1
 							*/
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
-		float voiceIm5 = this->im5 + modulationIndex5;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
+		float voiceIm5 = modulationIndex5;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -2206,10 +2206,10 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -2315,10 +2315,10 @@ void Voice::nextBlock() {
 			   |Mix1  |Mix2    |Mix3
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -2419,10 +2419,10 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -2517,10 +2517,10 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
-		float voiceIm4 = this->im4 + modulationIndex4;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
+		float voiceIm4 = modulationIndex4;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -2616,9 +2616,9 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -2721,9 +2721,9 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
-		float voiceIm3 = this->im3 + modulationIndex3;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
+		float voiceIm3 = modulationIndex3;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -2834,8 +2834,8 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -2940,8 +2940,8 @@ void Voice::nextBlock() {
 
 		 */
 	{
-		float voiceIm1 = this->im1 + modulationIndex1;
-		float voiceIm2 = this->im2 + modulationIndex2;
+		float voiceIm1 = modulationIndex1;
+		float voiceIm2 = modulationIndex2;
 
 		currentTimbre->osc1.calculateFrequencyWithMatrix(&oscState1, &matrix, freqHarm);
 		currentTimbre->osc2.calculateFrequencyWithMatrix(&oscState2, &matrix, freqHarm);
@@ -3150,7 +3150,7 @@ void Voice::nextBlock() {
 			currentTimbre->osc5.calculateFrequencyWithMatrix(&oscState5, &matrix, freqHarm);
 			currentTimbre->osc6.calculateFrequencyWithMatrix(&oscState6, &matrix, freqHarm);
 
-			float voiceIm1 = this->im1 + modulationIndex1;
+			float voiceIm1 = modulationIndex1;
 
 			env1Value = this->env1ValueMem;
 			envNextValue = currentTimbre->env1.getNextAmpExp(&envState1);

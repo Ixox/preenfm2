@@ -61,16 +61,16 @@ public:
 
     void updateAllModulationIndexes() {
         int numberOfIMs = algoInformation[(int)(currentTimbre->getParamRaw()->engine1.algo)].im;
-        modulationIndex1 = currentTimbre->getParamRaw()->engineIm1.modulationIndex1 + matrix.getDestination(INDEX_MODULATION1) + matrix.getDestination(INDEX_ALL_MODULATION);
+        modulationIndex1 = currentTimbre->getParamRaw()->engineIm1.modulationIndex1 + matrix.getDestination(INDEX_MODULATION1) + matrix.getDestination(INDEX_ALL_MODULATION) + this->velIm1;
         if (unlikely(modulationIndex1 < 0.0f)) {
             modulationIndex1 = 0.0f;
         }
-        modulationIndex2 = currentTimbre->getParamRaw()->engineIm1.modulationIndex2 + matrix.getDestination(INDEX_MODULATION2) + matrix.getDestination(INDEX_ALL_MODULATION);
+        modulationIndex2 = currentTimbre->getParamRaw()->engineIm1.modulationIndex2 + matrix.getDestination(INDEX_MODULATION2) + matrix.getDestination(INDEX_ALL_MODULATION) + this->velIm2;
         if (unlikely(modulationIndex2 < 0.0f)) {
             modulationIndex2 = 0.0f;
         }
 
-        modulationIndex3 = currentTimbre->getParamRaw()->engineIm2.modulationIndex3 + matrix.getDestination(INDEX_MODULATION3) + matrix.getDestination(INDEX_ALL_MODULATION);
+        modulationIndex3 = currentTimbre->getParamRaw()->engineIm2.modulationIndex3 + matrix.getDestination(INDEX_MODULATION3) + matrix.getDestination(INDEX_ALL_MODULATION) + this->velIm3;
         if (unlikely(modulationIndex3 < 0.0f)) {
             modulationIndex3 = 0.0f;
         }
@@ -79,12 +79,12 @@ public:
             return;
         }
 
-        modulationIndex4 = currentTimbre->getParamRaw()->engineIm2.modulationIndex4 + matrix.getDestination(INDEX_MODULATION4) + matrix.getDestination(INDEX_ALL_MODULATION);
+        modulationIndex4 = currentTimbre->getParamRaw()->engineIm2.modulationIndex4 + matrix.getDestination(INDEX_MODULATION4) + matrix.getDestination(INDEX_ALL_MODULATION) + this->velIm4;
         if (unlikely(modulationIndex4 < 0.0f)) {
             modulationIndex4 = 0.0f;
         }
 
-        modulationIndex5 = currentTimbre->getParamRaw()->engineIm3.modulationIndex5 + matrix.getDestination(INDEX_ALL_MODULATION);;
+        modulationIndex5 = currentTimbre->getParamRaw()->engineIm3.modulationIndex5 + matrix.getDestination(INDEX_ALL_MODULATION) + this->velIm5;
         if (unlikely(modulationIndex5 < 0.0f)) {
             modulationIndex5 = 0.0f;
         }
@@ -355,7 +355,7 @@ private:
     unsigned int index;
     char note;
     float velocity;
-    float im1, im2, im3, im4, im5;
+    float velIm1, velIm2, velIm3, velIm4, velIm5;
     bool newNotePlayed;
     //
     float freqAi, freqAo;
