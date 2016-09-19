@@ -152,6 +152,12 @@ const struct MidiConfig midiConfig[]  = {
                 2,
                 yesNo
         },
+        {
+                "Strict NRPN: ",
+                "strictnrpn",
+                2,
+                yesNo
+        },
         // Don't count in MIDICONFIG_SIZE
         {
                 "Firmware: ",

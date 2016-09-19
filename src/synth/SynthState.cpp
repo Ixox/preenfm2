@@ -469,6 +469,7 @@ SynthState::SynthState() {
     fullState.midiConfigValue[MIDICONFIG_OLED_SAVER] = 0;
 	fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] = 0;
     fullState.midiConfigValue[MIDICONFIG_BOOT_SOUND] = 0;
+    fullState.midiConfigValue[MIDICONFIG_STRICT_NRPN] = 0;
     fullState.firstMenu = 0;
     // Init randomizer values to 1
     fullState.randomizer.Oper = 1;

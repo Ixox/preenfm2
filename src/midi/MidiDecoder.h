@@ -120,14 +120,27 @@ enum AllControlChange {
 
 };
 
+
+enum NrpnType {
+    NRPN_VALUE_INT = 1, 
+    NRPN_VALUE_FLOAT, 
+    NRPN_LETTER,
+    NRPN_STEPSEQ, 
+    NRPN_FLUSHALL,
+    NRPN_BADCOMMAND
+};
+
+
 struct Nrpn {
     unsigned char paramLSB;
     unsigned char paramMSB;
     unsigned char valueLSB;
     unsigned char valueMSB;
-    bool readyToSend;
+    unsigned int row;
+    unsigned int encoder;
+    struct ParameterDisplay* param;
+    NrpnType nrpnType;
 };
-
 
 
 
@@ -144,7 +157,10 @@ public:
     void newMessageData(unsigned char byte);
     void midiEventReceived(MidiEvent midiEvent);
     void controlChange(int timbre, MidiEvent& midiEvent);
-    void decodeNrpn(int timbre);
+    void executeNrpn(int timbre, float nrpnValue);
+    bool requires14bits(struct Nrpn * nrpn);
+    NrpnType getNrpnType(struct Nrpn * nrpn);
+
     void setSynth(Synth* synth);
     void setVisualInfo(VisualInfo* visualInfo);
 
