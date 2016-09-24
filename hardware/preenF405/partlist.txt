@@ -1,0 +1,67 @@
+Partlist
+
+Exported from Preen40.brd at 16/02/14 18:25
+
+EAGLE Version 6.5.0 Copyright (c) 1988-2013 CadSoft
+
+Assembly variant: 
+
+Part     Value          Package  Library  Position (inch)       Orientation
+
+C1       .1uF           C0603K   rcl      (1.144 0.138)         R0
+C2       .1uF           C0603K   rcl      (0.6725748 0.581)     R180
+C3       .1uF           C0603K   rcl      (0.666 0.1434252)     R180
+C4       .1uF           C0603K   rcl      (1.1394252 0.577)     R180
+C6       20pF           C0603K   rcl      (1.357 0.3555748)     R0
+C7       20pF           C0603K   rcl      (1.66562992 0.35768504) R0
+C8       2.2uF          C0805K   rcl      (0.50314961 0.5384252) R90
+C9       2.2uF          C0805K   rcl      (0.5075748 0.225)     R180
+C10      10uF           CT3528   rcl      (0.152 0.198)         R0
+IC1      STM32F40X      LQFP64   GHI      (0.90622835 0.35779134) R90
+JP1                     1X01     pinhead  (0.06 0.06)           R0
+JP2                     1X01     pinhead  (0.16 0.06)           R90
+JP3                     1X01     pinhead  (0.26 0.06)           R90
+JP4                     1X01     pinhead  (0.36 0.06)           R90
+JP5                     1X01     pinhead  (0.46 0.06)           R90
+JP6                     1X01     pinhead  (0.56 0.06)           R90
+JP7                     1X01     pinhead  (0.66 0.06)           R90
+JP8                     1X01     pinhead  (0.76 0.06)           R90
+JP9                     1X01     pinhead  (0.86 0.06)           R90
+JP10                    1X01     pinhead  (0.96 0.06)           R90
+JP11                    1X01     pinhead  (1.06 0.06)           R90
+JP12                    1X01     pinhead  (1.16 0.06)           R90
+JP13                    1X01     pinhead  (1.26 0.06)           R90
+JP14                    1X01     pinhead  (1.36 0.06)           R90
+JP15                    1X01     pinhead  (1.46 0.06)           R90
+JP16                    1X01     pinhead  (1.56 0.06)           R90
+JP17                    1X01     pinhead  (1.66 0.06)           R90
+JP18                    1X01     pinhead  (1.76 0.06)           R90
+JP19                    1X01     pinhead  (1.86 0.06)           R90
+JP20                    1X01     pinhead  (1.96 0.06)           R90
+JP21                    1X01     pinhead  (1.96 0.66)           R0
+JP22                    1X01     pinhead  (1.86 0.66)           R0
+JP23                    1X01     pinhead  (1.76 0.66)           R0
+JP24                    1X01     pinhead  (1.66 0.66)           R0
+JP25                    1X01     pinhead  (1.56 0.66)           R0
+JP26                    1X01     pinhead  (1.46 0.66)           R0
+JP27                    1X01     pinhead  (1.36 0.66)           R0
+JP28                    1X01     pinhead  (1.26 0.66)           R0
+JP29                    1X01     pinhead  (1.16 0.66)           R0
+JP30                    1X01     pinhead  (1.06 0.66)           R0
+JP31                    1X01     pinhead  (0.96 0.66)           R0
+JP32                    1X01     pinhead  (0.86 0.66)           R0
+JP33                    1X01     pinhead  (0.76 0.66)           R0
+JP34                    1X01     pinhead  (0.66 0.66)           R0
+JP35                    1X01     pinhead  (0.56 0.66)           R0
+JP36                    1X01     pinhead  (0.46 0.66)           R0
+JP37                    1X01     pinhead  (0.36 0.66)           R0
+JP38                    1X01     pinhead  (0.26 0.66)           R0
+JP39                    1X01     pinhead  (0.16 0.66)           R0
+JP40                    1X01     pinhead  (0.06 0.66)           R0
+Q1       12Mhz          SM49@1   crystal  (1.49967717 0.23574803) R180
+R1       10K            R0603    rcl      (0.42029921 0.537)    R90
+R2       10K            R0603    rcl      (1.9639685 0.17359843) R90
+R3       10K            R0603    rcl      (0.4975748 0.339)     R180
+R4       22             R0603    rcl      (0.245 0.428)         R270
+R5       22             R0603    rcl      (0.154 0.429)         R270
+R6       10K            R0603    rcl      (1.49 0.359)          R180
