@@ -80,6 +80,7 @@ void Voice::glideToNote(short newNote) {
 	currentTimbre->osc6.glideToNote(&oscState6, newNote);
 }
 
+
 void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) {
 	// Update index : so that few chance to be chosen again during the quick dying
 	this->index = index;
@@ -102,6 +103,8 @@ void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) 
 		this->currentTimbre->env4.noteOffQuick(&envState4);
 		this->currentTimbre->env5.noteOffQuick(&envState5);
 		this->currentTimbre->env6.noteOffQuick(&envState6);
+		// We don't want noteOnAfterMatrixCompute to restart the env or => Hanging note !!!
+	    this->newNotePlayed = false;
 	}
 }
 
@@ -176,8 +179,9 @@ void Voice::endNoteOrBeginNextOne() {
 		} else {
 		    // Note off have already been received....
 			this->playing = false;
+			this->nextPendingNote = 0;
+	        this->newNotePending = false;
 		}
-        this->newNotePending = false;
     } else {
         this->playing = false;
     	this->released = false;
@@ -228,7 +232,9 @@ void Voice::noteOff() {
 }
 
 void Voice::killNow() {
+	this->newNotePlayed = false;
 	this->playing = false;
+	this->newNotePending = false;
 	this->nextPendingNote = 0;
 	this->nextGlidingNote = 0;
 	this->gliding = false;
