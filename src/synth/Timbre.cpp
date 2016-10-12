@@ -259,9 +259,6 @@ void Timbre::noteOff(char note) {
 int cptHighNote = 0;
 
 void Timbre::preenNoteOn(char note, char velocity) {
-	if (unlikely(note < 10)) {
-		return;
-	}
 
 	int iNov = (int) params.engine1.numberOfVoice;
 	if (unlikely(iNov == 0)) {
@@ -277,36 +274,13 @@ void Timbre::preenNoteOn(char note, char velocity) {
 		// voice number k of timbre
 		int n = voiceNumber[k];
 
-#ifdef DEBUG_VOICE
-    	if (unlikely(n<0)) {
-    		lcd.setRealTimeAction(true);
-    		lcd.clear();
-    		lcd.setCursor(0,0);
-    		lcd.print("Timbre::NoteOn");
-			lcd.setCursor(0,1);
-			lcd.print("nov: ");
-			lcd.print((int)params.engine1.numberOfVoice);
-			lcd.setCursor(10,1);
-			lcd.print("k: ");
-			lcd.print(k);
-			lcd.setCursor(0,2);
-			lcd.print("n: ");
-			lcd.print(n);
-			lcd.setCursor(10,2);
-			lcd.print("t: ");
-			lcd.print(timbreNumber);
-			lcd.setCursor(0,3);
-			lcd.print("note: ");
-			lcd.print((int)note);
-//			while (1);
-    	}
-#endif
         if (unlikely(voices[n]->isNewNotePending())) {
-            return;
+            continue;
         }
 
 		// same note = priority 1 : take the voice immediatly
 		if (unlikely(voices[n]->isPlaying() && voices[n]->getNote() == note)) {
+
 #ifdef DEBUG_VOICE
 		lcd.setRealTimeAction(true);
 		lcd.setCursor(16,1);
@@ -341,12 +315,12 @@ void Timbre::preenNoteOn(char note, char velocity) {
 	}
 
 	if (voiceToUse == -1) {
-		newNoteType = NEW_NOTE_OLD;
 		for (int k = 0; k < iNov; k++) {
 			// voice number k of timbre
 			int n = voiceNumber[k];
 			int indexVoice = voices[n]->getIndex();
 			if (indexVoice < indexMin && !voices[n]->isNewNotePending()) {
+				newNoteType = NEW_NOTE_OLD;
 				indexMin = indexVoice;
 				voiceToUse = n;
 			}
@@ -490,6 +464,7 @@ void Timbre::prepareForNextBlock() {
 }
 
 void Timbre::cleanNextBlock() {
+
 	float *sp = this->sampleBlock;
 	while (sp < this->sbMax) {
 		*sp++ = 0;
