@@ -516,6 +516,31 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
             this->synth->setNewValueFromMidi(timbre, ROW_LFOOSC1 + midiEvent.value[0] - CC_LFO1_SHAPE, ENCODER_LFO_SHAPE,
                     (float)midiEvent.value[1]);
             break;
+        case CC_ARP_CLOCK:
+            this->synth->setNewValueFromMidi(timbre, ROW_ARPEGGIATOR1, ENCODER_ARPEGGIATOR_CLOCK,
+                    (float)midiEvent.value[1]);
+            break;
+        case CC_ARP_DIRECTION:
+            this->synth->setNewValueFromMidi(timbre, ROW_ARPEGGIATOR1, ENCODER_ARPEGGIATOR_DIRECTION,
+                    (float)midiEvent.value[1]);
+            break;
+        case CC_ARP_OCTAVE:
+            this->synth->setNewValueFromMidi(timbre, ROW_ARPEGGIATOR1, ENCODER_ARPEGGIATOR_OCTAVE,
+                    (float)midiEvent.value[1]);
+            break;
+        case CC_ARP_PATTERN:
+            this->synth->setNewValueFromMidi(timbre, ROW_ARPEGGIATOR2, ENCODER_ARPEGGIATOR_PATTERN,
+                    (float)midiEvent.value[1]);
+            break;
+        case CC_ARP_DIVISION:
+            this->synth->setNewValueFromMidi(timbre, ROW_ARPEGGIATOR2, ENCODER_ARPEGGIATOR_DIVISION,
+                    (float)midiEvent.value[1]);
+            break;
+        case CC_ARP_DURATION:
+            this->synth->setNewValueFromMidi(timbre, ROW_ARPEGGIATOR2, ENCODER_ARPEGGIATOR_DURATION,
+                    (float)midiEvent.value[1]);
+            break;
+
         }
     }
 
@@ -900,7 +925,37 @@ void MidiDecoder::newParamValue(int timbre, int currentrow,
             cc.value[0] = CC_LFO1_PHASE + encoder;
             cc.value[1] = newValue * 100.0f + .1f;
             break;
-
+        case ROW_ARPEGGIATOR1:
+            switch (encoder) {
+                case ENCODER_ARPEGGIATOR_CLOCK:
+                    cc.value[0] = CC_ARP_CLOCK;
+                    cc.value[1] = newValue + .1f;                
+                break;
+                case ENCODER_ARPEGGIATOR_DIRECTION:
+                    cc.value[0] = CC_ARP_DIRECTION;
+                    cc.value[1] = newValue + .1f;                
+                break;
+                case ENCODER_ARPEGGIATOR_OCTAVE:
+                    cc.value[0] = CC_ARP_OCTAVE;
+                    cc.value[1] = newValue + .1f;                
+                break;
+            }
+            break;
+        case ROW_ARPEGGIATOR2:
+            switch (encoder) {
+                case ENCODER_ARPEGGIATOR_PATTERN:
+                    cc.value[0] = CC_ARP_PATTERN;
+                    cc.value[1] = newValue + .1f;                
+                break;
+                case ENCODER_ARPEGGIATOR_DIVISION:
+                    cc.value[0] = CC_ARP_DIVISION;
+                    cc.value[1] = newValue + .1f;                
+                break;
+                case ENCODER_ARPEGGIATOR_DURATION:
+                    cc.value[0] = CC_ARP_DURATION;
+                    cc.value[1] = newValue + .1f;                
+                break;
+            }
         }
 
         if (cc.value[0] != 0) {

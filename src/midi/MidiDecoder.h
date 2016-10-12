@@ -98,7 +98,7 @@ enum AllControlChange {
     CC_ENV_REL_OP4,
     CC_ENV_REL_OP5,
     CC_ENV_REL_OP6,
-    CC_LFO1_PHASE,
+    CC_LFO1_PHASE, // 88
     CC_LFO2_PHASE,
     CC_LFO3_PHASE,
     CC_LFO1_BIAS,
@@ -107,6 +107,12 @@ enum AllControlChange {
     CC_LFO1_SHAPE,
     CC_LFO2_SHAPE,
     CC_LFO3_SHAPE,
+    CC_ARP_CLOCK = 97,
+    CC_ARP_DIRECTION,
+    CC_ARP_OCTAVE,
+    CC_ARP_PATTERN,
+    CC_ARP_DIVISION,
+    CC_ARP_DURATION,
     // 119 is empty
     CC_MATRIX_SOURCE_CC1 = 115,
 	CC_MATRIX_SOURCE_CC2,
