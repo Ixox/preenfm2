@@ -24,6 +24,9 @@
 #include "Common.h"
 
 
+#ifdef CVIN
+extern uint16_t ADCBuffer[];
+#endif
 
 class Matrix  {
 	friend class Timbre;
@@ -51,6 +54,8 @@ public:
 
 
     void computeAllDestintations() {
+
+
         float mul;
 
         float mul1 = destinations[MTX1_MUL];

@@ -32,6 +32,13 @@
 #define OVERCLOCK_STRING "o"
 #endif
 
+#ifndef CVIN
+#define CVIN_STRING
+#else
+#define CVIN_STRING "cv"
+#endif
+
+
 #define LEDPIN GPIO_Pin_6
 
 
@@ -58,12 +65,22 @@ extern unsigned int preenTimer;
 
 extern Synth synth;
 
+#ifdef CVIN
+extern uint16_t ADCBuffer[];
+#endif
+#ifdef CVINDEBUG
+extern int TIM2PerSeq;
+#endif
+
+
 void USART_Config();
 void LED_Config();
 void MCP4922_Config();
 void SysTick_Config();
 void RNG_Config();
 void LCD_InitChars(LiquidCrystal *lcd);
+void ADC_Config();
+
 
 
 void strobePin(u8 count, u32 rate);

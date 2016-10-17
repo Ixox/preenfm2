@@ -257,9 +257,19 @@ struct ParameterRowDisplay lfoEnv2ParameterRow = {
 };
 
 const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "env2", "seq1", "seq2",
-        "ModW", "PitB", "AftT",  "Velo", "Not1", "p1  ", "p2  ", "p3  ", "p4  ", "Not2", "Brth" } ;
+        "ModW", "PitB", "AftT",  "Velo", "Not1", "p1  ", "p2  ", "p3  ", "p4  ", "Not2", "Brth"
+#ifdef CVIN
+        , "CV1 ", "CV2 ", "CV3 ", "CV4 "
+#endif         
+} ;
+
+#ifdef CVIN
+const unsigned char  matrixSourceOrder[] =        { 0, 19, 20, 21, 22, 1, 2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18, 13, 14, 15, 16 };
+const unsigned char  matrixSourcePosition[] =     { 0,  5,  6,  7,  8, 9, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 17, 18, 1,  2,  3,  4};
+#else
 const unsigned char  matrixSourceOrder[] =        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17, 18, 13, 14, 15, 16 };
 const unsigned char  matrixSourcePosition[] =     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 13, 14};
+#endif         
 
 
 const char* matrixDestNames [] = {

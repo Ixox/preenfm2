@@ -26,6 +26,13 @@ RingBuffer<uint8_t, 100> usartBufferOut  __attribute__ ((section(".ccmnoload")))
 unsigned int preenTimer  __attribute__ ((section(".ccm"))) = 0;
 
 
+// DEBUG !!!!!!!!!!
+#ifdef CVINDEBUG
+unsigned int preenTimer2 = 0;
+int cptTIM2 = 0;
+int TIM2PerSeq = 0;
+#endif
+
 /*
  * Interrupt handlers.
  */
@@ -222,6 +229,25 @@ void OTG_FS_IRQHandler(void) {
     USBD_OTG_ISR_Handler(&usbOTGDevice);
 }
 #endif
+
+
+
+void TIM2_IRQHandler() {
+        TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+        
+#ifdef CVINDEBUG
+        cptTIM2 ++;
+        if (cptTIM2 >= 5000) {
+            int t = preenTimer - preenTimer2;
+            float s = PREENFM_FREQUENCY_INVERSED * t;
+            TIM2PerSeq = ((float)cptTIM2 / s);
+            preenTimer2 = preenTimer;
+            cptTIM2 = 0;
+        }
+#endif
+
+}
+
 
 
 #ifdef __cplusplus

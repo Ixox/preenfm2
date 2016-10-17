@@ -34,6 +34,8 @@
 #include "ff.h"
 
 
+
+
 SynthState         synthState __attribute__ ((section(".ccmnoload")));
 Synth              synth __attribute__ ((section(".ccmnoload")));
 
@@ -57,9 +59,8 @@ void fillSoundBuffer() {
     }
 }
 
-const char* line1 = "PreenFM2 v"PFM2_VERSION" "OVERCLOCK_STRING;
+const char* line1 = "PreenFM2 v"PFM2_VERSION" "OVERCLOCK_STRING" "CVIN_STRING;
 const char* line2 = "     By Xavier Hosxe";
-
 
 void setup() {
     lcd.begin(20, 4);
@@ -80,7 +81,8 @@ void setup() {
     LED_Config();
 	USART_Config();
 	MCP4922_Config();
-	RNG_Config();
+	RNG_Config();    
+    ADC_Config();
 
 	// Set flush to zero mode...
 	// FPU will treat denormal value as 0
@@ -154,6 +156,7 @@ void setup() {
     ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env4b.releaseTime = 0.8f;
 
     bool displayline1 = true;
+    bool displayline3 = true;
     for (int r=0; r<20; r++) {
     	if (r<10 && (r & 0x1) == 0) {
 			GPIO_SetBits(GPIOB, GPIO_Pin_6);
@@ -291,6 +294,7 @@ void setup() {
 unsigned int ledTimer = 0;
 unsigned int encoderTimer = 0;
 unsigned int tempoTimer = 0;
+unsigned int ADCTimer = 0;
 
 bool ledOn = false;
 
@@ -349,6 +353,18 @@ void loop(void) {
         lcd.realTimeAction(&action, fillSoundBuffer);
     }
 
+
+#ifdef CVINDEBUG
+	if ((newPreenTimer - ADCTimer) > 1000) {
+        lcd.setCursor(0,1);
+        lcd.print('>');
+        lcd.print((ADCBuffer[0]+ADCBuffer[4]+ADCBuffer[8]+ADCBuffer[12]) >> 2);
+        lcd.print("<  ");
+        lcd.setCursor(13,1);
+        lcd.print(TIM2PerSeq);        
+        ADCTimer = newPreenTimer;
+    }
+#endif
 }
 
 int main(void) {

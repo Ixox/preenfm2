@@ -30,6 +30,8 @@ CYCCNT_buffer cycles_all;
 extern float noise[32];
 float ratiosTimbre[]= { 131072.0f * 1.0f, 131072.0f * 1.0f, 131072.0f *  0.5f, 131072.0f * 0.333f, 131072.0f * 0.25f };
 
+
+
 Synth::Synth(void) {
 }
 
@@ -130,6 +132,23 @@ void Synth::buildNewSampleBlock() {
         noise[noiseIndex++] = (random32bit >> 16) * .000030518f - 1.0f; // value between -1 and 1.
     }
 
+#ifdef CVIN
+    int cvin = (ADCBuffer[0] + ADCBuffer[4] + ADCBuffer[8] + ADCBuffer[12]) >> 2;
+    float divBy512 = .001953125f ;
+    float cvin1 = ((float)cvin) * divBy512 - 1.0f;
+
+    cvin = (ADCBuffer[1] + ADCBuffer[5] + ADCBuffer[9] + ADCBuffer[13]) >> 2;
+    float cvin2 = ((float)cvin) * divBy512 - 1.0f;
+
+    cvin = (ADCBuffer[2] + ADCBuffer[6] + ADCBuffer[10] + ADCBuffer[14]) >> 2;
+    float cvin3 = ((float)cvin) * divBy512 - 1.0f;
+
+    cvin = (ADCBuffer[3] + ADCBuffer[7] + ADCBuffer[11] + ADCBuffer[15]) >> 2;
+    float cvin4 = ((float)cvin) * divBy512 - 1.0f;
+#endif
+
+    // 
+
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
         timbres[t].cleanNextBlock();
         if (likely(timbres[t].params.engine1.numberOfVoice > 0)) {
@@ -139,6 +158,12 @@ void Synth::buildNewSampleBlock() {
                 this->voices[timbres[t].voiceNumber[0]].glide();
             }
         }
+#ifdef CVIN
+        timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN1, cvin1);
+        timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN2, cvin2);
+        timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN3, cvin3);
+        timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN4, cvin4);
+#endif
         timbres[t].prepareMatrixForNewBlock();
     }
 
