@@ -19,3 +19,4 @@ Chose the correct file : OLED and LCD 20x4 display don't have the same bezel siz
     * 4 \* M3 screws 12mm
 * Under the case
     * 2 \* stick on feet (ref mouser 517-SJ-5306CL)
+
