@@ -58,8 +58,9 @@ public:
         float mul3 = destinations[MTX3_MUL];
         float mul4 = destinations[MTX4_MUL];
         //
-        int k=0;
-        destinations[(int)rows[k++].destination] = 0;
+        int k = 1;
+        // No need to erase first row
+        //destinations[(int)rows[k++].destination] = 0;
         destinations[(int)rows[k++].destination] = 0;
         destinations[(int)rows[k++].destination] = 0;
         destinations[(int)rows[k++].destination] = 0;
@@ -75,7 +76,7 @@ public:
 
         mul = rows[0].mul + mul1;
         if (likely(mul != 0.0f)) {
-            destinations[(int)rows[0].destination] += sources[(int)rows[0].source] * mul;
+            destinations[(int)rows[0].destination] = sources[(int)rows[0].source] * mul;
         }
         mul = rows[1].mul + mul2;
         if (likely(mul != 0.0f)) {
