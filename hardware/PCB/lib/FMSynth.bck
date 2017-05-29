@@ -1,0 +1,43 @@
+EESchema-DOCLIB  Version 2.0  Date: Mon 03 Sep 2012 11:06:19 PM CEST
+#
+$CMP 74HC165
+D 8 bits serial in // out Shift Register 3 State Out
+K HCMOS SR 3State
+$ENDCMP
+#
+$CMP 74LS595
+D 8 bits serial in // out Shift Register 3 State Out
+K TTL SR 3State
+$ENDCMP
+#
+$CMP 74LS596
+D 8 bits serial in // out Shift Register Open Collect.
+K HCMOS SR OpenCol
+$ENDCMP
+#
+$CMP C
+D Condensateur non polarise
+$ENDCMP
+#
+$CMP DISPLAY_PC2004A-L
+D Afficheur LCD 20X4 - PC2004A-L
+K Afficheur LCD
+F http://www.p-tec.net
+$ENDCMP
+#
+$CMP R
+D Resistance
+K R DEV
+$ENDCMP
+#
+$CMP RR4
+D 8 resistors
+K R DEV
+$ENDCMP
+#
+$CMP RR8
+D 8 resistors
+K R DEV
+$ENDCMP
+#
+#End Doc Library

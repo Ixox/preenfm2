@@ -1,0 +1,815 @@
+# EESchema Netlist Version 1.1 created  jeu. 11 août 2016 20:31:29 PDT
+(
+ ( /50450EE4 FMLD1117 3V1 LD1117
+  ( 1 GND )
+  ( 2 +3.3V )
+  ( 3 +5VA )
+ )
+ ( /5058F0C1 FM7805 5V1 7805
+  ( 1 GND )
+  ( 2 +5VA )
+  ( 3 N-000091 )
+ )
+ ( /5045084A FMJACK AJ1 AUDIO_JACK
+  ( 0 GND )
+  ( 1 N-000005 )
+ )
+ ( /50435944 FMJACK AJ2 AUDIO_JACK
+  ( 0 GND )
+  ( 1 N-000026 )
+ )
+ ( /4D95D61C FMCondeDecouplage2 C1 100nF
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D95D61D FMCondeDecouplage2 C2 100nF
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4DB13DE4 FMCondeDecouplage2 C3 100nF
+  ( 1 +5VA )
+  ( 2 GND )
+ )
+ ( /505778FE DIP-40__600_ELL C4 PreenF405/CERB40
+  ( 1 +3.3V )
+  ( 2 GND )
+  ( 3 /MCLK )
+  ( 4 /SWD_IO )
+  ( 5 /MQH )
+  ( 6 /MLD )
+  ( 7 ? )
+  ( 8 /SWD_CLK )
+  ( 9 ? )
+  ( 10 /SPI_DAC1 )
+  ( 11 /SPI_DAC2 )
+  ( 12 /SPI_CK )
+  ( 13 ? )
+  ( 14 /SPI_LDAC )
+  ( 15 ? )
+  ( 16 +3.3V )
+  ( 17 /LODR )
+  ( 18 ? )
+  ( 19 /LED )
+  ( 20 /SPI_MO )
+  ( 21 /RESET )
+  ( 22 /AIN1 )
+  ( 23 /AIN2 )
+  ( 24 /AIN3 )
+  ( 25 /AIN4 )
+  ( 26 /RS )
+  ( 27 /E )
+  ( 28 /DB4 )
+  ( 29 /DB5 )
+  ( 30 /DB6 )
+  ( 31 /DB7 )
+  ( 32 /TX )
+  ( 33 /RX )
+  ( 34 /USB_DN )
+  ( 35 /USB_DP )
+  ( 36 ? )
+  ( 37 ? )
+  ( 38 /USB_D- )
+  ( 39 /USB_D+ )
+  ( 40 ? )
+ )
+ ( /50450896 FMCondeDecouplage2 C5 100nF
+  ( 1 +5VA )
+  ( 2 GND )
+ )
+ ( /504508B2 FMCondoChimique2 C6 220uF
+  ( 1 +5V )
+  ( 2 GND )
+ )
+ ( /50451A9B FMCondeDecouplage2 C7 100nF
+  ( 1 +5V )
+  ( 2 GND )
+ )
+ ( /5057860C FMCondeDecouplage2 C8 100nF
+  ( 1 +5V )
+  ( 2 GND )
+ )
+ ( /4DB13B48 FMCondoChimique2 C9 220uF
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /50355148 FMCondeDecouplage2 C10 100nF
+  ( 1 +5VA )
+  ( 2 GND )
+ )
+ ( /5318D569 FMCondoChimique2 C11 220uF
+  ( 1 N-000095 )
+  ( 2 GND )
+ )
+ ( /51BE0D94 FMCondeDecouplage C12 330nF
+  ( 1 N-000091 )
+  ( 2 GND )
+ )
+ ( /5318D5C2 FMCondoChimique2 C13 220uF
+  ( 1 N-000095 )
+  ( 2 GND )
+ )
+ ( /4DB13D70 FMCondeDecouplage2 C14 100nF
+  ( 1 N-000094 )
+  ( 2 GND )
+ )
+ ( /50432A5E FMCondoPlastic C15 1nF
+  ( 1 N-000021 )
+  ( 2 GND )
+ )
+ ( /5033FAC6 FMCondoPlastic C16 1nF
+  ( 1 N-000077 )
+  ( 2 GND )
+ )
+ ( /50432C7D FMCondoPlastic C17 3.3nF
+  ( 1 N-000011 )
+  ( 2 N-000025 )
+ )
+ ( /50432C59 FMCondoPlastic C18 3.3nF
+  ( 1 N-000015 )
+  ( 2 N-000089 )
+ )
+ ( /50451A6F FMCondeDecouplage2 C19 100nF
+  ( 1 +5V )
+  ( 2 GND )
+ )
+ ( /503552F2 FMCondoChimique_10uF_2 C20 22uF
+  ( 1 N-000016 )
+  ( 2 N-000027 )
+ )
+ ( /503552E8 FMCondoChimique_10uF_2 C21 22uF
+  ( 1 N-000017 )
+  ( 2 N-000093 )
+ )
+ ( /52DBDF7B FMCondoChimique2 C22 220uF
+  ( 1 +5VA )
+  ( 2 GND )
+ )
+ ( /52F6030E FMCondeDecouplage2 C23 100nF
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D77D831 FMDiode2 D1 1N4148
+  ( 1 N-000088 )
+  ( 2 N-000086 )
+ )
+ ( /51BB2217 FMDiode1N4001_2 D2 1N4001
+  ( 1 N-000048 )
+  ( 2 N-000091 )
+ )
+ ( /52DBDFF1 FMDiode1N4001_2 D3 1N4001
+  ( 1 +5VA )
+  ( 2 N-000091 )
+ )
+ ( /52ECE19B FM_mcp4922_2 DAC1 MCP4922
+  ( 1 +5V )
+  ( 2 ? )
+  ( 3 /SPI_DAC1 )
+  ( 4 /SPI_CK )
+  ( 5 /SPI_MO )
+  ( 6 ? )
+  ( 7 ? )
+  ( 8 /SPI_LDAC )
+  ( 9 ? )
+  ( 10 N-000024 )
+  ( 11 N-000095 )
+  ( 12 GND )
+  ( 13 N-000095 )
+  ( 14 N-000018 )
+ )
+ ( /52ECE3F8 FM_mcp4922_2 DAC2 MCP4922
+  ( 1 +5V )
+  ( 2 ? )
+  ( 3 /SPI_DAC2 )
+  ( 4 /SPI_CK )
+  ( 5 /SPI_MO )
+  ( 6 ? )
+  ( 7 ? )
+  ( 8 /SPI_LDAC )
+  ( 9 ? )
+  ( 10 N-000023 )
+  ( 11 N-000095 )
+  ( 12 GND )
+  ( 13 N-000095 )
+  ( 14 N-000022 )
+ )
+ ( /5058DB21 JACK_ALIM4 DC1 DC
+  ( 1 GND )
+  ( 2 ? )
+  ( 3 N-000066 )
+ )
+ ( /52D2B045 FMEncoderWithSwitch2 Enc1 ENCODER_SW
+  ( 0 /RR2_3 )
+  ( 1 GND )
+  ( 2 /RR2_2 )
+  ( 3 /RR1_3 )
+  ( 4 GND )
+ )
+ ( /52D2B053 FMEncoderWithSwitch2 Enc2 ENCODER_SW
+  ( 0 /RR2_1 )
+  ( 1 GND )
+  ( 2 /RR1_8 )
+  ( 3 /RR1_3 )
+  ( 4 GND )
+ )
+ ( /52D2B056 FMEncoderWithSwitch2 Enc3 ENCODER_SW
+  ( 0 /RR1_7 )
+  ( 1 GND )
+  ( 2 /RR1_6 )
+  ( 3 /RR1_3 )
+  ( 4 GND )
+ )
+ ( /52D2B05A FMEncoderWithSwitch2 Enc4 ENCODER_SW
+  ( 0 /RR1_5 )
+  ( 1 GND )
+  ( 2 /RR1_4 )
+  ( 3 /RR1_3 )
+  ( 4 GND )
+ )
+ ( /50451BE5 DIP-16__300_ELL IC1 74HC165N
+  ( 1 /MLD )
+  ( 2 /MCLK )
+  ( 3 /RR1_2 )
+  ( 4 /RR1_4 )
+  ( 5 /RR1_6 )
+  ( 6 /RR1_8 )
+  ( 7 ? )
+  ( 8 GND )
+  ( 9 /MQH )
+  ( 10 N-000002 )
+  ( 11 /RR1_7 )
+  ( 12 /RR1_5 )
+  ( 13 /RR1_3 )
+  ( 14 /RR1_1 )
+  ( 15 GND )
+  ( 16 +3.3V )
+ )
+ ( /50451BFE DIP-16__300_ELL IC2 74HC165N
+  ( 1 /MLD )
+  ( 2 /MCLK )
+  ( 3 /RR2_2 )
+  ( 4 /RR2_4 )
+  ( 5 /RR2_6 )
+  ( 6 /RR2_8 )
+  ( 7 ? )
+  ( 8 GND )
+  ( 9 N-000002 )
+  ( 10 ? )
+  ( 11 /RR2_7 )
+  ( 12 /RR2_5 )
+  ( 13 /RR2_3 )
+  ( 14 /RR2_1 )
+  ( 15 GND )
+  ( 16 +3.3V )
+ )
+ ( /4DB13A26 FMUSB2 J1 USB_1
+  ( 1 N-000082 )
+  ( 2 /USB_D- )
+  ( 3 /USB_D+ )
+  ( 4 GND )
+  ( 5 ? )
+  ( 6 ? )
+ )
+ ( /5058DE14 SIL-2 Jmp1 Jmp
+  ( 1 N-000066 )
+  ( 2 N-000048 )
+ )
+ ( /51C556DF SIL-2 Jmp2 Jmp
+  ( 1 +5VA )
+  ( 2 N-000082 )
+ )
+ ( /505F55AE SIL-2 Jmp3 Jmp
+  ( 1 /LODR )
+  ( 2 +3.3V )
+ )
+ ( /51C55697 SIL-2 K2 USB
+  ( 1 /USB_D+ )
+  ( 2 /USB_D- )
+ )
+ ( /50431789 FMInductance L1 10uH
+  ( 1 +5VA )
+  ( 2 +5V )
+ )
+ ( /505F3C1D FMLed L2 LED
+  ( 1 N-000099 )
+  ( 2 GND )
+ )
+ ( /52ECE4FB FMLed L3 LED
+  ( 1 N-000099 )
+  ( 2 GND )
+ )
+ ( /52ECE4FA FMLed L4 LED
+  ( 1 N-000099 )
+  ( 2 GND )
+ )
+ ( /52ECE4F8 FMLed L5 LED
+  ( 1 N-000099 )
+  ( 2 GND )
+ )
+ ( /4D76A121 FMLCD4x20_2 LCD1 Disp_20x4
+  ( 1 GND )
+  ( 2 N-000094 )
+  ( 3 N-000083 )
+  ( 4 /RS )
+  ( 5 GND )
+  ( 6 /E )
+  ( 7 GND )
+  ( 8 GND )
+  ( 9 GND )
+  ( 10 GND )
+  ( 11 /DB4 )
+  ( 12 /DB5 )
+  ( 13 /DB6 )
+  ( 14 /DB7 )
+  ( 15 N-000076 )
+  ( 16 GND )
+ )
+ ( /50577FA9 FMMidi2 M1 In
+  ( 1 N-000084 )
+  ( 2 N-000088 )
+ )
+ ( /50465A07 FMMidi2 M2 Out
+  ( 1 N-000007 )
+  ( 2 N-000085 )
+ )
+ ( /4D77D973 DIP-8__300_ELL OC1 6N137
+  ( 2 N-000086 )
+  ( 3 N-000088 )
+  ( 5 GND )
+  ( 6 /RX )
+  ( 7 ? )
+  ( 8 +5VA )
+ )
+ ( /504328CE DIP-8__300_ELL op1 OpAmp
+  ( 1 N-000011 )
+  ( 2 N-000011 )
+  ( 3 N-000077 )
+  ( 4 GND )
+  ( 5 N-000021 )
+  ( 6 N-000015 )
+  ( 7 N-000015 )
+  ( 8 +5V )
+ )
+ ( /5058C8B8 SIL-5 P1 CONN_5
+  ( 1 +3.3V )
+  ( 2 /SWD_CLK )
+  ( 3 GND )
+  ( 4 /SWD_IO )
+  ( 5 /RESET )
+ )
+ ( /50466AF3 SIL-5 P3 CONN_5
+  ( 1 +3.3V )
+  ( 2 /AIN1 )
+  ( 3 /AIN2 )
+  ( 4 /AIN3 )
+  ( 5 /AIN4 )
+ )
+ ( /4DEBEBB5 FMHole3mm P4 CONN_1
+  ( 1 ? )
+ )
+ ( /4DEBEBBC FMHole3mm P5 CONN_1
+  ( 1 ? )
+ )
+ ( /4DEBEBC1 FMHole3mm P6 CONN_1
+  ( 1 ? )
+ )
+ ( /4DEBEBC3 FMHole3mm P7 CONN_1
+  ( 1 ? )
+ )
+ ( /52F5F9C7 PIN_ARRAY_2X1 POW1 5V
+  ( 1 +5VA )
+  ( 2 GND )
+ )
+ ( /4D77DB0E FMResistance R1 220
+  ( 1 N-000007 )
+  ( 2 +3.3V )
+ )
+ ( /4D77DAE8 FMResistance R2 220
+  ( 1 N-000084 )
+  ( 2 N-000086 )
+ )
+ ( /4D77DACA FMResistance R3 220
+  ( 1 N-000085 )
+  ( 2 /TX )
+ )
+ ( /4D96E953 FMResistance R4 10k
+  ( 1 +3.3V )
+  ( 2 N-000002 )
+ )
+ ( /4D77DB01 FMResistance R5 10k
+  ( 1 /RX )
+  ( 2 +5VA )
+ )
+ ( /52ECE2FF FMResistance R6 220
+  ( 1 +5V )
+  ( 2 N-000095 )
+ )
+ ( /50432C2F FMResistance R7 1.8k
+  ( 1 N-000018 )
+  ( 2 N-000025 )
+ )
+ ( /505785D7 FMResistance R8 115k
+  ( 1 N-000024 )
+  ( 2 N-000025 )
+ )
+ ( /5057860E FMResistance R9 1.8k
+  ( 1 N-000022 )
+  ( 2 N-000089 )
+ )
+ ( /5057860B FMResistance R10 115k
+  ( 1 N-000023 )
+  ( 2 N-000089 )
+ )
+ ( /4D9DE390 FMResistance R11 68
+  ( 1 N-000076 )
+  ( 2 +5VA )
+ )
+ ( /50432C2E FMResistance R12 8.2k
+  ( 1 N-000025 )
+  ( 2 N-000077 )
+ )
+ ( /50432C16 FMResistance R13 8.2k
+  ( 1 N-000089 )
+  ( 2 N-000021 )
+ )
+ ( /50354E63 FMResistance R14 68
+  ( 1 N-000011 )
+  ( 2 N-000016 )
+ )
+ ( /50354E55 FMResistance R15 68
+  ( 1 N-000015 )
+  ( 2 N-000017 )
+ )
+ ( /5035562F FMResistance R16 1M
+  ( 1 N-000027 )
+  ( 2 GND )
+ )
+ ( /50355617 FMResistance R17 1M
+  ( 1 N-000093 )
+  ( 2 GND )
+ )
+ ( /505F3C0E FMResistance R18 22
+  ( 1 /LED )
+  ( 2 N-000099 )
+ )
+ ( /57AD41DB FMResistance R19 Oled
+  ( 1 N-000094 )
+  ( 2 +5VA )
+ )
+ ( /505B7CB5 FMRR9 RR1 RR10k
+  ( 1 +3.3V )
+  ( 2 /RR1_1 )
+  ( 3 /RR1_2 )
+  ( 4 /RR1_3 )
+  ( 5 /RR1_4 )
+  ( 6 /RR1_5 )
+  ( 7 /RR1_6 )
+  ( 8 /RR1_7 )
+  ( 9 /RR1_8 )
+ )
+ ( /505B7CDF FMRR9 RR2 RR10k
+  ( 1 +3.3V )
+  ( 2 /RR2_1 )
+  ( 3 /RR2_2 )
+  ( 4 /RR2_3 )
+  ( 5 /RR2_4 )
+  ( 6 /RR2_5 )
+  ( 7 /RR2_6 )
+  ( 8 /RR2_7 )
+  ( 9 /RR2_8 )
+ )
+ ( /4D6E3786 FMRV2 RV1 10k
+  ( 1 GND )
+  ( 2 N-000083 )
+  ( 3 +5VA )
+ )
+ ( /4D96E6DF FMButton2 S1 SWITCH
+  ( 1 GND )
+  ( 2 /RR1_2 )
+ )
+ ( /4D96E6CD FMButton2 S2 SWITCH
+  ( 1 GND )
+  ( 2 /RR1_1 )
+ )
+ ( /4D96E6DA FMButton2 S3 SWITCH
+  ( 1 GND )
+  ( 2 /RR2_4 )
+ )
+ ( /4D96E6E0 FMButton2 S4 SWITCH
+  ( 1 GND )
+  ( 2 /RR2_5 )
+ )
+ ( /4D96E6E2 FMButton2 S5 SWITCH
+  ( 1 GND )
+  ( 2 /RR2_6 )
+ )
+ ( /4D96E6E4 FMButton2 S6 SWITCH
+  ( 1 GND )
+  ( 2 /RR2_7 )
+ )
+ ( /4D96E6EB FMButton2 S7 SWITCH
+  ( 1 GND )
+  ( 2 /RR2_8 )
+ )
+ ( /5058A182 FMUSB_A U1 USBKey
+  ( 1 +5VA )
+  ( 2 /USB_DN )
+  ( 3 /USB_DP )
+  ( 4 GND )
+ )
+ ( /52D05988 FMDualPotALPS V1 VOLUME
+  ( 1 GND )
+  ( 2 N-000026 )
+  ( 3 N-000093 )
+  ( 4 GND )
+  ( 5 N-000005 )
+  ( 6 N-000027 )
+ )
+)
+*
+{ Allowed footprints by component:
+$component C1
+ SM*
+ C?
+ C1-1
+$endlist
+$component C2
+ SM*
+ C?
+ C1-1
+$endlist
+$component C3
+ SM*
+ C?
+ C1-1
+$endlist
+$component C5
+ SM*
+ C?
+ C1-1
+$endlist
+$component C6
+ CP*
+ SM*
+$endlist
+$component C7
+ SM*
+ C?
+ C1-1
+$endlist
+$component C8
+ SM*
+ C?
+ C1-1
+$endlist
+$component C9
+ CP*
+ SM*
+$endlist
+$component C10
+ SM*
+ C?
+ C1-1
+$endlist
+$component C11
+ CP*
+ SM*
+$endlist
+$component C12
+ SM*
+ C?
+ C1-1
+$endlist
+$component C13
+ CP*
+ SM*
+$endlist
+$component C14
+ SM*
+ C?
+ C1-1
+$endlist
+$component C15
+ SM*
+ C?
+ C1-1
+$endlist
+$component C16
+ SM*
+ C?
+ C1-1
+$endlist
+$component C17
+ SM*
+ C?
+ C1-1
+$endlist
+$component C18
+ SM*
+ C?
+ C1-1
+$endlist
+$component C19
+ SM*
+ C?
+ C1-1
+$endlist
+$component C20
+ CP*
+ SM*
+$endlist
+$component C21
+ CP*
+ SM*
+$endlist
+$component C22
+ CP*
+ SM*
+$endlist
+$component C23
+ SM*
+ C?
+ C1-1
+$endlist
+$component D1
+ D?
+ S*
+$endlist
+$component D2
+ D?
+ S*
+$endlist
+$component D3
+ D?
+ S*
+$endlist
+$component L2
+ LED-3MM
+ LED-5MM
+ LED-10MM
+ LED-0603
+ LED-0805
+ LED-1206
+ LEDV
+$endlist
+$component L3
+ LED-3MM
+ LED-5MM
+ LED-10MM
+ LED-0603
+ LED-0805
+ LED-1206
+ LEDV
+$endlist
+$component L4
+ LED-3MM
+ LED-5MM
+ LED-10MM
+ LED-0603
+ LED-0805
+ LED-1206
+ LEDV
+$endlist
+$component L5
+ LED-3MM
+ LED-5MM
+ LED-10MM
+ LED-0603
+ LED-0805
+ LED-1206
+ LEDV
+$endlist
+$component R1
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R2
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R3
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R4
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R5
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R6
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R7
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R8
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R9
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R10
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R11
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R12
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R13
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R14
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R15
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R16
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R17
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R18
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$component R19
+ R?
+ SM0603
+ SM0805
+ R?-*
+ SM1206
+$endlist
+$endfootprintlist
+}

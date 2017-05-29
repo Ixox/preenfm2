@@ -1,0 +1,27 @@
+PCBNEW-LibDoc----V1  Fri 07 Oct 2011 09:06:09 PM CEST
+#
+$MODULE SIL-18
+Li SIL-18
+Cd Connecteur 18 pins
+Kw CONN DEV
+$EndMODULE
+#
+$MODULE SIL-16
+Li SIL-16
+Cd Connecteur 18 pins
+Kw CONN DEV
+$EndMODULE
+#
+$MODULE FMRV2
+Li FMRV2
+Cd Resistance variable / potentiometre
+Kw R
+$EndMODULE
+#
+$MODULE FMRV
+Li FMRV
+Cd Resistance variable / potentiometre
+Kw R
+$EndMODULE
+#
+$EndLIBDOC
