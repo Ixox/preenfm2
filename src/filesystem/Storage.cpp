@@ -26,14 +26,15 @@
 // regular memory 128kb
 char lineBuffer[512];
 
-void Storage::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4) {
+void Storage::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4,
+        struct OneSynthParams*timbre5, struct OneSynthParams*timbre6, struct OneSynthParams*timbre7, struct OneSynthParams*timbre8) {
     USBH_Init(&usbOTGHost, USB_OTG_HS_CORE_ID, &usbHost, &USBH_MSC_cb, &USR_Callbacks);
 	commandParams.commandState = COMMAND_INIT;
 	// Use any object for usbProcess...
 	comboBank.usbProcess();
 
     comboBank.setFileSystemUtils(&fsu);
-    comboBank.init(timbre1, timbre2, timbre3, timbre4);
+    comboBank.init(timbre1, timbre2, timbre3, timbre4, timbre5, timbre6, timbre7, timbre8);
     scalaFile.setFileSystemUtils(&fsu);
     configurationFile.setFileSystemUtils(&fsu);
     configurationFile.setScalaFile(&scalaFile);

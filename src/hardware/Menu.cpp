@@ -69,6 +69,30 @@ const struct MidiConfig midiConfig[]  = {
                 midiChannels
         },
         {
+                "Midi ch. 5: ",
+                "midi5",
+                17,
+                midiChannels
+        },
+        {
+                "Midi ch. 6: ",
+                "midi6",
+                17,
+                midiChannels
+        },
+        {
+                "Midi ch. 7: ",
+                "midi7",
+                17,
+                midiChannels
+        },
+        {
+                "Midi ch. 8: ",
+                "midi8",
+                17,
+                midiChannels
+        },
+        {
                 "Midi thru: ",
                 "miditrhu",
                 2,

@@ -14,7 +14,8 @@ class ComboBank : public PreenFMFileType {
 public:
 	ComboBank();
 	virtual ~ComboBank();
-    void init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4);
+    void init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4,
+            struct OneSynthParams*timbre5, struct OneSynthParams*timbre6, struct OneSynthParams*timbre7, struct OneSynthParams*timbre8);
 
 
     void saveDefaultCombo();
@@ -31,7 +32,7 @@ public:
 protected:
     const char* getFolderName();
 	bool isCorrectFile(char *name, int size);
-    struct OneSynthParams* timbre[4];
+    struct OneSynthParams* timbre[NUMBER_OF_TIMBRES];
 private:
     char presetName[13];
     struct PFM2File preenFMCombo[NUMBEROFPREENFMCOMBOS];

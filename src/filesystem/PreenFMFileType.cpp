@@ -11,6 +11,7 @@
 struct FlashSynthParams reachableFlashParam;
 
 char propertyFile [PROPERTY_FILE_SIZE];
+char file_zeros[ALIGNED_PATCH_ZERO];
 
 
 PreenFMFileType::PreenFMFileType() {
@@ -22,6 +23,11 @@ PreenFMFileType::PreenFMFileType() {
     	errorFile.name[k] = empty[k];
     }
     errorFile.fileType = FILE_EMPTY;
+
+    for (int k=0; k<ALIGNED_PATCH_ZERO;k++) {
+        file_zeros[k] = 0;
+    }
+
 }
 
 PreenFMFileType::~PreenFMFileType() {

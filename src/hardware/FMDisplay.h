@@ -162,10 +162,10 @@ private:
 
 	int menuRow;
 	// Local value preset modified to know whether it's currently showing up
-	bool presetModifed[4];
+	bool presetModifed[NUMBER_OF_TIMBRES];
 	int currentTimbre;
 	// Midi info
-	int noteOnCounter[4];
+	int noteOnCounter[NUMBER_OF_TIMBRES];
 	int algoCounter;
 	bool algoCounterForIMInformation;
 	unsigned screenSaveTimer;

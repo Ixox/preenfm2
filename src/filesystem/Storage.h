@@ -35,7 +35,8 @@
 class Storage {
 public:
     virtual ~Storage() {}
-    void init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4);
+    void init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4,
+            struct OneSynthParams*timbre5, struct OneSynthParams*timbre6, struct OneSynthParams*timbre7, struct OneSynthParams*timbre8);
 
 #ifdef DEBUG
     void testMemoryPreset();

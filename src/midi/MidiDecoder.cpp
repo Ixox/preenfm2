@@ -242,7 +242,7 @@ void MidiDecoder::newMessageType(unsigned char byte) {
 
 void MidiDecoder::midiEventReceived(MidiEvent midiEvent) {
     int timbreIndex = 0;
-    int timbres[4];
+    int timbres[8];
     if (omniOn[0]
     		|| this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL1] == 0
             || (this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL1]-1) == midiEvent.channel ) {
@@ -262,6 +262,26 @@ void MidiDecoder::midiEventReceived(MidiEvent midiEvent) {
        		|| this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL4] == 0
             || (this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL4]-1) == midiEvent.channel ) {
         timbres[timbreIndex++] = 3;
+    }
+    if (omniOn[4]
+            || this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL5] == 0
+            || (this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL5]-1) == midiEvent.channel ) {
+        timbres[timbreIndex++] = 4;
+    }
+    if (omniOn[5]
+            || this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL6] == 0
+            || (this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL6]-1) == midiEvent.channel ) {
+        timbres[timbreIndex++] = 5;
+    }
+    if (omniOn[6]
+            || this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL7] == 0
+            || (this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL7]-1) == midiEvent.channel ) {
+        timbres[timbreIndex++] = 6;
+    }
+    if (omniOn[7]
+            || this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL8] == 0
+            || (this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL8]-1) == midiEvent.channel ) {
+        timbres[timbreIndex++] = 7;
     }
 
     if (timbreIndex == 0) {
@@ -352,14 +372,14 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
     	this->synth->setHoldPedal(timbre, midiEvent.value[1]);
     	break;
     case CC_OMNI_OFF:
-    	// Omni on && omni OFF only accepted on original bas channel
+    	// Omni on && omni OFF only accepted on original base channel
         if (this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL1 + timbre] == midiEvent.channel ) {
             this->synth->allNoteOff(timbre);
             omniOn[timbre] = false;
         }
     	break;
     case CC_OMNI_ON:
-    	// Omni on && omni OFF only accepted on original bas channel
+    	// Omni on && omni OFF only accepted on original base channel
         if (this->synthState->fullState.midiConfigValue[MIDICONFIG_CHANNEL1 + timbre] == midiEvent.channel ) {
             this->synth->allNoteOff(timbre);
             omniOn[timbre] = true;
@@ -929,15 +949,15 @@ void MidiDecoder::newParamValue(int timbre, int currentrow,
             switch (encoder) {
                 case ENCODER_ARPEGGIATOR_CLOCK:
                     cc.value[0] = CC_ARP_CLOCK;
-                    cc.value[1] = newValue + .1f;                
+                    cc.value[1] = newValue + .1f;
                 break;
                 case ENCODER_ARPEGGIATOR_DIRECTION:
                     cc.value[0] = CC_ARP_DIRECTION;
-                    cc.value[1] = newValue + .1f;                
+                    cc.value[1] = newValue + .1f;
                 break;
                 case ENCODER_ARPEGGIATOR_OCTAVE:
                     cc.value[0] = CC_ARP_OCTAVE;
-                    cc.value[1] = newValue + .1f;                
+                    cc.value[1] = newValue + .1f;
                 break;
             }
             break;
@@ -945,15 +965,15 @@ void MidiDecoder::newParamValue(int timbre, int currentrow,
             switch (encoder) {
                 case ENCODER_ARPEGGIATOR_PATTERN:
                     cc.value[0] = CC_ARP_PATTERN;
-                    cc.value[1] = newValue + .1f;                
+                    cc.value[1] = newValue + .1f;
                 break;
                 case ENCODER_ARPEGGIATOR_DIVISION:
                     cc.value[0] = CC_ARP_DIVISION;
-                    cc.value[1] = newValue + .1f;                
+                    cc.value[1] = newValue + .1f;
                 break;
                 case ENCODER_ARPEGGIATOR_DURATION:
                     cc.value[0] = CC_ARP_DURATION;
-                    cc.value[1] = newValue + .1f;                
+                    cc.value[1] = newValue + .1f;
                 break;
             }
         }

@@ -57,7 +57,7 @@ void fillSoundBuffer() {
     }
 }
 
-const char* line1 = "PreenFM2 v"PFM2_VERSION" "OVERCLOCK_STRING;
+const char* line1 = "8Timbres v"PFM2_VERSION" "OVERCLOCK_STRING;
 const char* line2 = "     By Xavier Hosxe";
 
 
@@ -130,7 +130,8 @@ void setup() {
     synthState.setStorage(&usbKey);
     synthState.setHexter(&hexter);
 
-    usbKey.init(synth.getTimbre(0)->getParamRaw(), synth.getTimbre(1)->getParamRaw(), synth.getTimbre(2)->getParamRaw(), synth.getTimbre(3)->getParamRaw());
+    usbKey.init(synth.getTimbre(0)->getParamRaw(), synth.getTimbre(1)->getParamRaw(), synth.getTimbre(2)->getParamRaw(), synth.getTimbre(3)->getParamRaw(),
+            synth.getTimbre(4)->getParamRaw(), synth.getTimbre(5)->getParamRaw(), synth.getTimbre(6)->getParamRaw(), synth.getTimbre(7)->getParamRaw());
     usbKey.getPatchBank()->setSysexSender(&midiDecoder);
     // usbKey and hexter needs to know if arpeggiator must be loaded and saved
     usbKey.getPatchBank()->setArpeggiatorPartOfThePreset(&synthState.fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET]);

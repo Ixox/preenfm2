@@ -43,7 +43,7 @@ struct ParameterRowDisplay engine1ParameterRow  = {
         {
                 {ALGO1, ALGO_END-1, ALGO_END, DISPLAY_TYPE_STRINGS, algoNames, nullNamesOrder, nullNamesOrder},
                 {0, 16, 17, DISPLAY_TYPE_INT, nullNames,nullNamesOrder, nullNamesOrder },
-                {0, 16, 17, DISPLAY_TYPE_VOICES, nullNames, nullNamesOrder, nullNamesOrder },
+                {0, 8, 9, DISPLAY_TYPE_VOICES, nullNames, nullNamesOrder, nullNamesOrder },
                 {0, 10, 11, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
@@ -455,6 +455,10 @@ SynthState::SynthState() {
     fullState.midiConfigValue[MIDICONFIG_CHANNEL2] = 2;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL3] = 3;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL4] = 4;
+    fullState.midiConfigValue[MIDICONFIG_CHANNEL5] = 5;
+    fullState.midiConfigValue[MIDICONFIG_CHANNEL6] = 6;
+    fullState.midiConfigValue[MIDICONFIG_CHANNEL7] = 7;
+    fullState.midiConfigValue[MIDICONFIG_CHANNEL8] = 8;
     fullState.midiConfigValue[MIDICONFIG_THROUGH] = 0;
     fullState.midiConfigValue[MIDICONFIG_RECEIVES] = 3;
     fullState.midiConfigValue[MIDICONFIG_SENDS] = 1;
@@ -1587,7 +1591,7 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.name[length++] = '.';
         fullState.name[length++] = 'c';
         fullState.name[length++] = 'm';
-        fullState.name[length++] = 'b';
+        fullState.name[length++] = '8';
         fullState.name[length++] = '\0';
         if (storage->getComboBank()->renameFile(fullState.preenFMCombo, fullState.name) > 0) {
             rMenuItem = MenuItemUtil::getMenuItem(MENU_ERROR);
@@ -1646,7 +1650,7 @@ const MenuItem* SynthState::afterButtonPressed() {
         fullState.name[length++] = '.';
         fullState.name[length++] = 'c';
         fullState.name[length++] = 'm';
-        fullState.name[length++] = 'b';
+        fullState.name[length++] = '8';
         fullState.name[length] = '\0';
 
         if (!storage->getComboBank()->nameExists(fullState.name)) {

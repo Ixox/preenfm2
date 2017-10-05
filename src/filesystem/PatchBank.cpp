@@ -7,6 +7,7 @@
 
 #include "PatchBank.h"
 
+extern char file_zeros[ALIGNED_PATCH_ZERO];
 
 PatchBank::PatchBank() {
 	numberOfFilesMax = NUMBEROFPREENFMBANKS;
@@ -94,17 +95,13 @@ const char* PatchBank::loadPreenFMPatchName(const struct PFM2File* bank, int pat
 void PatchBank::savePreenFMPatch(const struct PFM2File* bank, int patchNumber, const struct OneSynthParams *params) {
 	const char* fullBankName = getFullName(bank->name);
 
-    char zeros[ALIGNED_PATCH_ZERO];
-    for (int k=0; k<ALIGNED_PATCH_ZERO;k++) {
-        zeros[k] = 0;
-    }
 	convertParamsToMemory(params, &reachableFlashParam, *arpeggiatorPartOfThePreset > 0);
 
     // Save patch
     save(fullBankName, patchNumber * ALIGNED_PATCH_SIZE,  (void*)&reachableFlashParam, PFM_PATCH_SIZE);
 
     // Add zeros
-    save(fullBankName, patchNumber * ALIGNED_PATCH_SIZE  + PFM_PATCH_SIZE,  (void*)zeros, ALIGNED_PATCH_ZERO);
+    save(fullBankName, patchNumber * ALIGNED_PATCH_SIZE  + PFM_PATCH_SIZE,  (void*)file_zeros, ALIGNED_PATCH_ZERO);
 }
 
 

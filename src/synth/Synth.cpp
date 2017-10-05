@@ -28,7 +28,7 @@ CYCCNT_buffer cycles_all;
 #endif
 
 extern float noise[32];
-float ratiosTimbre[]= { 131072.0f * 1.0f, 131072.0f * 1.0f, 131072.0f *  0.5f, 131072.0f * 0.333f, 131072.0f * 0.25f };
+// float ratiosTimbre[]= { 131072.0f * 1.0f, 131072.0f * 1.0f, 131072.0f *  0.5f, 131072.0f * 0.333f, 131072.0f * 0.25f };
 
 Synth::Synth(void) {
 }
@@ -37,12 +37,12 @@ Synth::~Synth(void) {
 }
 
 void Synth::init() {
-    int numberOfVoices[]= { 6, 0, 0, 0 };
+    // int numberOfVoices[]= { 6, 0, 0, 0 };
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
         for (int k=0; k<sizeof(struct OneSynthParams)/sizeof(float); k++) {
             ((float*)&timbres[t].params)[k] = ((float*)&preenMainPreset)[k];
         }
-        timbres[t].params.engine1.numberOfVoice = numberOfVoices[t];
+        timbres[t].params.engine1.numberOfVoice = 1;
         timbres[t].init(t);
         for (int v=0; v<MAX_NUMBER_OF_VOICES; v++) {
             timbres[t].initVoicePointer(v, &voices[v]);
@@ -152,32 +152,27 @@ void Synth::buildNewSampleBlock() {
     }
 
     // Add timbre per timbre because gate and eventual other effect are per timbre
-    if (likely(timbres[0].params.engine1.numberOfVoice > 0)) {
-        timbres[0].fxAfterBlock(ratioTimbre);
-    }
-    if (likely(timbres[1].params.engine1.numberOfVoice > 0)) {
-        timbres[1].fxAfterBlock(ratioTimbre);
-    }
-    if (likely(timbres[2].params.engine1.numberOfVoice > 0)) {
-        timbres[2].fxAfterBlock(ratioTimbre);
-    }
-    if (likely(timbres[3].params.engine1.numberOfVoice > 0)) {
-        timbres[3].fxAfterBlock(ratioTimbre);
+    for (int t = 0; t < NUMBER_OF_TIMBRES; t++) {
+        timbres[t].fxAfterBlock(ratioTimbre);
     }
 
     const float *sampleFromTimbre1 = timbres[0].getSampleBlock();
     const float *sampleFromTimbre2 = timbres[1].getSampleBlock();
     const float *sampleFromTimbre3 = timbres[2].getSampleBlock();
     const float *sampleFromTimbre4 = timbres[3].getSampleBlock();
+    const float *sampleFromTimbre5 = timbres[4].getSampleBlock();
+    const float *sampleFromTimbre6 = timbres[5].getSampleBlock();
+    const float *sampleFromTimbre7 = timbres[6].getSampleBlock();
+    const float *sampleFromTimbre8 = timbres[7].getSampleBlock();
 
     int *cb = &samples[writeCursor];
 
     float toAdd = 131071.0f;
     for (int s = 0; s < 64/4; s++) {
-        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + toAdd);
-        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + toAdd);
-        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + toAdd);
-        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + toAdd);
+        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++ + *sampleFromTimbre5++ + *sampleFromTimbre6++ + *sampleFromTimbre7++ + *sampleFromTimbre8++) + toAdd);
+        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++ + *sampleFromTimbre5++ + *sampleFromTimbre6++ + *sampleFromTimbre7++ + *sampleFromTimbre8++) + toAdd);
+        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++ + *sampleFromTimbre5++ + *sampleFromTimbre6++ + *sampleFromTimbre7++ + *sampleFromTimbre8++) + toAdd);
+        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++ + *sampleFromTimbre5++ + *sampleFromTimbre6++ + *sampleFromTimbre7++ + *sampleFromTimbre8++) + toAdd);
     }
 
     writeCursor = (writeCursor + 64) & 255;
@@ -277,20 +272,7 @@ void Synth::afterNewComboLoad() {
 }
 
 void Synth::updateNumberOfActiveTimbres() {
-    int activeTimbres = 0;
-    if (timbres[0].params.engine1.numberOfVoice > 0) {
-        activeTimbres ++;
-    }
-    if (timbres[1].params.engine1.numberOfVoice > 0) {
-        activeTimbres ++;
-    }
-    if (timbres[2].params.engine1.numberOfVoice > 0) {
-        activeTimbres ++;
-    }
-    if (timbres[3].params.engine1.numberOfVoice > 0) {
-        activeTimbres ++;
-    }
-    ratioTimbre = ratiosTimbre[activeTimbres];
+    ratioTimbre = 131072.0f / 8.0f;
 }
 
 int Synth::getFreeVoice() {

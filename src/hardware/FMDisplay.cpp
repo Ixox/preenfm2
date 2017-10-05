@@ -44,7 +44,7 @@ void FMDisplay::init(LiquidCrystal* lcd, Storage* storage) {
     this->lcd = lcd;
     this->storage = storage;
 
-    for (int k=0; k<4; k++) {
+    for (int k=0; k < NUMBER_OF_TIMBRES; k++) {
         presetModifed[k] = false;
         noteOnCounter[k] = 0;
     }
@@ -1118,19 +1118,19 @@ void FMDisplay::noteOn(int timbre, bool show) {
     if (this->synthState->fullState.synthMode  == SYNTH_MODE_EDIT && algoCounter == 0 && !screenSaverMode) {
         if (show) {
             if (noteOnCounter[timbre] == 0) {
-                lcd->setCursor(16+timbre, 0);
+                lcd->setCursor(16 +  (timbre & 3), 0);
                 lcd->print((char)('0'+ timbre+1));
             }
             noteOnCounter[timbre] = 2;
         } else {
-            lcd->setCursor(16+timbre, 0);
+            lcd->setCursor(16 + (timbre & 3), 0);
             lcd->print(' ');
         }
     }
 }
 
 void FMDisplay::tempoClick() {
-    for (int timbre=0; timbre<4; timbre++) {
+    for (int timbre=0; timbre < NUMBER_OF_TIMBRES; timbre++) {
         if (noteOnCounter[timbre] >0) {
             noteOnCounter[timbre]--;
             if (noteOnCounter[timbre] == 0) {

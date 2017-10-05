@@ -20,8 +20,9 @@
 // define in PreenFM.c
 void fillSoundBuffer();
 
-void UsbKey::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4) {
-    Storage::init(timbre1, timbre2, timbre3, timbre4);
+void UsbKey::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4,
+        struct OneSynthParams*timbre5, struct OneSynthParams*timbre6, struct OneSynthParams*timbre7, struct OneSynthParams*timbre8) {
+    Storage::init(timbre1, timbre2, timbre3, timbre4, timbre5, timbre6, timbre7, timbre8);
     USBH_Init(&usbOTGHost, USB_OTG_HS_CORE_ID, &usbHost, &USBH_MSC_cb, &USR_Callbacks);
     commandParams.commandState = COMMAND_INIT;
     usbProcess();

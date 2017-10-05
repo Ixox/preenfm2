@@ -25,7 +25,7 @@ enum FILE_ENUM {
     FIRMWARE
 };
 
-#define DEFAULT_COMBO_NAME       "0:/pfm2/DfltCmbo.pfm"
+#define DEFAULT_COMBO_NAME       "0:/pfm2/DfltCmb8.pfm"
 #define PROPERTIES_NAME          "0:/pfm2/Settings.txt"
 #define SCALA_CONFIG_NAME        "0:/pfm2/ScalaCfg.txt"
 
