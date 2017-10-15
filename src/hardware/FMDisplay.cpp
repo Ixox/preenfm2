@@ -710,7 +710,9 @@ void FMDisplay::newParamValue(int timbre, int currentRow, int encoder, Parameter
 
     if (this->synthState->getSynthMode() == SYNTH_MODE_EDIT) {
         if (unlikely(currentRow != this->displayedRow)) {
-            newcurrentRow(timbre, currentRow);
+            // Octobre 2017 : Don't remember when it was usefull.
+            // What i'm sure is that we don't want it with the new 2.08 Copy firmware.
+            // newcurrentRow(timbre, currentRow);
             return;
         }
 
@@ -772,7 +774,9 @@ void FMDisplay::newParamValue(int timbre, int currentRow, int encoder, Parameter
     }
 }
 
+
 void FMDisplay::newcurrentRow(int timbre, int newcurrentRow) {
+
     this->displayedRow = newcurrentRow;
     if (unlikely(wakeUpFromScreenSaver())) {
         return;

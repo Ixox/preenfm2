@@ -183,6 +183,7 @@ extern const struct OneSynthParams preenMainPreset;
 extern const struct OneSynthParams defaultPreset;
 extern const char* allChars;
 extern struct AlgoInformation algoInformation[];
+extern int algoOpInformation[][NUMBER_OF_OPERATORS];
 extern uint8_t sysexTmpMem[];
 extern struct OneSynthParams oneSynthParamsTmp;
 
