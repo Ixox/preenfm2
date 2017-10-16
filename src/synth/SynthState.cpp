@@ -195,15 +195,15 @@ const unsigned char  oscShapeNamesOrder[] =        { 7, 0, 1, 2, 3, 4, 5, 6, 8, 
 const unsigned char  oscShapeNamesPosition[] =     { 1, 2, 3, 4, 5, 6, 7, 0, 8, 9, 10, 11, 12, 13};
 
 
-const char* oscTypeNames [] = { "keyb", "fixe"};
+const char* oscTypeNames [] = { "keyb", "fixe", "kehz"};
 struct ParameterRowDisplay oscParameterRow = {
         "Oscillator",
         { "Shap", "FTyp", "Freq", "FTun" },
         {
                 { OSC_SHAPE_SIN, OSC_SHAPE_LAST -1, OSC_SHAPE_LAST, DISPLAY_TYPE_STRINGS, oscShapeNames, oscShapeNamesOrder, oscShapeNamesPosition},
-                { OSC_FT_KEYBOARD, OSC_FT_FIXE, 2, DISPLAY_TYPE_STRINGS, oscTypeNames, nullNamesOrder, nullNamesOrder},
+                { OSC_FT_KEYBOARD, OSC_FT_KEYHZ, 3, DISPLAY_TYPE_STRINGS, oscTypeNames, nullNamesOrder, nullNamesOrder},
                 { 0, 16, 193, DISPLAY_TYPE_FLOAT_OSC_FREQUENCY ,  nullNames, nullNamesOrder, nullNamesOrder },
-                { -1, 1, 201, DISPLAY_TYPE_FLOAT_OSC_FREQUENCY,  nullNames, nullNamesOrder, nullNamesOrder }
+                { -9, 9, 1801, DISPLAY_TYPE_FLOAT_OSC_FREQUENCY,  nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -451,6 +451,7 @@ SynthState::SynthState() {
     fullState.toolsWhat = 0;
     fullState.scalaWhat = 0;
     fullState.midiConfigValue[MIDICONFIG_USB] = 2;
+	fullState.midiConfigValue[MIDICONFIG_GLOBAL] = 0;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL1] = 1;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL2] = 2;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL3] = 3;

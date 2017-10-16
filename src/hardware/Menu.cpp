@@ -38,12 +38,12 @@ const char* version[] = { PFM2_VERSION" "OVERCLOCK_STRING };
 const char* oledSaver[] = { "Off", "2m", "5m", "10m", "1h" };
 
 const struct MidiConfig midiConfig[]  = {
-		{
-				"Usb Midi: ",
-				"usbmidi",
-				3,
-				usbMidi
-		},
+        {
+                "Usb Midi: ",
+                "usbmidi",
+                3,
+                usbMidi
+        },
         {
                 "Midi ch. 1: ",
                 "midi1",
@@ -67,6 +67,12 @@ const struct MidiConfig midiConfig[]  = {
                 "midi4",
                 17,
                 midiChannels
+        },
+        {
+                "Global ch. : ",
+                "midiglobal",
+                17,
+                eccChannels
         },
         {
                 "Midi thru: ",
@@ -193,7 +199,7 @@ const struct MenuItem allMenus[]  = {
                 {MENU_LOAD_SELECT_COMBO_PRESET}
         },
         {
-        		MENU_LOAD_SELECT_DX7_BANK,
+                MENU_LOAD_SELECT_DX7_BANK,
                 "DX7",
                 false,
                 NUMBEROFDX7BANKS,
@@ -221,7 +227,7 @@ const struct MenuItem allMenus[]  = {
                 {MENU_DONE}
         },
         {
-        		MENU_LOAD_SELECT_DX7_PRESET,
+                MENU_LOAD_SELECT_DX7_PRESET,
                 "",
                 false,
                 32,
@@ -368,14 +374,14 @@ const struct MenuItem allMenus[]  = {
                 { MENU_CREATE_BANK, MENU_CREATE_COMBO }
         },
         {
-        		MENU_CREATE_BANK,
+                MENU_CREATE_BANK,
                 "Bank",
                 false,
                 8,
                 {MENU_DONE}
         },
         {
-        		MENU_CREATE_COMBO,
+                MENU_CREATE_COMBO,
                 "Combo",
                 false,
                 8,
@@ -403,21 +409,21 @@ const struct MenuItem allMenus[]  = {
                 {MENU_RENAME_BANK}
         },
         {
-        		MENU_RENAME_BANK,
+                MENU_RENAME_BANK,
                 "",
                 false,
                 8,
                 {MENU_DONE}
         },
         {
-        		MENU_RENAME_SELECT_COMBO,
+                MENU_RENAME_SELECT_COMBO,
                 "Combo",
                 false,
                 8,
                 {MENU_RENAME_COMBO}
         },
         {
-        		MENU_RENAME_COMBO,
+                MENU_RENAME_COMBO,
                 "",
                 false,
                 8,
@@ -425,40 +431,40 @@ const struct MenuItem allMenus[]  = {
         },
         // SCALA
         {
-        		MENU_SCALA,
-        		"Scala",
-        		true,
-        		4,
-        		{MENU_SCALA_ENABLE, MENU_SCALA_FILENAME, MENU_SCALA_FREQUENCY, MENU_SCALA_MAPPING}
+                MENU_SCALA,
+                "Scala",
+                true,
+                4,
+                {MENU_SCALA_ENABLE, MENU_SCALA_FILENAME, MENU_SCALA_FREQUENCY, MENU_SCALA_MAPPING}
         },
-		{
-				MENU_SCALA_ENABLE,
-				"Enbl",
-				false,
-				2,
-				{MENU_DONE}
-		},
-		{
-				MENU_SCALA_FILENAME,
-				"Scal",
-				false,
-				NUMBEROFSCALASCALEFILES,
-				{MENU_DONE}
-		},
-		{
-				MENU_SCALA_FREQUENCY,
-				"Frq",
-				false,
-				10000,
-				{MENU_DONE}
-		},
-		{
-				MENU_SCALA_MAPPING,
-				"Map",
-				false,
-				2,
-				{MENU_DONE}
-		}
+        {
+                MENU_SCALA_ENABLE,
+                "Enbl",
+                false,
+                2,
+                {MENU_DONE}
+        },
+        {
+                MENU_SCALA_FILENAME,
+                "Scal",
+                false,
+                NUMBEROFSCALASCALEFILES,
+                {MENU_DONE}
+        },
+        {
+                MENU_SCALA_FREQUENCY,
+                "Frq",
+                false,
+                10000,
+                {MENU_DONE}
+        },
+        {
+                MENU_SCALA_MAPPING,
+                "Map",
+                false,
+                2,
+                {MENU_DONE}
+        }
 
 };
 

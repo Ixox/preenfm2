@@ -47,17 +47,17 @@ enum {
 };
 
 enum {
-	ENCODER_ARPEGGIATOR_CLOCK = 0,
-	ENCODER_ARPEGGIATOR_BPM,
-	ENCODER_ARPEGGIATOR_DIRECTION,
-	ENCODER_ARPEGGIATOR_OCTAVE
+    ENCODER_ARPEGGIATOR_CLOCK = 0,
+    ENCODER_ARPEGGIATOR_BPM,
+    ENCODER_ARPEGGIATOR_DIRECTION,
+    ENCODER_ARPEGGIATOR_OCTAVE
 };
 
 enum {
-	ENCODER_ARPEGGIATOR_PATTERN = 0,
-	ENCODER_ARPEGGIATOR_DIVISION,
-	ENCODER_ARPEGGIATOR_DURATION,
-	ENCODER_ARPEGGIATOR_LATCH
+    ENCODER_ARPEGGIATOR_PATTERN = 0,
+    ENCODER_ARPEGGIATOR_DIVISION,
+    ENCODER_ARPEGGIATOR_DURATION,
+    ENCODER_ARPEGGIATOR_LATCH
 };
 
 enum {
@@ -171,11 +171,11 @@ enum {
 typedef unsigned char uchar;
 
 enum Algorithm {
-	ALGO1 = 0,
-	ALGO2,
-	ALGO3,
-	ALGO4,
-	ALGO5,
+    ALGO1 = 0,
+    ALGO2,
+    ALGO3,
+    ALGO4,
+    ALGO5,
     ALGO6,
     ALGO7,
     ALGO8,
@@ -199,36 +199,36 @@ enum Algorithm {
     ALG26,
     ALG27,
     ALG28,
-	ALGO_END
+    ALGO_END
 };
 
 
 
 enum OscShape {
-	OSC_SHAPE_SIN = 0,
+    OSC_SHAPE_SIN = 0,
     OSC_SHAPE_SAW,
     OSC_SHAPE_SQUARE,
     OSC_SHAPE_SIN_SQUARE,
     OSC_SHAPE_SIN_ZERO,
     OSC_SHAPE_SIN_POS,
     OSC_SHAPE_RAND,
-	OSC_SHAPE_OFF,
+    OSC_SHAPE_OFF,
     OSC_SHAPE_USER1,
     OSC_SHAPE_USER2,
     OSC_SHAPE_USER3,
     OSC_SHAPE_USER4,
     OSC_SHAPE_USER5,
     OSC_SHAPE_USER6,
-	OSC_SHAPE_LAST
+    OSC_SHAPE_LAST
 };
 
 enum LfoType {
-	LFO_SIN = 0,
-	LFO_SAW,
-	LFO_TRIANGLE,
-	LFO_SQUARE,
-	LFO_RANDOM,
-	LFO_TYPE_MAX
+    LFO_SIN = 0,
+    LFO_SAW,
+    LFO_TRIANGLE,
+    LFO_SQUARE,
+    LFO_RANDOM,
+    LFO_TYPE_MAX
 };
 
 // const char* midiNoteCurves[] =  { "Flat", "+Ln ", "+Ln2", "+Exp", "-Ln ", "-Ln2", "-Exp" };
@@ -245,8 +245,9 @@ enum MidiNoteCurve {
 };
 
 enum OscFrequencyType {
-	OSC_FT_KEYBOARD = 0,
-	OSC_FT_FIXE
+    OSC_FT_KEYBOARD = 0,
+    OSC_FT_FIXE,
+    OSC_FT_KEYHZ
 };
 
 enum OscEnv2Loop {
@@ -257,32 +258,32 @@ enum OscEnv2Loop {
 
 
 enum FILTER_TYPE {
-	FILTER_OFF = 0,
-	FILTER_MIXER,
-	FILTER_LP,
-	FILTER_HP,
-	FILTER_BASS,
-	FILTER_BP,
-	FILTER_CRUSHER,
-	FILTER_LAST,
-	FILTER_LP4
+    FILTER_OFF = 0,
+    FILTER_MIXER,
+    FILTER_LP,
+    FILTER_HP,
+    FILTER_BASS,
+    FILTER_BP,
+    FILTER_CRUSHER,
+    FILTER_LAST,
+    FILTER_LP4
 };
 
 // Display information
 struct FilterRowDisplay {
-	const char* paramName[3];
+    const char* paramName[3];
 };
 
 
 struct ParameterRowDisplay {
-	const char* rowName;
-	const char* paramName[4];
-	struct ParameterDisplay params[4];
+    const char* rowName;
+    const char* paramName[4];
+    struct ParameterDisplay params[4];
 };
 
 
 struct AllParameterRowsDisplay {
-	struct ParameterRowDisplay* row[NUMBER_OF_ROWS];
+    struct ParameterRowDisplay* row[NUMBER_OF_ROWS];
 };
 
 
@@ -306,10 +307,10 @@ enum EventType {
 };
 
 enum EventState {
-	MIDI_EVENT_WAITING = 0,
+    MIDI_EVENT_WAITING = 0,
     MIDI_EVENT_IN_PROGRESS ,
     MIDI_EVENT_SYSEX ,
-	MIDI_EVENT_COMPLETE
+    MIDI_EVENT_COMPLETE
 };
 
 
@@ -317,41 +318,41 @@ class Hexter;
 
 class SynthState : public EncodersListener {
 public:
-	SynthState();
+    SynthState();
 
-	void setStorage(Storage* storage) {
-	    this->storage = storage;
-	}
-	void setHexter(Hexter* hexter) {
-	    this->hexter = hexter;
-	}
-	void encoderTurned(int encoder, int ticks);
-	void buttonPressed(int button);
-	void twoButtonsPressed(int button1, int button2);
-	void encoderTurnedWhileButtonPressed(int encoder, int ticks, int button);
-	void encoderTurnedForStepSequencer(int row, int num, int ticks);
-	void encoderTurnedForArpPattern(int row, int num, int ticks);
+    void setStorage(Storage* storage) {
+        this->storage = storage;
+    }
+    void setHexter(Hexter* hexter) {
+        this->hexter = hexter;
+    }
+    void encoderTurned(int encoder, int ticks);
+    void buttonPressed(int button);
+    void twoButtonsPressed(int button1, int button2);
+    void encoderTurnedWhileButtonPressed(int encoder, int ticks, int button);
+    void encoderTurnedForStepSequencer(int row, int num, int ticks);
+    void encoderTurnedForArpPattern(int row, int num, int ticks);
 
-	void changeSynthModeRow(int button, int step);
-	void setNewValue(int timbre, int row, int encoder, float newValue);
-	void setNewStepValue(int timbre, int whichStepSeq, int step, int newValue);
+    void changeSynthModeRow(int button, int step);
+    void setNewValue(int timbre, int row, int encoder, float newValue);
+    void setNewStepValue(int timbre, int whichStepSeq, int step, int newValue);
 
-	void analyseSysexBuffer(uint8_t *buffer);
+    void analyseSysexBuffer(uint8_t *buffer);
 
-	const MenuItem* afterButtonPressed();
-	const MenuItem* menuBack();
+    const MenuItem* afterButtonPressed();
+    const MenuItem* menuBack();
 
-	int getCurrentRow() {
-		return currentRow;
-	}
+    int getCurrentRow() {
+        return currentRow;
+    }
 
 
-	void insertParamListener(SynthParamListener *listener) {
-		if (firstParamListener!=0) {
-			listener->nextListener = firstParamListener;
-		}
-		firstParamListener = listener;
-	}
+    void insertParamListener(SynthParamListener *listener) {
+        if (firstParamListener!=0) {
+            listener->nextListener = firstParamListener;
+        }
+        firstParamListener = listener;
+    }
 
     void insertParamChecker(SynthParamChecker *checker) {
         if (firstParamChecker!=0) {
@@ -361,42 +362,42 @@ public:
     }
 
     void insertMenuListener(SynthMenuListener *listener) {
-		if (firstMenuListener!=0) {
-			listener->nextListener = firstMenuListener;
-		}
-		firstMenuListener = listener;
-	}
+        if (firstMenuListener!=0) {
+            listener->nextListener = firstMenuListener;
+        }
+        firstMenuListener = listener;
+    }
 
     void propagateNewSynthMode() {
-    	propagateNoteOff();
-		for (SynthMenuListener* listener = firstMenuListener; listener !=0; listener = listener->nextListener) {
-			listener->newSynthMode(&fullState);
-		}
-	}
+        propagateNoteOff();
+        for (SynthMenuListener* listener = firstMenuListener; listener !=0; listener = listener->nextListener) {
+            listener->newSynthMode(&fullState);
+        }
+    }
 
-	void propagateMenuBack(enum MenuState oldMenuState) {
-		for (SynthMenuListener* listener = firstMenuListener; listener !=0; listener = listener->nextListener) {
-			listener->menuBack(oldMenuState, &fullState);
-		}
-	}
+    void propagateMenuBack(enum MenuState oldMenuState) {
+        for (SynthMenuListener* listener = firstMenuListener; listener !=0; listener = listener->nextListener) {
+            listener->menuBack(oldMenuState, &fullState);
+        }
+    }
 
-	void propagateNewMenuState() {
-		for (SynthMenuListener* listener = firstMenuListener; listener !=0; listener = listener->nextListener) {
-			listener->newMenuState(&fullState);
-		}
-	}
+    void propagateNewMenuState() {
+        for (SynthMenuListener* listener = firstMenuListener; listener !=0; listener = listener->nextListener) {
+            listener->newMenuState(&fullState);
+        }
+    }
 
-	void propagateNewMenuSelect() {
-		for (SynthMenuListener* listener = firstMenuListener; listener !=0; listener = listener->nextListener) {
-			listener->newMenuSelect(&fullState);
-		}
-	}
+    void propagateNewMenuSelect() {
+        for (SynthMenuListener* listener = firstMenuListener; listener !=0; listener = listener->nextListener) {
+            listener->newMenuSelect(&fullState);
+        }
+    }
 
     void propagateNewParamValue(int timbre, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
-		for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-			listener->newParamValue(timbre, currentRow, encoder, param, oldValue, newValue);
-		}
-	}
+        for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+            listener->newParamValue(timbre, currentRow, encoder, param, oldValue, newValue);
+        }
+    }
 
     void propagateNewParamCheck(int encoder, float oldValue, float *newValue) {
         for (SynthParamChecker* checker = firstParamChecker; checker !=0; checker = checker->nextChecker) {
@@ -404,43 +405,43 @@ public:
         }
     }
 
-	void propagateNewPresetName() {
-		for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-			listener->newPresetName();
-		}
-	}
+    void propagateNewPresetName() {
+        for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+            listener->newPresetName();
+        }
+    }
 
-	void propagateNewParamValueFromExternal(int timbre, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
-		for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-			listener->newParamValueFromExternal(timbre, currentRow, encoder, param, oldValue, newValue);
-		}
-	}
+    void propagateNewParamValueFromExternal(int timbre, int currentRow, int encoder, ParameterDisplay* param, float oldValue, float newValue) {
+        for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+            listener->newParamValueFromExternal(timbre, currentRow, encoder, param, oldValue, newValue);
+        }
+    }
 
-	void propagateNewCurrentRow(int newCurrentRow) {
-		for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-			listener->newcurrentRow(currentTimbre, newCurrentRow);
-		}
-	}
+    void propagateNewCurrentRow(int newCurrentRow) {
+        for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+            listener->newcurrentRow(currentTimbre, newCurrentRow);
+        }
+    }
 
 
-	void propagateBeforeNewParamsLoad(int timbre) {
+    void propagateBeforeNewParamsLoad(int timbre) {
         for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
             listener->beforeNewParamsLoad(timbre);
         }
     }
 
     bool canPlayNote() {
-    	return (fullState.synthMode == SYNTH_MODE_EDIT)
+        return (fullState.synthMode == SYNTH_MODE_EDIT)
                 || (fullState.currentMenuItem->menuState == MENU_LOAD_RANDOMIZER)
-    			|| (fullState.currentMenuItem->menuState == MENU_LOAD_SELECT_BANK_PRESET)
-    			||  (fullState.currentMenuItem->menuState == MENU_LOAD_SELECT_DX7_PRESET);
+                || (fullState.currentMenuItem->menuState == MENU_LOAD_SELECT_BANK_PRESET)
+                ||  (fullState.currentMenuItem->menuState == MENU_LOAD_SELECT_DX7_PRESET);
     }
 
-	void propagateShowAlgo() {
-		for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-			listener->showAlgo();
-		}
-	}
+    void propagateShowAlgo() {
+        for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+            listener->showAlgo();
+        }
+    }
 
     void propagateShowIMInformation() {
         for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
@@ -450,30 +451,30 @@ public:
 
 
     void propagateNoteOff() {
-    	if (this->isPlayingNote && canPlayNote()) {
-			for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-				listener->stopNote(playingTimbre, playingNote);
-			}
-			this->isPlayingNote = false;
-    	}
+        if (this->isPlayingNote && canPlayNote()) {
+            for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+                listener->stopNote(playingTimbre, playingNote);
+            }
+            this->isPlayingNote = false;
+        }
     }
 
     void propagateNoteOn(int shift) {
-    	if (canPlayNote()) {
-			if (this->isPlayingNote && (this->playingNote == fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] + shift)) {
-				propagateNoteOff();
-			} else {
-				if (this->isPlayingNote) {
-					propagateNoteOff();
-				}
-				playingNote = fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] + shift ;
-				playingTimbre = currentTimbre;
-				for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-					listener->playNote(playingTimbre, playingNote, fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY]);
-				}
-				this->isPlayingNote = true;
-			}
-    	}
+        if (canPlayNote()) {
+            if (this->isPlayingNote && (this->playingNote == fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] + shift)) {
+                propagateNoteOff();
+            } else {
+                if (this->isPlayingNote) {
+                    propagateNoteOff();
+                }
+                playingNote = fullState.midiConfigValue[MIDICONFIG_TEST_NOTE] + shift ;
+                playingTimbre = currentTimbre;
+                for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
+                    listener->playNote(playingTimbre, playingNote, fullState.midiConfigValue[MIDICONFIG_TEST_VELOCITY]);
+                }
+                this->isPlayingNote = true;
+            }
+        }
     }
 
     void storeTestNote() {
@@ -498,11 +499,11 @@ public:
     void propagateNewTimbre(int timbre);
 
     SynthEditMode getSynthMode() {
-		return fullState.synthMode;
-	}
+        return fullState.synthMode;
+    }
 
     int getOperatorNumber() {
-    	return operatorNumber;
+        return operatorNumber;
     }
 
     void newSysexBankReady();
@@ -514,49 +515,49 @@ public:
     void resetDisplay();
 
     bool getIsPlayingNote() {
-    	return isPlayingNote;
+        return isPlayingNote;
     }
-	void loadPreenFMPatch(int timbre, PFM2File const *bank, int patchNumber, struct OneSynthParams* params);
-	void loadDx7Patch(int timbre, PFM2File const *bank, int patchNumber, struct OneSynthParams* params);
-	void loadPreenFMCombo(PFM2File const *bank, int patchNumber);
-	void loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int patchNumber, struct OneSynthParams* params);
+    void loadPreenFMPatch(int timbre, PFM2File const *bank, int patchNumber, struct OneSynthParams* params);
+    void loadDx7Patch(int timbre, PFM2File const *bank, int patchNumber, struct OneSynthParams* params);
+    void loadPreenFMCombo(PFM2File const *bank, int patchNumber);
+    void loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int patchNumber, struct OneSynthParams* params);
 
-	bool newRandomizerValue(int encoder, int ticks);
-	void randomizePreset();
+    bool newRandomizerValue(int encoder, int ticks);
+    void randomizePreset();
 
     int currentTimbre;
     struct OneSynthParams *params;
     struct OneSynthParams backupParams;
-	struct FullState fullState;
-	char stepSelect[2];
-	char patternSelect;
+    struct FullState fullState;
+    char stepSelect[2];
+    char patternSelect;
 
 private:
-	void copySynthParams(char* source, char* dest);
-	int getRowFromOperator();
-	bool isCurrentRowAvailable() const;
-	bool isEnterNameState(int currentItme);
-	char engineRow, oscillatorRow, envelopeRow, matrixRow, lfoRow;
-	char operatorNumber, operatorView;
-	char currentRow;
+    void copySynthParams(char* source, char* dest);
+    int getRowFromOperator();
+    bool isCurrentRowAvailable() const;
+    bool isEnterNameState(int currentItme);
+    char engineRow, oscillatorRow, envelopeRow, matrixRow, lfoRow;
+    char operatorNumber, operatorView;
+    char currentRow;
     int lastRowForTimbre[ NUMBER_OF_TIMBRES ];
     void onUserChangedRow();
     int getLastRowForTimbre( int timbre ) const;
     void setLastRowForTimbre( int timbre, int row );
 
-	bool isPlayingNote;
-	char playingNote;
-	char playingTimbre;
+    bool isPlayingNote;
+    char playingNote;
+    char playingTimbre;
     bool storedIsPlayingNote;
     char storedPlayingNote;
     char storedPlayingTimbre;
 
 
-	// Done menu temporisation
-	unsigned int doneClick;
+    // Done menu temporisation
+    unsigned int doneClick;
 
-	SynthParamListener* firstParamListener;
-	SynthMenuListener* firstMenuListener;
+    SynthParamListener* firstParamListener;
+    SynthMenuListener* firstMenuListener;
     SynthParamChecker* firstParamChecker;
 
 
