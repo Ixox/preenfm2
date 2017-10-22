@@ -196,12 +196,16 @@ const unsigned char  oscShapeNamesPosition[] =     { 1, 2, 3, 4, 5, 6, 7, 0, 8, 
 
 
 const char* oscTypeNames [] = { "keyb", "fixe", "kehz"};
+const unsigned char  oscTypeNamesOrder[] =        { 0, 2 ,1};
+const unsigned char  oscTypeNamesPosition[] =     { 0, 2, 1};
+
+
 struct ParameterRowDisplay oscParameterRow = {
         "Oscillator",
         { "Shap", "FTyp", "Freq", "FTun" },
         {
                 { OSC_SHAPE_SIN, OSC_SHAPE_LAST -1, OSC_SHAPE_LAST, DISPLAY_TYPE_STRINGS, oscShapeNames, oscShapeNamesOrder, oscShapeNamesPosition},
-                { OSC_FT_KEYBOARD, OSC_FT_KEYHZ, 3, DISPLAY_TYPE_STRINGS, oscTypeNames, nullNamesOrder, nullNamesOrder},
+                { OSC_FT_KEYBOARD, OSC_FT_KEYHZ, 3, DISPLAY_TYPE_STRINGS, oscTypeNames, oscTypeNamesOrder, oscTypeNamesPosition},
                 { 0, 16, 193, DISPLAY_TYPE_FLOAT_OSC_FREQUENCY ,  nullNames, nullNamesOrder, nullNamesOrder },
                 { -9, 9, 1801, DISPLAY_TYPE_FLOAT_OSC_FREQUENCY,  nullNames, nullNamesOrder, nullNamesOrder }
         }
@@ -295,7 +299,7 @@ struct ParameterRowDisplay lfoParameterRow = {
         { "Shap", "Freq", "Bias", "KSyn" },
         {
                 { LFO_SIN, LFO_TYPE_MAX-1, LFO_TYPE_MAX, DISPLAY_TYPE_STRINGS,  lfoShapeNames, nullNamesOrder, nullNamesOrder},
-                { 0, 24.9, 250, DISPLAY_TYPE_FLOAT_LFO_FREQUENCY, nullNames, nullNamesOrder, nullNamesOrder },
+                { 0, LFO_FREQ_MAX + .9f, LFO_FREQ_MAX_TIMES_10 +1 +9, DISPLAY_TYPE_FLOAT_LFO_FREQUENCY, nullNames, nullNamesOrder, nullNamesOrder },
                 { -1, 1, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 { -0.01f, 16.0f, 1602, DISPLAY_TYPE_LFO_KSYN, nullNames, nullNamesOrder, nullNamesOrder }
         }

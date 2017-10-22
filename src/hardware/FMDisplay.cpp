@@ -295,14 +295,14 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
         lcd->print(param->valueName[newValue]);
         break;
     case DISPLAY_TYPE_FLOAT_LFO_FREQUENCY:
-        if (newFloatValue * 10.0f > 240.0) {
+        if (newFloatValue * 10.0f > LFO_FREQ_MAX_TIMES_10) {
             int stringIndex = newFloatValue * 10.0f + .005f;
             lcd->setCursor(encoder*5, 3);
 #ifdef DEBUG
             if (likely(stringIndex <= LFO_MIDICLOCK_MC_TIME_8)) {
 #endif
 
-                lcd->print(lfoOscMidiClock[stringIndex-241]);
+                lcd->print(lfoOscMidiClock[stringIndex-LFO_FREQ_MAX_TIMES_10-1]);
 #ifdef DEBUG
             } else {
                 lcd->print("#ER#");
@@ -363,6 +363,10 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
                 newValue = 0;
             }
             printValueWithSpace(newValue);
+
+            // Ftune
+            lcd->setCursor(15, 3);
+            lcd->print("    ");
         } else {
             lcd->setCursor(encoder*5 - 1, 3);
             printFloatWithSpace(newFloatValue);
