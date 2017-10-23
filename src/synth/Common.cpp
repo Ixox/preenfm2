@@ -48,6 +48,7 @@ struct AlgoInformation  algoInformation[] = {
         { 6, 1, 5},   // ALG28
 };
 
+
 int algoOpInformation[][NUMBER_OF_OPERATORS] = {
         {1,2,2,0,0,0}, // ALGO1
         {1,1,2,0,0,0}, // ALGO2

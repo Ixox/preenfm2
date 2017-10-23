@@ -487,11 +487,17 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
                     (float)midiEvent.value[1] * .01562500000000000000f);
             break;
         case CC_ENV_ATK_ALL:
-            for (int e = 0; e < 6; e++) {
-                this->synth->setNewValueFromMidi(timbre, ROW_ENV1a + e * 2, ENCODER_ENV_A,
-                        (float)midiEvent.value[1] * .01562500000000000000f);
+        case CC_ENV_ATK_ALL_MODULATOR: {
+            int currentAlgo = (int)this->synthState->params->engine1.algo;
+            int type = midiEvent.value[0] == CC_ENV_ATK_ALL ? OPERATOR_CARRIER : OPERATOR_MODULATOR ;
+            for (int e = 0; e < NUMBER_OF_OPERATORS; e++) {
+                if (algoOpInformation[currentAlgo][e] == type) {
+                    this->synth->setNewValueFromMidi(timbre, ROW_ENV1a + e * 2, ENCODER_ENV_A,
+                            (float)midiEvent.value[1] * .01562500000000000000f);
+                }
             }
             break;
+        }
         case CC_ENV_REL_OP1:
         case CC_ENV_REL_OP2:
         case CC_ENV_REL_OP3:
@@ -501,12 +507,18 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
             this->synth->setNewValueFromMidi(timbre, ROW_ENV1b + (midiEvent.value[0] - CC_ENV_REL_OP1)* 2, ENCODER_ENV_R,
                     (float)midiEvent.value[1] * .03125000000000000000f);
             break;
-        case CC_ENV_REL_ALL:
-            for (int e = 0; e < 6; e++) {
-                this->synth->setNewValueFromMidi(timbre, ROW_ENV1b + e * 2, ENCODER_ENV_R,
-                        (float)midiEvent.value[1] * .03125000000000000000f);
+        case CC_ENV_REL_ALL_MODULATOR:
+        case CC_ENV_REL_ALL: {
+            int currentAlgo = (int)this->synthState->params->engine1.algo;
+            int type = midiEvent.value[0] == CC_ENV_REL_ALL ? OPERATOR_CARRIER : OPERATOR_MODULATOR ;
+            for (int e = 0; e < NUMBER_OF_OPERATORS; e++) {
+                if (algoOpInformation[currentAlgo][e] == type) {
+                    this->synth->setNewValueFromMidi(timbre, ROW_ENV1b + e * 2, ENCODER_ENV_R,
+                            (float)midiEvent.value[1] * .03125000000000000000f);
+                }
             }
             break;
+        }
         case CC_LFO1_PHASE:
         case CC_LFO2_PHASE:
         case CC_LFO3_PHASE:
