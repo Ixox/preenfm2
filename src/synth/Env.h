@@ -89,7 +89,7 @@ public:
     virtual ~Env(void) {
     }
 
-    void init(struct EnvelopeParamsA *envParamsA, struct EnvelopeParamsB *envParamsB, uint8_t envNumber);
+    void init(struct EnvelopeParamsA *envParamsA, struct EnvelopeParamsB *envParamsB, uint8_t envNumber, float* algoNumber);
 
     void reloadADSR(int encoder) {
     	// 0 Attack time
@@ -180,22 +180,30 @@ public:
       }
 
     void noteOnAfterMatrixCompute(struct EnvData* env, Matrix* matrix) {
-        //
         env->currentValue = 0;
         env->envState = ENV_STATE_ON_A;
         newState(env);
 
-        float attack = envParamsA->attackTime + matrix->getDestination(ALL_ENV_ATTACK) + matrix->getDestination((enum DestinationEnum)(ENV1_ATTACK + envNumber));
+        float attack = envParamsA->attackTime + matrix->getDestination((enum DestinationEnum)(ENV1_ATTACK + envNumber));
+        float decay = envParamsA->decayTime;
+
+        if (unlikely(algoOpInformation[(int)*this->algoNumber][this->envNumber]) == OPERATOR_CARRIER) {
+            attack += matrix->getDestination(ALL_ENV_ATTACK);
+            decay += matrix->getDestination(ALL_ENV_DECAY);
+        }
+        if (unlikely(algoOpInformation[(int)*this->algoNumber][this->envNumber]) == OPERATOR_MODULATOR) {
+            attack += matrix->getDestination(ALL_ENV_ATTACK_MODULATOR);
+            decay += matrix->getDestination(ALL_ENV_DECAY_MODULATOR);
+        }
+
+        if (unlikely(decay < 0.0f)) {
+            decay = 0.0f;
+        }
         if (unlikely(attack < 0.0f)) {
             attack = 0.0f;
         }
         //stateInc[ENV_STATE_ON_A] = incTab[(int)(attack * 100.0f)];
         env->stateIncAttack = incTab[(int)(attack * 100.0f)];
-
-        float decay = envParamsA->decayTime + matrix->getDestination(ALL_ENV_DECAY);
-        if (unlikely(decay < 0.0f)) {
-            decay = 0.0f;
-        }
         env->stateIncDecay= incTab[(int)(decay * 100.0f)];
     }
 
@@ -214,7 +222,13 @@ public:
     }
 
     void noteOff(struct EnvData* env, Matrix* matrix) {
-        float release = envParamsB->releaseTime + matrix->getDestination(ALL_ENV_RELEASE);
+        float release = envParamsB->releaseTime;
+        if (unlikely(algoOpInformation[(int)*this->algoNumber][this->envNumber]) == OPERATOR_CARRIER) {
+            release += matrix->getDestination(ALL_ENV_RELEASE);
+        }
+        if (unlikely(algoOpInformation[(int)*this->algoNumber][this->envNumber]) == OPERATOR_MODULATOR) {
+            release += matrix->getDestination(ALL_ENV_RELEASE_MODULATOR);
+        }
     	if (release < 0.0f) {
     		release = 0.0f;
         }
@@ -246,7 +260,7 @@ private:
     EnvelopeParamsA* envParamsA;
     EnvelopeParamsB* envParamsB;
     uint8_t envNumber;
-
+    float* algoNumber;
 
     static int initTab;
     static float incTab[1601];

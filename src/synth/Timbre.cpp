@@ -201,12 +201,12 @@ Timbre::~Timbre() {
 void Timbre::init(int timbreNumber) {
 
 
-	env1.init(&params.env1a,  &params.env1b, 0);
-	env2.init(&params.env2a,  &params.env2b, 1);
-	env3.init(&params.env3a,  &params.env3b, 2);
-	env4.init(&params.env4a,  &params.env4b, 3);
-	env5.init(&params.env5a,  &params.env5b, 4);
-	env6.init(&params.env6a,  &params.env6b, 5);
+	env1.init(&params.env1a,  &params.env1b, 0, &params.engine1.algo);
+	env2.init(&params.env2a,  &params.env2b, 1, &params.engine1.algo);
+	env3.init(&params.env3a,  &params.env3b, 2, &params.engine1.algo);
+	env4.init(&params.env4a,  &params.env4b, 3, &params.engine1.algo);
+	env5.init(&params.env5a,  &params.env5b, 4, &params.engine1.algo);
+	env6.init(&params.env6a,  &params.env6b, 5, &params.engine1.algo);
 
 	osc1.init(&params.osc1, OSC1_FREQ);
 	osc2.init(&params.osc2, OSC2_FREQ);
@@ -1553,7 +1553,7 @@ void Timbre::verifyLfoUsed(int encoder, float oldValue, float newValue) {
 			int index = matrixRows[r].destination - MTX1_MUL;
 	        if (matrixRows[index].source >= MATRIX_SOURCE_LFO1 && matrixRows[index].source <= MATRIX_SOURCE_LFOSEQ2 && matrixRows[index].destination != 0.0f) {
             	lfoUSed[(int)matrixRows[index].source - MATRIX_SOURCE_LFO1]++;
-			}			
+			}
 		}
 
     }
