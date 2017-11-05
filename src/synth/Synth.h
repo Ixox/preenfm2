@@ -147,6 +147,7 @@ public:
     }
 
     void setNewValueFromMidi(int timbre, int row, int encoder, float newValue);
+    void setNewStepValueFromMidi(int timbre, int whichStepSeq, int step, int newValue);
     void setNewSymbolInPresetName(int timbre, int index, int value);
     void loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int patchNumber);
     void setHoldPedal(int timbre, int value);

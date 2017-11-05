@@ -334,7 +334,6 @@ public:
     void encoderTurnedForArpPattern(int row, int num, int ticks);
 
     void changeSynthModeRow(int button, int step);
-    void setNewValue(int timbre, int row, int encoder, float newValue);
     void setNewStepValue(int timbre, int whichStepSeq, int step, int newValue);
 
     void analyseSysexBuffer(uint8_t *buffer);

@@ -372,74 +372,74 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
                 break;
             }
             break;
-        case ROW_ARPEGGIATOR2:
-            if (unlikely(encoder == ENCODER_ARPEGGIATOR_LATCH)) {
-                timbres[timbre].setLatchMode((uint8_t) newValue);
-            }
-            break;
-        case ROW_ARPEGGIATOR3:
-            break;
-        case ROW_EFFECT:
-            timbres[timbre].setNewEffecParam(encoder);
-            break;
-        case ROW_ENV1a:
-            timbres[timbre].env1.reloadADSR(encoder);
-            break;
-        case ROW_ENV1b:
-            timbres[timbre].env1.reloadADSR(encoder + 4);
-            break;
-        case ROW_ENV2a:
-            timbres[timbre].env2.reloadADSR(encoder);
-            break;
-        case ROW_ENV2b:
-            timbres[timbre].env2.reloadADSR(encoder + 4);
-            break;
-        case ROW_ENV3a:
-            timbres[timbre].env3.reloadADSR(encoder);
-            break;
-        case ROW_ENV3b:
-            timbres[timbre].env3.reloadADSR(encoder + 4);
-            break;
-        case ROW_ENV4a:
-            timbres[timbre].env4.reloadADSR(encoder);
-            break;
-        case ROW_ENV4b:
-            timbres[timbre].env4.reloadADSR(encoder + 4);
-            break;
-        case ROW_ENV5a:
-            timbres[timbre].env5.reloadADSR(encoder);
-            break;
-        case ROW_ENV5b:
-            timbres[timbre].env5.reloadADSR(encoder + 4);
-            break;
-        case ROW_ENV6a:
-            timbres[timbre].env6.reloadADSR(encoder);
-            break;
-        case ROW_ENV6b:
-            timbres[timbre].env6.reloadADSR(encoder + 4);
-            break;
-        case ROW_MATRIX_FIRST ... ROW_MATRIX_LAST:
+            case ROW_ARPEGGIATOR2:
+                if (unlikely(encoder == ENCODER_ARPEGGIATOR_LATCH)) {
+                    timbres[timbre].setLatchMode((uint8_t) newValue);
+                }
+                break;
+            case ROW_ARPEGGIATOR3:
+                break;
+            case ROW_EFFECT:
+                timbres[timbre].setNewEffecParam(encoder);
+                break;
+            case ROW_ENV1a:
+                timbres[timbre].env1.reloadADSR(encoder);
+                break;
+            case ROW_ENV1b:
+                timbres[timbre].env1.reloadADSR(encoder + 4);
+                break;
+            case ROW_ENV2a:
+                timbres[timbre].env2.reloadADSR(encoder);
+                break;
+            case ROW_ENV2b:
+                timbres[timbre].env2.reloadADSR(encoder + 4);
+                break;
+            case ROW_ENV3a:
+                timbres[timbre].env3.reloadADSR(encoder);
+                break;
+            case ROW_ENV3b:
+                timbres[timbre].env3.reloadADSR(encoder + 4);
+                break;
+            case ROW_ENV4a:
+                timbres[timbre].env4.reloadADSR(encoder);
+                break;
+            case ROW_ENV4b:
+                timbres[timbre].env4.reloadADSR(encoder + 4);
+                break;
+            case ROW_ENV5a:
+                timbres[timbre].env5.reloadADSR(encoder);
+                break;
+            case ROW_ENV5b:
+                timbres[timbre].env5.reloadADSR(encoder + 4);
+                break;
+            case ROW_ENV6a:
+                timbres[timbre].env6.reloadADSR(encoder);
+                break;
+            case ROW_ENV6b:
+                timbres[timbre].env6.reloadADSR(encoder + 4);
+                break;
+            case ROW_MATRIX_FIRST ... ROW_MATRIX_LAST:
             timbres[timbre].verifyLfoUsed(encoder, oldValue, newValue);
             if (encoder == ENCODER_MATRIX_DEST) {
                 // Reset old destination
                 timbres[timbre].resetMatrixDestination(oldValue);
             }
             break;
-        case ROW_LFOOSC1 ... ROW_LFOOSC3:
-        case ROW_LFOENV1 ... ROW_LFOENV2:
-        case ROW_LFOSEQ1 ... ROW_LFOSEQ2:
+            case ROW_LFOOSC1 ... ROW_LFOOSC3:
+            case ROW_LFOENV1 ... ROW_LFOENV2:
+            case ROW_LFOSEQ1 ... ROW_LFOSEQ2:
             // timbres[timbre].lfo[currentRow - ROW_LFOOSC1]->valueChanged(encoder);
             timbres[timbre].lfoValueChange(currentRow, encoder, newValue);
             break;
-        case ROW_PERFORMANCE1:
-            timbres[timbre].setMatrixSource((enum SourceEnum)(MATRIX_SOURCE_CC1 + encoder), newValue);
-            break;
-        case ROW_MIDINOTE1CURVE:
-            timbres[timbre].updateMidiNoteScale(0);
-            break;
-        case ROW_MIDINOTE2CURVE:
-            timbres[timbre].updateMidiNoteScale(1);
-            break;
+            case ROW_PERFORMANCE1:
+                timbres[timbre].setMatrixSource((enum SourceEnum)(MATRIX_SOURCE_CC1 + encoder), newValue);
+                break;
+            case ROW_MIDINOTE1CURVE:
+                timbres[timbre].updateMidiNoteScale(0);
+                break;
+            case ROW_MIDINOTE2CURVE:
+                timbres[timbre].updateMidiNoteScale(1);
+                break;
     }
 }
 
@@ -512,6 +512,26 @@ void Synth::setNewValueFromMidi(int timbre, int row, int encoder, float newValue
     this->synthState->propagateNewParamValueFromExternal(timbre, row, encoder, param, oldValue, newNewValue);
 }
 
+void Synth::setNewStepValueFromMidi(int timbre, int whichStepSeq, int step, int newValue) {
+
+    if (whichStepSeq < 0 || whichStepSeq > 1 || step < 0 || step > 15 || newValue < 0 || newValue > 15) {
+        return;
+    }
+
+    int oldValue = this->timbres[timbre].getSeqStepValue(whichStepSeq, step);
+
+    if (oldValue !=  newValue) {
+        int oldStep = this->synthState->stepSelect[whichStepSeq];
+        this->synthState->stepSelect[whichStepSeq] = step;
+        if (oldStep != step) {
+            this->synthState->propagateNewParamValueFromExternal(timbre, ROW_LFOSEQ1 + whichStepSeq, 2, NULL, oldStep, step);
+        }
+        this->timbres[timbre].setSeqStepValue(whichStepSeq, step, newValue);
+        this->synthState->propagateNewParamValueFromExternal(timbre, ROW_LFOSEQ1 + whichStepSeq, 3, NULL, oldValue, newValue);
+    }
+}
+
+
 
 void Synth::setNewSymbolInPresetName(int timbre, int index, int value) {
     this->timbres[timbre].getParamRaw()->presetName[index] = value;
@@ -575,7 +595,7 @@ void Synth::showCycles() {
     lcd.print('%');
     lcd.print('<');
 
-/*
+    /*
     lcd.setCursor( 0, 0 );
     lcd.print( "RNG: " );
     lcd.print( cycles_rng.remove() );
@@ -593,7 +613,7 @@ void Synth::showCycles() {
     lcd.print( cycles_timbres.remove() );
 
     lcd.setRealTimeAction(false);
-    */
+     */
 }
 
 #endif

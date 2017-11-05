@@ -737,11 +737,11 @@ void MidiDecoder::decodeNrpn(int timbre) {
             }
         }
     } else if (this->currentNrpn[timbre].paramMSB < 4)  {
-        unsigned int whichStepSeq = this->currentNrpn[timbre].paramMSB -2;
+        unsigned int whichStepSeq = this->currentNrpn[timbre].paramMSB - 2;
         unsigned int step = this->currentNrpn[timbre].paramLSB;
         unsigned int value = this->currentNrpn[timbre].valueLSB;
 
-        this->synthState->setNewStepValue(timbre, whichStepSeq, step, value);
+        this->synth->setNewStepValueFromMidi(timbre, whichStepSeq, step, value);
     } else if (this->currentNrpn[timbre].paramMSB == 127 && this->currentNrpn[timbre].paramLSB == 127)  {
         sendCurrentPatchAsNrpns(timbre);
     }

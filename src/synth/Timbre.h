@@ -60,6 +60,8 @@ public:
     void setNewValue(int index, struct ParameterDisplay* param, float newValue);
     void setNewEffecParam(int encoder);
     void recomputeBPValues();
+    int getSeqStepValue(int whichStepSeq, int step);
+    void setSeqStepValue(int whichStepSeq, int step, int value);
     // Arpegiator
     void arpeggiatorNoteOn(char note, char velocity);
     void arpeggiatorNoteOff(char note);
@@ -89,16 +91,6 @@ public:
     }
 
     void lfoValueChange(int currentRow, int encoder, float newValue);
-    // timbres[timbre].lfo[currentRow - ROW_LFOOSC1]->valueChanged(encoder);
-
-    /*
-    void calculateFrequencyWithMatrix(struct OscState* oscState[NUMBER_OF_OPERATORS]) {
-        for (int k=0; k<algoInformation[(int)params.engine1.algo].osc; k++) {
-            osc1.calculateFrequencyWithMatrix(oscState[0]);
-        }
-    }
-     */
-
 
 
     void setHoldPedal(int value);

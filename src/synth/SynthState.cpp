@@ -1492,44 +1492,6 @@ void SynthState::buttonPressed(int button) {
 
 
 
-void SynthState::setNewStepValue(int timbre, int whichStepSeq, int step, int newValue) {
-    if (whichStepSeq <0 || whichStepSeq>1 || step <0 || step > 15 || newValue<0 || newValue>15) {
-        return;
-    }
-    StepSequencerSteps * seqSteps = &((StepSequencerSteps * )(&params->lfoSteps1))[whichStepSeq];
-
-    int oldValue = seqSteps->steps[step];
-
-    if (oldValue !=  newValue) {
-        int oldStep = stepSelect[whichStepSeq];
-        seqSteps->steps[step] = newValue;
-        stepSelect[whichStepSeq] = step;
-        if (oldStep != step) {
-            propagateNewParamValueFromExternal(timbre, ROW_LFOSEQ1 + whichStepSeq, 2, NULL, oldStep, stepSelect[whichStepSeq]);
-        }
-        propagateNewParamValueFromExternal(timbre, ROW_LFOSEQ1 + whichStepSeq, 3, NULL, oldValue, newValue);
-    }
-
-}
-
-
-
-void SynthState::setNewValue(int timbre, int row, int encoder, float newValue) {
-    // ??? STILL USEFULL
-    /*
-    int index = row * NUMBER_OF_ENCODERS + encoder;
-    struct ParameterDisplay* param = &(allParameterRows.row[row]->params[encoder]);
-    int oldValue = ((float*)params)[index];
-    if (newValue > param->maxValue) {
-    	newValue= param->maxValue;
-    } else if (newValue < param->minValue) {
-    	newValue= param->minValue;
-    }
-    ((float*)params)[index] = newValue;
-    propagateNewParamValueFromExternal(timbre, row, encoder, param, oldValue, newValue);
-     */
-}
-
 const MenuItem* SynthState::afterButtonPressed() {
     const MenuItem* rMenuItem = 0;
     int length, k;

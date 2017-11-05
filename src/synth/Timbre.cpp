@@ -943,6 +943,8 @@ void Timbre::resetArpeggiator() {
 }
 
 
+
+
 void Timbre::setNewValue(int index, struct ParameterDisplay* param, float newValue) {
     if (newValue > param->maxValue) {
         // in v2, matrix target were removed so some values are > to max value but we need to accept it
@@ -959,6 +961,24 @@ void Timbre::setNewValue(int index, struct ParameterDisplay* param, float newVal
         newValue= param->minValue;
     }
     ((float*)&params)[index] = newValue;
+}
+
+int Timbre::getSeqStepValue(int whichStepSeq, int step) {
+
+    if (whichStepSeq == 0) {
+        return params.lfoSteps1.steps[step];
+    } else {
+        return params.lfoSteps2.steps[step];
+    }
+}
+
+void Timbre::setSeqStepValue(int whichStepSeq, int step, int value) {
+
+    if (whichStepSeq == 0) {
+        params.lfoSteps1.steps[step] = value;
+    } else {
+        params.lfoSteps2.steps[step] = value;
+    }
 }
 
 void Timbre::recomputeBPValues() {
