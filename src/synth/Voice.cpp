@@ -21,6 +21,7 @@
 
 float Voice::glidePhaseInc[10];
 
+extern float *frequencyToUse;
 
 Voice::Voice(void)
 {
@@ -120,7 +121,7 @@ void Voice::glide() {
 		currentTimbre->osc6.glideStep(&oscState6, this->glidePhase);
 
 	} else {
-		// last with phase set to 1 to have exact frequencry
+		// last with phase set to 1 to have exact frequency
 		currentTimbre->osc1.glideStep(&oscState1, 1);
 		currentTimbre->osc2.glideStep(&oscState2, 1);
 		currentTimbre->osc3.glideStep(&oscState3, 1);
@@ -130,6 +131,20 @@ void Voice::glide() {
 		this->gliding = false;
 	}
 }
+
+#ifdef CVIN
+void Voice::propagateCvFreq(short newNote) {
+    float freq = currentTimbre->getCvFrequency();
+    currentTimbre->osc1.updateFreqFromCv(&oscState1, freq);
+    currentTimbre->osc2.updateFreqFromCv(&oscState2, freq);
+    currentTimbre->osc3.updateFreqFromCv(&oscState3, freq);
+    currentTimbre->osc4.updateFreqFromCv(&oscState4, freq);
+    currentTimbre->osc5.updateFreqFromCv(&oscState5, freq);
+    currentTimbre->osc6.updateFreqFromCv(&oscState6, freq);
+}
+
+#endif
+
 
 void Voice::noteOn(short newNote, short velocity, unsigned int index) {
 
@@ -141,31 +156,39 @@ void Voice::noteOn(short newNote, short velocity, unsigned int index) {
 	this->holdedByPedal = false;
 	this->index = index;
 
-	this->velIm1 = currentTimbre->params.engineIm1.modulationIndexVelo1 * (float)velocity * .0078125f;
-	this->velIm2 = currentTimbre->params.engineIm1.modulationIndexVelo2 * (float)velocity * .0078125f;
-	this->velIm3 = currentTimbre->params.engineIm2.modulationIndexVelo3 * (float)velocity * .0078125f;
-	this->velIm4 = currentTimbre->params.engineIm2.modulationIndexVelo4 * (float)velocity * .0078125f;
-	this->velIm5 = currentTimbre->params.engineIm3.modulationIndexVelo5 * (float)velocity * .0078125f;
+	float velo = (float)velocity * .0078125f;
+	this->velIm1 = currentTimbre->params.engineIm1.modulationIndexVelo1 * velo;
+	this->velIm2 = currentTimbre->params.engineIm1.modulationIndexVelo2 * velo;
+	this->velIm3 = currentTimbre->params.engineIm2.modulationIndexVelo3 * velo;
+	this->velIm4 = currentTimbre->params.engineIm2.modulationIndexVelo4 * velo;
+	this->velIm5 = currentTimbre->params.engineIm3.modulationIndexVelo5 * velo;
 
 	int zeroVelo = (16 - currentTimbre->params.engine1.velocity) * 8;
 	int newVelocity = zeroVelo + ((velocity * (128 - zeroVelo)) >> 7);
 	this->velocity = newVelocity * .0078125f; // divide by 127
 
-	currentTimbre->osc1.newNote(&oscState1, newNote);
-	currentTimbre->osc2.newNote(&oscState2, newNote);
-	currentTimbre->osc3.newNote(&oscState3, newNote);
-	currentTimbre->osc4.newNote(&oscState4, newNote);
-	currentTimbre->osc5.newNote(&oscState5, newNote);
-	currentTimbre->osc6.newNote(&oscState6, newNote);
+#ifdef CVIN
+	if (unlikely(newNote < 128)) {
+#endif
+        currentTimbre->osc1.newNote(&oscState1, newNote);
+        currentTimbre->osc2.newNote(&oscState2, newNote);
+        currentTimbre->osc3.newNote(&oscState3, newNote);
+        currentTimbre->osc4.newNote(&oscState4, newNote);
+        currentTimbre->osc5.newNote(&oscState5, newNote);
+        currentTimbre->osc6.newNote(&oscState6, newNote);
+#ifdef CVIN
+	} else {
+	    float freq = currentTimbre->getCvFrequency();
 
-	/* Firmware v2.0  Env must be initialized after matrix computation so in
-	currentTimbre->env1.noteOn(&envState1, &matrix, freqHarm);
-	currentTimbre->env2.noteOn(&envState2, &matrix, freqHarm);
-	currentTimbre->env3.noteOn(&envState3, &matrix, freqHarm);
-	currentTimbre->env4.noteOn(&envState4, &matrix, freqHarm);
-	currentTimbre->env5.noteOn(&envState5, &matrix, freqHarm);
-	currentTimbre->env6.noteOn(&envState6, &matrix, freqHarm);
-	*/
+        currentTimbre->osc1.newNoteFromCv(&oscState1, freq);
+        currentTimbre->osc2.newNoteFromCv(&oscState2, freq);
+        currentTimbre->osc3.newNoteFromCv(&oscState3, freq);
+        currentTimbre->osc4.newNoteFromCv(&oscState4, freq);
+        currentTimbre->osc5.newNoteFromCv(&oscState5, freq);
+        currentTimbre->osc6.newNoteFromCv(&oscState6, freq);
+	}
+#endif
+
 	// Tell nextBlock() to init Env...
     this->newNotePlayed = true;
 
@@ -207,7 +230,6 @@ void Voice::glideFirstNoteOff() {
 
 
 void Voice::noteOff() {
-
 	if (unlikely(!this->playing)) {
 		return;
 	}
@@ -217,6 +239,7 @@ void Voice::noteOff() {
             killNow();
             return;
         }
+
 		this->released = true;
 		this->gliding = false;
 		this->holdedByPedal = false;

@@ -29,13 +29,13 @@
 #ifndef OVERCLOCK
 #define OVERCLOCK_STRING
 #else
-#define OVERCLOCK_STRING "o"
+#define OVERCLOCK_STRING " o"
 #endif
 
 #ifndef CVIN
 #define CVIN_STRING
 #else
-#define CVIN_STRING "cv"
+#define CVIN_STRING "_cv"
 #endif
 
 
@@ -65,9 +65,6 @@ extern unsigned int preenTimer;
 
 extern Synth synth;
 
-#ifdef CVIN
-extern uint16_t ADCBuffer[];
-#endif
 #ifdef CVINDEBUG
 extern int TIM2PerSeq;
 #endif
@@ -79,7 +76,7 @@ void MCP4922_Config();
 void SysTick_Config();
 void RNG_Config();
 void LCD_InitChars(LiquidCrystal *lcd);
-void ADC_Config();
+void ADC_Config(uint32_t adcBufferAdress);
 
 
 

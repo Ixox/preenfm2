@@ -17,8 +17,8 @@ public:
 	virtual ~ConfigurationFile();
 
 
-	void loadConfig(char* midiConfigBytes);
-	void saveConfig(const char* midiConfigBytes);
+	void loadConfig(short* midiConfigBytes);
+	void saveConfig(const short* midiConfigBytes);
 
 	void loadScalaConfig(struct ScalaScaleConfig *scalaScaleConfig);
 	void saveScalaConfig(struct ScalaScaleConfig *scalaScaleConfig);
@@ -30,7 +30,7 @@ protected:
 	const char* getFolderName();
 	bool isCorrectFile(char *name, int size) { return true; }
 
-	void fillMidiConfig(char* midiConfigBytes, char* line);
+	void fillMidiConfig(short* midiConfigBytes, char* line);
 	void fillScalaConfig(struct ScalaScaleConfig* scalaScaleConfig, char* line);
 };
 

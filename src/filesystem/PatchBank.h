@@ -19,7 +19,7 @@ public:
 	void create(const char* name);
 	const struct PFM2File* addEmptyBank(const char* newBankName);
 	void savePreenFMPatch(const struct PFM2File* bank, int patchNumber, const struct OneSynthParams *params);
-    void setArpeggiatorPartOfThePreset(char *pointer) { arpeggiatorPartOfThePreset = pointer; }
+    void setArpeggiatorPartOfThePreset(short *pointer) { arpeggiatorPartOfThePreset = pointer; }
     void loadPreenFMPatch(const struct PFM2File* bank, int patchNumber, struct OneSynthParams *params);
     const char* loadPreenFMPatchName(const struct PFM2File* bank, int patchNumber);
     void sendPreenFMPatchAsSysex(const struct OneSynthParams *params);
@@ -35,7 +35,7 @@ protected:
 	bool isCorrectFile(char *name, int size);
 
 private:
-    char *arpeggiatorPartOfThePreset;
+    short *arpeggiatorPartOfThePreset;
     char presetName[13];
     SysexSender* sysexSender;
     struct PFM2File preenFMBank[NUMBEROFPREENFMBANKS];

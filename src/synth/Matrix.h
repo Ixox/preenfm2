@@ -24,10 +24,6 @@
 #include "Common.h"
 
 
-#ifdef CVIN
-extern uint16_t ADCBuffer[];
-#endif
-
 class Matrix  {
 	friend class Timbre;
 public:
@@ -124,6 +120,10 @@ public:
 
     void setSource(SourceEnum source, float value) __attribute__((always_inline)) {
         this->sources[source] = value;
+    }
+
+    float getSource(SourceEnum source) __attribute__((always_inline)) {
+        return this->sources[source];
     }
 
     float getDestination(DestinationEnum destination)   __attribute__((always_inline))  {

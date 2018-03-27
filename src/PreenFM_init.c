@@ -18,14 +18,6 @@
 #include "PreenFM.h"
 #include "Common.h"
 
-#ifdef CVIN
-uint16_t ADCBuffer[] = {
-        0xAAAA, 0xAAAA, 0xAAAA, 0xAAAA, 0xAAAA,
-        0xAAAA, 0xAAAA, 0xAAAA, 0xAAAA, 0xAAAA,
-        0xAAAA, 0xAAAA, 0xAAAA, 0xAAAA, 0xAAAA,
-        0xAAAA, 0xAAAA, 0xAAAA, 0xAAAA, 0xAAAA 
-};
-#endif
 
 
 void strobePin(uint8_t count, uint32_t rate) {
@@ -123,7 +115,7 @@ void LED_Config() {
 
 
 
-void ADC_Config() {
+void ADC_Config(uint32_t adcBufferAdress) {
 #ifdef CVIN
         ADC_InitTypeDef       ADC_InitStructure;
         ADC_CommonInitTypeDef ADC_CommonInitStructure;
@@ -139,7 +131,7 @@ void ADC_Config() {
         TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
                 // 1000000/(42031/32) / 4( to make an average on 4 values)
         float period = 1000000.0f / (PREENFM_FREQUENCY / 32.0f) / 4.0f;
-        TIM_TimeBaseStructure.TIM_Period = (int)(period - 1); // Must be called once per block of 32 samples  
+        TIM_TimeBaseStructure.TIM_Period = (int)(period - 1); // Must be called once per block of 32 samples
         TIM_TimeBaseStructure.TIM_Prescaler = 84 - 1; // Down to 1 MHz (adjust per your clock)
         TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
         TIM_SelectOutputTrigger(TIM2, TIM_TRGOSource_Update);
@@ -177,7 +169,7 @@ void ADC_Config() {
         DMA_InitStructure.DMA_Mode = DMA_Mode_Circular; /* circular buffer */
         DMA_InitStructure.DMA_Priority = DMA_Priority_High; /* high priority */
         /* config of memory */
-        DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)ADCBuffer; /* target addr */
+        DMA_InitStructure.DMA_Memory0BaseAddr = adcBufferAdress; /* target addr */
         DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord; /* 16 bit */
         DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
         DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&ADC1->DR;

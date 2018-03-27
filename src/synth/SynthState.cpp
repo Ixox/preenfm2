@@ -260,7 +260,7 @@ const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "en
         "ModW", "PitB", "AftT",  "Velo", "Not1", "p1  ", "p2  ", "p3  ", "p4  ", "Not2", "Brth"
 #ifdef CVIN
         , "CV1 ", "CV2 ", "CV3 ", "CV4 "
-#endif         
+#endif
 } ;
 
 #ifdef CVIN
@@ -269,7 +269,7 @@ const unsigned char  matrixSourcePosition[] =     { 0,  5,  6,  7,  8, 9, 10, 11
 #else
 const unsigned char  matrixSourceOrder[] =        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17, 18, 13, 14, 15, 16 };
 const unsigned char  matrixSourcePosition[] =     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 13, 14};
-#endif         
+#endif
 
 
 const char* matrixDestNames [] = {
@@ -466,6 +466,11 @@ SynthState::SynthState() {
     fullState.saveWhat = 0;
     fullState.toolsWhat = 0;
     fullState.scalaWhat = 0;
+#ifdef CVIN
+    fullState.midiConfigValue[MIDICONFIG_CVIN1_2] = 1;
+    fullState.midiConfigValue[MIDICONFIG_CVIN_A2] = 256;
+    fullState.midiConfigValue[MIDICONFIG_CVIN_A6] = 737;
+#endif
     fullState.midiConfigValue[MIDICONFIG_USB] = 2;
 	fullState.midiConfigValue[MIDICONFIG_GLOBAL] = 0;
 	fullState.midiConfigValue[MIDICONFIG_CURRENT_INSTRUMENT] = 0;

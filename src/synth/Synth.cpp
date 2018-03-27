@@ -62,6 +62,12 @@ void Synth::init() {
         timbres[t].numberOfVoicesChanged();
     }
     updateNumberOfActiveTimbres();
+
+#ifdef CVIN
+    cvin12Ready = true;
+    cvin34Ready = true;
+#endif
+
 }
 
 void Synth::noteOn(int timbre, char note, char velocity) {
@@ -133,39 +139,54 @@ void Synth::buildNewSampleBlock() {
     }
 
 #ifdef CVIN
-    int cvin = (ADCBuffer[0] + ADCBuffer[4] + ADCBuffer[8] + ADCBuffer[12]) >> 2;
-    float divBy512 = .001953125f ;
-    float cvin1 = ((float)cvin) * divBy512 - 1.0f;
-
-    cvin = (ADCBuffer[1] + ADCBuffer[5] + ADCBuffer[9] + ADCBuffer[13]) >> 2;
-    float cvin2 = ((float)cvin) * divBy512 - 1.0f;
-
-    cvin = (ADCBuffer[2] + ADCBuffer[6] + ADCBuffer[10] + ADCBuffer[14]) >> 2;
-    float cvin3 = ((float)cvin) * divBy512 - 1.0f;
-
-    cvin = (ADCBuffer[3] + ADCBuffer[7] + ADCBuffer[11] + ADCBuffer[15]) >> 2;
-    float cvin4 = ((float)cvin) * divBy512 - 1.0f;
+    cvin->updateValues();
 #endif
-
-    // 
 
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
         timbres[t].cleanNextBlock();
         if (likely(timbres[t].params.engine1.numberOfVoice > 0)) {
             timbres[t].prepareForNextBlock();
-            // eventually glide
+            // need to glide ?
             if (timbres[t].voiceNumber[0] != -1 && this->voices[timbres[t].voiceNumber[0]].isGliding()) {
                 this->voices[timbres[t].voiceNumber[0]].glide();
             }
         }
+
 #ifdef CVIN
-        timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN1, cvin1);
-        timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN2, cvin2);
-        timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN3, cvin3);
-        timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN4, cvin4);
+        timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN1, cvin->getCvin1());
+        timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN2, cvin->getCvin2());
+        timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN3, cvin->getCvin3());
+        timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN3, cvin->getCvin4());
 #endif
         timbres[t].prepareMatrixForNewBlock();
     }
+
+
+#ifdef CVIN
+    // We need matrix source in osc
+    // cvin1 can trigger Instrument 1 notes
+    int cvinst = synthState->fullState.midiConfigValue[MIDICONFIG_CVIN1_2] - 1;
+    if (cvinst >= 0) {
+
+        if (cvin12Ready) {
+            if (cvin->getGate() > 500) {
+                cvin12Ready = false;
+                timbres[cvinst].setCvFrequency(cvin->getFrequency());
+                timbres[cvinst].noteOn(128, 127);
+                visualInfo->noteOn(cvinst, true);
+            }
+        } else {
+            if (cvin->getGate() > 800) {
+                // Adjust frequency with CVIN2 !!! while gate is on !!
+                timbres[cvinst].setCvFrequency(cvin->getFrequency());
+                timbres[cvinst].propagateCvFreq(128);
+            } else if (cvin->getGate() < 200) {
+                cvin12Ready = true;
+                timbres[cvinst].noteOff(128);
+            }
+        }
+    }
+#endif
 
     // render all voices in their timbre sample block...
     // 16 voices
@@ -580,6 +601,7 @@ void Synth::setNewSymbolInPresetName(int timbre, int index, int value) {
 }
 
 
+
 void Synth::setScalaEnable(bool enable) {
     this->synthState->setScalaEnable(enable);
 }
@@ -592,6 +614,15 @@ void Synth::setCurrentInstrument(int value) {
     if (value >=1 && value <= 4) {
         this->synthState->setCurrentInstrument(value);    
     }
+}
+
+void Synth::newMenuSelect(FullState* fullState) {
+    if (fullState->currentMenuItem->menuState == MENU_CONFIG_SETTINGS) {
+        if (fullState->menuSelect == MIDICONFIG_CVIN_A2 || fullState->menuSelect == MIDICONFIG_CVIN_A6) {
+            cvin->updateFormula(synthState->fullState.midiConfigValue[MIDICONFIG_CVIN_A2], synthState->fullState.midiConfigValue[MIDICONFIG_CVIN_A6]);
+        }
+    }
+
 }
 
 

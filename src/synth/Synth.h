@@ -23,13 +23,18 @@
 #include "LfoOsc.h"
 #include "LfoEnv.h"
 #include "LfoStepSeq.h"
+#include "CVIn.h"
+
+#ifdef CVIN
+#include "VisualInfo.h"
+#endif
 
 #include "SynthParamListener.h"
 #include "SynthStateAware.h"
 
 #define UINT_MAX  4294967295
 
-class Synth : public SynthParamListener, public SynthStateAware, public SynthParamChecker
+class Synth : public SynthParamListener, public SynthStateAware, public SynthParamChecker, public SynthMenuListener
 {
 public:
     Synth(void);
@@ -39,6 +44,16 @@ public:
         SynthStateAware::setSynthState(sState);
         init();
     }
+
+    void setCVIn(CVIn * cvin) {
+        this->cvin = cvin;
+    }
+
+#ifdef CVIN
+    void setVisualInfo(VisualInfo *visualInfo) {
+        this->visualInfo = visualInfo;
+    }
+#endif
 
     void noteOn(int timbre, char note, char velocity);
     void noteOff(int timbre, char note);
@@ -181,6 +196,20 @@ private:
 
     // gate
     float currentGate;
+
+    // SynthMenuListener
+    void newSynthMode(FullState* fullState) {}
+    void menuBack(enum MenuState  oldMenuState, FullState* fullState) {}
+    void newMenuState(FullState* fullState) {}
+    void newMenuSelect(FullState* fullState);
+
+
+#ifdef CVIN
+    bool cvin12Ready ;
+    bool cvin34Ready ;
+    VisualInfo *visualInfo;
+    CVIn* cvin;
+#endif
 };
 
 

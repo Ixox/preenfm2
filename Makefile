@@ -68,7 +68,7 @@ SRC_FIRMWARE = src/PreenFM.cpp \
 	src/hardware/Menu.cpp \
 	src/hardware/FMDisplay.cpp \
 	src/hardware/Encoders.cpp \
-	src/hardware/LiquidCrystal.cpp \
+	src/hardware/CVIn.cpp \
 	src/filesystem/ComboBank.cpp \
 	src/filesystem/ConfigurationFile.cpp \
 	src/filesystem/DX7SysexFile.cpp \

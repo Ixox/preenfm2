@@ -63,8 +63,8 @@ public:
     int getSeqStepValue(int whichStepSeq, int step);
     void setSeqStepValue(int whichStepSeq, int step, int value);
     // Arpegiator
-    void arpeggiatorNoteOn(char note, char velocity);
-    void arpeggiatorNoteOff(char note);
+    void arpeggiatorNoteOn(uint8_t note, uint8_t velocity);
+    void arpeggiatorNoteOff(uint8_t note);
     void StartArpeggio();
     void StepArpeggio();
     void Start();
@@ -76,12 +76,17 @@ public:
     void resetArpeggiator();
     uint16_t getArpeggiatorPattern() const;
 
-    void noteOn(char note, char velocity);
-    void noteOff(char note);
+    void noteOn(uint8_t note, uint8_t velocity);
+    void noteOff(uint8_t note);
 
-    void preenNoteOn(char note, char velocity);
+    void preenNoteOn(uint8_t note, uint8_t velocity);
     inline void preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity);
-    void preenNoteOff(char note);
+#ifdef CVIN
+    void propagateCvFreq(uint8_t note);
+    void setCvFrequency(float freq) { this->cvFrequency = freq; }
+    float getCvFrequency() { return this->cvFrequency; };
+#endif
+    void preenNoteOff(uint8_t note);
     void numberOfVoicesChanged() {
         if (params.engine1.numberOfVoice > 0) {
             numberOfVoiceInverse = 1.0f / params.engine1.numberOfVoice;
@@ -156,7 +161,9 @@ private:
     Voice *voices[MAX_NUMBER_OF_VOICES];
     bool holdPedal;
     int8_t lastPlayedNote;
-
+#ifdef CVIN
+    float cvFrequency;
+#endif
 
     // 6 oscillators Max
     Osc osc1;

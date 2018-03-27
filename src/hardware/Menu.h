@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Xavier Hosxe
+ * Copyright 2018 Xavier Hosxe
  *
  * Author: Xavier Hosxe (xavier <.> hosxe < a t > gmail.com)
  *
@@ -19,11 +19,17 @@
 #ifndef MENU_H_
 #define MENU_H_
 
-#define INTERNAL_LAST_BANK 71
 #include "Storage.h"
 
 enum {
+#ifndef CVIN
     MIDICONFIG_USB = 0,
+#else
+    MIDICONFIG_CVIN1_2 = 0,
+    MIDICONFIG_CVIN_A2, // Midi note 33,
+    MIDICONFIG_CVIN_A6, // Midi note 81
+    MIDICONFIG_USB,
+#endif
     MIDICONFIG_CHANNEL1,
     MIDICONFIG_CHANNEL2,
     MIDICONFIG_CHANNEL3,
@@ -139,7 +145,7 @@ struct FullState {
     unsigned char toolsWhat;
     unsigned char scalaWhat;
     unsigned char  menuPosition[5];
-    char  midiConfigValue[MIDICONFIG_SIZE + 1];
+    short midiConfigValue[MIDICONFIG_SIZE + 1];
 
     unsigned char preenFMBankNumber;
     unsigned char preenFMPresetNumber;
@@ -161,7 +167,7 @@ struct FullState {
 struct MidiConfig {
     const char* title;
     const char* nameInFile;
-    unsigned char maxValue;
+    unsigned short maxValue;
     const char** valueName;
 };
 

@@ -27,7 +27,7 @@ const char* ConfigurationFile::getFolderName() {
 }
 
 
-void ConfigurationFile::loadConfig(char* midiConfigBytes) {
+void ConfigurationFile::loadConfig(short* midiConfigBytes) {
 	char *line = lineBuffer;
     char* reachableProperties = propertyFile;
     int size = checkSize(PROPERTIES);
@@ -71,7 +71,7 @@ void ConfigurationFile::loadScalaConfig(struct ScalaScaleConfig *scalaScaleConfi
     }
 }
 
-void ConfigurationFile::saveConfig(const char* midiConfigBytes) {
+void ConfigurationFile::saveConfig(const short* midiConfigBytes) {
     int wptr = 0;
     for (int k=0; k<MIDICONFIG_SIZE; k++) {
     	propertyFile[wptr++] = '#';
@@ -135,7 +135,7 @@ void ConfigurationFile::saveScalaConfig(struct ScalaScaleConfig *scalaScaleConfi
 }
 
 
-void ConfigurationFile::fillMidiConfig(char* midiConfigBytes, char* line) {
+void ConfigurationFile::fillMidiConfig(short* midiConfigBytes, char* line) {
 	char key[21];
 	char value[21];
 
