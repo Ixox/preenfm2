@@ -357,10 +357,11 @@ void loop(void) {
                 (synthState.fullState.menuSelect == MIDICONFIG_CVIN_A2 || synthState.fullState.menuSelect == MIDICONFIG_CVIN_A6)) {
             if (cvin.getGate() > 800) {
                 lcd.setCursor(1, 3);
-                lcd.print("m:");
+                lcd.print("(");
                 lcd.print(cvin.getMidiNote());
-                lcd.print(" ");
-                lcd.setCursor(11, 3);
+                lcd.print(") ");
+                lcd.setCursor(9, 3);
+                lcd.print(": ");
                 lcd.print(cvin.getMidiNote1024());
                 lcd.print(" ");
             }
