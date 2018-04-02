@@ -30,6 +30,9 @@ CVIn::CVIn() {
     cvin1 = 0.0f;
     cvin2 = 0.0f;
 
+    for (int k=0; k<16; k++) {
+        ADCBuffer[k] = 0;
+    }
 }
 
 void CVIn::updateValues() {
