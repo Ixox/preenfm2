@@ -292,7 +292,7 @@ void Timbre::preenNoteOn(char note, char velocity) {
 
             preenNoteOnUpdateMatrix(n, note, velocity);
             voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++);
-
+            this->lastPlayedNote = n;
 			return;
 		}
 
