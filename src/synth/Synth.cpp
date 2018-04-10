@@ -156,7 +156,7 @@ void Synth::buildNewSampleBlock() {
         timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN1, cvin->getCvin1());
         timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN2, cvin->getCvin2());
         timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN3, cvin->getCvin3());
-        timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN3, cvin->getCvin4());
+        timbres[t].setMatrixSource(MATRIX_SOURCE_CVIN4, cvin->getCvin4());
 #endif
         timbres[t].prepareMatrixForNewBlock();
     }
