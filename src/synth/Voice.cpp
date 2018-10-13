@@ -250,9 +250,6 @@ void Voice::killNow() {
     this->env6ValueMem = 0;
 }
 
-
-int cptDebug32 = 0;
-
 void Voice::nextBlock() {
     updateAllMixOscsAndPans();
     // After matrix
