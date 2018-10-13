@@ -80,6 +80,8 @@ public:
         tables[ENV_STATE_ON_D].size = 63;
         tables[ENV_STATE_ON_S].table = envExponential;
         tables[ENV_STATE_ON_S].size = 63;
+        tables[ENV_STATE_ON_REAL_S].table = envLinear;
+        tables[ENV_STATE_ON_REAL_S].size = 1;
         tables[ENV_STATE_ON_R].table = envExponential;
         tables[ENV_STATE_ON_R].size = 63;
         tables[ENV_STATE_ON_QUICK_R].table = envLinear;
@@ -115,7 +117,9 @@ public:
         case 4:
         case 5:
         	stateTarget[ENV_STATE_ON_S] =  envParamsB->sustainLevel;
+        	stateTarget[ENV_STATE_ON_REAL_S] =  envParamsB->sustainLevel;
         	stateInc[ENV_STATE_ON_S] = incTab[(int)(envParamsB->sustainTime * 100.0f)];
+            stateInc[ENV_STATE_ON_REAL_S] = 0.0f;
         	break;
         case 6:
         case 7:
@@ -161,7 +165,7 @@ public:
 	        return env->currentValue;
 		}
 
-		if (likely(incPhase > 0)) {
+		if (likely(incPhase > 0.0f)) {
 			float fIndex = env->currentPhase * tables[env->envState].size;
 			int index = (int)fIndex;
 

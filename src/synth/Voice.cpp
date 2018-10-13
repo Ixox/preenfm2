@@ -192,6 +192,9 @@ void Voice::endNoteOrBeginNextOne() {
     this->env4ValueMem = 0;
     this->env5ValueMem = 0;
     this->env6ValueMem = 0;
+	this->freqAi = 0.0f;
+	this->freqAo = 0.0f;
+
 }
 
 
@@ -247,6 +250,8 @@ void Voice::killNow() {
     this->env6ValueMem = 0;
 }
 
+
+int cptDebug32 = 0;
 
 void Voice::nextBlock() {
     updateAllMixOscsAndPans();
