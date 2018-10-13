@@ -241,6 +241,12 @@ void setup() {
     	USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &usbdMidiDescriptor, &midiCallback, &midiStreamingUsrCallback);
     }
 
+    // PUT BACK
+    // shorten the release value for init sound...
+    ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env1b.releaseTime = v1;
+    ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env4b.releaseTime = v2;
+
+
     // Load default combo if any
     usbKey.getComboBank()->loadDefaultCombo();
     // Load User waveforms if any
@@ -248,10 +254,6 @@ void setup() {
     // In any case init tables
     synthState.propagateAfterNewComboLoad();
 
-    // PUT BACK
-    // shorten the release value for init sound...
-    ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env1b.releaseTime = v1;
-    ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env4b.releaseTime = v2;
 
 
     fmDisplay.init(&lcd, &usbKey);
