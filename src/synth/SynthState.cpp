@@ -1130,6 +1130,24 @@ void SynthState::encoderTurned(int encoder, int ticks) {
     }
 }
 
+
+void SynthState::setScalaEnable(bool enable) {
+    fullState.scalaScaleConfig.scalaEnabled = enable;
+    if (!enable) {
+        storage->getScalaFile()->clearScalaScale();
+    } else if (fullState.scalaScaleConfig.scalaFile->fileType != FILE_EMPTY) {
+        storage->getScalaFile()->loadScalaScale(&fullState.scalaScaleConfig);
+    }
+}
+
+void SynthState::setScalaScale(int scaleNumber) {
+    fullState.scalaScaleConfig.scalaFile = storage->getScalaFile()->getFile(scaleNumber);
+    
+    if (fullState.scalaScaleConfig.scalaFile->fileType != FILE_EMPTY && fullState.scalaScaleConfig.scalaEnabled) {
+        storage->getScalaFile()->loadScalaScale(&fullState.scalaScaleConfig);
+    }
+}
+
 void SynthState::loadPreenFMPatch(int timbre, PFM2File const *bank, int patchNumber, struct OneSynthParams* params) {
     storeTestNote();
     propagateNoteOff();

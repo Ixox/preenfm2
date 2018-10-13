@@ -152,6 +152,9 @@ public:
     void loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int patchNumber);
     void setHoldPedal(int timbre, int value);
 
+    void setScalaEnable(bool enable);
+    void setScalaScale(int scaleNumber);
+
 
 #ifdef DEBUG
     void debugVoice();

@@ -538,6 +538,24 @@ void Synth::setNewSymbolInPresetName(int timbre, int index, int value) {
 }
 
 
+void Synth::newMenuSelect(FullState* fullState) {
+    if (fullState->currentMenuItem->menuState == MENU_CONFIG_SETTINGS) {
+        if (fullState->menuSelect == MIDICONFIG_CVIN_A2 || fullState->menuSelect == MIDICONFIG_CVIN_A6) {
+            cvin->updateFormula(synthState->fullState.midiConfigValue[MIDICONFIG_CVIN_A2], synthState->fullState.midiConfigValue[MIDICONFIG_CVIN_A6]);
+        }
+    }
+
+}
+
+void Synth::setScalaEnable(bool enable) {
+    this->synthState->setScalaEnable(enable);
+}
+void Synth::setScalaScale(int scaleNumber) {
+    this->synthState->setScalaScale(scaleNumber);    
+}
+
+
+
 #ifdef DEBUG
 
 // ========================== DEBUG ========================

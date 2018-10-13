@@ -48,6 +48,8 @@ enum AllControlChange {
     CC_BANK_SELECT = 0,
     CC_MODWHEEL = 1,
     CC_BREATH = 2,
+    CC_SCALA_ENABLE = 12,
+    CC_SCALA_SCALE,
     CC_ALGO = 16,
     CC_IM1,
     CC_IM2,

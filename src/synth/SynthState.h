@@ -521,6 +521,10 @@ public:
     void loadPreenFMCombo(PFM2File const *bank, int patchNumber);
     void loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int patchNumber, struct OneSynthParams* params);
 
+    void setScalaEnable(bool enable);
+    void setScalaScale(int scaleNumber);
+
+
     bool newRandomizerValue(int encoder, int ticks);
     void randomizePreset();
 

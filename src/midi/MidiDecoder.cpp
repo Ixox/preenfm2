@@ -379,7 +379,12 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
         this->runningStatus = 0;
         this->songPosition = 0;
         break;
-
+    case CC_SCALA_ENABLE:
+        this->synth->setScalaEnable(midiEvent.value[1] > 0);
+        break;
+    case CC_SCALA_SCALE:
+        this->synth->setScalaScale(midiEvent.value[1]);
+        break;
     }
 
     // Receive CC enabled?
