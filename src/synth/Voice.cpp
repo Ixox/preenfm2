@@ -194,7 +194,8 @@ void Voice::endNoteOrBeginNextOne() {
     this->env6ValueMem = 0;
 	this->freqAi = 0.0f;
 	this->freqAo = 0.0f;
-
+	this->freqBi = 0.0f;
+	this->freqBo = 0.0f;
 }
 
 
@@ -1932,12 +1933,12 @@ void Voice::nextBlock() {
 			env6Value += env6Inc;
 		}
 
+		freqAi = f4xm1;
+		freqAo = freq4;
+
 		if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env3.isDead(&envState3))) {
 			endNoteOrBeginNextOne();
 		}
-
-		freqAi = f4xm1;
-		freqAo = freq4;
 
 		break;
 	}
