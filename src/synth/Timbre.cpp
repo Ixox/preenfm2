@@ -944,16 +944,17 @@ void Timbre::resetArpeggiator() {
 
 
 
-
 void Timbre::setNewValue(int index, struct ParameterDisplay* param, float newValue) {
     if (newValue > param->maxValue) {
         // in v2, matrix target were removed so some values are > to max value but we need to accept it
         bool mustConstraint = true;
-        for (int v=0; v < param->numberOfValues; v++) {
-            if ((int)param->valueNameOrder[v] == (int)(newValue + .01)) {
-                mustConstraint = false;
-            }
-        }
+		if (param->valueNameOrder != NULL) {
+			for (int v = 0; v < param->numberOfValues; v++) {
+				if ((int)param->valueNameOrder[v] == (int)(newValue + .01)) {
+					mustConstraint = false;
+				}
+			}
+		}
         if (mustConstraint) {
             newValue= param->maxValue;
         }
