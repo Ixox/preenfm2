@@ -111,23 +111,22 @@ enum AllControlChange {
     CC_LFO1_SHAPE,
     CC_LFO2_SHAPE,
     CC_LFO3_SHAPE,
-    CC_ARP_CLOCK = 97,
+    CC_ARP_CLOCK = 100,
     CC_ARP_DIRECTION,
     CC_ARP_OCTAVE,
     CC_ARP_PATTERN,
     CC_ARP_DIVISION,
     CC_ARP_DURATION,
-    // 119 is empty
     CC_MATRIX_SOURCE_CC1 = 115,
 	CC_MATRIX_SOURCE_CC2,
 	CC_MATRIX_SOURCE_CC3,
 	CC_MATRIX_SOURCE_CC4,
+    // 119 is empty
     CC_ALL_SOUND_OFF = 120,
     CC_ALL_NOTES_OFF = 123,
     CC_OMNI_OFF = 124,
     CC_OMNI_ON,
     CC_RESET = 127
-
 };
 
 struct Nrpn {
