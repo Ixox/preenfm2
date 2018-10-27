@@ -269,7 +269,6 @@ bool FMDisplay::shouldThisValueShowUp(int row, int encoder) {
             return false;
         }
         break;
-        break;
     default:
         break;
     }
@@ -284,7 +283,6 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
 
     if (!shouldThisValueShowUp(row, encoder)) {
         lcd->setCursor(encoder*5, 3);
-
         lcd->print("    ");
         return;
     }
@@ -572,17 +570,19 @@ void FMDisplay::updateEncoderValue(int refreshStatus) {
 }
 
 
-void FMDisplay::newPresetName() {
-    int l = getLength(this->synthState->params->presetName);
+void FMDisplay::newPresetName(int timbre) {
+    if (currentTimbre == timbre && this->synthState->getSynthMode() == SYNTH_MODE_EDIT) {
+        int l = getLength(this->synthState->params->presetName);
 
-    lcd->setCursor(3,0);
-    lcd->print(this->synthState->params->presetName);
-    if (presetModifed[currentTimbre]) {
-        lcd->print('*');
-        l++;
-    }
-    for (int k=l; k< 13; k++) {
-        lcd->print(' ');
+        lcd->setCursor(3,0);
+        lcd->print(this->synthState->params->presetName);
+        if (presetModifed[currentTimbre]) {
+            lcd->print('*');
+            l++;
+        }
+        for (int k=l; k< 13; k++) {
+            lcd->print(' ');
+        }
     }
 };
 
@@ -633,17 +633,18 @@ void FMDisplay::newParamValueFromExternal(int timbre, int currentRow, int encode
     if (unlikely(screenSaverMode)) {
         return;
     }
+    checkPresetModified(timbre);
     if (timbre == currentTimbre) {
-        checkPresetModified(timbre);
         if (this->synthState->getSynthMode() == SYNTH_MODE_EDIT && currentRow == this->displayedRow) {
             if (unlikely((currentRow == ROW_LFOSEQ1 || currentRow == ROW_LFOSEQ2) && encoder>1)) {
                 updateStepSequencer(currentRow, encoder, oldValue, newValue);
                 return;
             }
-            updateEncoderValue(currentRow, encoder, param, newValue);
-            if (unlikely(currentRow == ROW_EFFECT)) {
-                if (unlikely(encoder == ENCODER_EFFECT_TYPE)) {
-                    refreshStatus = 8;
+            if (unlikely((currentRow == ROW_EFFECT || currentRow == ROW_ARPEGGIATOR1) && encoder == 0)) {
+                refreshStatus = 8;
+            } else {
+                if (shouldThisValueShowUp(currentRow, encoder)) {
+                    updateEncoderValue(currentRow, encoder, param, newValue);
                 }
             }
         }

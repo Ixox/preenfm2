@@ -741,7 +741,7 @@ void MidiDecoder::decodeNrpn(int timbre) {
         } else if (index >= 228 && index < 240) {
             this->synth->setNewSymbolInPresetName(timbre, index - 228, value);
             if (index == 239) {
-                this->synthState->propagateNewPresetName();
+                this->synthState->propagateNewPresetName(timbre);
             }
         }
     } else if (this->currentNrpn[timbre].paramMSB < 4)  {
@@ -974,21 +974,21 @@ void MidiDecoder::newParamValue(int timbre, int currentrow,
                 break;
             }
             break;
-            case ROW_ARPEGGIATOR2:
-                switch (encoder) {
-                case ENCODER_ARPEGGIATOR_PATTERN:
-                    cc.value[0] = CC_ARP_PATTERN;
-                    cc.value[1] = newValue + .1f;
-                    break;
-                case ENCODER_ARPEGGIATOR_DIVISION:
-                    cc.value[0] = CC_ARP_DIVISION;
-                    cc.value[1] = newValue + .1f;
-                    break;
-                case ENCODER_ARPEGGIATOR_DURATION:
-                    cc.value[0] = CC_ARP_DURATION;
-                    cc.value[1] = newValue + .1f;
-                    break;
-                }
+        case ROW_ARPEGGIATOR2:
+            switch (encoder) {
+            case ENCODER_ARPEGGIATOR_PATTERN:
+                cc.value[0] = CC_ARP_PATTERN;
+                cc.value[1] = newValue + .1f;
+                break;
+            case ENCODER_ARPEGGIATOR_DIVISION:
+                cc.value[0] = CC_ARP_DIVISION;
+                cc.value[1] = newValue + .1f;
+                break;
+            case ENCODER_ARPEGGIATOR_DURATION:
+                cc.value[0] = CC_ARP_DURATION;
+                cc.value[1] = newValue + .1f;
+                break;
+            }
         }
 
         if (cc.value[0] != 0) {
@@ -1148,12 +1148,12 @@ int MidiDecoder::getParamRowFromNrpnRow(int nrpmRow) {
     // Move back row
     switch (nrpmRow) {
     case ROW_LFOPHASES + 4:
-    return ROW_LFOPHASES;
+        return ROW_LFOPHASES;
     case ROW_LFOENV1 - 1:
     case ROW_LFOENV2 - 1:
     case ROW_LFOSEQ1 - 1:
     case ROW_LFOSEQ2 - 1:
-    return nrpmRow + 1;
+        return nrpmRow + 1;
     default:
         return nrpmRow;
     }

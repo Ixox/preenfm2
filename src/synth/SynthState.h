@@ -404,9 +404,9 @@ public:
         }
     }
 
-    void propagateNewPresetName() {
+    void propagateNewPresetName(int timbre) {
         for (SynthParamListener* listener = firstParamListener; listener !=0; listener = listener->nextListener) {
-            listener->newPresetName();
+            listener->newPresetName(timbre);
         }
     }
 
