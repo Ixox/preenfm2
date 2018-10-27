@@ -84,8 +84,8 @@ public:
 
     void checkPresetModified(int timbre) {
         if (!presetModifed[timbre]) {
-            if (this->synthState->fullState.synthMode == SYNTH_MODE_EDIT) {
-                presetModifed[timbre] = true;
+            presetModifed[timbre] = true;
+            if (this->synthState->fullState.synthMode == SYNTH_MODE_EDIT && timbre == currentTimbre) {
             	int length = getLength(this->synthState->params->presetName);
                 lcd->setCursor(3 + length,0);
                 lcd->print('*');
@@ -107,7 +107,7 @@ public:
     void newcurrentRow(int timbre, int newcurrentRow);
     void updateStepSequencer(int currentRow, int encoder, int oldValue, int newValue);
     void updateArpPattern(int currentRow, int encoder, int oldValue, int newValue);
-    void newPresetName();
+    void newPresetName(int timbre);
 
     void showAlgo() {
     	displayAlgo(this->synthState->params->engine1.algo);
