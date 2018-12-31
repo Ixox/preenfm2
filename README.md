@@ -6,9 +6,9 @@ You can find here the sources of the firmware as well as the hardware files for 
 
 If you think something is missing or not clear, please contact me.
 
-If you don't have the preenfm2 bootlader installed, you need to flash it first, [read this] (http://ixox.fr/preenfm2/build-it/burn-firmware/)
+If you don't have the preenfm2 bootlader installed, you need to flash it first, [read this](http://ixox.fr/preenfm2/build-it/burn-firmware/)
 
-To compile the firmware, you'll need [arm-gcc version 4.7] (https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2012-q4-major)
+To compile the firmware, you'll need [arm-gcc version 4.7](https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2014-q2-update)
 
 Add the bin directory to your PATH, and run **'make'**, you'll get the list of the available targets.
 
