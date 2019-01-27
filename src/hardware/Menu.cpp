@@ -31,7 +31,7 @@ const char* yesNo [] = { "No", "Yes" };
 const char* midiReceives[] = { "None", "CC", "NRPN", "CC & NRPN" };
 const char* midiSends [] = { "None", "CC", "NRPN" };
 const char* bootOptions [] = { "Default", "Bank", "Combo", "DX7" };
-const char* encoderType [] = { "12", "24" };
+const char* encoderType [] = { "12", "24", "12i", "24i" };
 const char* usbMidi[] = { "Off", "In", "In/Out" };
 const char* operatorButton[] = { "New", "Old" };
 const char* version[] = { PFM2_VERSION" "OVERCLOCK_STRING };
@@ -113,7 +113,7 @@ const struct MidiConfig midiConfig[]  = {
         {
                 "Rot. Enc.: ",
                 "encoders",
-                2,
+                4,
                 encoderType
         },
         {
