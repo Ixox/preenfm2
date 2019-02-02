@@ -144,7 +144,9 @@ void Encoders::checkStatus(int encoderType) {
 	int registerBits = getRegisterBits();
 
 	// target the right action row.
-	int *actionEnc = action[encoderType];
+	// encoderType : First bit for type, second bit for inversed
+	int *actionEnc = action[encoderType & 0x1];
+	int inversedEnc = (encoderType & 0x2) == 0 ? 1 : -1;
 
 	for (int k=0; k<NUMBER_OF_ENCODERS; k++) {
 		bool b1 = ((registerBits & encoderBit1[k]) == 0);
@@ -160,13 +162,13 @@ void Encoders::checkStatus(int encoderType) {
 		}
 
 		if (actionEnc[encoderState[k]] == 1 && lastMove[k]!=LAST_MOVE_DEC) {
-			encoderTurned(k, tickSpeed[k]);
-			tickSpeed[k] +=3;
+			encoderTurned(k, tickSpeed[k] * inversedEnc);
+			tickSpeed[k] += 3;
 			lastMove[k] = LAST_MOVE_INC;
 			timerAction[k] = 60;
 		} else if (actionEnc[encoderState[k]] == 2 && lastMove[k]!=LAST_MOVE_INC) {
-			encoderTurned(k, -tickSpeed[k]);
-			tickSpeed[k] +=3;
+			encoderTurned(k, -tickSpeed[k] * inversedEnc);
+			tickSpeed[k] += 3;
 			lastMove[k] = LAST_MOVE_DEC;
 			timerAction[k] = 60;
 		} else {
@@ -180,7 +182,7 @@ void Encoders::checkStatus(int encoderType) {
 				tickSpeed[k] = tickSpeed[k] - 1;
 			}
 		}
-		if (tickSpeed[k]>10) {
+		if (tickSpeed[k] > 10) {
 			tickSpeed[k] = 10;
 		}
 	}
