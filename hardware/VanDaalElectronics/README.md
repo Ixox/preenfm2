@@ -12,4 +12,4 @@ Same with MIDI and USB.
 
 +5V needs to be routed to the mainboard.
 
-<a url="https://vandaal-electronics.com/product/preenfm-eurorack-retrofit-diy-kit/">Van Daal Electronics DIY Kit</a>
+[Van Daal Electronics DIY Kit](https://vandaal-electronics.com/product/preenfm-eurorack-retrofit-diy-kit/)
