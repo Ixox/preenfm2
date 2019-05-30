@@ -121,7 +121,7 @@ enum AllControlChange {
 	CC_MATRIX_SOURCE_CC2,
 	CC_MATRIX_SOURCE_CC3,
 	CC_MATRIX_SOURCE_CC4,
-    // 119 is empty
+    CC_CURRENT_INSTRUMENT,
     CC_ALL_SOUND_OFF = 120,
     CC_ALL_NOTES_OFF = 123,
     CC_OMNI_OFF = 124,
@@ -170,7 +170,7 @@ public:
     void flushMidiOut();
     void playNote(int timbre, char note, char velocity) {}
     void stopNote(int timbre, char note) {}
-    void newTimbre(int timbre) {}
+    void newTimbre(int timbre) { currentTimbre = timbre; }
     void sendCurrentPatchAsNrpns(int timbre);
 
     // Sysex sender
@@ -189,6 +189,7 @@ private:
     Synth* synth;
     VisualInfo *visualInfo;
     Storage* storage;
+    int currentTimbre;
     struct MidiEvent toSend ;
     struct MidiEvent lastSentCC;
     struct Nrpn currentNrpn[NUMBER_OF_TIMBRES];

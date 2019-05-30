@@ -155,6 +155,7 @@ public:
     void setScalaEnable(bool enable);
     void setScalaScale(int scaleNumber);
 
+    void setCurrentInstrument(int value);
 
 #ifdef DEBUG
     void debugVoice();

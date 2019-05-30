@@ -69,8 +69,14 @@ const struct MidiConfig midiConfig[]  = {
                 midiChannels
         },
         {
-                "Global ch. : ",
+                "Current ch. : ",
                 "midiglobal",
+                17,
+                eccChannels
+        },
+        {
+                "Global ch. : ",
+                "midicurrent",
                 17,
                 eccChannels
         },

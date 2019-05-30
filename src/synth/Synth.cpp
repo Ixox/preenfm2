@@ -558,10 +558,16 @@ void Synth::setNewSymbolInPresetName(int timbre, int index, int value) {
 void Synth::setScalaEnable(bool enable) {
     this->synthState->setScalaEnable(enable);
 }
+
 void Synth::setScalaScale(int scaleNumber) {
     this->synthState->setScalaScale(scaleNumber);    
 }
 
+void Synth::setCurrentInstrument(int value) {
+    if (value >=1 && value <= 4) {
+        this->synthState->setCurrentInstrument(value);    
+    }
+}
 
 
 #ifdef DEBUG

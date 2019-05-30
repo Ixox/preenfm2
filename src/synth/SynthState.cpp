@@ -458,6 +458,7 @@ SynthState::SynthState() {
     fullState.scalaWhat = 0;
     fullState.midiConfigValue[MIDICONFIG_USB] = 2;
 	fullState.midiConfigValue[MIDICONFIG_GLOBAL] = 0;
+	fullState.midiConfigValue[MIDICONFIG_CURRENT_INSTRUMENT] = 0;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL1] = 1;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL2] = 2;
     fullState.midiConfigValue[MIDICONFIG_CHANNEL3] = 3;
@@ -1378,12 +1379,31 @@ bool SynthState::isEnterNameState(int currentItem) {
             || currentItem == MENU_CREATE_COMBO;
 }
 
+
+void SynthState::setCurrentInstrument(int value) {
+    setLastRowForTimbre( currentTimbre, currentRow ); // remember row for when we return to this timbre
+    if (value == 0) {
+        currentTimbre++;
+    } else if (value <= 4) {
+        currentTimbre = value - 1;
+    } else {
+        return;
+    }
+    currentTimbre &= (NUMBER_OF_TIMBRES-1);
+    propagateNewTimbre(currentTimbre);
+
+    int last = getLastRowForTimbre( currentTimbre );
+    if ( last >= 0 )
+        currentRow = last;
+    if ( !isCurrentRowAvailable() && currentRow >= ROW_ENGINE_FIRST && currentRow <= ROW_ENGINE_LAST) {
+        changeSynthModeRow( BUTTON_SYNTH, -1 );
+    }
+}
+
 void SynthState::buttonPressed(int button) {
     SynthEditMode oldSynthMode = fullState.synthMode;
     int oldCurrentRow = currentRow;
-    // int oldMenuSelect = fullState.menuSelect;
     MenuState oldMenuState = fullState.currentMenuItem->menuState;
-
 
     if (fullState.synthMode == SYNTH_MODE_EDIT)  {
         switch (button) {
@@ -1407,17 +1427,8 @@ void SynthState::buttonPressed(int button) {
             break;
         case BUTTON_BACK:
         {
-            setLastRowForTimbre( currentTimbre, currentRow ); // remember row for when we return to this timbre
-            currentTimbre++;
-            currentTimbre &= (NUMBER_OF_TIMBRES-1);
-            propagateNewTimbre(currentTimbre);
-
-            int last = getLastRowForTimbre( currentTimbre );
-            if ( last >= 0 )
-                currentRow = last;
-            if ( !isCurrentRowAvailable() && currentRow >= ROW_ENGINE_FIRST && currentRow <= ROW_ENGINE_LAST) {
-                changeSynthModeRow( BUTTON_SYNTH, -1 );
-            }
+            // select next instrument as current one
+            setCurrentInstrument(0);
         }
         break;
         }
