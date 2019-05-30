@@ -42,14 +42,14 @@ const char* usbMidi[] = { "Off", "In", "In/Out" };
 const char* operatorButton[] = { "New", "Old" };
 const char* version[] = { PFM2_VERSION""CVIN_STRING""OVERCLOCK_STRING };
 const char* oledSaver[] = { "Off", "2m", "5m", "10m", "1h" };
-const char* inst1[] = { "Off", "1", "2", "3", "4"};
+const char* inst1[] = { "Off", "1", "2", "3", "4", "12", "123", "1234"};
 
 const struct MidiConfig midiConfig[]  = {
 #ifdef CVIN
         {
                 "CV inst: ",
                 "cvinst",
-                5,
+                8,
                 inst1
         },
         {

@@ -165,26 +165,64 @@ void Synth::buildNewSampleBlock() {
 #ifdef CVIN
     // We need matrix source in osc
     // cvin1 can trigger Instrument 1 notes
-    int cvinst = synthState->fullState.midiConfigValue[MIDICONFIG_CVIN1_2] - 1;
-    if (cvinst >= 0) {
+    int cvinstrument = synthState->fullState.midiConfigValue[MIDICONFIG_CVIN1_2];
+    if (cvinstrument >= 0) {
+        int timbreIndex = 0;
+        int timbreToTrigger[4];
+        switch (cvinstrument) {
+            case 1:
+                timbreToTrigger[timbreIndex++] = 0;
+            break;
+            case 2:
+                timbreToTrigger[timbreIndex++] = 1;
+            break;
+            case 3:
+                timbreToTrigger[timbreIndex++] = 2;
+            break;
+            case 4: 
+                timbreToTrigger[timbreIndex++] = 3;
+            break;
+            case 5:
+                timbreToTrigger[timbreIndex++] = 0;
+                timbreToTrigger[timbreIndex++] = 1;
+            break;
+            case 6: 
+                timbreToTrigger[timbreIndex++] = 0;
+                timbreToTrigger[timbreIndex++] = 1;
+                timbreToTrigger[timbreIndex++] = 2;
+            break;
+            case 7:
+                timbreToTrigger[timbreIndex++] = 0;
+                timbreToTrigger[timbreIndex++] = 1;
+                timbreToTrigger[timbreIndex++] = 2;
+                timbreToTrigger[timbreIndex++] = 3;
+            break;
+        }
+
         // CV_GATE from 0 to 100 => cvGate from 62 to 962. 
         // Which leaves some room for the histeresit algo bellow.
         int cvGate = synthState->fullState.midiConfigValue[MIDICONFIG_CV_GATE] * 9 + 62;
         if (cvin12Ready) {
             if (cvin->getGate() > cvGate) {
                 cvin12Ready = false;
-                timbres[cvinst].setCvFrequency(cvin->getFrequency());
-                timbres[cvinst].noteOn(128, 127);
-                visualInfo->noteOn(cvinst, true);
+                for (int tk = 0; tk < timbreIndex; tk++ ) {
+                    timbres[timbreToTrigger[tk]].setCvFrequency(cvin->getFrequency());
+                    timbres[timbreToTrigger[tk]].noteOn(128, 127);
+                    visualInfo->noteOn(timbreToTrigger[tk], true);
+                }
             }
         } else {
             if (cvin->getGate() > (cvGate + 50)) {
                 // Adjust frequency with CVIN2 !!! while gate is on !!
-                timbres[cvinst].setCvFrequency(cvin->getFrequency());
-                timbres[cvinst].propagateCvFreq(128);
+                for (int tk = 0; tk < timbreIndex; tk++ ) {
+                    timbres[timbreToTrigger[tk]].setCvFrequency(cvin->getFrequency());
+                    timbres[timbreToTrigger[tk]].propagateCvFreq(128);
+                }
             } else if (cvin->getGate() < (cvGate - 50)) {
+                for (int tk = 0; tk < timbreIndex; tk++ ) {
+                    timbres[timbreToTrigger[tk]].noteOff(128);
+                }
                 cvin12Ready = true;
-                timbres[cvinst].noteOff(128);
             }
         }
     }
