@@ -64,6 +64,12 @@ const struct MidiConfig midiConfig[]  = {
                 1023,
                 0
         },
+        {
+                "CV GATE %: ",
+                "cvgate",
+                100,
+                0
+        },
 #endif
         {
                 "Usb Midi: ",

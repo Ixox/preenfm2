@@ -167,20 +167,22 @@ void Synth::buildNewSampleBlock() {
     // cvin1 can trigger Instrument 1 notes
     int cvinst = synthState->fullState.midiConfigValue[MIDICONFIG_CVIN1_2] - 1;
     if (cvinst >= 0) {
-
+        // CV_GATE from 0 to 100 => cvGate from 62 to 962. 
+        // Which leaves some room for the histeresit algo bellow.
+        int cvGate = synthState->fullState.midiConfigValue[MIDICONFIG_CV_GATE] * 9 + 62;
         if (cvin12Ready) {
-            if (cvin->getGate() > 500) {
+            if (cvin->getGate() > cvGate) {
                 cvin12Ready = false;
                 timbres[cvinst].setCvFrequency(cvin->getFrequency());
                 timbres[cvinst].noteOn(128, 127);
                 visualInfo->noteOn(cvinst, true);
             }
         } else {
-            if (cvin->getGate() > 800) {
+            if (cvin->getGate() > (cvGate + 50)) {
                 // Adjust frequency with CVIN2 !!! while gate is on !!
                 timbres[cvinst].setCvFrequency(cvin->getFrequency());
                 timbres[cvinst].propagateCvFreq(128);
-            } else if (cvin->getGate() < 200) {
+            } else if (cvin->getGate() < (cvGate - 50)) {
                 cvin12Ready = true;
                 timbres[cvinst].noteOff(128);
             }

@@ -470,6 +470,7 @@ SynthState::SynthState() {
     fullState.midiConfigValue[MIDICONFIG_CVIN1_2] = 1;
     fullState.midiConfigValue[MIDICONFIG_CVIN_A2] = 256;
     fullState.midiConfigValue[MIDICONFIG_CVIN_A6] = 737;
+    fullState.midiConfigValue[MIDICONFIG_CV_GATE] = 50;
 #endif
     fullState.midiConfigValue[MIDICONFIG_USB] = 2;
 	fullState.midiConfigValue[MIDICONFIG_GLOBAL] = 0;

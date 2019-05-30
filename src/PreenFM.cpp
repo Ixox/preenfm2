@@ -360,7 +360,7 @@ void loop(void) {
 #ifdef CVIN
         if (synthState.fullState.currentMenuItem->menuState == MENU_CONFIG_SETTINGS &&
                 (synthState.fullState.menuSelect == MIDICONFIG_CVIN_A2 || synthState.fullState.menuSelect == MIDICONFIG_CVIN_A6)) {
-            if (cvin.getGate() > 800) {
+            if (cvin.getGate() > (synthState.fullState.midiConfigValue[MIDICONFIG_CV_GATE] * 9 + 62)) {
                 lcd.setCursor(1, 3);
                 lcd.print("(");
                 lcd.print(cvin.getMidiNote());

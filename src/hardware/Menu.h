@@ -28,6 +28,7 @@ enum {
     MIDICONFIG_CVIN1_2 = 0,
     MIDICONFIG_CVIN_A2, // Midi note 33,
     MIDICONFIG_CVIN_A6, // Midi note 81
+    MIDICONFIG_CV_GATE, 
     MIDICONFIG_USB,
 #endif
     MIDICONFIG_CHANNEL1,
