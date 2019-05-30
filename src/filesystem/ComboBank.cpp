@@ -32,7 +32,7 @@ const char* ComboBank::getFolderName() {
 }
 
 bool ComboBank::isCorrectFile(char *name, int size)  {
-	if (size != 525536 && size != 525632) {
+	if (size < 525536 || size > 525824) {
 		return false;
 	}
 
