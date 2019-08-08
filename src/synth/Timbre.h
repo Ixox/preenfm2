@@ -225,6 +225,7 @@ private:
     // lfoUsed
     uint8_t lfoUSed[NUMBER_OF_LFO];
 
+    float ladderProcess(float input, float fc, float res);
 };
 
 #endif /* TIMBRE_H_ */

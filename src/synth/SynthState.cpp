@@ -165,7 +165,7 @@ struct ParameterRowDisplay engineMix3ParameterRow = {
 };
 
 
-const char* fxName []=  { "Off ", "Mix ", "LP  ", "HP  ", "Bass", "BP  ", "Crsh" } ;
+const char* fxName []=  { "Off ", "Mix ", "LP  ", "HP  ", "Bass", "BP  ", "Crsh" , "LP2 ", "HP2 ", "BP2 "} ;
 
 struct ParameterRowDisplay effectParameterRow = {
         "Filter" ,
@@ -186,6 +186,9 @@ struct FilterRowDisplay filterRowDisplay[FILTER_LAST] = {
         { "LoFr", "Boos", "Gain" },
         { "Freq", "Q   ", "Gain" },
         { "Samp", "Bits", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Res ", "Gain" }
 };
 
 
@@ -1143,7 +1146,7 @@ void SynthState::setScalaEnable(bool enable) {
 
 void SynthState::setScalaScale(int scaleNumber) {
     fullState.scalaScaleConfig.scalaFile = storage->getScalaFile()->getFile(scaleNumber);
-    
+
     if (fullState.scalaScaleConfig.scalaFile->fileType != FILE_EMPTY && fullState.scalaScaleConfig.scalaEnabled) {
         storage->getScalaFile()->loadScalaScale(&fullState.scalaScaleConfig);
     }

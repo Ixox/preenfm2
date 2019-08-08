@@ -265,8 +265,10 @@ enum FILTER_TYPE {
     FILTER_BASS,
     FILTER_BP,
     FILTER_CRUSHER,
-    FILTER_LAST,
-    FILTER_LP4
+    FILTER_LP2,
+    FILTER_HP2,
+    FILTER_LP3,
+    FILTER_LAST
 };
 
 // Display information
