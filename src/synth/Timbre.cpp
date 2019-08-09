@@ -1146,7 +1146,7 @@ case FILTER_TILT:
     		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + inL;
     		localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
 
-            *sp = (inL + lgain*localv0L + hgain*(inL - localv0L)) * mixerGain;
+            *sp = (inL + lgain*localv1L + hgain*(inL - localv1L)) * mixerGain;
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -1162,7 +1162,7 @@ case FILTER_TILT:
             localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + inR;
     		localv1R =  pattern * localv1R  +  (fxParam1) * localv0R;
 
-            *sp = (inR + lgain*localv0R + hgain*(inR - localv0R)) * mixerGain;
+            *sp = (inR + lgain*localv1R + hgain*(inR - localv1R)) * mixerGain;
 
             if (unlikely(*sp > ratioTimbres)) {
                 *sp = ratioTimbres;
