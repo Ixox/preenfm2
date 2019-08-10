@@ -100,6 +100,14 @@ inline static int __canTranspose( int _direction ) {
 	}
 }
 
+inline
+double exp1(double x) {
+  x = 1.0 + x / 256.0;
+  x *= x; x *= x; x *= x; x *= x;
+  x *= x; x *= x; x *= x; x *= x;
+  return x;
+}
+
 enum NewNoteType {
 	NEW_NOTE_FREE = 0,
 	NEW_NOTE_RELEASE,
@@ -919,7 +927,7 @@ case FILTER_LP2:
     		localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
 
             //peter schoffhauzer fix for instability :
-            tmp=localv1L;
+            tmp = localv1L;
             localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + cInput;
     		localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
 
@@ -940,7 +948,7 @@ case FILTER_LP2:
     		localv1R =  pattern * localv1R  +  (fxParam1)*localv0R;
 
             //peter schoffhauzer fix for instability :
-            tmp=localv1R;
+            tmp = localv1R;
             localv0R =  pattern * localv0R  -  (fxParam1)*localv1R  + (fxParam1)* (*sp);
     		localv1R =  pattern * localv1R  +  (fxParam1)*localv0R;
 
@@ -988,15 +996,16 @@ case FILTER_HP2:
 
             // Left voice
             cInput = (fxParam1)* (*sp);
+
             localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + cInput;
             localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
-
             tmp = localv1L;
+
             localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + cInput;
             localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
 
-            *sp = (*sp - (tmp*0.3+localv1L*0.7)) * mixerGain;
-
+            *sp = (*sp - (tmp*0.2+localv1L*0.8)) * mixerGain;
+		
             if (unlikely(*sp > ratioTimbres)) {
                 *sp = ratioTimbres;
             }
@@ -1008,14 +1017,15 @@ case FILTER_HP2:
 
             // Right voice
             cInput = (fxParam1)* (*sp);
+
             localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + cInput;
             localv1R =  pattern * localv1R  +  (fxParam1) * localv0R;
-
             tmp=localv1R;
+
             localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + cInput;
             localv1R =  pattern * localv1R  +  (fxParam1) * localv0R;
 
-            *sp = (*sp - (tmp*0.3+localv1R*0.7)) * mixerGain;
+            *sp = (*sp - (tmp*0.2+localv1R*0.8)) * mixerGain;
 
             if (unlikely(*sp > ratioTimbres)) {
                 *sp = ratioTimbres;
@@ -1061,16 +1071,15 @@ case FILTER_BP2:
         temp = in - fxParamA1 * localv0L - fxParamA2 * localv1L;
         localv1L = localv0L;
         localv0L = temp;
-        localV = (temp + (in - fxParamA1 * localv0L - fxParamA2 * localv1L))*0.5;
+        localV = temp *0.2 + (in - fxParamA1 * localv0L - fxParamA2 * localv1L)*0.8;
         *sp++ = (localV + fxParamB2 * localv1L) * mixerGain;
-
-        if (unlikely(*sp > ratioTimbres)) {
-            *sp = ratioTimbres;
-        }
-        if (unlikely(*sp < -ratioTimbres)) {
-            *sp = -ratioTimbres;
-        }
-        localv1L = localv0L;
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+		localv1L = localv0L;
         localv0L = localV;
 
         //Right
@@ -1078,19 +1087,16 @@ case FILTER_BP2:
         temp = in - fxParamA1 * localv0R - fxParamA2 * localv1R;
         localv1R = localv0R;
         localv0R = temp;
-        localV = (temp + (in - fxParamA1 * localv0R - fxParamA2 * localv1R))*0.5;
+        localV = temp*0.2 + (in - fxParamA1 * localv0R - fxParamA2 * localv1R)*0.8;
         *sp++ = (localV + fxParamB2 * localv1R) * mixerGain;
-
-        if (unlikely(*sp > ratioTimbres)) {
-            *sp = ratioTimbres;
-        }
-        if (unlikely(*sp < -ratioTimbres)) {
-            *sp = -ratioTimbres;
-        }
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
         localv1R = localv0R;
         localv0R = localV;
-
-
     }
 
     v0L = localv0L;
@@ -1114,12 +1120,11 @@ case FILTER_TILT:
     		fxParam1 = 0.0f;
     	}
 
-    	float pattern = 0.95;//(1 - fxParam2 * fxParam1);
+    	float res = 0.95;
 
         float amp=19.93;
         float gain = (params.effect.param2-0.5);
-        //gain = gain*gain*gain;
-        float gfactor = 50;
+        float gfactor = 10;
         float g1,g2;
         if (gain > 0) {
             g1 = -gfactor*gain;
@@ -1130,8 +1135,8 @@ case FILTER_TILT:
         };
 
         //two separate gains
-        float lgain = exp(g1/amp)-1;
-        float hgain = exp(g2/amp)-1;
+        float lgain = exp1(g1/amp)-1;
+        float hgain = exp1(g2/amp)-1;
 
     	float *sp = this->sampleBlock;
     	float localv0L = v0L;
@@ -1143,8 +1148,8 @@ case FILTER_TILT:
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 	        // Left voice
             inL = (*sp);
-    		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + inL;
-    		localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
+    		localv0L =  res * localv0L  -  (fxParam1) * localv1L  + inL;
+    		localv1L =  res * localv1L  +  (fxParam1) * localv0L;
 
             *sp = (inL + lgain*localv1L + hgain*(inL - localv1L)) * mixerGain;
 
@@ -1159,8 +1164,8 @@ case FILTER_TILT:
 
     		// Right voice
             inR = (*sp);
-            localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + inR;
-    		localv1R =  pattern * localv1R  +  (fxParam1) * localv0R;
+            localv0R =  res * localv0R  -  (fxParam1) * localv1R  + inR;
+    		localv1R =  res * localv1R  +  (fxParam1) * localv0R;
 
             *sp = (inR + lgain*localv1R + hgain*(inR - localv1R)) * mixerGain;
 
@@ -1288,9 +1293,19 @@ void Timbre::recomputeBPValues() {
     //        a2= (1.0f - alpha1)/a0;          // a2/a0
     //        k = b0/a0;
 
+	float q = params.effect.param2;
+
     // frequency must be up to SR / 2.... So 1024 * param1 :
     // 1000 instead of 1024 to get rid of strange border effect....
     float param1Square = fxParam1PlusMatrix * fxParam1PlusMatrix;
+
+	//limit low values to avoid cracklings :
+	if(param1Square<0.1) {
+		if(q<0.15) {
+			q=0.15;
+		}
+	}
+
     float sn1 = sinTable[(int)(12 + 1000 * param1Square)];
     // sin(x) = cos( PI/2 - x)
     int cosPhase = 500 - 1000 * param1Square;
@@ -1300,8 +1315,8 @@ void Timbre::recomputeBPValues() {
     float cs1 = sinTable[cosPhase];
 
     float alpha1 = sn1 * 12.5;
-    if (params.effect.param2 > 0) {
-        alpha1 = sn1 / ( 8 * params.effect.param2);
+    if (q > 0) {
+        alpha1 = sn1 / ( 8 * q);
     }
 
     float A0 = 1.0f + alpha1;
