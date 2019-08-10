@@ -102,11 +102,29 @@ inline static int __canTranspose( int _direction ) {
 
 inline
 double exp1(double x) {
+	//fast exp 
   x = 1.0 + x / 256.0;
   x *= x; x *= x; x *= x; x *= x;
   x *= x; x *= x; x *= x; x *= x;
   return x;
 }
+
+/* single precision absolute value, a lot faster than fabsf() (if you use MSVC++ 6 Standard - others' implementations might be less slow) */
+inline
+float sabs(float a)
+{
+	int b=(*((int *)(&a)))&0x7FFFFFFF;
+	return *((float *)(&b));
+}
+/* approximates tanh(x/2) rather than tanh(x) - depending on how you're using this, fixing that could well be wasting a multiplication (though that isn't much, and it could be done with an integer addition in sabs instead)  */
+inline
+float tanh2(float x)
+{
+	float a=sabs(x);
+	a=6+a*(6+a*(3+a));
+	return ((x<0)?-1:1)*(a-6)/(a+6);
+}
+
 
 enum NewNoteType {
 	NEW_NOTE_FREE = 0,
@@ -916,7 +934,6 @@ case FILTER_LP2:
     	float localv1L = v1L;
     	float localv0R = v0R;
     	float localv1R = v1R;
-        float tmp;
         float cInput;
 
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
@@ -926,12 +943,10 @@ case FILTER_LP2:
     		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + cInput;
     		localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
 
-            //peter schoffhauzer fix for instability :
-            tmp = localv1L;
             localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + cInput;
     		localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
 
-		    *sp = (localv1L*0.2)+(tmp*0.8) * mixerGain;
+		    *sp = localv1L * mixerGain;
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -947,12 +962,10 @@ case FILTER_LP2:
     		localv0R =  pattern * localv0R  -  (fxParam1)*localv1R  + (fxParam1)* (*sp);
     		localv1R =  pattern * localv1R  +  (fxParam1)*localv0R;
 
-            //peter schoffhauzer fix for instability :
-            tmp = localv1R;
             localv0R =  pattern * localv0R  -  (fxParam1)*localv1R  + (fxParam1)* (*sp);
     		localv1R =  pattern * localv1R  +  (fxParam1)*localv0R;
 
-		    *sp = (localv1R*0.2)+(tmp*0.8) * mixerGain;
+		    *sp = localv1R * mixerGain;
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -989,7 +1002,6 @@ case FILTER_HP2:
         float localv1L = v1L;
         float localv0R = v0R;
         float localv1R = v1R;
-        float tmp;
         float cInput;
 
         for (int k=0 ; k < BLOCK_SIZE ; k++) {
@@ -999,12 +1011,11 @@ case FILTER_HP2:
 
             localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + cInput;
             localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
-            tmp = localv1L;
 
             localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + cInput;
             localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
 
-            *sp = (*sp - (tmp*0.2+localv1L*0.8)) * mixerGain;
+            *sp = (*sp - localv1L) * mixerGain;
 		
             if (unlikely(*sp > ratioTimbres)) {
                 *sp = ratioTimbres;
@@ -1020,12 +1031,11 @@ case FILTER_HP2:
 
             localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + cInput;
             localv1R =  pattern * localv1R  +  (fxParam1) * localv0R;
-            tmp=localv1R;
 
             localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + cInput;
             localv1R =  pattern * localv1R  +  (fxParam1) * localv0R;
 
-            *sp = (*sp - (tmp*0.2+localv1R*0.8)) * mixerGain;
+            *sp = (*sp - localv1R) * mixerGain;
 
             if (unlikely(*sp > ratioTimbres)) {
                 *sp = ratioTimbres;
@@ -1143,15 +1153,13 @@ case FILTER_TILT:
     	float localv0R = v0R;
         float localv1L = v1L;
         float localv1R = v1R;
-    	float inR, inL;
 
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 	        // Left voice
-            inL = (*sp);
-    		localv0L =  res * localv0L  -  (fxParam1) * localv1L  + inL;
+    		localv0L =  res * localv0L  -  (fxParam1) * localv1L  + (*sp);
     		localv1L =  res * localv1L  +  (fxParam1) * localv0L;
 
-            *sp = (inL + lgain*localv1L + hgain*(inL - localv1L)) * mixerGain;
+            *sp = ((*sp) + lgain*localv1L + hgain*((*sp) - localv1L)) * mixerGain;
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -1163,11 +1171,10 @@ case FILTER_TILT:
     		sp++;
 
     		// Right voice
-            inR = (*sp);
-            localv0R =  res * localv0R  -  (fxParam1) * localv1R  + inR;
+            localv0R =  res * localv0R  -  (fxParam1) * localv1R  + (*sp);
     		localv1R =  res * localv1R  +  (fxParam1) * localv0R;
 
-            *sp = (inR + lgain*localv1R + hgain*(inR - localv1R)) * mixerGain;
+            *sp = ((*sp) + lgain*localv1R + hgain*((*sp) - localv1R)) * mixerGain;
 
             if (unlikely(*sp > ratioTimbres)) {
                 *sp = ratioTimbres;
@@ -1185,6 +1192,142 @@ case FILTER_TILT:
         v1R = localv1R;
     }
     break;
+	case FILTER_ALLPASS:
+	{
+    	float pos = (params.effect.param1 * 2) -1;
+
+    	float *sp = this->sampleBlock;
+    	float localv0L = v0L;
+    	float localv0R = v0R;
+		float out = 0;
+
+    	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+
+			//output[i] = state + c * input[i];
+			//state = input[i] - c * output[i];
+			//out = s - g * in
+			//s = in + g * out ;
+
+    		// Left voice
+			out = localv0L + pos * (*sp);
+    		localv0L =  (*sp) - pos * out;
+		    *sp = out * mixerGain;
+
+    		if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
+    		}
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
+    		}
+
+    		sp++;
+
+    		// Right voice
+			out = localv0R - pos * (*sp);
+    		localv0R =  (*sp) + pos * out;
+		    *sp = out * mixerGain;
+
+    		if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
+    		}
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
+    		}
+
+    		sp++;
+    	}
+    	v0L = localv0L;
+    	v0R = localv0R;
+	}
+	break;
+	case FILTER_SAT:
+	{
+		float *sp = this->sampleBlock;
+    	float localv0L = v0L;
+    	float localv0R = v0R;
+
+		float a = 1 - params.effect.param1;
+		int mixWet = params.effect.param2 * 256;
+
+		for (int k = 0; k < BLOCK_SIZE; k++) {
+
+			localv0L = *sp;
+			if(localv0L > a) {
+				if(localv0L > 1) {
+					localv0L = (a + 1) * 0.5;
+				} else {
+					localv0L = localv0L * (1 / ((a + 1) * 0.5) );
+				}
+			}
+			*sp = ((localv0L * panTable[mixWet]) + (panTable[256 - mixWet] * *sp)) * mixerGain;
+			if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
+    		}
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
+    		}
+			sp++;
+			
+			localv0R = *sp;
+			if(localv0R > a) {
+				if(localv0R > 1) {
+					localv0R = (a + 1) * 0.5;
+				} else {
+					localv0R = localv0R * (1 / ((a + 1) * 0.5) );
+				}
+			}
+			*sp = ((localv0L * panTable[mixWet]) + (panTable[256 - mixWet] * *sp)) * mixerGain;
+			if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
+    		}
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
+    		}
+			sp++;
+    	}
+    	v0L = localv0L;
+    	v0R = localv0R;
+	}
+	break;
+	case FILTER_SIGMOID:
+	{
+		float *sp = this->sampleBlock;
+    	float localv0L = v0L;
+    	float localv0R = v0R;
+
+		int mixWet = (params.effect.param2 * 256);
+		float gain = 1 + 25 * params.effect.param1;
+		float in;
+
+		for (int k=0 ; k < BLOCK_SIZE ; k++) {
+
+			in = *sp;
+			localv0L = tanh2(*sp * gain);
+			*sp = ((localv0L * panTable[mixWet]) + (panTable[256 - mixWet] * in)) * mixerGain;
+			if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
+    		}
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
+    		}
+			sp++;
+			
+			in = *sp;
+			localv0R = tanh2(*sp * gain);
+ 			*sp = ((localv0R * panTable[mixWet]) + (panTable[256 - mixWet] * in)) * mixerGain;
+			if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
+    		}
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
+    		}
+			sp++;
+    	}
+
+    	v0L = localv0L;
+    	v0R = localv0R;
+	}
+	break;
     case FILTER_OFF:
     {
     	// Filter off has gain...
@@ -1195,7 +1338,6 @@ case FILTER_TILT:
 		}
     }
     break;
-
     default:
     	// NO EFFECT
    	break;
@@ -1353,6 +1495,7 @@ void Timbre::setNewEffecParam(int encoder) {
         case FILTER_LP2:
         case FILTER_HP2:
         case FILTER_TILT:
+		case FILTER_ALLPASS:
     		switch (encoder) {
     		case ENCODER_EFFECT_TYPE:
     			fxParam2 = 0.3f - params.effect.param2 * 0.3f;
@@ -1382,10 +1525,13 @@ void Timbre::setNewEffecParam(int encoder) {
             fxParam1PlusMatrix = -1.0;
             break;
         }
-
+		case FILTER_SIGMOID:
+		case FILTER_SAT: 
+		{
+			break;
+		}
 	}
 }
-
 
 // Code bellowed have been adapted by Xavier Hosxe for PreenFM2
 // It come from Muteable Instrument midiPAL
