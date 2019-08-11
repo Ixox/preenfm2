@@ -1248,6 +1248,8 @@ case FILTER_TILT:
 
 		float a = 1 - params.effect.param1;
 		int mixWet = params.effect.param2 * 256;
+		float mixA = panTable[mixWet];
+		float mixB = panTable[256 - mixWet];
 
 		for (int k = 0; k < BLOCK_SIZE; k++) {
 
@@ -1259,7 +1261,7 @@ case FILTER_TILT:
 					localv0L = localv0L * (1 / ((a + 1) * 0.5) );
 				}
 			}
-			*sp = ((localv0L * panTable[mixWet]) + (panTable[256 - mixWet] * *sp)) * mixerGain;
+			*sp = ((localv0L * mixA) + (mixB * *sp)) * mixerGain;
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -1276,7 +1278,7 @@ case FILTER_TILT:
 					localv0R = localv0R * (1 / ((a + 1) * 0.5) );
 				}
 			}
-			*sp = ((localv0L * panTable[mixWet]) + (panTable[256 - mixWet] * *sp)) * mixerGain;
+			*sp = ((localv0L * mixA) + (mixB * *sp)) * mixerGain;
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -1296,15 +1298,17 @@ case FILTER_TILT:
     	float localv0R = v0R;
 
 		int mixWet = (params.effect.param2 * 256);
+		float mixA = panTable[mixWet];
+		float mixB = panTable[256 - mixWet];
 		float gain = 1 + 170 * params.effect.param1;
-		float gainCorrection = 1 - panTable[mixWet>>1] * 0.8;
+		float gainCorrection = 1 - panTable[mixWet >> 1] * 0.8;
 		float in;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
 			in = *sp;
 			localv0L = tanh2(*sp * gain) * gainCorrection;
-			*sp = ((localv0L * panTable[mixWet]) + (panTable[256 - mixWet] * in)) * mixerGain;
+			*sp = ((localv0L * mixA) + (mixB * in)) * mixerGain;
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -1315,7 +1319,7 @@ case FILTER_TILT:
 			
 			in = *sp;
 			localv0R = tanh2(*sp * gain) * gainCorrection;
- 			*sp = ((localv0R * panTable[mixWet]) + (panTable[256 - mixWet] * in)) * mixerGain;
+ 			*sp = ((localv0R * mixA) + (mixB * in)) * mixerGain;
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
