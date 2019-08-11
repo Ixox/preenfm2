@@ -102,7 +102,7 @@ inline static int __canTranspose( int _direction ) {
 
 inline
 double exp1(double x) {
-	//fast exp 
+	//fast exp
   x = 1.0 + x / 256.0;
   x *= x; x *= x; x *= x; x *= x;
   x *= x; x *= x; x *= x; x *= x;
@@ -1016,7 +1016,7 @@ case FILTER_HP2:
             localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
 
             *sp = (*sp - localv1L) * mixerGain;
-		
+
             if (unlikely(*sp > ratioTimbres)) {
                 *sp = ratioTimbres;
             }
@@ -1194,47 +1194,41 @@ case FILTER_TILT:
     break;
 	case FILTER_ALLPASS:
 	{
-    	float pos = (params.effect.param1 * 2) -1;
-
+    	//float pos = (params.effect.param1 * 2) -1;
+		float pos;
+        if(params.effect.param1 > 0.5) {
+            pos = ((1 - panTable[127 - (int)(params.effect.param1 * 127)]) * 2) - 1;
+        } else {
+            pos = (panTable[(int)(params.effect.param1 * 127)] * 2) - 1;
+        }
     	float *sp = this->sampleBlock;
     	float localv0L = v0L;
     	float localv0R = v0R;
 		float out = 0;
+        float outL,outR,m,s;
+
+        float coef_S = params.effect.param2*0.5;
 
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
-
-			//output[i] = state + c * input[i];
-			//state = input[i] - c * output[i];
-			//out = s - g * in
-			//s = in + g * out ;
-
     		// Left voice
 			out = localv0L + pos * (*sp);
     		localv0L =  (*sp) - pos * out;
-		    *sp = out * mixerGain;
-
-    		if (unlikely(*sp > ratioTimbres)) {
-    			*sp = ratioTimbres;
-    		}
-    		if (unlikely(*sp < -ratioTimbres)) {
-    			*sp = -ratioTimbres;
-    		}
+		    outL = out * mixerGain;
 
     		sp++;
-
     		// Right voice
 			out = localv0R - pos * (*sp);
     		localv0R =  (*sp) + pos * out;
-		    *sp = out * mixerGain;
+		    outR = out * mixerGain;
 
-    		if (unlikely(*sp > ratioTimbres)) {
-    			*sp = ratioTimbres;
-    		}
-    		if (unlikely(*sp < -ratioTimbres)) {
-    			*sp = -ratioTimbres;
-    		}
-
-    		sp++;
+            //stereo position :
+            m = (outL  + outR)*0.5;
+            s = (outR - outL )*coef_S;
+    		sp-=1;
+            (*sp) = m - s;
+            sp++;
+            (*sp) = m + s;
+            sp++;
     	}
         v0L = localv0L;
         v0R = localv0R;
@@ -1269,7 +1263,7 @@ case FILTER_TILT:
     			*sp = -ratioTimbres;
     		}
 			sp++;
-			
+
 			localv0R = *sp;
 			if(localv0R > a) {
 				if(localv0R > 1) {
@@ -1316,7 +1310,7 @@ case FILTER_TILT:
     			*sp = -ratioTimbres;
     		}
 			sp++;
-			
+
 			in = *sp;
 			localv0R = tanh2(*sp * gain) * gainCorrection;
  			*sp = ((localv0R * mixA) - (mixB * in)) * mixerGain;
@@ -1530,7 +1524,7 @@ void Timbre::setNewEffecParam(int encoder) {
             fxParam1PlusMatrix = -1.0;
             break;
         }
-		case FILTER_SAT: 
+		case FILTER_SAT:
 		{
     		switch (encoder) {
     		case ENCODER_EFFECT_PARAM1:
