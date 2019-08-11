@@ -1246,10 +1246,10 @@ case FILTER_TILT:
     	float localv0L = v0L;
     	float localv0R = v0R;
 
-		float a = 1 - params.effect.param1;
 		int mixWet = params.effect.param2 * 256;
 		float mixA = panTable[mixWet];
 		float mixB = panTable[256 - mixWet];
+		float a = fxParam1;
 
 		for (int k = 0; k < BLOCK_SIZE; k++) {
 
@@ -1300,7 +1300,7 @@ case FILTER_TILT:
 		int mixWet = (params.effect.param2 * 256);
 		float mixA = panTable[mixWet];
 		float mixB = panTable[256 - mixWet];
-		float gain = 1 + 170 * params.effect.param1;
+		float gain = 1 + 60 * params.effect.param1;
 		float gainCorrection = 1 - panTable[mixWet >> 1] * 0.8;
 		float in;
 
@@ -1308,7 +1308,7 @@ case FILTER_TILT:
 
 			in = *sp;
 			localv0L = tanh2(*sp * gain) * gainCorrection;
-			*sp = ((localv0L * mixA) + (mixB * in)) * mixerGain;
+			*sp = ((localv0L * mixA) - (mixB * in)) * mixerGain;
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -1319,7 +1319,7 @@ case FILTER_TILT:
 			
 			in = *sp;
 			localv0R = tanh2(*sp * gain) * gainCorrection;
- 			*sp = ((localv0R * mixA) + (mixB * in)) * mixerGain;
+ 			*sp = ((localv0R * mixA) - (mixB * in)) * mixerGain;
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -1530,10 +1530,14 @@ void Timbre::setNewEffecParam(int encoder) {
             fxParam1PlusMatrix = -1.0;
             break;
         }
-		case FILTER_SIGMOID:
 		case FILTER_SAT: 
 		{
-			break;
+    		switch (encoder) {
+    		case ENCODER_EFFECT_PARAM1:
+				fxParam1 = 1 - tanh2(params.effect.param1 * 8);
+    			break;
+    		}
+        	break;
 		}
 	}
 }
