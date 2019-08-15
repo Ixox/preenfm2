@@ -1129,7 +1129,7 @@ case FILTER_TILT:
     		fxParam1 = 0.0f;
     	}
 
-    	float res = 0.95;
+    	float res = 0.85;
 
         float amp=19.93;
         float gain = (params.effect.param2-0.5);
