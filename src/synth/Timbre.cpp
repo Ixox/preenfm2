@@ -1193,12 +1193,24 @@ case FILTER_TILT:
     break;
 	case FILTER_ALLPASS:
 	{
+		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+    	fxParamTmp *= fxParamTmp;
+
+    	// Low pass... on the Frequency
+    	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+    	if (unlikely(fxParam1 > 1.0f)) {
+    		fxParam1 = 1.0f;
+    	}
+    	if (unlikely(fxParam1 < 0.0f)) {
+    		fxParam1 = 0.0f;
+    	}
+
     	//float pos = (params.effect.param1 * 2) -1;
 		float pos;
-        if(params.effect.param1 > 0.5) {
-            pos = ((1 - panTable[127 - (int)(params.effect.param1 * 127)]) * 2) - 1;
+        if(fxParam1 > 0.5) {
+            pos = ((1 - panTable[127 - (int)(fxParam1 * 127)]) * 2) - 1;
         } else {
-            pos = (panTable[(int)(params.effect.param1 * 127)] * 2) - 1;
+            pos = (panTable[(int)(fxParam1 * 127)] * 2) - 1;
         }
     	float *sp = this->sampleBlock;
     	float localv0L = v0L;
@@ -1235,6 +1247,18 @@ case FILTER_TILT:
 	break;
 	case FILTER_SAT:
 	{
+		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+    	fxParamTmp *= fxParamTmp;
+
+    	// Low pass... on the Frequency
+    	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+    	if (unlikely(fxParam1 > 1.0f)) {
+    		fxParam1 = 1.0f;
+    	}
+    	if (unlikely(fxParam1 < 0.0f)) {
+    		fxParam1 = 0.0f;
+    	}
+
 		float *sp = this->sampleBlock;
     	float localv0L = v0L;
     	float localv0R = v0R;
@@ -1245,7 +1269,7 @@ case FILTER_TILT:
 		float mixA = panTable[mixWet];
 		float mixB = panTable[127 - mixWet];
 		float a = fxParam1 * 0.66;
-        int blend = 40 + params.effect.param1 * 40;
+        int blend = 40 + fxParam1 * 40;
         float blendA = panTable[blend];
         float blendB = 1 - panTable[blend];
 
@@ -1301,18 +1325,30 @@ case FILTER_TILT:
 	break;
 	case FILTER_SIGMOID:
 	{
+		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+    	fxParamTmp *= fxParamTmp;
+
+    	// Low pass... on the Frequency
+    	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+    	if (unlikely(fxParam1 > 1.0f)) {
+    		fxParam1 = 1.0f;
+    	}
+    	if (unlikely(fxParam1 < 0.0f)) {
+    		fxParam1 = 0.0f;
+    	}
+
 		float *sp = this->sampleBlock;
     	float localv0L = v0L;
     	float localv0R = v0R;
 
 		int mixWet = (params.effect.param2 * 127);
-		int drive = (27 + params.effect.param1 * 100);
+		int drive = (27 + fxParam1 * 100);
 		float mixA = panTable[mixWet];
 		float mixB = panTable[127 - mixWet];
 		float gain = 1.1 + 44 * panTable[drive];
 		float gainCorrection = (0.85 - (panTable[64+(drive>>1)] * 0.7));
 		float in;
-        float bias = -0.1 + (params.effect.param1 * 0.2);
+        float bias = -0.1 + (fxParam1 * 0.2);
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
@@ -1346,6 +1382,19 @@ case FILTER_TILT:
 	case FILTER_FOLD:
 	{
 		//https://www.desmos.com/calculator/ge2wvg2wgj
+
+		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+    	fxParamTmp *= fxParamTmp;
+
+    	// Low pass... on the Frequency
+    	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+    	if (unlikely(fxParam1 > 1.0f)) {
+    		fxParam1 = 1.0f;
+    	}
+    	if (unlikely(fxParam1 < 0.0f)) {
+    		fxParam1 = 0.0f;
+    	}
+
 		float *sp = this->sampleBlock;
     	float localv0L = v0L;
     	float localv0R = v0R;
@@ -1353,7 +1402,7 @@ case FILTER_TILT:
 		int mixWet = (params.effect.param2 * 127);
 		float mixA = panTable[mixWet];
 		float mixB = panTable[127 - mixWet];
-		int drive = (params.effect.param1 * 100);
+		int drive = (fxParam1 * 100);
 		float gain = 1 + 126 * panTable[drive];
 		float gainCorrection = 4 * (0.85 - (panTable[64+(drive>>1)] * 0.8));
 		float x;
@@ -1392,6 +1441,18 @@ case FILTER_TILT:
 	case FILTER_XOR:
 		{
 		//not really XOR, but who cares ;)
+		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+    	fxParamTmp *= fxParamTmp;
+
+    	// Low pass... on the Frequency
+    	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+    	if (unlikely(fxParam1 > 1.0f)) {
+    		fxParam1 = 1.0f;
+    	}
+    	if (unlikely(fxParam1 < 0.0f)) {
+    		fxParam1 = 0.0f;
+    	}
+
 		float *sp = this->sampleBlock;
     	float localv0L = v0L;
     	float localv0R = v0R;
@@ -1401,7 +1462,7 @@ case FILTER_TILT:
 		int mixWet = (params.effect.param2 * 127);
 		float mixA = panTable[mixWet];
 		float mixB = panTable[127 - mixWet];
-		float threshold = 0.33-params.effect.param1 * 0.33 + 0.1;
+		float threshold = 0.33-fxParam1 * 0.33 + 0.1;
 		float in;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
