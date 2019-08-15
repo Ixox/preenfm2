@@ -1241,9 +1241,9 @@ case FILTER_TILT:
         float localv1L = v1L;
         float localv1R = v1R;
 
-		int mixWet = params.effect.param2 * 256;
+		int mixWet = params.effect.param2 * 127;
 		float mixA = panTable[mixWet];
-		float mixB = panTable[256 - mixWet];
+		float mixB = panTable[127 - mixWet];
 		float a = fxParam1 * 0.66;
         int blend = 40 + params.effect.param1 * 40;
         float blendA = panTable[blend];
@@ -1305,19 +1305,20 @@ case FILTER_TILT:
     	float localv0L = v0L;
     	float localv0R = v0R;
 
-		int mixWet = (params.effect.param2 * 256);
+		int mixWet = (params.effect.param2 * 127);
+		int drive = (27 + params.effect.param1 * 100);
 		float mixA = panTable[mixWet];
-		float mixB = panTable[256 - mixWet];
-		float gain = 1.8 + 60 * panTable[(int) (27 + params.effect.param1 * 100)];
-		float gainCorrection = 1 - panTable[mixWet >> 1] * 0.8;
+		float mixB = panTable[127 - mixWet];
+		float gain = 1.1 + 44 * panTable[drive];
+		float gainCorrection = (0.85 - (panTable[64+(drive>>1)] * 0.7));
 		float in;
-        float bias = -0.2 - (params.effect.param1 * 0.4);
+        float bias = -0.1 + (params.effect.param1 * 0.2);
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
 			in = *sp;
         	localv0L = tanh2(bias + *sp * gain) * gainCorrection;
-			*sp = ((localv0L * mixA) - (mixB * in)) * mixerGain;
+			*sp = ((localv0L * mixA) + (mixB * in)) * mixerGain;
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -1328,7 +1329,7 @@ case FILTER_TILT:
 
 			in = *sp;
         	localv0R = tanh2(bias + *sp * gain) * gainCorrection;
- 			*sp = ((localv0R * mixA) - (mixB * in)) * mixerGain;
+ 			*sp = ((localv0R * mixA) + (mixB * in)) * mixerGain;
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -1344,27 +1345,25 @@ case FILTER_TILT:
 	break;
 	case FILTER_FOLD:
 	{
-		//https://www.musicdsp.org/en/latest/Effects/203-fold-back-distortion.html
+		//https://www.desmos.com/calculator/ge2wvg2wgj
 		float *sp = this->sampleBlock;
     	float localv0L = v0L;
     	float localv0R = v0R;
 
-		int mixWet = (params.effect.param2 * 256);
+		int mixWet = (params.effect.param2 * 127);
 		float mixA = panTable[mixWet];
-		float mixB = panTable[256 - mixWet];
-		float threshold = 0.4-params.effect.param1 * 0.4 + 0.01;
-		float in;
+		float mixB = panTable[127 - mixWet];
+		int drive = (params.effect.param1 * 100);
+		float gain = 1 + 126 * panTable[drive];
+		float gainCorrection = 4 * (0.85 - (panTable[64+(drive>>1)] * 0.8));
+		float x;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
-			in = *sp;
-			if (in>threshold || in<-threshold)
-			{
-				localv0L= sabs(sabs(fmod(in - threshold, threshold*4)) - threshold*2) - threshold;
-			} else {
-				localv0L = in;
-			}
-			*sp = ((localv0L * mixA) + (mixB * in)) * mixerGain;
+			x = *sp * gain;
+			localv0L = (sabs(0.25 * x + 0.25 - round(0.25 * x + 0.25)) - 0.25) * gainCorrection;
+			*sp = ((localv0L * mixA) + (mixB * (*sp))) * mixerGain;
+
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -1373,14 +1372,10 @@ case FILTER_TILT:
     		}
 			sp++;
 
-			in = *sp;
-			if (in>threshold || in<-threshold)
-			{
-				localv0R= sabs(sabs(fmod(in - threshold, threshold*4)) - threshold*2) - threshold;
-			} else {
-				localv0R = in;
-			}
- 			*sp = ((localv0R * mixA) + (mixB * in)) * mixerGain;
+			x = *sp * gain;
+			localv0R = (sabs(0.25 * x + 0.25 - round(0.25 * x + 0.25)) - 0.25) * gainCorrection;
+			*sp = ((localv0R * mixA) + (mixB * (*sp))) * mixerGain;
+
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -1396,15 +1391,16 @@ case FILTER_TILT:
 	break;
 	case FILTER_XOR:
 		{
+		//not really XOR, but who cares ;)
 		float *sp = this->sampleBlock;
     	float localv0L = v0L;
     	float localv0R = v0R;
         float localv1L = v1L;
         float localv1R = v1R;
 
-		int mixWet = (params.effect.param2 * 256);
+		int mixWet = (params.effect.param2 * 127);
 		float mixA = panTable[mixWet];
-		float mixB = panTable[256 - mixWet];
+		float mixB = panTable[127 - mixWet];
 		float threshold = 0.33-params.effect.param1 * 0.33 + 0.1;
 		float in;
 
@@ -1656,6 +1652,11 @@ void Timbre::setNewEffecParam(int encoder) {
     			break;
     		}
         	break;
+		}
+		case FILTER_FOLD:
+		{
+			fxParam2 = params.effect.param2 * 0.5 + 0.5 * pow(3, params.effect.param2*1.5);
+			break;
 		}
 	}
 }

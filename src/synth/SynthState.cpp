@@ -193,7 +193,7 @@ struct FilterRowDisplay filterRowDisplay[FILTER_LAST] = {
         { "Pos ", "Wide", "Gain" },
         { "Driv", "Mix ", "Gain" },
         { "Driv", "Mix ", "Gain" },
-        { "Thrs", "Mix ", "Gain" },
+        { "Driv", "Mix ", "Gain" },
         { "Thrs", "Mix ", "Gain" }
 };
 
