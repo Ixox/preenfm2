@@ -120,9 +120,19 @@ float sabs(float a)
 inline
 float tanh2(float x)
 {
-	float a=sabs(x);
+	return x/(sabs(x)+3/(2+x*x));
+	/*float a=sabs(x);
 	a=6+a*(6+a*(3+a));
-	return ((x<0)?-1:1)*(a-6)/(a+6);
+	return ((x<0)?-1:1)*(a-6)/(a+6);*/
+}
+//https://www.musicdsp.org/en/latest/Other/120-saturation.html
+inline 
+float sigmoid(float x)
+{
+    if(sabs(x)<1)
+        return x*(1.5f - 0.5f*x*x);
+    else
+        return x > 0.f ? 1.f : -1.f;
 }
 
 enum NewNoteType {
@@ -933,19 +943,18 @@ case FILTER_LP2:
     	float localv1L = v1L;
     	float localv0R = v0R;
     	float localv1R = v1R;
-        float cInput;
+        float cInput,fdbckIn;
 
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 
     		// Left voice
-            cInput = (fxParam1)* (*sp);
-    		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + cInput;
-    		localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
+			localv0L = pattern * localv0L - sigmoid( fxParam1) * (localv1L + (*sp) );
+			localv1L = pattern * localv1L + (fxParam1)*localv0L;
 
-            localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + cInput;
-    		localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
+			localv0L = pattern * localv0L - (fxParam1) * (localv1L + (*sp));
+			localv1L = pattern * localv1L + (fxParam1)*localv0L;
 
-		    *sp = localv1L * mixerGain;
+			*sp = localv1L * mixerGain;
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -957,14 +966,13 @@ case FILTER_LP2:
     		sp++;
 
     		// Right voice
-            cInput = (fxParam1)* (*sp);
-    		localv0R =  pattern * localv0R  -  (fxParam1)*localv1R  + (fxParam1)* (*sp);
-    		localv1R =  pattern * localv1R  +  (fxParam1)*localv0R;
+			localv0R = pattern * localv0R - sigmoid( fxParam1) * (localv1R + (*sp) );
+			localv1R = pattern * localv1R + (fxParam1)*localv0R;
 
-            localv0R =  pattern * localv0R  -  (fxParam1)*localv1R  + (fxParam1)* (*sp);
-    		localv1R =  pattern * localv1R  +  (fxParam1)*localv0R;
+			localv0R = pattern * localv0R - (fxParam1) * (localv1R + (*sp));
+			localv1R = pattern * localv1R + (fxParam1)*localv0R;
 
-		    *sp = localv1R * mixerGain;
+			*sp = localv1R * mixerGain;
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -1006,15 +1014,13 @@ case FILTER_HP2:
         for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
             // Left voice
-            cInput = (fxParam1)* (*sp);
+			localv0L = pattern * localv0L - sigmoid(fxParam1 * (localv1L + (*sp)));
+			localv1L = pattern * localv1L + (fxParam1)*localv0L;
 
-            localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + cInput;
-            localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
+			localv0L = pattern * localv0L - (fxParam1 * (localv1L + (*sp)));
+			localv1L = pattern * localv1L + (fxParam1)*localv0L;
 
-            localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + cInput;
-            localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
-
-            *sp = (*sp - localv1L) * mixerGain;
+			*sp = (*sp - localv1L) * mixerGain;
 
             if (unlikely(*sp > ratioTimbres)) {
                 *sp = ratioTimbres;
@@ -1026,15 +1032,13 @@ case FILTER_HP2:
             sp++;
 
             // Right voice
-            cInput = (fxParam1)* (*sp);
+			localv0R = pattern * localv0R - sigmoid(fxParam1 * (localv1R + (*sp)));
+			localv1R = pattern * localv1R + (fxParam1)*localv0R;
 
-            localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + cInput;
-            localv1R =  pattern * localv1R  +  (fxParam1) * localv0R;
+			localv0R = pattern * localv0R - (fxParam1 * (localv1R + (*sp)));
+			localv1R = pattern * localv1R + (fxParam1)*localv0R;
 
-            localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + cInput;
-            localv1R =  pattern * localv1R  +  (fxParam1) * localv0R;
-
-            *sp = (*sp - localv1R) * mixerGain;
+			*sp = (*sp - localv1R) * mixerGain;
 
             if (unlikely(*sp > ratioTimbres)) {
                 *sp = ratioTimbres;
@@ -1223,7 +1227,7 @@ case FILTER_TILT:
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
     		// Left voice
 			out = localv0L + pos * (*sp);
-    		localv0L =  (*sp) - pos * out;
+    		localv0L =  (*sp) - pos * out;	
 		    outL = out * mixerGain;
 
     		sp++;
