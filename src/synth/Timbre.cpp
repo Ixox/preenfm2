@@ -1195,7 +1195,7 @@ case FILTER_TILT:
         v1R = localv1R;
     }
     break;
-	case FILTER_ALLPASS:
+	case FILTER_STEREO:
 	{
 		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
     	fxParamTmp *= fxParamTmp;
@@ -1626,10 +1626,8 @@ void Timbre::recomputeBPValues() {
     float param1Square = fxParam1PlusMatrix * fxParam1PlusMatrix;
 
 	//limit low values to avoid cracklings :
-	if(param1Square<0.1) {
-		if(q<0.15) {
-			q=0.15;
-		}
+	if(param1Square<0.1 && q<0.15) {
+		q=0.15;
 	}
 
     float sn1 = sinTable[(int)(12 + 1000 * param1Square)];
@@ -1679,7 +1677,7 @@ void Timbre::setNewEffecParam(int encoder) {
         case FILTER_LP2:
         case FILTER_HP2:
         case FILTER_TILT:
-		case FILTER_ALLPASS:
+		case FILTER_STEREO:
     		switch (encoder) {
     		case ENCODER_EFFECT_TYPE:
     			fxParam2 = 0.3f - params.effect.param2 * 0.3f;
