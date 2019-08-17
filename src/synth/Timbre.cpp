@@ -1400,7 +1400,7 @@ case FILTER_TILT:
 
 		int drive = (fxParam1 * 100);
 		float gain = (1 + 126 * panTable[drive]) * 0.25;
-		float gainCorrection = 4 * (0.85 - (panTable[64+(drive>>1)] * 0.8));
+		float gainCorrection = 4 * (0.8 - (panTable[64+(drive>>1)] * 0.75));
 
 		int mixWet = (params.effect.param2 * 127);
 		float mixA = panTable[mixWet] * gainCorrection * mixerGain;
@@ -1409,9 +1409,9 @@ case FILTER_TILT:
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
-			x = sigmoid(*sp) * gain;
+			x = (*sp) * gain;
 			localv0L = (sabs(x + 0.25 - round(x + 0.25)) - 0.25);
-			*sp = ((localv0L * mixA) + (mixB * (*sp))) ;
+			*sp = ((sigmoid(localv0L) * mixA) + (mixB * (*sp))) ;
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -1421,9 +1421,70 @@ case FILTER_TILT:
     		}
 			sp++;
 
-			x = sigmoid(*sp) * gain;
+			x = (*sp) * gain;
 			localv0R = (sabs(x + 0.25 - round(x + 0.25)) - 0.25);
-			*sp = ((localv0R * mixA) + (mixB * (*sp)));
+			*sp = ((sigmoid(localv0R) * mixA) + (mixB * (*sp)));
+
+			if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
+    		}
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
+    		}
+			sp++;
+    	}
+
+    	v0L = localv0L;
+    	v0R = localv0R;
+	}
+	break;
+	case FILTER_WRAP:
+	{
+		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+    	fxParamTmp *= fxParamTmp;
+
+    	// Low pass... on the Frequency
+    	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+    	if (unlikely(fxParam1 > 1.0f)) {
+    		fxParam1 = 1.0f;
+    	}
+    	if (unlikely(fxParam1 < 0.0f)) {
+    		fxParam1 = 0.0f;
+    	}
+
+		float *sp = this->sampleBlock;
+    	float localv0L = v0L;
+    	float localv0R = v0R;
+
+		int drive = (fxParam1 * 100);
+		float gain = 0.5 * (1 + 126 * panTable[drive]);
+		float gainCorrection = 2 * (1 - (panTable[64+(drive>>1)] * 0.8));
+
+		int mixWet = (params.effect.param2 * 127);
+		float mixA = panTable[mixWet] * gainCorrection * mixerGain;
+		float mixB = panTable[127 - mixWet] * mixerGain;
+		float x;
+
+		for (int k=0 ; k < BLOCK_SIZE ; k++) {
+			//LEFT
+			x = (*sp) * gain;
+			localv0L = (x) - round(x) ;
+
+			*sp = ((sigmoid(localv0L) * mixA) + (mixB * (*sp))) ;
+
+			if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
+    		}
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
+    		}
+			sp++;
+
+			//RIGHT
+			x = (*sp) * gain;
+			localv0R = (x) - round(x);
+
+			*sp = ((sigmoid(localv0R) * mixA) + (mixB * (*sp)));
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
