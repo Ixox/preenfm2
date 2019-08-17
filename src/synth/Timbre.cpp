@@ -121,9 +121,6 @@ inline
 float tanh2(float x)
 {
 	return x/(sabs(x)+3/(2+x*x));
-	/*float a=sabs(x);
-	a=6+a*(6+a*(3+a));
-	return ((x<0)?-1:1)*(a-6)/(a+6);*/
 }
 //https://www.musicdsp.org/en/latest/Other/120-saturation.html
 inline 
@@ -1081,10 +1078,10 @@ case FILTER_BP2:
     for (int k=0 ; k < BLOCK_SIZE ; k++) {
         //Left
         in = fxParam1 * (*sp);
-        temp = in - fxParamA1 * localv0L - fxParamA2 * localv1L;
+		temp = in - fxParamA1 * localv0L - fxParamA2 * localv1L;
         localv1L = localv0L;
         localv0L = temp;
-        localV = temp *0.2 + (in - fxParamA1 * localv0L - fxParamA2 * localv1L)*0.8;
+        localV =  (temp+ (in - fxParamA1 * localv0L - fxParamA2 * localv1L))*0.5;
         *sp++ = (localV + fxParamB2 * localv1L) * mixerGain;
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1097,10 +1094,10 @@ case FILTER_BP2:
 
         //Right
         in = fxParam1 * (*sp);
-        temp = in - fxParamA1 * localv0R - fxParamA2 * localv1R;
+		temp = in - fxParamA1 * localv0R - fxParamA2 * localv1R;
         localv1R = localv0R;
         localv0R = temp;
-        localV = temp*0.2 + (in - fxParamA1 * localv0R - fxParamA2 * localv1R)*0.8;
+        localV = (temp + (in - fxParamA1 * localv0R - fxParamA2 * localv1R))*0.5;
         *sp++ = (localV + fxParamB2 * localv1R) * mixerGain;
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1159,10 +1156,10 @@ case FILTER_TILT:
 
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 	        // Left voice
-    		localv0L =  res * localv0L  -  (fxParam1) * localv1L  + (*sp);
+    		localv0L =  res * localv0L  -  (fxParam1) * localv1L  + sigmoid(*sp);
     		localv1L =  res * localv1L  +  (fxParam1) * localv0L;
 
-            *sp = ((*sp) + lgain*localv1L + hgain*((*sp) - localv1L)) * mixerGain;
+            *sp = ((*sp) + lgain*(localv1L) + hgain*((*sp) - localv1L)) * mixerGain;
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -1174,10 +1171,10 @@ case FILTER_TILT:
     		sp++;
 
     		// Right voice
-            localv0R =  res * localv0R  -  (fxParam1) * localv1R  + (*sp);
+            localv0R =  res * localv0R  -  (fxParam1) * localv1R  + sigmoid(*sp);
     		localv1R =  res * localv1R  +  (fxParam1) * localv0R;
 
-            *sp = ((*sp) + lgain*localv1R + hgain*((*sp) - localv1R)) * mixerGain;
+            *sp = ((*sp) + lgain*(localv1R) + hgain*((*sp) - localv1R)) * mixerGain;
 
             if (unlikely(*sp > ratioTimbres)) {
                 *sp = ratioTimbres;
@@ -1270,8 +1267,8 @@ case FILTER_TILT:
         float localv1R = v1R;
 
 		int mixWet = params.effect.param2 * 127;
-		float mixA = panTable[mixWet];
-		float mixB = panTable[127 - mixWet];
+		float mixA = panTable[mixWet] * mixerGain;
+		float mixB = panTable[127 - mixWet] * mixerGain;
 		float a = fxParam1 * 0.66;
         int blend = 40 + fxParam1 * 40;
         float blendA = panTable[blend];
@@ -1279,19 +1276,19 @@ case FILTER_TILT:
 
 		for (int k = 0; k < BLOCK_SIZE; k++) {
 
-			localv0L = *sp;
+			localv0L = sigmoid(*sp);
 			if(localv0L > a) {
 				if(localv0L > 1) {
-					localv0L = (a + 1) * 0.5;
+					localv0L = sigmoid(a + 1) * 0.5;
 				} else {
 					localv0L = localv0L / ((a + 1) * 0.5);
 				}
 			} else if(localv0L < -a) {
                 localv0L = localv0L / ((a + 1) * 0.5);
             }
-            localv1R = blendA * localv1R - blendB * localv0R;
+            localv1L = blendA * localv1L - blendB * localv0L;
 
-			*sp = ((localv1R * mixA) + (mixB * *sp)) * mixerGain;
+			*sp = ((localv1R * mixA) + (mixB * *sp));
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -1300,19 +1297,19 @@ case FILTER_TILT:
     		}
 			sp++;
 
-			localv0R = *sp;
+			localv0R = sigmoid(*sp);
 			if(localv0R > a) {
 				if(localv0R > 1) {
-					localv0R = (a + 1) * 0.5;
+					localv0R = sigmoid(a + 1) * 0.5;
 				} else {
 					localv0R = localv0R / ((a + 1) * 0.5);
 				}
 			} else if(localv0L < -a) {
                 localv0R = localv0R / ((a + 1) * 0.5);
             }
-            localv1L = blendA * localv1L - blendB * localv0L;
+            localv1R = blendA * localv1R - blendB * localv0R;
 
-			*sp = ((localv1L * mixA) + (mixB * *sp)) * mixerGain;
+			*sp = ((localv1L * mixA) + (mixB * *sp));
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -1347,18 +1344,17 @@ case FILTER_TILT:
 
 		int mixWet = (params.effect.param2 * 127);
 		int drive = (27 + fxParam1 * 100);
-		float mixA = panTable[mixWet];
-		float mixB = panTable[127 - mixWet];
+		float mixA = panTable[mixWet]  * mixerGain;
+		float mixB = panTable[127 - mixWet]  * mixerGain;
 		float gain = 1.1 + 44 * panTable[drive];
 		float gainCorrection = (0.85 - (panTable[64+(drive>>1)] * 0.7));
-		float in;
+		float in,lopL = v0L ,lopR = v0R;
         float bias = -0.1 + (fxParam1 * 0.2);
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
-			in = *sp;
-        	localv0L = tanh2(bias + *sp * gain) * gainCorrection;
-			*sp = ((localv0L * mixA) + (mixB * in)) * mixerGain;
+        	localv0L = tanh2(bias + sigmoid(*sp) * gain) * gainCorrection;
+			*sp = (sigmoid(localv0L) * mixA + (mixB * (*sp)));
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -1367,9 +1363,8 @@ case FILTER_TILT:
     		}
 			sp++;
 
-			in = *sp;
-        	localv0R = tanh2(bias + *sp * gain) * gainCorrection;
- 			*sp = ((localv0R * mixA) + (mixB * in)) * mixerGain;
+        	localv0R = tanh2(bias + sigmoid(*sp) * gain) * gainCorrection;
+ 			*sp = (sigmoid(localv0R) * mixA + (mixB * (*sp)));
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -1403,19 +1398,20 @@ case FILTER_TILT:
     	float localv0L = v0L;
     	float localv0R = v0R;
 
-		int mixWet = (params.effect.param2 * 127);
-		float mixA = panTable[mixWet];
-		float mixB = panTable[127 - mixWet];
 		int drive = (fxParam1 * 100);
-		float gain = 1 + 126 * panTable[drive];
+		float gain = (1 + 126 * panTable[drive]) * 0.25;
 		float gainCorrection = 4 * (0.85 - (panTable[64+(drive>>1)] * 0.8));
+
+		int mixWet = (params.effect.param2 * 127);
+		float mixA = panTable[mixWet] * gainCorrection * mixerGain;
+		float mixB = panTable[127 - mixWet] * mixerGain;
 		float x;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
-			x = *sp * gain;
-			localv0L = (sabs(0.25 * x + 0.25 - round(0.25 * x + 0.25)) - 0.25) * gainCorrection;
-			*sp = ((localv0L * mixA) + (mixB * (*sp))) * mixerGain;
+			x = sigmoid(*sp) * gain;
+			localv0L = (sabs(x + 0.25 - round(x + 0.25)) - 0.25);
+			*sp = ((localv0L * mixA) + (mixB * (*sp))) ;
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -1425,9 +1421,9 @@ case FILTER_TILT:
     		}
 			sp++;
 
-			x = *sp * gain;
-			localv0R = (sabs(0.25 * x + 0.25 - round(0.25 * x + 0.25)) - 0.25) * gainCorrection;
-			*sp = ((localv0R * mixA) + (mixB * (*sp))) * mixerGain;
+			x = sigmoid(*sp) * gain;
+			localv0R = (sabs(x + 0.25 - round(x + 0.25)) - 0.25);
+			*sp = ((localv0R * mixA) + (mixB * (*sp)));
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -1464,22 +1460,22 @@ case FILTER_TILT:
         float localv1R = v1R;
 
 		int mixWet = (params.effect.param2 * 127);
-		float mixA = panTable[mixWet];
-		float mixB = panTable[127 - mixWet];
-		float threshold = 0.33-fxParam1 * 0.33 + 0.1;
+		float mixA = panTable[mixWet] * mixerGain;;
+		float mixB = panTable[127 - mixWet] * mixerGain;;
+		float threshold = 0.6-fxParam1 * 0.6 + 0.1;
 		float in;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
-			in = *sp;
+			in = (*sp);
 			if (in>threshold || in<-threshold)
 			{
 				localv0L = (localv0L > localv1L) ? (localv1L - localv0L) : (localv1L + localv0L) * 0.5;
 			} else {
-				localv0L = in;
+				localv0L = sigmoid(in);
 			}
 			localv1L = localv0L;
-			*sp = ((localv0L * mixA) + (mixB * in)) * mixerGain;
+			*sp = ((localv0L * mixA) + (mixB * in));
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -1488,15 +1484,15 @@ case FILTER_TILT:
     		}
 			sp++;
 
-			in = *sp;
+			in = (*sp);
 			if (in>threshold || in<-threshold)
 			{
 				localv0R = (localv0R > localv1R) ? (localv1R - localv0R)  : (localv1R + localv0R) * 0.5;
 			} else {
-				localv0R = in;
+				localv0R = sigmoid(in);
 			}
 			localv1R = localv0R;
- 			*sp = ((localv1R * mixA) + (mixB * in)) * mixerGain;
+ 			*sp = ((localv1R * mixA) + (mixB * in));
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
