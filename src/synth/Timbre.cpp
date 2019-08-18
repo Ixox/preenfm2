@@ -103,7 +103,7 @@ inline static int __canTranspose( int _direction ) {
 //for swap~
 #define FLOAT2SHORT 32768.
 #define SHORT2FLOAT 1./32768.
-
+#define RATIOINV 1./131072.
 inline
 double exp1(double x) {
 	//fast exp
@@ -554,8 +554,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     }
 
     float matrixFilterFrequency = voices[this->lastPlayedNote]->matrix.getDestination(FILTER_FREQUENCY);
-
-	float thresholdNumberVoicesAttn = exp1(1-numberOfVoiceInverse) * 0.4;
+	float thresholdNumberVoicesAttn = 1 - (params.engine1.numberOfVoice * 0.04 * ratioTimbres * RATIOINV);
 
     // LP Algo
     int effectType = params.effect.type;
@@ -1528,7 +1527,7 @@ case FILTER_TILT:
 		int mixWet = (params.effect.param2 * 127);
 		float mixA = panTable[mixWet] * mixerGain;;
 		float mixB = panTable[127 - mixWet] * mixerGain;;
-		float threshold = (0.8-fxParam1 * 0.8 + 0.01)  * thresholdNumberVoicesAttn;
+		float threshold = (0.81 - fxParam1 * 0.8)  * thresholdNumberVoicesAttn;
 		float in;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
@@ -1596,7 +1595,7 @@ case FILTER_TILT:
 		int mixWet = (params.effect.param2 * 127);
 		float mixA = panTable[mixWet] * mixerGain;;
 		float mixB = panTable[127 - mixWet] * mixerGain;;
-		float threshold = (1 - fxParam1) * thresholdNumberVoicesAttn;
+		float threshold = (1 - fxParam1*1.2) * thresholdNumberVoicesAttn;
 		float in;
 		short dummy;
 
