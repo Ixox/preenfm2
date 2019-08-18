@@ -555,7 +555,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
 
     float matrixFilterFrequency = voices[this->lastPlayedNote]->matrix.getDestination(FILTER_FREQUENCY);
 
-	float thresholdNumberVoicesAttn = exp1(1-numberOfVoiceInverse);
+	float thresholdNumberVoicesAttn = exp1(1-numberOfVoiceInverse) * 0.4;
 
     // LP Algo
     int effectType = params.effect.type;
