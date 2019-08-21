@@ -104,6 +104,7 @@ inline static int __canTranspose( int _direction ) {
 #define FLOAT2SHORT 32768.
 #define SHORT2FLOAT 1./32768.
 #define RATIOINV 1./131072.
+#define PIINV 1./3.14159265359
 inline
 double exp1(double x) {
 	//fast exp
@@ -127,7 +128,7 @@ float tanh2(float x)
 	return x/(sabs(x)+3/(2+x*x));
 }
 //https://www.musicdsp.org/en/latest/Other/120-saturation.html
-inline 
+inline
 float sigmoid(float x)
 {
     if(sabs(x)<1)
@@ -925,7 +926,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     }
 case FILTER_LP2:
     {
-        float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+        float fxParamTmp = params.effect.param1 * 0.66 + matrixFilterFrequency;
     	fxParamTmp *= fxParamTmp;
 
     	// Low pass... on the Frequency
@@ -936,7 +937,6 @@ case FILTER_LP2:
     	if (unlikely(fxParam1 < 0.0f)) {
     		fxParam1 = 0.0f;
     	}
-
     	float pattern = (1 - fxParam2 * fxParam1);
 
     	float *sp = this->sampleBlock;
@@ -992,7 +992,7 @@ case FILTER_LP2:
     break;
 case FILTER_HP2:
     {
-        float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+        float fxParamTmp = params.effect.param1 * 0.66 + matrixFilterFrequency;
         fxParamTmp *= fxParamTmp;
 
         // Low pass... on the Frequency
@@ -1015,11 +1015,11 @@ case FILTER_HP2:
         for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
             // Left voice
-			localv0L = pattern * localv0L - sigmoid(fxParam1 * (localv1L + (*sp)));
+			localv0L = pattern * localv0L + (fxParam1 * (-localv1L + (*sp)));
 			localv1L = pattern * localv1L + (fxParam1)*localv0L;
 
-			localv0L = pattern * localv0L - (fxParam1 * (localv1L + (*sp)));
-			localv1L = pattern * localv1L + (fxParam1)*localv0L;
+			localv0L = pattern * localv0L + (fxParam1 * (-localv1L + (*sp)));
+			localv1L = pattern * localv1L + fxParam1 * localv0L;
 
 			*sp = (*sp - localv1L) * mixerGain;
 
@@ -1033,11 +1033,11 @@ case FILTER_HP2:
             sp++;
 
             // Right voice
-			localv0R = pattern * localv0R - sigmoid(fxParam1 * (localv1R + (*sp)));
-			localv1R = pattern * localv1R + (fxParam1)*localv0R;
+			localv0R = pattern * localv0R + (fxParam1 * (-localv1R + (*sp)));
+			localv1R = pattern * localv1R + fxParam1 * localv0R;
 
-			localv0R = pattern * localv0R - (fxParam1 * (localv1R + (*sp)));
-			localv1R = pattern * localv1R + (fxParam1)*localv0R;
+			localv0R = pattern * localv0R + (fxParam1 * (-localv1R + (*sp)));
+			localv1R = pattern * localv1R + fxParam1 * localv0R;
 
 			*sp = (*sp - localv1R) * mixerGain;
 
@@ -1228,7 +1228,7 @@ case FILTER_TILT:
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
     		// Left voice
 			out = localv0L + pos * (*sp);
-    		localv0L =  (*sp) - pos * out;	
+    		localv0L =  (*sp) - pos * out;
 		    outL = out * mixerGain;
 
     		sp++;
@@ -1253,6 +1253,7 @@ case FILTER_TILT:
 	case FILTER_SAT:
 	{
 		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+
     	fxParamTmp *= fxParamTmp;
 
     	// Low pass... on the Frequency
@@ -1290,7 +1291,7 @@ case FILTER_TILT:
 			} else if(localv0L < -a) {
                 localv0L = localv0L / ((a + 1) * 0.5);
             }
-            localv1L = blendA * localv1L - blendB * localv0L;
+            localv1L = blendA * localv1L + blendB * localv0L;
 
 			*sp = ((localv1R * mixA) + (mixB * *sp));
 			if (unlikely(*sp > ratioTimbres)) {
@@ -1311,7 +1312,7 @@ case FILTER_TILT:
 			} else if(localv0L < -a) {
                 localv0R = localv0R / ((a + 1) * 0.5);
             }
-            localv1R = blendA * localv1R - blendB * localv0R;
+            localv1R = blendA * localv1R + blendB * localv0R;
 
 			*sp = ((localv1L * mixA) + (mixB * *sp));
 			if (unlikely(*sp > ratioTimbres)) {
@@ -1472,7 +1473,7 @@ case FILTER_TILT:
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 			//LEFT
 			x = (*sp) * gain;
-			localv0L = (x) - round(x) ;
+			localv0L = ((x) - round(x));
 
 			*sp = ((sigmoid(localv0L) * mixA) + (mixB * (*sp))) ;
 
@@ -1486,7 +1487,7 @@ case FILTER_TILT:
 
 			//RIGHT
 			x = (*sp) * gain;
-			localv0R = (x) - round(x);
+			localv0R = ((x) - round(x));
 
 			*sp = ((sigmoid(localv0R) * mixA) + (mixB * (*sp)));
 
@@ -1527,7 +1528,7 @@ case FILTER_TILT:
 		int mixWet = (params.effect.param2 * 127);
 		float mixA = panTable[mixWet] * mixerGain;;
 		float mixB = panTable[127 - mixWet] * mixerGain;;
-		float threshold = (0.81 - fxParam1 * 0.8)  * thresholdNumberVoicesAttn;
+		float threshold = (0.82 - fxParam1 * 0.8)  * thresholdNumberVoicesAttn;
 		float in;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
@@ -1597,7 +1598,7 @@ case FILTER_TILT:
 		float mixB = panTable[127 - mixWet] * mixerGain;;
 		float threshold = (1 - fxParam1*1.2) * thresholdNumberVoicesAttn;
 		float in;
-		short dummy;
+		int dummy;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 			//LEFT
@@ -1605,7 +1606,7 @@ case FILTER_TILT:
 			if (in>threshold || in<-threshold)
 			{
 				 dummy = FLOAT2SHORT * in;
-     			 localv0L = SHORT2FLOAT * (short)( ((dummy & 0xFF) << 8) | (( dummy & 0xFF00) >> 8) );
+     			 localv0L = SHORT2FLOAT * (int)((((dummy & 0x0F) << 8) ^ (( dummy & 0xFF00) >> 8) ^ dummy & 0xFFFF00F0));
 			} else {
 				localv0L = (in);
 			}
@@ -1617,13 +1618,13 @@ case FILTER_TILT:
     			*sp = -ratioTimbres;
     		}
 			sp++;
-			
+
 			//RIGHT
 			in = (*sp);
 			if (in>threshold || in<-threshold)
 			{
 				 dummy = FLOAT2SHORT * in;
-     			 localv0R = SHORT2FLOAT * (short)( ((dummy & 0xFF) << 8) | (( dummy & 0xFF00) >> 8) );
+                 localv0R = SHORT2FLOAT * (int)((((dummy & 0x0F) << 8) ^ (( dummy & 0xFF00) >> 8) ^ dummy & 0xFFFF00F0 ));
 			} else {
 				localv0R = (in);
 			}
@@ -1640,6 +1641,79 @@ case FILTER_TILT:
     	v0L = localv0L;
     	v0R = localv0R;
 	}
+    break;
+    case FILTER_TEXTURE:{
+		float fxParamTmp = 1 - (params.effect.param1 + matrixFilterFrequency);
+    	fxParamTmp *= fxParamTmp;
+
+    	// Low pass... on the Frequency
+    	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+    	if (unlikely(fxParam1 > 1.0f)) {
+    		fxParam1 = 1.0f;
+    	}
+    	if (unlikely(fxParam1 < 0.0f)) {
+    		fxParam1 = 0.0f;
+    	}
+
+    	float *sp = this->sampleBlock;
+    	float localv0L = v0L;
+    	float localv1L = v1L;
+    	float localv0R = v0R;
+    	float localv1R = v1R;
+
+        int highBits = 0xFFFFFE50;
+        int lowBits = ~(highBits);
+
+		int mixWet = (params.effect.param2 * 127);
+		float mixA = panTable[mixWet] * mixerGain;;
+		float mixB = panTable[127 - mixWet] * mixerGain;;
+
+        short ll = (short)(( params.effect.param1) * lowBits);
+		int digitsL,digitsR;
+        short lowDigitsL,lowDigitsR;
+
+		for (int k=0 ; k < BLOCK_SIZE ; k++) {
+			//LEFT
+            //localv0L =  (0.8) * localv0L + 0.2 * (*sp);
+
+		    digitsL = FLOAT2SHORT * (*sp);
+            lowDigitsL = (digitsL & lowBits);
+			localv0L = SHORT2FLOAT * (int)( (digitsL & highBits) ^ (lowDigitsL + ll) );
+
+			*sp = ((localv0L * mixA) + (mixB * (*sp)));
+
+			if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
+    		}
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
+    		}
+			sp++;
+
+			//RIGHT
+            //localv0R =  (0.8) * localv0R + 0.2 * (*sp);
+            //localv0R =  (1 + fxParam1)* localv0R - fxParam1 * (*sp);
+
+            digitsR = FLOAT2SHORT * (*sp);
+            lowDigitsR = (digitsR & lowBits);
+            localv0R = SHORT2FLOAT * (int)( (digitsR & highBits) ^ (lowDigitsR + ll) );
+
+ 			*sp = ((localv0R * mixA) + (mixB * (*sp)));
+
+			if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
+    		}
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
+    		}
+			sp++;
+    	}
+
+        v0L = localv0L;
+    	v0R = localv0R;
+        v1L = localv1L;
+        v1R = localv1R;
+    }
     break;
     case FILTER_OFF:
     {
@@ -1836,15 +1910,6 @@ void Timbre::setNewEffecParam(int encoder) {
             fxParam1PlusMatrix = -1.0;
             break;
         }
-		case FILTER_SAT:
-		{
-    		switch (encoder) {
-    		case ENCODER_EFFECT_PARAM1:
-				fxParam1 = 1 - tanh2(params.effect.param1 * 8);
-    			break;
-    		}
-        	break;
-		}
 		case FILTER_FOLD:
 		{
 			fxParam2 = params.effect.param2 * 0.5 + 0.5 * pow(3, params.effect.param2*1.5);
