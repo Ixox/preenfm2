@@ -1577,7 +1577,7 @@ case FILTER_TILT:
 	break;
 	case FILTER_TEXTURE1:
 		{
-            float fxParamTmp = 1 - (params.effect.param1 + matrixFilterFrequency);
+            float fxParamTmp = (params.effect.param1 + matrixFilterFrequency);
         	fxParamTmp *= fxParamTmp;
 
         	// Low pass... on the Frequency
@@ -1600,7 +1600,7 @@ case FILTER_TILT:
     		float mixA = panTable[mixWet] * mixerGain;;
     		float mixB = panTable[127 - mixWet] * mixerGain;;
 
-            short ll = (short)(( params.effect.param1) * lowBits);
+            short ll = (short)(( fxParam1 ) * lowBits);
     		int digitsL,digitsR;
             short lowDigitsL,lowDigitsR;
 
@@ -1647,7 +1647,7 @@ case FILTER_TILT:
     break;
 case FILTER_TEXTURE2:
     {
-		float fxParamTmp = 1 - (params.effect.param1 + matrixFilterFrequency);
+		float fxParamTmp = (params.effect.param1 + matrixFilterFrequency);
     	fxParamTmp *= fxParamTmp;
 
     	// Low pass... on the Frequency
@@ -1670,7 +1670,7 @@ case FILTER_TEXTURE2:
 		float mixA = panTable[mixWet] * mixerGain;;
 		float mixB = panTable[127 - mixWet] * mixerGain;;
 
-        short ll = (short)(( params.effect.param1) * lowBits);
+        short ll = (short)(( fxParam1 ) * lowBits);
 		int digitsL,digitsR;
         short lowDigitsL,lowDigitsR;
 
