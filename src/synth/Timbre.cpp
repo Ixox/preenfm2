@@ -100,11 +100,12 @@ inline static int __canTranspose( int _direction ) {
 	}
 }
 
-//for swap~
+//for bitwise manipulations
 #define FLOAT2SHORT 32768.
 #define SHORT2FLOAT 1./32768.
+
 #define RATIOINV 1./131072.
-#define PIINV 1./3.14159265359
+
 inline
 double exp1(double x) {
 	//fast exp
@@ -1574,75 +1575,78 @@ case FILTER_TILT:
         v1R = localv1R;
 	}
 	break;
-	case FILTER_SWAP:
+	case FILTER_TEXTURE1:
 		{
-		// from https://git.iem.at/pd/zexy/blob/master/src/swap~.c
-		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
-    	fxParamTmp *= fxParamTmp;
+            float fxParamTmp = 1 - (params.effect.param1 + matrixFilterFrequency);
+        	fxParamTmp *= fxParamTmp;
 
-    	// Low pass... on the Frequency
-    	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
-    	if (unlikely(fxParam1 > 1.0f)) {
-    		fxParam1 = 1.0f;
-    	}
-    	if (unlikely(fxParam1 < 0.0f)) {
-    		fxParam1 = 0.0f;
-    	}
+        	// Low pass... on the Frequency
+        	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+        	if (unlikely(fxParam1 > 1.0f)) {
+        		fxParam1 = 1.0f;
+        	}
+        	if (unlikely(fxParam1 < 0.0f)) {
+        		fxParam1 = 0.0f;
+        	}
 
-		float *sp = this->sampleBlock;
-    	float localv0L = v0L;
-    	float localv0R = v0R;
+        	float *sp = this->sampleBlock;
+        	float localv0L = v0L;
+        	float localv0R = v0R;
 
-		int mixWet = (params.effect.param2 * 127);
-		float mixA = panTable[mixWet] * mixerGain;;
-		float mixB = panTable[127 - mixWet] * mixerGain;;
-		float threshold = (1 - fxParam1*1.2) * thresholdNumberVoicesAttn;
-		float in;
-		int dummy;
+            int highBits = 0xFFFFE80F;
+            int lowBits = ~(highBits);
 
-		for (int k=0 ; k < BLOCK_SIZE ; k++) {
-			//LEFT
-			in = (*sp);
-			if (in>threshold || in<-threshold)
-			{
-				 dummy = FLOAT2SHORT * in;
-     			 localv0L = SHORT2FLOAT * (int)((((dummy & 0x0F) << 8) ^ (( dummy & 0xFF00) >> 8) ^ dummy & 0xFFFF00F0));
-			} else {
-				localv0L = (in);
-			}
-			*sp = ((localv0L * mixA) + (mixB * in));
-			if (unlikely(*sp > ratioTimbres)) {
-    			*sp = ratioTimbres;
-    		}
-    		if (unlikely(*sp < -ratioTimbres)) {
-    			*sp = -ratioTimbres;
-    		}
-			sp++;
+    		int mixWet = (params.effect.param2 * 127);
+    		float mixA = panTable[mixWet] * mixerGain;;
+    		float mixB = panTable[127 - mixWet] * mixerGain;;
 
-			//RIGHT
-			in = (*sp);
-			if (in>threshold || in<-threshold)
-			{
-				 dummy = FLOAT2SHORT * in;
-                 localv0R = SHORT2FLOAT * (int)((((dummy & 0x0F) << 8) ^ (( dummy & 0xFF00) >> 8) ^ dummy & 0xFFFF00F0 ));
-			} else {
-				localv0R = (in);
-			}
- 			*sp = ((localv0R * mixA) + (mixB * in));
-			if (unlikely(*sp > ratioTimbres)) {
-    			*sp = ratioTimbres;
-    		}
-    		if (unlikely(*sp < -ratioTimbres)) {
-    			*sp = -ratioTimbres;
-    		}
-			sp++;
-    	}
+            short ll = (short)(( params.effect.param1) * lowBits);
+    		int digitsL,digitsR;
+            short lowDigitsL,lowDigitsR;
 
-    	v0L = localv0L;
-    	v0R = localv0R;
+    		for (int k=0 ; k < BLOCK_SIZE ; k++) {
+    			//LEFT
+                //localv0L =  (0.8) * localv0L + 0.2 * (*sp);
+
+    		    digitsL = FLOAT2SHORT * (*sp);
+                lowDigitsL = (digitsL & lowBits);
+    			localv0L = SHORT2FLOAT * (int)( (digitsL & highBits) ^ ((lowDigitsL ^ ll) & 0x1FFF ) );
+
+    			*sp = ((localv0L * mixA) + (mixB * (*sp)));
+
+    			if (unlikely(*sp > ratioTimbres)) {
+        			*sp = ratioTimbres;
+        		}
+        		if (unlikely(*sp < -ratioTimbres)) {
+        			*sp = -ratioTimbres;
+        		}
+    			sp++;
+
+    			//RIGHT
+                //localv0R =  (0.8) * localv0R + 0.2 * (*sp);
+                //localv0R =  (1 + fxParam1)* localv0R - fxParam1 * (*sp);
+
+                digitsR = FLOAT2SHORT * (*sp);
+                lowDigitsR = (digitsR & lowBits);
+                localv0R = SHORT2FLOAT * (int)( (digitsR & highBits) ^ ((lowDigitsR ^ ll) & 0x1FFF ) );
+
+     			*sp = ((localv0R * mixA) + (mixB * (*sp)));
+
+    			if (unlikely(*sp > ratioTimbres)) {
+        			*sp = ratioTimbres;
+        		}
+        		if (unlikely(*sp < -ratioTimbres)) {
+        			*sp = -ratioTimbres;
+        		}
+    			sp++;
+        	}
+
+            v0L = localv0L;
+        	v0R = localv0R;
 	}
     break;
-    case FILTER_TEXTURE:{
+case FILTER_TEXTURE2:
+    {
 		float fxParamTmp = 1 - (params.effect.param1 + matrixFilterFrequency);
     	fxParamTmp *= fxParamTmp;
 
@@ -1657,11 +1661,9 @@ case FILTER_TILT:
 
     	float *sp = this->sampleBlock;
     	float localv0L = v0L;
-    	float localv1L = v1L;
     	float localv0R = v0R;
-    	float localv1R = v1R;
 
-        int highBits = 0xFFFFFE50;
+        int highBits = 0xFFFFFA5F;
         int lowBits = ~(highBits);
 
 		int mixWet = (params.effect.param2 * 127);
@@ -1678,7 +1680,7 @@ case FILTER_TILT:
 
 		    digitsL = FLOAT2SHORT * (*sp);
             lowDigitsL = (digitsL & lowBits);
-			localv0L = SHORT2FLOAT * (int)( (digitsL & highBits) ^ (lowDigitsL + ll) );
+			localv0L = SHORT2FLOAT * (int)( (digitsL & highBits) ^ ((lowDigitsL * ll) & 0x1FFF ) );
 
 			*sp = ((localv0L * mixA) + (mixB * (*sp)));
 
@@ -1696,7 +1698,7 @@ case FILTER_TILT:
 
             digitsR = FLOAT2SHORT * (*sp);
             lowDigitsR = (digitsR & lowBits);
-            localv0R = SHORT2FLOAT * (int)( (digitsR & highBits) ^ (lowDigitsR + ll) );
+            localv0R = SHORT2FLOAT * (int)( (digitsR & highBits) ^ ((lowDigitsR * ll) & 0x1FFF ) );
 
  			*sp = ((localv0R * mixA) + (mixB * (*sp)));
 
@@ -1711,8 +1713,6 @@ case FILTER_TILT:
 
         v0L = localv0L;
     	v0R = localv0R;
-        v1L = localv1L;
-        v1R = localv1R;
     }
     break;
     case FILTER_OFF:
