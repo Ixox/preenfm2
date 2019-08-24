@@ -165,7 +165,7 @@ struct ParameterRowDisplay engineMix3ParameterRow = {
 };
 
 
-const char* fxName []=  { "Off ", "Mix ", "LP  ", "HP  ", "Bass", "BP  ", "Crsh" , "LP2 ", "HP2 ", "BP2 ", "Tilt", "Pann", "Sat ","Sigm", "Fold", "Wrap", "Xor ", "Txr1", "Txr2"} ;
+const char* fxName []=  { "Off ", "Mix ", "LP  ", "HP  ", "Bass", "BP  ", "Crsh" , "LP2 ", "HP2 ", "BP2 ", "Tilt", "Pann", "Sat ","Sigm", "Fold", "Wrap", "Xor ", "Txr1", "Txr2", "LPx1", "LPx2"} ;
 
 struct ParameterRowDisplay effectParameterRow = {
         "Filter" ,
@@ -197,7 +197,9 @@ struct FilterRowDisplay filterRowDisplay[FILTER_LAST] = {
         { "Driv", "Mix ", "Gain" },
         { "Thrs", "Mix ", "Gain" },
         { "Thrs", "Mix ", "Gain" },
-        { "Thrs", "Mix ", "Gain" }
+        { "Thrs", "Mix ", "Gain" },
+        { "Freq", "Mix ", "Gain" },
+        { "Freq", "Mix ", "Gain" }
 };
 
 
