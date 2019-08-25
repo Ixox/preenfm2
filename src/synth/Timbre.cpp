@@ -133,7 +133,7 @@ inline
 float sigmoid(float x)
 {
     if(sabs(x)<1)
-        return x*(1.5f - 0.5f*x*x);
+        return x*(1.5f - 0.5f * x * x);
     else
         return x > 0.f ? 1.f : -1.f;
 }
@@ -1740,6 +1740,7 @@ case FILTER_TEXTURE2:
 
 		uint8_t random = (*(uint8_t*)noise) & 0xff;
 		if(random>250) {
+			//fxparam += r*1/127
 			fxParam1 += ((random &1) * 0.007874015748031);
 		}
 
@@ -1828,6 +1829,7 @@ case FILTER_TEXTURE2:
 
 		uint8_t random = (*(uint8_t*)noise) & 0xff;
 		if(random>250) {
+			//fxparam += r*1/127
 			fxParam1 += ((random &1) * 0.007874015748031);
 		}
 
@@ -1879,6 +1881,74 @@ case FILTER_TEXTURE2:
         v1R = localv1R;
 	}
 	break;
+    case FILTER_LPHP:
+    {
+    	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+    	fxParamTmp *= fxParamTmp;
+
+    	// Low pass... on the Frequency
+    	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+    	if (unlikely(fxParam1 > 1.0f)) {
+    		fxParam1 = 1.0f;
+    	}
+    	if (unlikely(fxParam1 < 0.0f)) {
+    		fxParam1 = 0.0f;
+    	}
+
+		int mixWet = (params.effect.param1 * 120);
+		float mixA =  panTable[120 - mixWet] ;
+		float mixB =  panTable[10 + mixWet];
+
+    	float pattern = (1 - fxParam2 * fxParam1);
+
+    	float *sp = this->sampleBlock;
+    	float localv0L = v0L;
+    	float localv1L = v1L;
+    	float localv0R = v0R;
+    	float localv1R = v1R;
+
+    	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+
+    		// Left voice
+			localv0L = pattern * localv0L + (fxParam1 * (-localv1L + (*sp)));
+			localv1L = pattern * localv1L + (fxParam1)*localv0L;
+			/*localv0L = pattern * localv0L + (fxParam1 * (-localv1L + (*sp)));
+			localv1L = pattern * localv1L + fxParam1 * localv0L;*/
+
+			*sp = sigmoid((localv1L * mixA) + ((*sp - localv1L) * mixB)) * mixerGain;
+
+    		if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
+    		}
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
+    		}
+
+    		sp++;
+
+    		// Right voice
+			localv0R = pattern * localv0R + (fxParam1 * (-localv1R + (*sp)));
+			localv1R = pattern * localv1R + (fxParam1)*localv0R;
+			/*localv0R = pattern * localv0R + (fxParam1 * (-localv1R + (*sp)));
+			localv1R = pattern * localv1R + fxParam1 * localv0R;*/
+			
+			*sp = sigmoid((localv1R * mixA) + ((*sp - localv1R) * mixB)) * mixerGain;
+
+    		if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
+    		}
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
+    		}
+
+    		sp++;
+    	}
+    	v0L = localv0L;
+    	v1L = localv1L;
+    	v0R = localv0R;
+    	v1R = localv1R;
+    }
+    break;
     case FILTER_OFF:
     {
     	// Filter off has gain...
@@ -2045,6 +2115,7 @@ void Timbre::setNewEffecParam(int encoder) {
         case FILTER_HP2:
         case FILTER_TILT:
 		case FILTER_STEREO:
+		case FILTER_LPHP:
     		switch (encoder) {
     		case ENCODER_EFFECT_TYPE:
     			fxParam2 = 0.3f - params.effect.param2 * 0.3f;
