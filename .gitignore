@@ -13,3 +13,4 @@ Makefile.in
 /missing
 *~
 linker/startup_stm32f4xx.lst
+.DS_Store

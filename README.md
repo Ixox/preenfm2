@@ -1,21 +1,66 @@
 ## preenfm2
 
-Ixox/preenfm2 is the official preenfm2 repository.
+forked from Ixox/preenfm2
 
-You can find here the sources of the firmware as well as the hardware files for the PCB, MCU board and cases.
+in this version, some more filters & fx :
 
-If you think something is missing or not clear, please contact me.
+LP2  :
+enhanced version of the original LP (oversampled)
 
-If you don't have the preenfm2 bootlader installed, you need to flash it first, [read this](http://ixox.fr/preenfm2/build-it/burn-firmware/)
+HP2  :
+same as LP2, but for HP
 
-To compile the firmware, you'll need [arm-gcc version 4.7](https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2014-q2-update)
+BP2  :
+same as LP2, for BP
 
-Add the bin directory to your PATH, and run **'make'**, you'll get the list of the available targets.
+LpHp :
+experimental filter, morph from lowpaqq at freq=0 to highpass at freq=1
 
-**'make pfm'** builds the firmware.
+Bp3  :
+bandpass filter, different algo from original BP
 
-Then put your preenfm2 in [bootloader mode](http://ixox.fr/preenfm2/manual/upgrade-firmware/). Look at DFU part 4.
+Tilt :
+emphasis on low (mod < 0.5)
+or high frequency (mod > 0.5)
+Freq = breakpoint
 
-**'make installdfu'** flash the firmware on the preenfm2 using the DFU protocol.
+Pann :
+experimental stereo enhancer : 
+at wide = 0, the signal is mono
+at wide = 1, the signal is stereo, larger than original (maybe, depend on the material)
+pos is the pseudo pan position (bandpass positionning) 
 
-Once it's done, unplug the power cable and plug it back.
+Sat  :
+kind of guitar saturation ; signal over threshold is distorded
+
+Sigm :
+tanh waveshaper saturation
+
+Fold :
+signal is amplified by "driv ", signal over 1 is folded, as many time as needed
+
+Wrap :
+signal is amplified by "driv ", signal over 1 is wraped ; it is mirrored at -1
+
+Xor  :
+signal over threshold is xor-ed with an allpass version of itself
+
+Txr1 :
+bitmangling texture 1
+thrs : xor-ed intensity
+
+Txr2 :
+bitmangling texture 2 
+thrs : xor-ed intensity, different kind
+
+LPx1 :
+low pass filter with xor after filter
+this one can self oscillate on the xor part
+
+LPx2 :
+low pass filter with xor before filter
+
+LPws :
+distorted low pass mixed with source signal
+bottom presence enhancer
+
