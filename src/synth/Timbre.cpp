@@ -156,7 +156,9 @@ float transfSin(float x)
 	} else if (x<-1) {
 		return -1;
 	}
-	return sinTable[(int)(12 + 1000 * sabs(x))];
+
+	x = 1 - x;
+	return sinTable[ (int) (1024 * x) ];
 }
 
 //https://www.musicdsp.org/en/latest/Other/120-saturation.html
@@ -1251,7 +1253,7 @@ case FILTER_BP3:
 	if(fxParam1==1) {
 		fb = 2;
 	} else {
-		fb = fxParam2 + fxParam2 / (1 - fxParam1);
+		fb = 1.4 * (fxParam2 + fxParam2 / (1 - fxParam1));
 	}
 
 	float *sp = this->sampleBlock;
@@ -1267,10 +1269,10 @@ case FILTER_BP3:
 		// Left voice
 		hp = (*sp) - localv0L;
 		bp = localv0L - localv1L;
-		localv0L = localv0L + fxParam1 * (hp + fb * bp);
+		localv0L = localv0L + fxParam1 * tanh2(hp + fb * bp);
 		localv1L = localv1L + fxParam1 * (localv0L - localv1L);
 
-		*sp = tanh2(bp) * gain;
+		*sp = (bp) * gain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1284,10 +1286,10 @@ case FILTER_BP3:
 		// Right voice
 		hp = (*sp) - localv0R;
 		bp = localv0R - localv1R;
-		localv0R = localv0R + fxParam1 * (hp + fb * bp);
+		localv0R = localv0R + fxParam1 * tanh2(hp + fb * bp);
 		localv1R = localv1R + fxParam1 * (localv0R - localv1R);
 
-		*sp = tanh2(bp) * gain;
+		*sp = (bp) * gain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1302,6 +1304,158 @@ case FILTER_BP3:
 	v1L = localv1L;
 	v0R = localv0R;
 	v1R = localv1R;
+}
+break;
+case FILTER_NOTCH:
+{
+	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
+	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+
+	//clip -1 1
+	if(fxParamTmp>1) {
+		fxParamTmp = 1;
+	} else if(fxParamTmp<-1) {
+		fxParamTmp = -1;
+	}
+
+	fxParamTmp *= fxParamTmp;
+
+	// Low pass... on the Frequency
+	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+	if (unlikely(fxParam1 > 1.0f)) {
+		fxParam1 = 1.0f;
+	}
+	if (unlikely(fxParam1 < 0.0f)) {
+		fxParam1 = 0.0f;
+	}
+	
+	float f = fxParam1 * 0.5;
+	float fb =  sqrt(1 - params.effect.param2 * 0.999);
+	float scale = sqrt(fb);
+
+	float *sp = this->sampleBlock;
+	float lowL = v0L, highL = 0, bandL = v1L;
+	float lowR = v0R, highR = 0, bandR = v1R;
+
+	int ii;
+	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+
+		// Left voice
+		for (ii=0; ii<2; ii++) {
+			lowL = lowL + f * bandL;
+			highL = scale * (*sp) - lowL - fb * bandL;
+			bandL = f * highL + bandL;
+		}
+		*sp = (highL + lowL) * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+
+		// Right voice
+		for (ii=0; ii<2; ii++) {
+			lowR = lowR + f * bandR;
+			highR = scale * (*sp) - lowR - fb * bandR;
+			bandR = f * highR + bandR;
+		}
+
+		*sp = (highR + lowR) * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+	}
+
+	v0L = lowL;
+	v1L = bandL;
+	v0R = lowR;
+	v1R = bandR;
+}
+break;
+case FILTER_LP3:
+{
+	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
+	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+
+	//clip -1 1
+	if(fxParamTmp>1) {
+		fxParamTmp = 1;
+	} else if(fxParamTmp<-1) {
+		fxParamTmp = -1;
+	}
+
+	fxParamTmp *= fxParamTmp;
+
+	// Low pass... on the Frequency
+	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+	if (unlikely(fxParam1 > 1.0f)) {
+		fxParam1 = 1.0f;
+	}
+	if (unlikely(fxParam1 < 0.0f)) {
+		fxParam1 = 0.0f;
+	}
+	
+	float f = fxParam1 * 0.5;
+	float fb =  sqrt(1 - params.effect.param2 * 0.999);
+	float scale = sqrt(fb);
+
+	float *sp = this->sampleBlock;
+	float lowL = v0L, highL = 0, bandL = v1L;
+	float lowR = v0R, highR = 0, bandR = v1R;
+
+	int ii;
+	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+
+		// Left voice
+		for (ii=0; ii<2; ii++) {
+			lowL = lowL + f * bandL;
+			highL = scale * (*sp) - lowL - fb * bandL;
+			bandL = f * highL + bandL;
+		}
+		*sp = lowL * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+
+		// Right voice
+		for (ii=0; ii<2; ii++) {
+			lowR = lowR + f * bandR;
+			highR = scale * (*sp) - lowR - fb * bandR;
+			bandR = f * highR + bandR;
+		}
+
+		*sp = lowR * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+	}
+
+	v0L = lowL;
+	v1L = bandL;
+	v0R = lowR;
+	v1R = bandR;
 }
 break;
 case FILTER_TILT:
