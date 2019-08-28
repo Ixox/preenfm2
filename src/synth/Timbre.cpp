@@ -129,6 +129,16 @@ float tanh2(float x)
 	return x/(sabs(x)+3/(2+x*x));
 }
 inline
+float cubicSc(float x)
+{
+	if (x>1) {
+		return 0.666666666;
+	} else if (x<-1) {
+		return -0.666666666;
+	}
+	return x * (1 - (x*x*0.3333333333) );
+}
+inline
 float transf33(float x)
 {
 	if (x>1) {
@@ -1225,7 +1235,7 @@ case FILTER_LPHP:
 	v1R = localv1R;
 }
 break;
-case FILTER_BP3:
+case FILTER_BPds:
 {
 	//https://www.musicdsp.org/en/latest/Filters/29-resonant-filter.html
 	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
@@ -1262,17 +1272,16 @@ case FILTER_BP3:
 	float localv0R = v0R;
 	float localv1R = v1R;
 	float hp, bp;
-	float gain = 2 * mixerGain;
 
 	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 
 		// Left voice
 		hp = (*sp) - localv0L;
 		bp = localv0L - localv1L;
-		localv0L = localv0L + fxParam1 * tanh2(hp + fb * bp);
+		localv0L = localv0L + fxParam1 * tanh2((hp + fb * bp));
 		localv1L = localv1L + fxParam1 * (localv0L - localv1L);
 
-		*sp = (bp) * gain;
+		*sp = (bp) * mixerGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1286,10 +1295,10 @@ case FILTER_BP3:
 		// Right voice
 		hp = (*sp) - localv0R;
 		bp = localv0R - localv1R;
-		localv0R = localv0R + fxParam1 * tanh2(hp + fb * bp);
+		localv0R = localv0R + fxParam1 * tanh2((hp + fb * bp));
 		localv1R = localv1R + fxParam1 * (localv0R - localv1R);
 
-		*sp = (bp) * gain;
+		*sp = (bp) * mixerGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1309,6 +1318,7 @@ break;
 case FILTER_NOTCH:
 {
 	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
+	//https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf
 	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
 
 	//clip -1 1
@@ -1330,7 +1340,7 @@ case FILTER_NOTCH:
 	}
 	
 	float f = fxParam1 * 0.5;
-	float fb =  sqrt(1 - params.effect.param2 * 0.999);
+	float fb =  sqrt(1 - params.effect.param2 * 0.9);
 	float scale = sqrt(fb);
 
 	float *sp = this->sampleBlock;
@@ -1419,10 +1429,84 @@ case FILTER_LP3:
 		// Left voice
 		for (ii=0; ii<2; ii++) {
 			lowL = lowL + f * bandL;
+			bandL += f * (scale * (*sp) - lowL - fb * bandL);
+		}
+		*sp = lowL * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+
+		// Right voice
+		for (ii=0; ii<2; ii++) {
+			lowR = lowR + f * bandR;
+			bandR += f * (scale * (*sp) - lowR - fb * bandR);
+		}
+
+		*sp = lowR * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+	}
+
+	v0L = lowL;
+	v1L = bandL;
+	v0R = lowR;
+	v1R = bandR;
+}
+break;
+case FILTER_HP3: 
+{
+	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
+	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+
+	//clip -1 1
+	if(fxParamTmp>1) {
+		fxParamTmp = 1;
+	} else if(fxParamTmp<-1) {
+		fxParamTmp = -1;
+	}
+
+	fxParamTmp *= fxParamTmp;
+
+	// Low pass... on the Frequency
+	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+	if (unlikely(fxParam1 > 1.0f)) {
+		fxParam1 = 1.0f;
+	}
+	if (unlikely(fxParam1 < 0.0f)) {
+		fxParam1 = 0.0f;
+	}
+	
+	float f = fxParam1 * 0.5;
+	float fb =  sqrt(1 - params.effect.param2 * 0.999);
+	float scale = sqrt(fb);
+
+	float *sp = this->sampleBlock;
+	float lowL = v0L, highL = 0, bandL = v1L;
+	float lowR = v0R, highR = 0, bandR = v1R;
+
+	int ii;
+	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+
+		// Left voice
+		for (ii=0; ii<2; ii++) {
+			lowL = lowL + f * bandL;
 			highL = scale * (*sp) - lowL - fb * bandL;
 			bandL = f * highL + bandL;
 		}
-		*sp = lowL * mixerGain;
+		*sp = (highL) * mixerGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1440,7 +1524,159 @@ case FILTER_LP3:
 			bandR = f * highR + bandR;
 		}
 
-		*sp = lowR * mixerGain;
+		*sp = (highR) * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+	}
+
+	v0L = lowL;
+	v1L = bandL;
+	v0R = lowR;
+	v1R = bandR;
+}
+break;
+case FILTER_BP3: 
+{
+	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
+	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+
+	//clip -1 1
+	if(fxParamTmp>1) {
+		fxParamTmp = 1;
+	} else if(fxParamTmp<-1) {
+		fxParamTmp = -1;
+	}
+
+	fxParamTmp *= fxParamTmp;
+
+	// Low pass... on the Frequency
+	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+	if (unlikely(fxParam1 > 1.0f)) {
+		fxParam1 = 1.0f;
+	}
+	if (unlikely(fxParam1 < 0.0f)) {
+		fxParam1 = 0.0f;
+	}
+	
+	float f = fxParam1 * 0.5;
+	float fb =  sqrt(0.5 - params.effect.param2 * 0.5);
+	float scale = sqrt(fb);
+
+	float *sp = this->sampleBlock;
+	float lowL = v0L, highL = 0, bandL = v1L;
+	float lowR = v0R, highR = 0, bandR = v1R;
+
+	int ii;
+	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+
+		// Left voice
+		for (ii=0; ii<2; ii++) {
+			lowL = lowL + f * bandL;
+			highL = scale * (*sp) - lowL - fb * bandL;
+			bandL = f * highL + bandL;
+		}
+		*sp = (bandL) * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+
+		// Right voice
+		for (ii=0; ii<2; ii++) {
+			lowR = lowR + f * bandR;
+			highR = scale * (*sp) - lowR - fb * bandR;
+			bandR = f * highR + bandR;
+		}
+
+		*sp = (bandR) * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+	}
+
+	v0L = lowL;
+	v1L = bandL;
+	v0R = lowR;
+	v1R = bandR;
+}
+break;
+case FILTER_PEAK:
+{
+	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
+	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+
+	//clip -1 1
+	if(fxParamTmp>1) {
+		fxParamTmp = 1;
+	} else if(fxParamTmp<-1) {
+		fxParamTmp = -1;
+	}
+
+	fxParamTmp *= fxParamTmp;
+
+	// Low pass... on the Frequency
+	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+	if (unlikely(fxParam1 > 1.0f)) {
+		fxParam1 = 1.0f;
+	}
+	if (unlikely(fxParam1 < 0.0f)) {
+		fxParam1 = 0.0f;
+	}
+	
+	float f = fxParam1 * 0.5;
+	float fb =  sqrt(1 - params.effect.param2 * 0.999);
+	float scale = sqrt(fb);
+
+	float *sp = this->sampleBlock;
+	float lowL = v0L, highL = 0, bandL = v1L;
+	float lowR = v0R, highR = 0, bandR = v1R;
+
+	int ii;
+	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+
+		// Left voice
+		for (ii=0; ii<2; ii++) {
+			lowL = lowL + f * bandL;
+			highL = scale * (*sp) - lowL - fb * bandL;
+			bandL = f * highL + bandL;
+		}
+		*sp = (bandL + highL + lowL) * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+
+		// Right voice
+		for (ii=0; ii<2; ii++) {
+			lowR = lowR + f * bandR;
+			highR = scale * (*sp) - lowR - fb * bandR;
+			bandR = f * highR + bandR;
+		}
+
+		*sp = (bandR + highR + lowR) * mixerGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -2240,7 +2476,7 @@ case FILTER_TEXTURE2:
 
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
     		// Left voice
-    		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1) * transf44(*sp);
+    		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1) * cubicSc(*sp);
     		localv1L =  pattern * localv1L  +  (fxParam1) * (localv0L);
 
  			*sp = ((localv1L * mixA) - (mixB * (*sp)));
@@ -2255,7 +2491,7 @@ case FILTER_TEXTURE2:
     		sp++;
 
     		// Right voice
-    		localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + (fxParam1) * transf44(*sp);
+    		localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + (fxParam1) * cubicSc(*sp);
     		localv1R =  pattern * localv1R  +  (fxParam1) * (localv0R);
 
  			*sp = ((localv1R * mixA) - (mixB * (*sp)));
@@ -2476,6 +2712,16 @@ void Timbre::setNewEffecParam(int encoder) {
 			fxParam2 = params.effect.param2 * 0.5 + 0.5 * pow(3, params.effect.param2*1.5);
 			break;
 		}
+		default:
+		  	switch (encoder) {
+    		case ENCODER_EFFECT_TYPE:
+    			break;
+    		case ENCODER_EFFECT_PARAM1:
+    			break;
+    		case ENCODER_EFFECT_PARAM2:
+    			fxParam2 = params.effect.param2;
+    			break;
+    		}
 	}
 }
 
