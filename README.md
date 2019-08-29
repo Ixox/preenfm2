@@ -13,11 +13,32 @@ in this version, some more filters & fx :
 ###### BP2  :
 - same as LP2, for BP
 
-###### LpHp :
-- experimental filter, morph from lowpaqq at freq=0 to highpass at freq=1
+###### Lp3  :
+- state variable filter, low pass mode
+
+###### Hp3  :
+- state variable filter, high pass mode
 
 ###### Bp3  :
-- bandpass filter, different algo from original BP
+- state variable filter, band pass mode
+
+###### Peak  :
+- state variable filter, peak mode
+
+###### Notc  :
+- state variable filter, nptch mode
+
+###### Bell  :
+- state variable filter, bell mode
+
+###### LpHp :
+- distortion filter, morph from lowpass at freq=0 to highpass at freq=1
+
+###### BpDs
+- saturated bandpass filter
+
+###### LPws :
+- distorted low pass mixed with source signal, bottom presence enhancer
 
 ###### Tilt :
 - emphasis on low (mod < 0.5) or high frequency (mod > 0.5), Freq = breakpoint
@@ -52,6 +73,4 @@ in this version, some more filters & fx :
 ###### LPx2 :
 - low pass filter with xor before filter
 
-###### LPws :
-- distorted low pass mixed with source signal, bottom presence enhancer
 

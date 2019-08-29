@@ -1240,7 +1240,6 @@ case FILTER_LPHP:
 break;
 case FILTER_BPds:
 {
-	//https://www.musicdsp.org/en/latest/Filters/29-resonant-filter.html
 	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
 
 	//clip -1 1
@@ -1261,30 +1260,24 @@ case FILTER_BPds:
 		fxParam1 = 0.0f;
 	}
 	
-	fxParam2 = params.effect.param2;
-	float fb;
-	if(fxParam1==1) {
-		fb = 2;
-	} else {
-		fb = 1.4 * (fxParam2 + fxParam2 / (1 - fxParam1));
-	}
+	float f = fxParam1 * 0.5;
+	float fb =  sqrt(0.5 - params.effect.param2 * 0.5);
+	float scale = sqrt(fb);
 
 	float *sp = this->sampleBlock;
-	float localv0L = v0L;
-	float localv1L = v1L;
-	float localv0R = v0R;
-	float localv1R = v1R;
-	float hp, bp;
+	float lowL = v0L, highL = 0, bandL = v1L;
+	float lowR = v0R, highR = 0, bandR = v1R;
 
+	int ii;
 	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 
 		// Left voice
-		hp = (*sp) - localv0L;
-		bp = localv0L - localv1L;
-		localv0L = localv0L + fxParam1 * tanh2((hp + fb * sat33(bp)));
-		localv1L = localv1L + fxParam1 * (localv0L - localv1L);
-
-		*sp = (bp) * mixerGain;
+		for (ii=0; ii<2; ii++) {
+			lowL = lowL + f * bandL;
+			highL = scale * (*sp) - lowL - fb * bandL;
+			bandL = (f * highL) + bandL;
+		}
+		*sp = sigmoid(tanh2(bandL)) * mixerGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1296,12 +1289,13 @@ case FILTER_BPds:
 		sp++;
 
 		// Right voice
-		hp = (*sp) - localv0R;
-		bp = localv0R - localv1R;
-		localv0R = localv0R + fxParam1 * tanh2((hp + fb * sat33(bp)));
-		localv1R = localv1R + fxParam1 * (localv0R - localv1R);
+		for (ii=0; ii<2; ii++) {
+			lowR = lowR + f * bandR;
+			highR = scale * (*sp) - lowR - fb * bandR;
+			bandR = (f * highR) + bandR;
+		}
 
-		*sp = (bp) * mixerGain;
+		*sp = sigmoid(tanh2(bandR)) * mixerGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1312,10 +1306,11 @@ case FILTER_BPds:
 
 		sp++;
 	}
-	v0L = localv0L;
-	v1L = localv1L;
-	v0R = localv0R;
-	v1R = localv1R;
+
+	v0L = lowL;
+	v1L = bandL;
+	v0R = lowR;
+	v1R = bandR;
 }
 break;
 case FILTER_NOTCH:
@@ -1412,9 +1407,9 @@ case FILTER_BELL:
 	}
 
 	//A = 10 ^ (db / 40)
-	float A = (params.effect.param2 * 1.5) + 0.5;
+	float A = (tanh2(params.effect.param2 * 2) * 1.5) + 0.5;
 
-	float res = 0.5;
+	float res = 0.6;
 	float k = 1 / (0.0001 + res * A);
 	float g = 0.0001 + fxParam1;
 	float a1 = 1 / (1 + g * ( g + k));
@@ -1437,7 +1432,7 @@ case FILTER_BELL:
 		ic1eqL = 2 * v1 - ic1eqL;
 		ic2eqL = 2 * v2 - ic2eqL;
 
-		*sp = (*sp  + satSin(amp * v1)) * mixerGain;
+		*sp = (*sp + satSin(amp * v1)) * mixerGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1455,7 +1450,7 @@ case FILTER_BELL:
 		ic1eqR = 2 * v1 - ic1eqR;
 		ic2eqR = 2 * v2 - ic2eqR;
 
-		*sp = (*sp  + satSin(amp * v1)) * mixerGain;
+		*sp = (*sp + satSin(amp * v1)) * mixerGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -2258,7 +2253,7 @@ case FILTER_TEXTURE1:
 			float fb =  sqrt(1 - params.effect.param2 * 0.999);
 			float scale = sqrt(fb);
 
-            int highBits = 0xFFFFE80F;
+            int highBits = 0xFFFFFD4F;
             int lowBits = ~(highBits);
 
             short ll = (short)(( fxParam1 ) * lowBits);
@@ -2331,10 +2326,10 @@ case FILTER_TEXTURE2:
 		float lowR = v0R, highR = 0, bandR = v1R;
 
 		float f = fxParam1 * 0.5;
-		float fb =  0.2;//sqrt(1 - params.effect.param2 * 0.999);
-		float scale = sqrt(fb + params.effect.param2 * 2);
+		float fb =  sqrt(1 - params.effect.param2 * 0.999);
+		float scale = sqrt(fb);
 
-        int highBits = 0xFFFFFA5F;
+        int highBits = 0xFFFFFFAF;
         int lowBits = ~(highBits);
 
         short ll = (short)(( fxParam1 ) * lowBits);
@@ -2343,15 +2338,15 @@ case FILTER_TEXTURE2:
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 			//LEFT
+		    digitsL = FLOAT2SHORT * (bandL);
+            lowDigitsL = (digitsL & lowBits);
+			bandL = SHORT2FLOAT * (int)( (digitsL & highBits) ^ ((lowDigitsL * ll) & 0x1FFF ) );
+
 			lowL = lowL + f * bandL;
 			highL = scale * (*sp) - lowL - fb * bandL;
 			bandL = f * highL + bandL;
 
-		    digitsL = FLOAT2SHORT * (highL);
-            lowDigitsL = (digitsL & lowBits);
-			highL = SHORT2FLOAT * (int)( (digitsL & highBits) ^ ((lowDigitsL * ll) & 0x1FFF ) );
-
-			*sp = (highL + lowL) * mixerGain;
+			*sp = (bandL) * mixerGain;
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -2362,15 +2357,15 @@ case FILTER_TEXTURE2:
 			sp++;
 
 			//RIGHT
+            digitsR = FLOAT2SHORT * (bandR);
+            lowDigitsR = (digitsR & lowBits);
+            bandR = SHORT2FLOAT * (int)( (digitsR & highBits) ^ ((lowDigitsR * ll) & 0x1FFF ) );
+
 			lowR = lowR + f * bandR;
 			highR = scale * (*sp) - lowR - fb * bandR;
 			bandR = f * highR + bandR;
 
-            digitsR = FLOAT2SHORT * (highR);
-            lowDigitsR = (digitsR & lowBits);
-            highR = SHORT2FLOAT * (int)( (digitsR & highBits) ^ ((lowDigitsR * ll) & 0x1FFF ) );
-
-			*sp = (highR + lowR) * mixerGain;
+			*sp = (bandR) * mixerGain;
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -2566,7 +2561,7 @@ case FILTER_LPWS:
     		fxParam1 = 0.0f;
     	}
 		
-    	float pattern = (1 - 0.99 * fxParam1);
+    	float pattern = (1 - 0.5 * fxParam1);
 
     	float *sp = this->sampleBlock;
     	float localv0L = v0L;
@@ -2580,13 +2575,10 @@ case FILTER_LPWS:
 
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
     		// Left voice
-    		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1) * transf44(*sp);
+    		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1) * (*sp);
     		localv1L =  pattern * localv1L  +  (fxParam1) * (localv0L);
 
-    		/*localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1) * (*sp);
-    		localv1L =  pattern * localv1L  +  (fxParam1) * (localv0L);*/
-
- 			*sp = ((localv1L * mixA) - (mixB * (*sp)));
+ 			*sp = (sigmoid(tanh2(2 * localv1L)) * mixA + (mixB * (*sp)));
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -2598,13 +2590,10 @@ case FILTER_LPWS:
     		sp++;
 
     		// Right voice
-    		localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + (fxParam1) * transf44(*sp);
+    		localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + (fxParam1) * (*sp);
     		localv1R =  pattern * localv1R  +  (fxParam1) * (localv0R);
 
-    		/*localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + (fxParam1) * (*sp);
-    		localv1R =  pattern * localv1R  +  (fxParam1) * (localv0R);*/
-
- 			*sp = ((localv1R * mixA) - (mixB * (*sp)));
+ 			*sp = (sigmoid(tanh2(2 * localv1R)) * mixA + (mixB * (*sp)));
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
