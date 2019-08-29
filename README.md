@@ -5,7 +5,7 @@ forked from Ixox/preenfm2
 in this version, some more filters & fx :
 
 ###### LP2  :
-- enhanced version of the original LP (oversampled)
+- different flavour of the original LP
 
 ###### HP2  :
 - same as LP2, but for HP
@@ -26,10 +26,10 @@ in this version, some more filters & fx :
 - state variable filter, peak mode
 
 ###### Notc  :
-- state variable filter, nptch mode
+- state variable filter, notch mode
 
 ###### Bell  :
-- state variable filter, bell mode
+- state variable filter, boost if param amp = 0.5, else cut.
 
 ###### LpHp :
 - distortion filter, morph from lowpass at freq=0 to highpass at freq=1
@@ -44,7 +44,7 @@ in this version, some more filters & fx :
 - emphasis on low (mod < 0.5) or high frequency (mod > 0.5), Freq = breakpoint
 
 ###### Pann :
-- experimental stereo enhancer : at wide = 0, the signal is mono, at wide = 1, the signal is stereo, larger than original (maybe, depend on the material), pos is the pseudo pan position (bandpass trick) 
+- stereo enhancer : wide = 0, the signal is mono, wide = 1, the signal is stereo, pos is the pseudo pan position
 
 ###### Sat  :
 - kind of guitar saturation ; signal over threshold is distorded
@@ -68,7 +68,7 @@ in this version, some more filters & fx :
 - bitmangling texture 2, thrs : xor-ed intensity, different kind
 
 ###### LPx1 :
-- low pass filter with xor after filter, this one can self oscillate on the xor part
+- low pass filter with xor after filter, can self oscillate in special way
 
 ###### LPx2 :
 - low pass filter with xor before filter

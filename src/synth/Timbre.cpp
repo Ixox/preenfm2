@@ -1392,6 +1392,7 @@ case FILTER_NOTCH:
 break;
 case FILTER_BELL:
 {
+	//filter algo from Andrew Simper
 	//https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf
 	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
 
