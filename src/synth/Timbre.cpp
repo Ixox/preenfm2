@@ -129,24 +129,24 @@ float tanh2(float x)
 	return x/(sabs(x)+3/(2+x*x));
 }
 inline
-float cubicSc(float x)
+float sat22(float x)
 {
-	if (x>1) {
-		return 0.666666666;
-	} else if (x<-1) {
-		return -0.666666666;
-	}
-	return x * (1 - (x*x*0.3333333333) );
-}
-inline
-float transf33(float x)
-{
-	if (x>1) {
+	if (x>1.25) {
 		return 1;
-	} else if (x<-1) {
+	} else if (x<-1.25) {
 		return -1;
 	}
-	return x * ((2*x*x) - 1);
+	return x * (1.2 - (x*x*0.25) );
+}
+inline
+float sat33(float x)
+{
+	if (x>1.5) {
+		return 1;
+	} else if (x<-1.5) {
+		return -1;
+	}
+	return x - (x*x*x * 0.15);
 }
 inline
 float transf44(float x)
@@ -156,19 +156,22 @@ float transf44(float x)
 	} else if (x<-1) {
 		return -1;
 	}
-	return x * ((4*x*x) - 3);
+	return - x * ((4*x*x) - 3);
 }
 inline
-float transfSin(float x)
+float satSin(float x)
 {
-	if (x>1) {
-		return 1;
-	} else if (x<-1) {
-		return -1;
+	if (x>0) {
+		if (x>1) {
+			return 1;
+		}
+		return sinTable[ (int) (512 * x) ];
+	} else {
+		if (x<-1) {
+			return -1;
+		}
+		return sinTable[ (int) (1024 - (512 * x)) ];
 	}
-
-	x = 1 - x;
-	return sinTable[ (int) (1024 * x) ];
 }
 
 //https://www.musicdsp.org/en/latest/Other/120-saturation.html
@@ -1000,11 +1003,11 @@ case FILTER_LP2:
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 
     		// Left voice
-			localv0L = pattern * localv0L - sigmoid( fxParam1) * (localv1L + (*sp) );
-			localv1L = pattern * localv1L + (fxParam1)*localv0L;
+			localv0L = pattern * localv0L - fxParam1 * (localv1L + (*sp) );
+			localv1L = pattern * localv1L + (fxParam1) * localv0L;
 
 			localv0L = pattern * localv0L - (fxParam1) * (localv1L + (*sp));
-			localv1L = pattern * localv1L + (fxParam1)*localv0L;
+			localv1L = pattern * localv1L + (fxParam1) * localv0L;
 
 			*sp = localv1L * mixerGain;
 
@@ -1018,11 +1021,11 @@ case FILTER_LP2:
     		sp++;
 
     		// Right voice
-			localv0R = pattern * localv0R - sigmoid( fxParam1) * (localv1R + (*sp) );
-			localv1R = pattern * localv1R + (fxParam1)*localv0R;
+			localv0R = pattern * localv0R - fxParam1 * (localv1R + (*sp) );
+			localv1R = pattern * localv1R + (fxParam1) * localv0R;
 
 			localv0R = pattern * localv0R - (fxParam1) * (localv1R + (*sp));
-			localv1R = pattern * localv1R + (fxParam1)*localv0R;
+			localv1R = pattern * localv1R + (fxParam1) * localv0R;
 
 			*sp = localv1R * mixerGain;
 
@@ -1067,9 +1070,9 @@ case FILTER_HP2:
 
             // Left voice
 			localv0L = pattern * localv0L + (fxParam1 * (-localv1L + (*sp)));
-			localv1L = pattern * localv1L + (fxParam1)*localv0L;
+			localv1L = pattern * localv1L + (fxParam1) * localv0L;
 
-			localv0L = pattern * localv0L + (fxParam1 * (-localv1L + (*sp)));
+			localv0L = pattern * localv0L + (fxParam1 * (-localv1L + sat33(*sp)));
 			localv1L = pattern * localv1L + fxParam1 * localv0L;
 
 			*sp = (*sp - localv1L) * mixerGain;
@@ -1087,7 +1090,7 @@ case FILTER_HP2:
 			localv0R = pattern * localv0R + (fxParam1 * (-localv1R + (*sp)));
 			localv1R = pattern * localv1R + fxParam1 * localv0R;
 
-			localv0R = pattern * localv0R + (fxParam1 * (-localv1R + (*sp)));
+			localv0R = pattern * localv0R + (fxParam1 * (-localv1R + sat33(*sp)));
 			localv1R = pattern * localv1R + fxParam1 * localv0R;
 
 			*sp = (*sp - localv1R) * mixerGain;
@@ -1132,7 +1135,7 @@ case FILTER_BP2:
 
     for (int k=0 ; k < BLOCK_SIZE ; k++) {
         //Left
-        in = fxParam1 * (*sp);
+        in = fxParam1 * sat33(*sp);
 		temp = in - fxParamA1 * localv0L - fxParamA2 * localv1L;
         localv1L = localv0L;
         localv0L = temp;
@@ -1148,7 +1151,7 @@ case FILTER_BP2:
         localv0L = localV;
 
         //Right
-        in = fxParam1 * (*sp);
+        in = fxParam1 * sat33(*sp);
 		temp = in - fxParamA1 * localv0R - fxParamA2 * localv1R;
         localv1R = localv0R;
         localv0R = temp;
@@ -1201,7 +1204,7 @@ case FILTER_LPHP:
 
 		// Left voice
 		localv0L = pattern * localv0L + (fxParam1 * (-localv1L + (*sp)));
-		localv1L = pattern * localv1L + (fxParam1)*localv0L;
+		localv1L = pattern * localv1L + (fxParam1) * localv0L;
 
 		*sp = sigmoid(tanh2((localv1L * mixA) + ((*sp - localv1L) * mixB)))* mixerGain;
 
@@ -1216,7 +1219,7 @@ case FILTER_LPHP:
 
 		// Right voice
 		localv0R = pattern * localv0R + (fxParam1 * (-localv1R + (*sp)));
-		localv1R = pattern * localv1R + (fxParam1)*localv0R;
+		localv1R = pattern * localv1R + (fxParam1) * localv0R;
 		
 		*sp = sigmoid(tanh2((localv1R * mixA) + ((*sp - localv1R) * mixB))) * mixerGain;
 
@@ -1278,7 +1281,7 @@ case FILTER_BPds:
 		// Left voice
 		hp = (*sp) - localv0L;
 		bp = localv0L - localv1L;
-		localv0L = localv0L + fxParam1 * tanh2((hp + fb * bp));
+		localv0L = localv0L + fxParam1 * tanh2((hp + fb * sat33(bp)));
 		localv1L = localv1L + fxParam1 * (localv0L - localv1L);
 
 		*sp = (bp) * mixerGain;
@@ -1295,7 +1298,7 @@ case FILTER_BPds:
 		// Right voice
 		hp = (*sp) - localv0R;
 		bp = localv0R - localv1R;
-		localv0R = localv0R + fxParam1 * tanh2((hp + fb * bp));
+		localv0R = localv0R + fxParam1 * tanh2((hp + fb * sat33(bp)));
 		localv1R = localv1R + fxParam1 * (localv0R - localv1R);
 
 		*sp = (bp) * mixerGain;
@@ -1340,7 +1343,7 @@ case FILTER_NOTCH:
 	}
 	
 	float f = fxParam1 * 0.5;
-	float fb =  sqrt(1 - params.effect.param2 * 0.9);
+	float fb =  sqrt(1 - params.effect.param2 * 0.6);
 	float scale = sqrt(fb);
 
 	float *sp = this->sampleBlock;
@@ -1392,6 +1395,84 @@ case FILTER_NOTCH:
 	v1R = bandR;
 }
 break;
+case FILTER_BELL:
+{
+	//https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf
+	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+
+	fxParamTmp *= fxParamTmp;
+
+	// Low pass... on the Frequency
+	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+	if (unlikely(fxParam1 > 1.0f)) {
+		fxParam1 = 1.0f;
+	}
+	if (unlikely(fxParam1 < 0.0f)) {
+		fxParam1 = 0.0f;
+	}
+
+	//A = 10 ^ (db / 40)
+	float A = (params.effect.param2 * 1.5) + 0.5;
+
+	float res = 0.5;
+	float k = 1 / (0.0001 + res * A);
+	float g = 0.0001 + fxParam1;
+	float a1 = 1 / (1 + g * ( g + k));
+	float a2 = g * a1;
+	float a3 = g * a2;
+	float amp = k * (A * A - 1);
+
+	float *sp = this->sampleBlock;
+
+	float ic1eqL = v0L, ic2eqL = v1L;
+	float ic1eqR = v0R, ic2eqR = v1R;
+	float v1, v2, v3;
+
+	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+
+		// Left voice
+		v3 = (*sp) - ic2eqL;
+		v1 = a1 * ic1eqL + a2 * v3;
+		v2 = ic2eqL + a2 * ic1eqL + a3 * v3;
+		ic1eqL = 2 * v1 - ic1eqL;
+		ic2eqL = 2 * v2 - ic2eqL;
+
+		*sp = (*sp  + satSin(amp * v1)) * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+
+		// Right voice
+		v3 = (*sp) - ic2eqR;
+		v1 = a1 * ic1eqR + a2 * v3;
+		v2 = ic2eqR + a2 * ic1eqR + a3 * v3;
+		ic1eqR = 2 * v1 - ic1eqR;
+		ic2eqR = 2 * v2 - ic2eqR;
+
+		*sp = (*sp  + satSin(amp * v1)) * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+	}
+
+	v0L = ic1eqL;
+	v1L = ic2eqL;
+	v0R = ic1eqR;
+	v1R = ic2eqR;
+}
+break;
 case FILTER_LP3:
 {
 	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
@@ -1429,7 +1510,7 @@ case FILTER_LP3:
 		// Left voice
 		for (ii=0; ii<2; ii++) {
 			lowL = lowL + f * bandL;
-			bandL += f * (scale * (*sp) - lowL - fb * bandL);
+			bandL += f * (scale * sat33(*sp) - lowL - fb * (bandL));
 		}
 		*sp = lowL * mixerGain;
 
@@ -1445,7 +1526,7 @@ case FILTER_LP3:
 		// Right voice
 		for (ii=0; ii<2; ii++) {
 			lowR = lowR + f * bandR;
-			bandR += f * (scale * (*sp) - lowR - fb * bandR);
+			bandR += f * (scale * sat33(*sp) - lowR - fb * (bandR));
 		}
 
 		*sp = lowR * mixerGain;
@@ -1503,7 +1584,7 @@ case FILTER_HP3:
 		// Left voice
 		for (ii=0; ii<2; ii++) {
 			lowL = lowL + f * bandL;
-			highL = scale * (*sp) - lowL - fb * bandL;
+			highL = scale * sat33(*sp) - lowL - fb * bandL;
 			bandL = f * highL + bandL;
 		}
 		*sp = (highL) * mixerGain;
@@ -1520,7 +1601,7 @@ case FILTER_HP3:
 		// Right voice
 		for (ii=0; ii<2; ii++) {
 			lowR = lowR + f * bandR;
-			highR = scale * (*sp) - lowR - fb * bandR;
+			highR = scale * sat33(*sp) - lowR - fb * bandR;
 			bandR = f * highR + bandR;
 		}
 
@@ -1579,7 +1660,7 @@ case FILTER_BP3:
 		// Left voice
 		for (ii=0; ii<2; ii++) {
 			lowL = lowL + f * bandL;
-			highL = scale * (*sp) - lowL - fb * bandL;
+			highL = scale * sat33(*sp) - lowL - fb * bandL;
 			bandL = f * highL + bandL;
 		}
 		*sp = (bandL) * mixerGain;
@@ -1596,7 +1677,7 @@ case FILTER_BP3:
 		// Right voice
 		for (ii=0; ii<2; ii++) {
 			lowR = lowR + f * bandR;
-			highR = scale * (*sp) - lowR - fb * bandR;
+			highR = scale * sat33(*sp) - lowR - fb * bandR;
 			bandR = f * highR + bandR;
 		}
 
@@ -1655,7 +1736,7 @@ case FILTER_PEAK:
 		// Left voice
 		for (ii=0; ii<2; ii++) {
 			lowL = lowL + f * bandL;
-			highL = scale * (*sp) - lowL - fb * bandL;
+			highL = scale * sat33(*sp) - lowL - fb * bandL;
 			bandL = f * highL + bandL;
 		}
 		*sp = (bandL + highL + lowL) * mixerGain;
@@ -1672,7 +1753,7 @@ case FILTER_PEAK:
 		// Right voice
 		for (ii=0; ii<2; ii++) {
 			lowR = lowR + f * bandR;
-			highR = scale * (*sp) - lowR - fb * bandR;
+			highR = scale * sat33(*sp) - lowR - fb * bandR;
 			bandR = f * highR + bandR;
 		}
 
@@ -1770,7 +1851,7 @@ case FILTER_TILT:
         v1R = localv1R;
     }
     break;
-	case FILTER_STEREO:
+case FILTER_STEREO:
 	{
 		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
     	fxParamTmp *= fxParamTmp;
@@ -1824,7 +1905,7 @@ case FILTER_TILT:
         v0R = localv0R;
 	}
 	break;
-	case FILTER_SAT:
+case FILTER_SAT:
 	{
 		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
 
@@ -1903,7 +1984,7 @@ case FILTER_TILT:
         v1R = localv1R;
 	}
 	break;
-	case FILTER_SIGMOID:
+case FILTER_SIGMOID:
 	{
 		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
     	fxParamTmp *= fxParamTmp;
@@ -1932,7 +2013,8 @@ case FILTER_TILT:
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
-        	localv0L = tanh2(bias + sigmoid(*sp) * gain) * gainCorrection;
+    		// Left voice
+        	localv0L = tanh2(bias + sat33(*sp) * gain) * gainCorrection;
 			*sp = (sigmoid(localv0L) * mixA + (mixB * (*sp)));
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -1942,7 +2024,8 @@ case FILTER_TILT:
     		}
 			sp++;
 
-        	localv0R = tanh2(bias + sigmoid(*sp) * gain) * gainCorrection;
+    		// Right voice
+        	localv0R = tanh2(bias + sat33(*sp) * gain) * gainCorrection;
  			*sp = (sigmoid(localv0R) * mixA + (mixB * (*sp)));
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -1957,7 +2040,7 @@ case FILTER_TILT:
     	v0R = localv0R;
 	}
 	break;
-	case FILTER_FOLD:
+case FILTER_FOLD:
 	{
 		//https://www.desmos.com/calculator/ge2wvg2wgj
 
@@ -2014,7 +2097,7 @@ case FILTER_TILT:
     	v0R = localv0R;
 	}
 	break;
-	case FILTER_WRAP:
+case FILTER_WRAP:
 	{
 		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
     	fxParamTmp *= fxParamTmp;
@@ -2072,7 +2155,7 @@ case FILTER_TILT:
     	v0R = localv0R;
 	}
 	break;
-	case FILTER_XOR:
+case FILTER_XOR:
 		{
 		//not really XOR, but who cares ;)
 		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
@@ -2153,7 +2236,7 @@ case FILTER_TILT:
     	v0R = localv0R;
 	}
 	break;
-	case FILTER_TEXTURE1:
+case FILTER_TEXTURE1:
 		{
             float fxParamTmp = (params.effect.param1 + matrixFilterFrequency);
         	fxParamTmp *= fxParamTmp;
@@ -2167,16 +2250,16 @@ case FILTER_TILT:
         		fxParam1 = 0.0f;
         	}
 
-        	float *sp = this->sampleBlock;
-        	float localv0L = v0L;
-        	float localv0R = v0R;
+			float *sp = this->sampleBlock;
+			float lowL = v0L, highL = 0, bandL = v1L;
+			float lowR = v0R, highR = 0, bandR = v1R;
+
+			float f = fxParam1 * 0.25;
+			float fb =  sqrt(1 - params.effect.param2 * 0.999);
+			float scale = sqrt(fb);
 
             int highBits = 0xFFFFE80F;
             int lowBits = ~(highBits);
-
-    		int mixWet = (params.effect.param2 * 127);
-    		float mixA = panTable[mixWet] * mixerGain;;
-    		float mixB = panTable[127 - mixWet] * mixerGain;;
 
             short ll = (short)(( fxParam1 ) * lowBits);
     		int digitsL,digitsR;
@@ -2184,11 +2267,15 @@ case FILTER_TILT:
 
     		for (int k=0 ; k < BLOCK_SIZE ; k++) {
     			//LEFT
-    		    digitsL = FLOAT2SHORT * (*sp);
-                lowDigitsL = (digitsL & lowBits);
-    			localv0L = SHORT2FLOAT * (int)( (digitsL & highBits) ^ ((lowDigitsL ^ ll) & 0x1FFF ) );
+				lowL = lowL + f * bandL;
+				highL = scale * (*sp) - lowL - fb * bandL;
+				bandL = f * highL + bandL;
 
-    			*sp = ((localv0L * mixA) + (mixB * (*sp)));
+				digitsL = FLOAT2SHORT * bandL;
+                lowDigitsL = (digitsL & lowBits);
+    			bandL = SHORT2FLOAT * (int)( (digitsL & highBits) ^ ((lowDigitsL ^ ll) & 0x1FFF ) );
+
+    			*sp = highL * mixerGain;
 
     			if (unlikely(*sp > ratioTimbres)) {
         			*sp = ratioTimbres;
@@ -2199,11 +2286,16 @@ case FILTER_TILT:
     			sp++;
 
     			//RIGHT
-                digitsR = FLOAT2SHORT * (*sp);
-                lowDigitsR = (digitsR & lowBits);
-                localv0R = SHORT2FLOAT * (int)( (digitsR & highBits) ^ ((lowDigitsR ^ ll) & 0x1FFF ) );
 
-     			*sp = ((localv0R * mixA) + (mixB * (*sp)));
+				lowR = lowR + f * bandR;
+				highR = scale * (*sp) - lowR - fb * bandR;
+				bandR = f * highR + bandR;
+
+                digitsR = FLOAT2SHORT * bandR;
+                lowDigitsR = (digitsR & lowBits);
+                bandR = SHORT2FLOAT * (int)( (digitsR & highBits) ^ ((lowDigitsR ^ ll) & 0x1FFF ) );
+
+    			*sp = highR * mixerGain;
 
     			if (unlikely(*sp > ratioTimbres)) {
         			*sp = ratioTimbres;
@@ -2214,8 +2306,10 @@ case FILTER_TILT:
     			sp++;
         	}
 
-            v0L = localv0L;
-        	v0R = localv0R;
+		v0L = lowL;
+		v1L = bandL;
+		v0R = lowR;
+		v1R = bandR;
 	}
     break;
 case FILTER_TEXTURE2:
@@ -2232,16 +2326,16 @@ case FILTER_TEXTURE2:
     		fxParam1 = 0.0f;
     	}
 
-    	float *sp = this->sampleBlock;
-    	float localv0L = v0L;
-    	float localv0R = v0R;
+		float *sp = this->sampleBlock;
+		float lowL = v0L, highL = 0, bandL = v1L;
+		float lowR = v0R, highR = 0, bandR = v1R;
+
+		float f = fxParam1 * 0.5;
+		float fb =  0.2;//sqrt(1 - params.effect.param2 * 0.999);
+		float scale = sqrt(fb + params.effect.param2 * 2);
 
         int highBits = 0xFFFFFA5F;
         int lowBits = ~(highBits);
-
-		int mixWet = (params.effect.param2 * 127);
-		float mixA = panTable[mixWet] * mixerGain;;
-		float mixB = panTable[127 - mixWet] * mixerGain;;
 
         short ll = (short)(( fxParam1 ) * lowBits);
 		int digitsL,digitsR;
@@ -2249,11 +2343,15 @@ case FILTER_TEXTURE2:
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 			//LEFT
-		    digitsL = FLOAT2SHORT * (*sp);
-            lowDigitsL = (digitsL & lowBits);
-			localv0L = SHORT2FLOAT * (int)( (digitsL & highBits) ^ ((lowDigitsL * ll) & 0x1FFF ) );
+			lowL = lowL + f * bandL;
+			highL = scale * (*sp) - lowL - fb * bandL;
+			bandL = f * highL + bandL;
 
-			*sp = ((localv0L * mixA) + (mixB * (*sp)));
+		    digitsL = FLOAT2SHORT * (highL);
+            lowDigitsL = (digitsL & lowBits);
+			highL = SHORT2FLOAT * (int)( (digitsL & highBits) ^ ((lowDigitsL * ll) & 0x1FFF ) );
+
+			*sp = (highL + lowL) * mixerGain;
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -2264,11 +2362,15 @@ case FILTER_TEXTURE2:
 			sp++;
 
 			//RIGHT
-            digitsR = FLOAT2SHORT * (*sp);
-            lowDigitsR = (digitsR & lowBits);
-            localv0R = SHORT2FLOAT * (int)( (digitsR & highBits) ^ ((lowDigitsR * ll) & 0x1FFF ) );
+			lowR = lowR + f * bandR;
+			highR = scale * (*sp) - lowR - fb * bandR;
+			bandR = f * highR + bandR;
 
- 			*sp = ((localv0R * mixA) + (mixB * (*sp)));
+            digitsR = FLOAT2SHORT * (highR);
+            lowDigitsR = (digitsR & lowBits);
+            highR = SHORT2FLOAT * (int)( (digitsR & highBits) ^ ((lowDigitsR * ll) & 0x1FFF ) );
+
+			*sp = (highR + lowR) * mixerGain;
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -2279,11 +2381,13 @@ case FILTER_TEXTURE2:
 			sp++;
     	}
 
-        v0L = localv0L;
-    	v0R = localv0R;
+		v0L = lowL;
+		v1L = bandL;
+		v0R = lowR;
+		v1R = bandR;
     }
     break;
-	case FILTER_LPXOR:
+case FILTER_LPXOR:
 	{
 		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
     	fxParamTmp *= fxParamTmp;
@@ -2364,7 +2468,7 @@ case FILTER_TEXTURE2:
         v1R = localv1R;
 	}
 	break;
-	case FILTER_LPXOR2:
+case FILTER_LPXOR2:
 	{
  		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
     	fxParamTmp *= fxParamTmp;
@@ -2448,7 +2552,7 @@ case FILTER_TEXTURE2:
         v1R = localv1R;
 	}
 	break;
-	case FILTER_LPWS:
+case FILTER_LPWS:
 	{
 		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
     	fxParamTmp *= fxParamTmp;
@@ -2462,7 +2566,7 @@ case FILTER_TEXTURE2:
     		fxParam1 = 0.0f;
     	}
 		
-    	float pattern = (1 - 1 * fxParam1);
+    	float pattern = (1 - 0.99 * fxParam1);
 
     	float *sp = this->sampleBlock;
     	float localv0L = v0L;
@@ -2476,8 +2580,11 @@ case FILTER_TEXTURE2:
 
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
     		// Left voice
-    		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1) * cubicSc(*sp);
+    		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1) * transf44(*sp);
     		localv1L =  pattern * localv1L  +  (fxParam1) * (localv0L);
+
+    		/*localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1) * (*sp);
+    		localv1L =  pattern * localv1L  +  (fxParam1) * (localv0L);*/
 
  			*sp = ((localv1L * mixA) - (mixB * (*sp)));
 
@@ -2491,8 +2598,11 @@ case FILTER_TEXTURE2:
     		sp++;
 
     		// Right voice
-    		localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + (fxParam1) * cubicSc(*sp);
+    		localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + (fxParam1) * transf44(*sp);
     		localv1R =  pattern * localv1R  +  (fxParam1) * (localv0R);
+
+    		/*localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + (fxParam1) * (*sp);
+    		localv1R =  pattern * localv1R  +  (fxParam1) * (localv0R);*/
 
  			*sp = ((localv1R * mixA) - (mixB * (*sp)));
 
@@ -2511,7 +2621,7 @@ case FILTER_TEXTURE2:
         v1R = localv1R;
 	}
 	break;
-     case FILTER_OFF:
+case FILTER_OFF:
     {
     	// Filter off has gain...
     	float *sp = this->sampleBlock;
