@@ -8,10 +8,10 @@ in this version, some more filters & fx :
 - different flavour of the original LP
 
 ###### HP2  :
-- same as LP2, but for HP
+- same for HP
 
 ###### BP2  :
-- same as LP2, for BP
+- same for BP
 
 ###### Lp3  :
 - state variable filter, low pass mode
@@ -29,7 +29,7 @@ in this version, some more filters & fx :
 - state variable filter, notch mode
 
 ###### Bell  :
-- state variable filter, boost if param amp = 0.5, else cut.
+- state variable filter, boost if param amp > 0.5, else cut
 
 ###### LpHp :
 - distortion filter, morph from lowpass at freq=0 to highpass at freq=1
@@ -53,22 +53,22 @@ in this version, some more filters & fx :
 - tanh waveshaper saturation
 
 ###### Fold :
-- signal is amplified by "driv ", signal over 1 is folded, as many time as needed
+- signal is amplified by "driv", signal over 1 is folded, as many time as needed
 
 ###### Wrap :
-- signal is amplified by "driv ", signal over 1 is wraped ; it is mirrored at -1
+- signal is amplified by "driv", signal over 1 is wraped ; it is mirrored at -1
 
 ###### Xor  :
 - signal over threshold is xor-ed with an allpass version of itself
 
 ###### Txr1 :
-- bitmangling texture 1, thrs : xor-ed intensity
+- bitmangling filtered texture 1 
 
 ###### Txr2 :
-- bitmangling texture 2, thrs : xor-ed intensity, different kind
+- bitmangling filtered texture 2, different kind
 
 ###### LPx1 :
-- low pass filter with xor after filter, can self oscillate in special way
+- low pass filter with xor after filter, can self oscillate
 
 ###### LPx2 :
 - low pass filter with xor before filter
