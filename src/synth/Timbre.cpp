@@ -128,6 +128,11 @@ float tanh2(float x)
 {
 	return x/(sabs(x)+3/(2+x*x));
 }
+inline 
+float sigmoidPos(float x)
+{
+    return 1 + tanh2((x-1) * 2);
+}
 inline
 float sat22(float x)
 {
@@ -183,7 +188,6 @@ float sigmoid(float x)
     else
         return x > 0.f ? 1.f : -1.f;
 }
-inline 
 float fold(float x) {
 	return (sabs(x + 0.25 - round(x + 0.25)) - 0.25);
 }
@@ -2250,7 +2254,7 @@ case FILTER_TEXTURE1:
 			float lowL = v0L, highL = 0, bandL = v1L;
 			float lowR = v0R, highR = 0, bandR = v1R;
 
-			float f = fxParam1 * 0.25;
+			float f = sigmoidPos(fxParam1) * 0.25;
 			float fb =  sqrt(1 - params.effect.param2 * 0.999);
 			float scale = sqrt(fb);
 
@@ -2326,7 +2330,7 @@ case FILTER_TEXTURE2:
 		float lowL = v0L, highL = 0, bandL = v1L;
 		float lowR = v0R, highR = 0, bandR = v1R;
 
-		float f = fxParam1 * 0.5;
+		float f = sigmoidPos(fxParam1) * 0.5;
 		float fb =  sqrt(1 - params.effect.param2 * 0.999);
 		float scale = sqrt(fb);
 
@@ -2478,7 +2482,7 @@ case FILTER_LPXOR2:
     		fxParam1 = 0.0f;
     	}
 		
-    	float pattern = (1 - 0.7 * fxParam1);
+    	float pattern = (1 - 0.7 * sigmoidPos(fxParam1));
 
     	float *sp = this->sampleBlock;
     	float localv0L = v0L;
