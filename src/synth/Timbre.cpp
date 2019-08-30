@@ -115,7 +115,19 @@ double exp1(double x) {
   x *= x; x *= x; x *= x; x *= x;
   return x;
 }
+inline
+float sqrt3(const float x)  
+{
+  union
+  {
+    int i;
+    float x;
+  } u;
 
+  u.x = x;
+  u.i = (1<<29) + (u.i >> 1) - (1<<22); 
+  return u.x;
+} 
 /* single precision absolute value, a lot faster than fabsf() (if you use MSVC++ 6 Standard - others' implementations might be less slow) */
 inline
 float sabs(float a)
@@ -1203,8 +1215,8 @@ case FILTER_LP3:
 	}
 	
 	float f = fxParam1 * fxParam1 * SVFRANGE;
-	float fb =  sqrt(1 - params.effect.param2 * 0.999);
-	float scale = sqrt(fb);
+	float fb =  sqrt3(1 - params.effect.param2 * 0.999);
+	float scale = sqrt3(fb);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
@@ -1277,8 +1289,8 @@ case FILTER_HP3:
 	}
 	
 	float f = fxParam1 * fxParam1 * SVFRANGE;
-	float fb =  sqrt(1 - params.effect.param2 * 0.999);
-	float scale = sqrt(fb);
+	float fb =  sqrt3(1 - params.effect.param2 * 0.999);
+	float scale = sqrt3(fb);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
@@ -1353,8 +1365,8 @@ case FILTER_BP3:
 	}
 	
 	float f = fxParam1 * fxParam1 * SVFRANGE;
-	float fb =  sqrt(0.5 - params.effect.param2 * 0.5);
-	float scale = sqrt(fb);
+	float fb =  sqrt3(0.5 - params.effect.param2 * 0.5);
+	float scale = sqrt3(fb);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
@@ -1429,8 +1441,8 @@ case FILTER_PEAK:
 	}
 	
 	float f = fxParam1 * fxParam1 * SVFRANGE;
-	float fb =  sqrt(1 - params.effect.param2 * 0.999);
-	float scale = sqrt(fb);
+	float fb =  sqrt3(1 - params.effect.param2 * 0.999);
+	float scale = sqrt3(fb);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
@@ -1506,8 +1518,8 @@ case FILTER_NOTCH:
 	}
 	
 	float f = fxParam1 * fxParam1 * SVFRANGE;
-	float fb =  sqrt(1 - params.effect.param2 * 0.6);
-	float scale = sqrt(fb);
+	float fb =  sqrt3(1 - params.effect.param2 * 0.6);
+	float scale = sqrt3(fb);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
@@ -1726,8 +1738,8 @@ case FILTER_BPds:
 	}
 	
 	float f = fxParam1 * fxParam1 * SVFRANGE;
-	float fb =  sqrt(0.5 - params.effect.param2 * 0.5);
-	float scale = sqrt(fb);
+	float fb =  sqrt3(0.5 - params.effect.param2 * 0.5);
+	float scale = sqrt3(fb);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
@@ -1995,10 +2007,7 @@ case FILTER_SAT:
 		float f = (fxParam2 * fxParam2) * 0.5 + 0.12;
 		float pattern = (1 - 0.7 * f);
 
-		float a = (sqrt(fxParam1) * 0.4) * numberVoicesAttn;
-		/*int blend = 40 + fxParam1 * 40;
-		float blendA = panTable[blend];
-		float blendB = 1 - panTable[blend];*/
+		float a = (sqrt3(fxParam1) * 0.4) * numberVoicesAttn;
 
 		for (int k = 0; k < BLOCK_SIZE; k++) {
 
@@ -2012,7 +2021,6 @@ case FILTER_SAT:
 			} else if(localv0L < -a) {
                 localv0L = localv0L / ((a + 1) * 0.5);
             }
-            //localv1L = blendA * localv1L + blendB * localv0L;
 
 			localv0L = pattern * localv0L - f * localv1L + f * *sp;
 			localv1L = pattern * localv1L + f * localv0L;
@@ -2037,7 +2045,6 @@ case FILTER_SAT:
 			} else if(localv0L < -a) {
                 localv0R = localv0R / ((a + 1) * 0.5);
             }
-            //localv1R = blendA * localv1R + blendB * localv0R;
 
 			localv0R = pattern * localv0R - f * localv1R + f * *sp;
 			localv1R = pattern * localv1R + f * localv0R;
@@ -2081,9 +2088,9 @@ case FILTER_SIGMOID:
 		float f = (fxParam2 * fxParam2) * 0.5 + 0.12;
 		float pattern = (1 - 0.7 * f);
 
-		int drive = (27 + sqrt(fxParam1) * 100);
+		int drive = (27 + sqrt3(fxParam1) * 100);
 		float gain = 1.1 + 44 * panTable[drive];
-		float gainCorrection = (1.2 - sqrt(panTable[64 + (drive >> 1)] * 0.8));
+		float gainCorrection = (1.2 - sqrt3(panTable[64 + (drive >> 1)] * 0.8));
 		float in, lopL = v0L, lopR = v0R;
 		float bias = -0.1 + (fxParam1 * 0.2);
 
@@ -2152,9 +2159,9 @@ case FILTER_FOLD:
 		float f4 = f * 4;
 		float pattern = (1 - 0.6 * f);
 
-		float drive = sqrt(fxParam1);
+		float drive = sqrt3(fxParam1);
 		float gain = (1 + 52 * (drive)) * 0.25;
-		float finalGain = (1 - pow(drive, 0.1) * 0.6) * mixerGain;
+		float finalGain = (1 - (drive / (drive + 0.05)) * 0.6) * mixerGain;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
@@ -2214,9 +2221,9 @@ case FILTER_WRAP:
 		float f = fxParam2 * fxParam2 + 0.1;
 		float pattern = (1 - 0.6 * f);
 
-		float drive = sqrt(fxParam1);
+		float drive = sqrt3(fxParam1);
 		float gain = (1 + 4 * (drive));
-		float finalGain = (1 - sqrt(drive) * 0.6) * mixerGain;
+		float finalGain = (1 - sqrt3(drive) * 0.6) * mixerGain;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 			//LEFT
@@ -2287,7 +2294,7 @@ case FILTER_XOR:
 		float out, s;
 
 		int digitsA, digitsB;
-		float threshold = (0.66 - sqrt(fxParam1) * 0.66) * numberVoicesAttn;
+		float threshold = (0.66 - sqrt3(fxParam1) * 0.66) * numberVoicesAttn;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
@@ -2363,8 +2370,8 @@ case FILTER_TEXTURE1:
 			float lowR = v0R, highR = 0, bandR = v1R;
 
 			float f = (fxParam1 * fxParam1) * 0.5;
-			float fb = sqrt(1 - params.effect.param2 * 0.999);
-			float scale = sqrt(fb);
+			float fb = sqrt3(1 - params.effect.param2 * 0.999);
+			float scale = sqrt3(fb);
 
 			int highBits = 0xFFFFFD4F;
 			int lowBits = ~(highBits);
@@ -2439,8 +2446,8 @@ case FILTER_TEXTURE2:
 		float lowR = v0R, highR = 0, bandR = v1R;
 
 		float f = (fxParam1 * fxParam1) * 0.5;
-		float fb = sqrt(1 - params.effect.param2 * 0.999);
-		float scale = sqrt(fb);
+		float fb = sqrt3(1 - params.effect.param2 * 0.999);
+		float scale = sqrt3(fb);
 
 		int highBits = 0xFFFFFFAF;
 		int lowBits = ~(highBits);
