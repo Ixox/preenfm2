@@ -105,6 +105,7 @@ inline static int __canTranspose( int _direction ) {
 #define SHORT2FLOAT 1./32768.
 
 #define RATIOINV 1./131072.
+#define SVFRANGE 1.2
 
 inline
 double exp1(double x) {
@@ -614,7 +615,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     }
 
     float matrixFilterFrequency = voices[this->lastPlayedNote]->matrix.getDestination(FILTER_FREQUENCY);
-	float thresholdNumberVoicesAttn = 1 - (params.engine1.numberOfVoice * 0.04 * ratioTimbres * RATIOINV);
+	float numberVoicesAttn = 1 - (params.engine1.numberOfVoice * 0.04 * ratioTimbres * RATIOINV);
 
     // LP Algo
     int effectType = params.effect.type;
@@ -985,7 +986,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     }
 case FILTER_LP2:
     {
-        float fxParamTmp = params.effect.param1 * 0.66 + matrixFilterFrequency;
+        float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
     	fxParamTmp *= fxParamTmp;
 
     	// Low pass... on the Frequency
@@ -996,6 +997,7 @@ case FILTER_LP2:
     	if (unlikely(fxParam1 < 0.0f)) {
     		fxParam1 = 0.0f;
     	}
+		
     	float pattern = (1 - fxParam2 * fxParam1);
 
     	float *sp = this->sampleBlock;
@@ -1003,20 +1005,19 @@ case FILTER_LP2:
     	float localv1L = v1L;
     	float localv0R = v0R;
     	float localv1R = v1R;
-        float cInput,fdbckIn;
 
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 
     		// Left voice
-			localv0L = pattern * localv0L - fxParam1 * (localv1L + (*sp) );
-			localv1L = pattern * localv1L + (fxParam1) * localv0L;
+			localv0L = pattern * localv0L - fxParam1 * (localv1L + (*sp));
+			localv1L = pattern * localv1L + fxParam1 * localv0L;
 
-			localv0L = pattern * localv0L - (fxParam1) * (localv1L + (*sp));
-			localv1L = pattern * localv1L + (fxParam1) * localv0L;
+			localv0L = pattern * localv0L - fxParam1 * (localv1L + sat33(*sp));
+			localv1L = pattern * localv1L + fxParam1 * localv0L;
 
 			*sp = localv1L * mixerGain;
 
-    		if (unlikely(*sp > ratioTimbres)) {
+			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
     		if (unlikely(*sp < -ratioTimbres)) {
@@ -1026,11 +1027,11 @@ case FILTER_LP2:
     		sp++;
 
     		// Right voice
-			localv0R = pattern * localv0R - fxParam1 * (localv1R + (*sp) );
-			localv1R = pattern * localv1R + (fxParam1) * localv0R;
+			localv0R = pattern * localv0R - fxParam1 * (localv1R + (*sp));
+			localv1R = pattern * localv1R + fxParam1 * localv0R;
 
-			localv0R = pattern * localv0R - (fxParam1) * (localv1R + (*sp));
-			localv1R = pattern * localv1R + (fxParam1) * localv0R;
+			localv0R = pattern * localv0R - fxParam1 * (localv1R + sat33(*sp));
+			localv1R = pattern * localv1R + fxParam1 * localv0R;
 
 			*sp = localv1R * mixerGain;
 
@@ -1051,7 +1052,7 @@ case FILTER_LP2:
     break;
 case FILTER_HP2:
     {
-        float fxParamTmp = params.effect.param1 * 0.66 + matrixFilterFrequency;
+        float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
         fxParamTmp *= fxParamTmp;
 
         // Low pass... on the Frequency
@@ -1069,20 +1070,19 @@ case FILTER_HP2:
         float localv1L = v1L;
         float localv0R = v0R;
         float localv1R = v1R;
-        float cInput;
 
         for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
             // Left voice
 			localv0L = pattern * localv0L + (fxParam1 * (-localv1L + (*sp)));
-			localv1L = pattern * localv1L + (fxParam1) * localv0L;
+			localv1L = pattern * localv1L + fxParam1 * localv0L;
 
 			localv0L = pattern * localv0L + (fxParam1 * (-localv1L + sat33(*sp)));
 			localv1L = pattern * localv1L + fxParam1 * localv0L;
 
 			*sp = (*sp - localv1L) * mixerGain;
 
-            if (unlikely(*sp > ratioTimbres)) {
+			if (unlikely(*sp > ratioTimbres)) {
                 *sp = ratioTimbres;
             }
             if (unlikely(*sp < -ratioTimbres)) {
@@ -1100,7 +1100,7 @@ case FILTER_HP2:
 
 			*sp = (*sp - localv1R) * mixerGain;
 
-            if (unlikely(*sp > ratioTimbres)) {
+			if (unlikely(*sp > ratioTimbres)) {
                 *sp = ratioTimbres;
             }
             if (unlikely(*sp < -ratioTimbres)) {
@@ -1140,12 +1140,12 @@ case FILTER_BP2:
 
     for (int k=0 ; k < BLOCK_SIZE ; k++) {
         //Left
-        in = fxParam1 * sat33(*sp);
+		in = fxParam1 * sat33(*sp);
 		temp = in - fxParamA1 * localv0L - fxParamA2 * localv1L;
-        localv1L = localv0L;
-        localv0L = temp;
-        localV =  (temp+ (in - fxParamA1 * localv0L - fxParamA2 * localv1L))*0.5;
-        *sp++ = (localV + fxParamB2 * localv1L) * mixerGain;
+		localv1L = localv0L;
+		localv0L = temp;
+		localV = (temp + (in - fxParamA1 * localv0L - fxParamA2 * localv1L)) * 0.5;
+		*sp++ = (localV + fxParamB2 * localv1L) * mixerGain;
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
 		}
@@ -1156,12 +1156,12 @@ case FILTER_BP2:
         localv0L = localV;
 
         //Right
-        in = fxParam1 * sat33(*sp);
+		in = fxParam1 * sat33(*sp);
 		temp = in - fxParamA1 * localv0R - fxParamA2 * localv1R;
-        localv1R = localv0R;
-        localv0R = temp;
-        localV = (temp + (in - fxParamA1 * localv0R - fxParamA2 * localv1R))*0.5;
-        *sp++ = (localV + fxParamB2 * localv1R) * mixerGain;
+		localv1R = localv0R;
+		localv0R = temp;
+		localV = (temp + (in - fxParamA1 * localv0R - fxParamA2 * localv1R)) * 0.5;
+		*sp++ = (localV + fxParamB2 * localv1R) * mixerGain;
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
 		}
@@ -1202,7 +1202,7 @@ case FILTER_LP3:
 		fxParam1 = 0.0f;
 	}
 	
-	float f = fxParam1 * 0.5;
+	float f = fxParam1 * fxParam1 * SVFRANGE;
 	float fb =  sqrt(1 - params.effect.param2 * 0.999);
 	float scale = sqrt(fb);
 
@@ -1276,7 +1276,7 @@ case FILTER_HP3:
 		fxParam1 = 0.0f;
 	}
 	
-	float f = fxParam1 * 0.5;
+	float f = fxParam1 * fxParam1 * SVFRANGE;
 	float fb =  sqrt(1 - params.effect.param2 * 0.999);
 	float scale = sqrt(fb);
 
@@ -1352,7 +1352,7 @@ case FILTER_BP3:
 		fxParam1 = 0.0f;
 	}
 	
-	float f = fxParam1 * 0.5;
+	float f = fxParam1 * fxParam1 * SVFRANGE;
 	float fb =  sqrt(0.5 - params.effect.param2 * 0.5);
 	float scale = sqrt(fb);
 
@@ -1428,7 +1428,7 @@ case FILTER_PEAK:
 		fxParam1 = 0.0f;
 	}
 	
-	float f = fxParam1 * 0.5;
+	float f = fxParam1 * fxParam1 * SVFRANGE;
 	float fb =  sqrt(1 - params.effect.param2 * 0.999);
 	float scale = sqrt(fb);
 
@@ -1505,7 +1505,7 @@ case FILTER_NOTCH:
 		fxParam1 = 0.0f;
 	}
 	
-	float f = fxParam1 * 0.5;
+	float f = fxParam1 * fxParam1 * SVFRANGE;
 	float fb =  sqrt(1 - params.effect.param2 * 0.6);
 	float scale = sqrt(fb);
 
@@ -1580,7 +1580,7 @@ case FILTER_BELL:
 
 	float res = 0.6;
 	float k = 1 / (0.0001 + res * A);
-	float g = 0.0001 + fxParam1;
+	float g = 0.0001 + fxParam1 * SVFRANGE;
 	float a1 = 1 / (1 + g * ( g + k));
 	float a2 = g * a1;
 	float a3 = g * a2;
@@ -1601,7 +1601,7 @@ case FILTER_BELL:
 		ic1eqL = 2 * v1 - ic1eqL;
 		ic2eqL = 2 * v2 - ic2eqL;
 
-		*sp = (*sp + satSin(amp * v1)) * mixerGain;
+		*sp = (*sp + sigmoid(amp * v1)) * mixerGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1619,7 +1619,7 @@ case FILTER_BELL:
 		ic1eqR = 2 * v1 - ic1eqR;
 		ic2eqR = 2 * v2 - ic2eqR;
 
-		*sp = (*sp + satSin(amp * v1)) * mixerGain;
+		*sp = (*sp + sigmoid(amp * v1)) * mixerGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1655,7 +1655,9 @@ case FILTER_LPHP:
 	float mixA =  2.2 * panTable[122 - mixWet];
 	float mixB =  2.2 * panTable[5 + mixWet];
 
-	float pattern = (1 - fxParam2 * fxParam1);
+	float f = fxParam1 * fxParam1 * 1.5;
+	float pattern = (1 - fxParam2 * f);
+
 
 	float *sp = this->sampleBlock;
 	float localv0L = v0L;
@@ -1666,8 +1668,8 @@ case FILTER_LPHP:
 	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 
 		// Left voice
-		localv0L = pattern * localv0L + (fxParam1 * (-localv1L + (*sp)));
-		localv1L = pattern * localv1L + (fxParam1) * localv0L;
+		localv0L = pattern * localv0L + (f * (-localv1L + (*sp)));
+		localv1L = pattern * localv1L + f * localv0L;
 
 		*sp = sigmoid(tanh2((localv1L * mixA) + ((*sp - localv1L) * mixB)))* mixerGain;
 
@@ -1681,8 +1683,8 @@ case FILTER_LPHP:
 		sp++;
 
 		// Right voice
-		localv0R = pattern * localv0R + (fxParam1 * (-localv1R + (*sp)));
-		localv1R = pattern * localv1R + (fxParam1) * localv0R;
+		localv0R = pattern * localv0R + (f * (-localv1R + (*sp)));
+		localv1R = pattern * localv1R + f * localv0R;
 		
 		*sp = sigmoid(tanh2((localv1R * mixA) + ((*sp - localv1R) * mixB))) * mixerGain;
 
@@ -1723,7 +1725,7 @@ case FILTER_BPds:
 		fxParam1 = 0.0f;
 	}
 	
-	float f = fxParam1 * 0.5;
+	float f = fxParam1 * fxParam1 * SVFRANGE;
 	float fb =  sqrt(0.5 - params.effect.param2 * 0.5);
 	float scale = sqrt(fb);
 
@@ -1855,29 +1857,29 @@ case FILTER_TILT:
 
     	float res = 0.85;
 
-        float amp=19.93;
-        float gain = (params.effect.param2-0.5);
-        float gfactor = 10;
-        float g1,g2;
-        if (gain > 0) {
-            g1 = -gfactor*gain;
-            g2 = gain;
-        } else {
-            g1 = -gain;
-            g2 = gfactor*gain;
-        };
+		float amp = 19.93;
+		float gain = (params.effect.param2 - 0.5);
+		float gfactor = 10;
+		float g1, g2;
+		if (gain > 0) {
+			g1 = -gfactor * gain;
+			g2 = gain;
+		} else {
+			g1 = -gain;
+			g2 = gfactor * gain;
+		};
 
         //two separate gains
-        float lgain = exp1(g1/amp)-1;
-        float hgain = exp1(g2/amp)-1;
+		float lgain = exp1(g1 / amp) - 1;
+		float hgain = exp1(g2 / amp) - 1;
 
-    	float *sp = this->sampleBlock;
-    	float localv0L = v0L;
-    	float localv0R = v0R;
-        float localv1L = v1L;
-        float localv1R = v1R;
+		float *sp = this->sampleBlock;
+		float localv0L = v0L;
+		float localv0R = v0R;
+		float localv1L = v1L;
+		float localv1R = v1R;
 
-    	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+		for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 			// Left voice
 			localv0L = res * localv0L - (fxParam1)*localv1L + sigmoid(*sp);
 			localv1L = res * localv1L + (fxParam1)*localv0L;
@@ -1936,13 +1938,13 @@ case FILTER_STEREO:
         } else {
             pos = (panTable[(int)(fxParam1 * 127)] * 2) - 1;
         }
-    	float *sp = this->sampleBlock;
-    	float localv0L = v0L;
-    	float localv0R = v0R;
+		float *sp = this->sampleBlock;
+		float localv0L = v0L;
+		float localv0R = v0R;
 		float out = 0;
-        float outL,outR,m,s;
+		float outL, outR, m, s;
 
-        float coef_S = params.effect.param2*0.5;
+		float coef_S = params.effect.param2*0.5;
 
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 			// Left voice
@@ -1990,13 +1992,13 @@ case FILTER_SAT:
         float localv1L = v1L;
         float localv1R = v1R;
 
-		int mixWet = params.effect.param2 * 127;
-		float mixA = panTable[mixWet] * mixerGain;
-		float mixB = panTable[127 - mixWet] * mixerGain;
-		float a = (sqrt(fxParam1) * 0.4) * thresholdNumberVoicesAttn;
-		int blend = 40 + fxParam1 * 40;
+		float f = (fxParam2 * fxParam2) * 0.5 + 0.12;
+		float pattern = (1 - 0.7 * f);
+
+		float a = (sqrt(fxParam1) * 0.4) * numberVoicesAttn;
+		/*int blend = 40 + fxParam1 * 40;
 		float blendA = panTable[blend];
-		float blendB = 1 - panTable[blend];
+		float blendB = 1 - panTable[blend];*/
 
 		for (int k = 0; k < BLOCK_SIZE; k++) {
 
@@ -2010,9 +2012,13 @@ case FILTER_SAT:
 			} else if(localv0L < -a) {
                 localv0L = localv0L / ((a + 1) * 0.5);
             }
-            localv1L = blendA * localv1L + blendB * localv0L;
+            //localv1L = blendA * localv1L + blendB * localv0L;
 
-			*sp = ((localv1R * mixA) + (mixB * *sp));
+			localv0L = pattern * localv0L - f * localv1L + f * *sp;
+			localv1L = pattern * localv1L + f * localv0L;
+
+			*sp = (*sp - localv1L) * mixerGain;
+
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -2031,9 +2037,13 @@ case FILTER_SAT:
 			} else if(localv0L < -a) {
                 localv0R = localv0R / ((a + 1) * 0.5);
             }
-            localv1R = blendA * localv1R + blendB * localv0R;
+            //localv1R = blendA * localv1R + blendB * localv0R;
 
-			*sp = ((localv1L * mixA) + (mixB * *sp));
+			localv0R = pattern * localv0R - f * localv1R + f * *sp;
+			localv1R = pattern * localv1R + f * localv0R;
+
+			*sp = (*sp - localv1R) * mixerGain;
+
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -2063,23 +2073,29 @@ case FILTER_SIGMOID:
     	}
 
 		float *sp = this->sampleBlock;
-    	float localv0L = v0L;
-    	float localv0R = v0R;
+		float localv0L = v0L;
+		float localv1L = v1L;
+		float localv0R = v0R;
+		float localv1R = v1R;
 
-		int mixWet = (params.effect.param2 * 127);
+		float f = (fxParam2 * fxParam2) * 0.5 + 0.12;
+		float pattern = (1 - 0.7 * f);
+
 		int drive = (27 + sqrt(fxParam1) * 100);
-		float mixA = panTable[mixWet]  * mixerGain;
-		float mixB = panTable[127 - mixWet]  * mixerGain;
 		float gain = 1.1 + 44 * panTable[drive];
-		float gainCorrection = (0.65 - (panTable[64+(drive>>1)] * 0.58));
-		float in,lopL = v0L ,lopR = v0R;
-        float bias = -0.1 + (fxParam1 * 0.2);
+		float gainCorrection = (1.2 - sqrt(panTable[64 + (drive >> 1)] * 0.8));
+		float in, lopL = v0L, lopR = v0R;
+		float bias = -0.1 + (fxParam1 * 0.2);
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
     		// Left voice
-        	localv0L = tanh2(bias + sat33(*sp) * gain) * gainCorrection;
-			*sp = (sigmoid(localv0L) * mixA + (mixB * (*sp)));
+			localv0L = tanh2(bias + sat33(*sp) * gain) * gainCorrection;
+			localv0L = pattern * localv0L - f * localv1L + f * *sp;
+			localv1L = pattern * localv1L + f * localv0L;
+
+			*sp = (*sp - localv1L) * mixerGain;
+
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -2089,8 +2105,12 @@ case FILTER_SIGMOID:
 			sp++;
 
     		// Right voice
-        	localv0R = tanh2(bias + sat33(*sp) * gain) * gainCorrection;
- 			*sp = (sigmoid(localv0R) * mixA + (mixB * (*sp)));
+			localv0R = tanh2(bias + sat33(*sp) * gain) * gainCorrection;
+			localv0R = pattern * localv0R - f * localv1R + f * *sp;
+			localv1R = pattern * localv1R + f * localv0R;
+
+			*sp = (*sp - localv1R) * mixerGain;
+
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
@@ -2102,6 +2122,8 @@ case FILTER_SIGMOID:
 
     	v0L = localv0L;
     	v0R = localv0R;
+        v1L = localv1L;
+        v1R = localv1R;
 	}
 	break;
 case FILTER_FOLD:
@@ -2120,22 +2142,24 @@ case FILTER_FOLD:
     		fxParam1 = 0.0f;
     	}
 
-    	float *sp = this->sampleBlock;
-    	float localv0L = v0L;
-    	float localv1L = v1L;
-    	float localv0R = v0R;
-    	float localv1R = v1R;
+		float *sp = this->sampleBlock;
+		float localv0L = v0L;
+		float localv1L = v1L;
+		float localv0R = v0R;
+		float localv1R = v1R;
 
-    	float pattern = (1 - 0.6 * fxParam2);
+		float f = fxParam2 * fxParam2 + 0.1;
+		float f4 = f * 4;
+		float pattern = (1 - 0.6 * f);
 
-		int drive = (sqrt(fxParam1) * 100);
-		float gain = (1 + 126 * panTable[drive]) * 0.25;
-		float finalGain = 2.6 * (0.8 - (panTable[64+(drive>>1)] * 0.75)) * mixerGain;;
+		float drive = sqrt(fxParam1);
+		float gain = (1 + 52 * (drive)) * 0.25;
+		float finalGain = (1 - pow(drive, 0.1) * 0.6) * mixerGain;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
-    		localv0L =  pattern * localv0L  -  (fxParam2) * localv1L  + (fxParam2) * fold((*sp) * gain) ;
-    		localv1L =  pattern * localv1L  +  (fxParam2) * localv0L;
+			localv0L = pattern * localv0L - f * localv1L + f4 * fold(*sp * gain);
+			localv1L = pattern * localv1L + f * localv0L;
 
 			*sp = localv1L * finalGain;
 
@@ -2147,8 +2171,8 @@ case FILTER_FOLD:
     		}
 			sp++;
 
-    		localv0R =  pattern * localv0R  -  (fxParam2) * localv1R  + (fxParam2) * fold((*sp) * gain);
-    		localv1R =  pattern * localv1R  +  (fxParam2) * localv0R;
+			localv0R = pattern * localv0R - f * localv1R + f4 * fold(*sp * gain);
+			localv1R = pattern * localv1R + f * localv0R;
 
 			*sp = localv1R * finalGain;
 
@@ -2181,22 +2205,23 @@ case FILTER_WRAP:
     		fxParam1 = 0.0f;
     	}
 
-    	float *sp = this->sampleBlock;
-    	float localv0L = v0L;
-    	float localv1L = v1L;
-    	float localv0R = v0R;
-    	float localv1R = v1R;
+		float *sp = this->sampleBlock;
+		float localv0L = v0L;
+		float localv1L = v1L;
+		float localv0R = v0R;
+		float localv1R = v1R;
 
-    	float pattern = (1 - 0.6 * fxParam2);
+		float f = fxParam2 * fxParam2 + 0.1;
+		float pattern = (1 - 0.6 * f);
 
-		int drive = (sqrt(fxParam1) * 100);
-		float gain = 0.5 * (1 + 126 * panTable[drive]);
-		float finalGain = (1 - (panTable[64+(drive>>1)] * 0.6)) * mixerGain;;
+		float drive = sqrt(fxParam1);
+		float gain = (1 + 4 * (drive));
+		float finalGain = (1 - sqrt(drive) * 0.6) * mixerGain;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 			//LEFT
-    		localv0L =  pattern * localv0L  -  (fxParam2) * localv1L  + (fxParam2) * wrap((*sp) * gain) ;
-    		localv1L =  pattern * localv1L  +  (fxParam2) * localv0L;
+			localv0L = pattern * localv0L - f * localv1L + f * wrap(*sp * gain);
+			localv1L = pattern * localv1L + f * localv0L;
 
 			*sp = localv1L * finalGain;
 
@@ -2209,8 +2234,8 @@ case FILTER_WRAP:
 			sp++;
 
 			//RIGHT
-    		localv0R =  pattern * localv0R  -  (fxParam2) * localv1R  + (fxParam2) * wrap((*sp) * gain);
-    		localv1R =  pattern * localv1R  +  (fxParam2) * localv0R;
+			localv0R = pattern * localv0R - f * localv1R + f * wrap(*sp * gain);
+			localv1R = pattern * localv1R + f * localv0R;
 
 			*sp = localv1R * finalGain;
 
@@ -2251,16 +2276,18 @@ case FILTER_XOR:
         }
 
 		float *sp = this->sampleBlock;
-    	float localv0L = v0L;
-    	float localv0R = v0R;
+		float localv0L = v0L;
+		float localv1L = v1L;
+		float localv0R = v0R;
+		float localv1R = v1R;
 
-		int mixWet = (params.effect.param2 * 127);
-		float mixA = panTable[mixWet] * mixerGain;
-		float mixB = panTable[127 - mixWet] * mixerGain;
+		float f = fxParam2 * fxParam2 + 0.1;
+		float pattern = (1 - 0.6 * f);
+
 		float out, s;
 
 		int digitsA, digitsB;
-		float threshold = (0.66 - fxParam1 * 0.66) * thresholdNumberVoicesAttn;
+		float threshold = (0.66 - sqrt(fxParam1) * 0.66) * numberVoicesAttn;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
@@ -2274,7 +2301,10 @@ case FILTER_XOR:
 				localv0L = *sp;
 			}
 
-			*sp = ((localv0L * mixA) + (mixB * (*sp)));
+			localv0L = pattern * localv0L - f * localv1L + f * (*sp);
+			localv1L = pattern * localv1L + f * localv0L;
+
+			*sp = localv1L * mixerGain;
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -2294,7 +2324,10 @@ case FILTER_XOR:
 				localv0R = *sp;
 			}
 
-			*sp = ((localv0R * mixA) + (mixB * (*sp)));
+			localv0R = pattern * localv0R - f * localv1L + f * (*sp);
+			localv1R = pattern * localv1R + f * localv0R;
+
+			*sp = localv1R * mixerGain;
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -2305,8 +2338,10 @@ case FILTER_XOR:
 			sp++;
     	}
 
-    	v0L = localv0L;
-    	v0R = localv0R;
+        v0L = localv0L;
+        v0R = localv0R;
+        v1L = localv1L;
+        v1R = localv1R;
 	}
 	break;
 case FILTER_TEXTURE1:
@@ -2327,19 +2362,19 @@ case FILTER_TEXTURE1:
 			float lowL = v0L, highL = 0, bandL = v1L;
 			float lowR = v0R, highR = 0, bandR = v1R;
 
-			float f = (fxParam1*fxParam1) * 0.25;
-			float fb =  sqrt(1 - params.effect.param2 * 0.999);
+			float f = (fxParam1 * fxParam1) * 0.5;
+			float fb = sqrt(1 - params.effect.param2 * 0.999);
 			float scale = sqrt(fb);
 
-            int highBits = 0xFFFFFD4F;
-            int lowBits = ~(highBits);
+			int highBits = 0xFFFFFD4F;
+			int lowBits = ~(highBits);
 
-            short ll = (short)(( fxParam1 ) * lowBits);
-    		int digitsL,digitsR;
-            short lowDigitsL,lowDigitsR;
+			short ll = (short)((fxParam1)*lowBits);
+			int digitsL, digitsR;
+			short lowDigitsL, lowDigitsR;
 
-    		for (int k=0 ; k < BLOCK_SIZE ; k++) {
-    			//LEFT
+			for (int k = 0; k < BLOCK_SIZE; k++) {
+				//LEFT
 				lowL = lowL + f * bandL;
 				highL = scale * (*sp) - lowL - fb * bandL;
 				bandL = f * highL + bandL;
@@ -2364,13 +2399,13 @@ case FILTER_TEXTURE1:
 				highR = scale * (*sp) - lowR - fb * bandR;
 				bandR = f * highR + bandR;
 
-                digitsR = FLOAT2SHORT * bandR;
-                lowDigitsR = (digitsR & lowBits);
-                bandR = SHORT2FLOAT * (int)( (digitsR & highBits) ^ ((lowDigitsR ^ ll) & 0x1FFF ) );
+				digitsR = FLOAT2SHORT * bandR;
+				lowDigitsR = (digitsR & lowBits);
+				bandR = SHORT2FLOAT * (int)((digitsR & highBits) ^ ((lowDigitsR ^ ll) & 0x1FFF));
 
-    			*sp = highR * mixerGain;
+				*sp = highR * mixerGain;
 
-    			if (unlikely(*sp > ratioTimbres)) {
+				if (unlikely(*sp > ratioTimbres)) {
         			*sp = ratioTimbres;
         		}
         		if (unlikely(*sp < -ratioTimbres)) {
@@ -2403,28 +2438,28 @@ case FILTER_TEXTURE2:
 		float lowL = v0L, highL = 0, bandL = v1L;
 		float lowR = v0R, highR = 0, bandR = v1R;
 
-		float f = (fxParam1*fxParam1) * 0.5;
-		float fb =  sqrt(1 - params.effect.param2 * 0.999);
+		float f = (fxParam1 * fxParam1) * 0.5;
+		float fb = sqrt(1 - params.effect.param2 * 0.999);
 		float scale = sqrt(fb);
 
-        int highBits = 0xFFFFFFAF;
-        int lowBits = ~(highBits);
+		int highBits = 0xFFFFFFAF;
+		int lowBits = ~(highBits);
 
-        short ll = (short)(( fxParam1 ) * lowBits);
-		int digitsL,digitsR;
-        short lowDigitsL,lowDigitsR;
+		short ll = (short)((fxParam1)*lowBits);
+		int digitsL, digitsR;
+		short lowDigitsL, lowDigitsR;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 			//LEFT
-		    digitsL = FLOAT2SHORT * (bandL);
-            lowDigitsL = (digitsL & lowBits);
-			bandL = SHORT2FLOAT * (int)( (digitsL & highBits) ^ ((lowDigitsL * ll) & 0x1FFF ) );
+			digitsL = FLOAT2SHORT * (bandL);
+			lowDigitsL = (digitsL & lowBits);
+			bandL = SHORT2FLOAT * (int)((digitsL & highBits) ^ ((lowDigitsL * ll) & 0x1FFF));
 
 			lowL = lowL + f * bandL;
 			highL = scale * (*sp) - lowL - fb * bandL;
 			bandL = f * highL + bandL;
 
-			*sp = (bandL) * mixerGain;
+			*sp = bandL * mixerGain;
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -2435,15 +2470,15 @@ case FILTER_TEXTURE2:
 			sp++;
 
 			//RIGHT
-            digitsR = FLOAT2SHORT * (bandR);
-            lowDigitsR = (digitsR & lowBits);
-            bandR = SHORT2FLOAT * (int)( (digitsR & highBits) ^ ((lowDigitsR * ll) & 0x1FFF ) );
+			digitsR = FLOAT2SHORT * (bandR);
+			lowDigitsR = (digitsR & lowBits);
+			bandR = SHORT2FLOAT * (int)((digitsR & highBits) ^ ((lowDigitsR * ll) & 0x1FFF));
 
 			lowR = lowR + f * bandR;
 			highR = scale * (*sp) - lowR - fb * bandR;
 			bandR = f * highR + bandR;
 
-			*sp = (bandR) * mixerGain;
+			*sp = bandR * mixerGain;
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -2473,14 +2508,14 @@ case FILTER_LPXOR:
     	if (unlikely(fxParam1 < 0.0f)) {
     		fxParam1 = 0.0f;
     	}
-		
-    	float pattern = (1 - 0.9 * sigmoidPos(fxParam1));
 
-    	float *sp = this->sampleBlock;
-    	float localv0L = v0L;
-    	float localv1L = v1L;
-    	float localv0R = v0R;
-    	float localv1R = v1R;
+		float pattern = (1 - 0.9 * sigmoidPos(fxParam1));
+
+		float *sp = this->sampleBlock;
+		float localv0L = v0L;
+		float localv1L = v1L;
+		float localv0R = v0R;
+		float localv1R = v1R;
 
 		uint8_t random = (*(uint8_t*)noise) & 0xff;
 		if(random>250) {
@@ -2496,18 +2531,18 @@ case FILTER_LPXOR:
 		digitsAL = digitsBL = digitsAR = digitsBR = 0;
 		short bitmask = 0xffc;
 
-    	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+		for (int k=0 ; k < BLOCK_SIZE  ; k++) {
     		// Left voice
-    		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1)* (*sp);
-    		localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
+			localv0L = pattern * localv0L - (fxParam1)*localv1L + (fxParam1) * (*sp);
+			localv1L = pattern * localv1L + (fxParam1)*localv0L;
 
 			digitsAL = FLOAT2SHORT * localv1L;
-			localv1L = SHORT2FLOAT * (int)( digitsAL ^ digitsBL);
+			localv1L = SHORT2FLOAT * (int)(digitsAL ^ digitsBL);
 			digitsBL = digitsAL & bitmask;
 
- 			*sp = ((localv1L * mixA) + (mixB * (*sp)));
+			*sp = ((localv1L * mixA) + (mixB * (*sp)));
 
-    		if (unlikely(*sp > ratioTimbres)) {
+			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
     		if (unlikely(*sp < -ratioTimbres)) {
@@ -2517,16 +2552,16 @@ case FILTER_LPXOR:
     		sp++;
 
     		// Right voice
-    		localv0R =  pattern * localv0R  -  (fxParam1)*localv1R  + (fxParam1)* (*sp);
-    		localv1R =  pattern * localv1R  +  (fxParam1)*localv0R;
+			localv0R = pattern * localv0R - (fxParam1)*localv1R + (fxParam1) * (*sp);
+			localv1R = pattern * localv1R + (fxParam1)*localv0R;
 
 			digitsAR = FLOAT2SHORT * localv1R;
-			localv1R = SHORT2FLOAT * (int)( digitsAR ^ digitsBR);
+			localv1R = SHORT2FLOAT * (int)(digitsAR ^ digitsBR);
 			digitsBR = digitsAR & bitmask;
 
- 			*sp = ((localv1R * mixA) + (mixB * (*sp)));
+			*sp = ((localv1R * mixA) + (mixB * (*sp)));
 
-    		if (unlikely(*sp > ratioTimbres)) {
+			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
     		if (unlikely(*sp < -ratioTimbres)) {
@@ -2554,19 +2589,19 @@ case FILTER_LPXOR2:
     	if (unlikely(fxParam1 < 0.0f)) {
     		fxParam1 = 0.0f;
     	}
-		
-    	float pattern = (1 - 0.7 * sigmoidPos(fxParam1));
 
-    	float *sp = this->sampleBlock;
-    	float localv0L = v0L;
-    	float localv1L = v1L;
-    	float localv0R = v0R;
-    	float localv1R = v1R;
+		float pattern = (1 - 0.7 * sigmoidPos(fxParam1));
+
+		float *sp = this->sampleBlock;
+		float localv0L = v0L;
+		float localv1L = v1L;
+		float localv0R = v0R;
+		float localv1R = v1R;
 		float digitized;
 
 		int mixWet = (params.effect.param2 * 127);
 		float mixA = panTable[127 - mixWet];
-		float mixB = 1 - mixA;//panTable[mixWet];
+		float mixB = 1 - mixA;
 
 		int digitsAL, digitsBL, digitsAR, digitsBR;
 		digitsAL = digitsBL = digitsAR = digitsBR = 0;
@@ -2583,15 +2618,15 @@ case FILTER_LPXOR2:
     		// Left voice
 			digitsAL = FLOAT2SHORT * localv0L;
 			digitsBL = FLOAT2SHORT * localv1L;
-			digitized = SHORT2FLOAT * (int)(( digitsAL ^ (digitsBL & bitmask) ) );
+			digitized = SHORT2FLOAT * (int)((digitsAL ^ (digitsBL & bitmask)));
 			localv0L = ((localv0L * mixA) + (digitized * mixB));
 
-    		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1) * (*sp);
-    		localv1L =  pattern * localv1L  +  (fxParam1) * localv0L;
+			localv0L = pattern * localv0L - (fxParam1)*localv1L + (fxParam1) * (*sp);
+			localv1L = pattern * localv1L + (fxParam1)*localv0L;
 
- 			*sp =localv1L * mixerGain;
+			*sp = localv1L * mixerGain;
 
-    		if (unlikely(*sp > ratioTimbres)) {
+			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
     		if (unlikely(*sp < -ratioTimbres)) {
@@ -2603,14 +2638,14 @@ case FILTER_LPXOR2:
     		// Right voice
 			digitsAR = FLOAT2SHORT * localv0R;
 			digitsBR = FLOAT2SHORT * localv1R;
-			digitized = SHORT2FLOAT * (int)(( digitsAR ^ (digitsBR & bitmask) ) );
+			digitized = SHORT2FLOAT * (int)((digitsAR ^ (digitsBR & bitmask)));
 			localv0R = ((localv0R * mixA) + (digitized * mixB));
 
-    		localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + (fxParam1) * (*sp);
-    		localv1R =  pattern * localv1R  +  (fxParam1) * localv0R;
-  			*sp = localv1R * mixerGain;
+			localv0R = pattern * localv0R - (fxParam1)*localv1R + (fxParam1) * (*sp);
+			localv1R = pattern * localv1R + (fxParam1)*localv0R;
+			*sp = localv1R * mixerGain;
 
-    		if (unlikely(*sp > ratioTimbres)) {
+			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
     		if (unlikely(*sp < -ratioTimbres)) {
