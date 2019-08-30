@@ -131,7 +131,8 @@ float tanh2(float x)
 inline 
 float sigmoidPos(float x)
 {
-    return 1 + tanh2((x-1) * 2);
+    //return 1 + tanh2((x-1) * 2);
+	return tanh((2*x-1)*2.5)*0.5 + 0.5;
 }
 inline
 float sat22(float x)
@@ -1178,301 +1179,6 @@ case FILTER_BP2:
 
     break;
 }
-case FILTER_LPHP:
-{
-	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
-	fxParamTmp *= fxParamTmp;
-
-	// Low pass... on the Frequency
-	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
-	if (unlikely(fxParam1 > 1.0f)) {
-		fxParam1 = 1.0f;
-	}
-	if (unlikely(fxParam1 < 0.0f)) {
-		fxParam1 = 0.0f;
-	}
-
-	int mixWet = (params.effect.param1 * 122);
-	float mixA =  2.2 * panTable[122 - mixWet];
-	float mixB =  2.2 * panTable[5 + mixWet];
-
-	float pattern = (1 - fxParam2 * fxParam1);
-
-	float *sp = this->sampleBlock;
-	float localv0L = v0L;
-	float localv1L = v1L;
-	float localv0R = v0R;
-	float localv1R = v1R;
-
-	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
-
-		// Left voice
-		localv0L = pattern * localv0L + (fxParam1 * (-localv1L + (*sp)));
-		localv1L = pattern * localv1L + (fxParam1) * localv0L;
-
-		*sp = sigmoid(tanh2((localv1L * mixA) + ((*sp - localv1L) * mixB)))* mixerGain;
-
-		if (unlikely(*sp > ratioTimbres)) {
-			*sp = ratioTimbres;
-		}
-		if (unlikely(*sp < -ratioTimbres)) {
-			*sp = -ratioTimbres;
-		}
-
-		sp++;
-
-		// Right voice
-		localv0R = pattern * localv0R + (fxParam1 * (-localv1R + (*sp)));
-		localv1R = pattern * localv1R + (fxParam1) * localv0R;
-		
-		*sp = sigmoid(tanh2((localv1R * mixA) + ((*sp - localv1R) * mixB))) * mixerGain;
-
-		if (unlikely(*sp > ratioTimbres)) {
-			*sp = ratioTimbres;
-		}
-		if (unlikely(*sp < -ratioTimbres)) {
-			*sp = -ratioTimbres;
-		}
-
-		sp++;
-	}
-	v0L = localv0L;
-	v1L = localv1L;
-	v0R = localv0R;
-	v1R = localv1R;
-}
-break;
-case FILTER_BPds:
-{
-	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
-
-	//clip -1 1
-	if(fxParamTmp>1) {
-		fxParamTmp = 1;
-	} else if(fxParamTmp<-1) {
-		fxParamTmp = -1;
-	}
-
-	fxParamTmp *= fxParamTmp;
-
-	// Low pass... on the Frequency
-	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
-	if (unlikely(fxParam1 > 1.0f)) {
-		fxParam1 = 1.0f;
-	}
-	if (unlikely(fxParam1 < 0.0f)) {
-		fxParam1 = 0.0f;
-	}
-	
-	float f = fxParam1 * 0.5;
-	float fb =  sqrt(0.5 - params.effect.param2 * 0.5);
-	float scale = sqrt(fb);
-
-	float *sp = this->sampleBlock;
-	float lowL = v0L, highL = 0, bandL = v1L;
-	float lowR = v0R, highR = 0, bandR = v1R;
-
-	int ii;
-	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
-
-		// Left voice
-		for (ii=0; ii<2; ii++) {
-			lowL = lowL + f * bandL;
-			highL = scale * (*sp) - lowL - fb * bandL;
-			bandL = (f * highL) + bandL;
-		}
-		*sp = sigmoid(tanh2(bandL)) * mixerGain;
-
-		if (unlikely(*sp > ratioTimbres)) {
-			*sp = ratioTimbres;
-		}
-		if (unlikely(*sp < -ratioTimbres)) {
-			*sp = -ratioTimbres;
-		}
-
-		sp++;
-
-		// Right voice
-		for (ii=0; ii<2; ii++) {
-			lowR = lowR + f * bandR;
-			highR = scale * (*sp) - lowR - fb * bandR;
-			bandR = (f * highR) + bandR;
-		}
-
-		*sp = sigmoid(tanh2(bandR)) * mixerGain;
-
-		if (unlikely(*sp > ratioTimbres)) {
-			*sp = ratioTimbres;
-		}
-		if (unlikely(*sp < -ratioTimbres)) {
-			*sp = -ratioTimbres;
-		}
-
-		sp++;
-	}
-
-	v0L = lowL;
-	v1L = bandL;
-	v0R = lowR;
-	v1R = bandR;
-}
-break;
-case FILTER_NOTCH:
-{
-	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
-	//https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf
-	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
-
-	//clip -1 1
-	if(fxParamTmp>1) {
-		fxParamTmp = 1;
-	} else if(fxParamTmp<-1) {
-		fxParamTmp = -1;
-	}
-
-	fxParamTmp *= fxParamTmp;
-
-	// Low pass... on the Frequency
-	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
-	if (unlikely(fxParam1 > 1.0f)) {
-		fxParam1 = 1.0f;
-	}
-	if (unlikely(fxParam1 < 0.0f)) {
-		fxParam1 = 0.0f;
-	}
-	
-	float f = fxParam1 * 0.5;
-	float fb =  sqrt(1 - params.effect.param2 * 0.6);
-	float scale = sqrt(fb);
-
-	float *sp = this->sampleBlock;
-	float lowL = v0L, highL = 0, bandL = v1L;
-	float lowR = v0R, highR = 0, bandR = v1R;
-
-	int ii;
-	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
-
-		// Left voice
-		for (ii=0; ii<2; ii++) {
-			lowL = lowL + f * bandL;
-			highL = scale * (*sp) - lowL - fb * bandL;
-			bandL = f * highL + bandL;
-		}
-		*sp = (highL + lowL) * mixerGain;
-
-		if (unlikely(*sp > ratioTimbres)) {
-			*sp = ratioTimbres;
-		}
-		if (unlikely(*sp < -ratioTimbres)) {
-			*sp = -ratioTimbres;
-		}
-
-		sp++;
-
-		// Right voice
-		for (ii=0; ii<2; ii++) {
-			lowR = lowR + f * bandR;
-			highR = scale * (*sp) - lowR - fb * bandR;
-			bandR = f * highR + bandR;
-		}
-
-		*sp = (highR + lowR) * mixerGain;
-
-		if (unlikely(*sp > ratioTimbres)) {
-			*sp = ratioTimbres;
-		}
-		if (unlikely(*sp < -ratioTimbres)) {
-			*sp = -ratioTimbres;
-		}
-
-		sp++;
-	}
-
-	v0L = lowL;
-	v1L = bandL;
-	v0R = lowR;
-	v1R = bandR;
-}
-break;
-case FILTER_BELL:
-{
-	//filter algo from Andrew Simper
-	//https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf
-	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
-
-	fxParamTmp *= fxParamTmp;
-
-	// Low pass... on the Frequency
-	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
-	if (unlikely(fxParam1 > 1.0f)) {
-		fxParam1 = 1.0f;
-	}
-	if (unlikely(fxParam1 < 0.0f)) {
-		fxParam1 = 0.0f;
-	}
-
-	//A = 10 ^ (db / 40)
-	float A = (tanh2(params.effect.param2 * 2) * 1.5) + 0.5;
-
-	float res = 0.6;
-	float k = 1 / (0.0001 + res * A);
-	float g = 0.0001 + fxParam1;
-	float a1 = 1 / (1 + g * ( g + k));
-	float a2 = g * a1;
-	float a3 = g * a2;
-	float amp = k * (A * A - 1);
-
-	float *sp = this->sampleBlock;
-
-	float ic1eqL = v0L, ic2eqL = v1L;
-	float ic1eqR = v0R, ic2eqR = v1R;
-	float v1, v2, v3;
-
-	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
-
-		// Left voice
-		v3 = (*sp) - ic2eqL;
-		v1 = a1 * ic1eqL + a2 * v3;
-		v2 = ic2eqL + a2 * ic1eqL + a3 * v3;
-		ic1eqL = 2 * v1 - ic1eqL;
-		ic2eqL = 2 * v2 - ic2eqL;
-
-		*sp = (*sp + satSin(amp * v1)) * mixerGain;
-
-		if (unlikely(*sp > ratioTimbres)) {
-			*sp = ratioTimbres;
-		}
-		if (unlikely(*sp < -ratioTimbres)) {
-			*sp = -ratioTimbres;
-		}
-
-		sp++;
-
-		// Right voice
-		v3 = (*sp) - ic2eqR;
-		v1 = a1 * ic1eqR + a2 * v3;
-		v2 = ic2eqR + a2 * ic1eqR + a3 * v3;
-		ic1eqR = 2 * v1 - ic1eqR;
-		ic2eqR = 2 * v2 - ic2eqR;
-
-		*sp = (*sp + satSin(amp * v1)) * mixerGain;
-
-		if (unlikely(*sp > ratioTimbres)) {
-			*sp = ratioTimbres;
-		}
-		if (unlikely(*sp < -ratioTimbres)) {
-			*sp = -ratioTimbres;
-		}
-
-		sp++;
-	}
-
-	v0L = ic1eqL;
-	v1L = ic2eqL;
-	v0R = ic1eqR;
-	v1R = ic2eqR;
-}
-break;
 case FILTER_LP3:
 {
 	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
@@ -1775,6 +1481,364 @@ case FILTER_PEAK:
 	v1R = bandR;
 }
 break;
+case FILTER_NOTCH:
+{
+	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
+	//https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf
+	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+
+	//clip -1 1
+	if(fxParamTmp>1) {
+		fxParamTmp = 1;
+	} else if(fxParamTmp<-1) {
+		fxParamTmp = -1;
+	}
+
+	fxParamTmp *= fxParamTmp;
+
+	// Low pass... on the Frequency
+	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+	if (unlikely(fxParam1 > 1.0f)) {
+		fxParam1 = 1.0f;
+	}
+	if (unlikely(fxParam1 < 0.0f)) {
+		fxParam1 = 0.0f;
+	}
+	
+	float f = fxParam1 * 0.5;
+	float fb =  sqrt(1 - params.effect.param2 * 0.6);
+	float scale = sqrt(fb);
+
+	float *sp = this->sampleBlock;
+	float lowL = v0L, highL = 0, bandL = v1L;
+	float lowR = v0R, highR = 0, bandR = v1R;
+
+	int ii;
+	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+
+		// Left voice
+		for (ii=0; ii<2; ii++) {
+			lowL = lowL + f * bandL;
+			highL = scale * (*sp) - lowL - fb * bandL;
+			bandL = f * highL + bandL;
+		}
+		*sp = (highL + lowL) * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+
+		// Right voice
+		for (ii=0; ii<2; ii++) {
+			lowR = lowR + f * bandR;
+			highR = scale * (*sp) - lowR - fb * bandR;
+			bandR = f * highR + bandR;
+		}
+
+		*sp = (highR + lowR) * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+	}
+
+	v0L = lowL;
+	v1L = bandL;
+	v0R = lowR;
+	v1R = bandR;
+}
+break;
+case FILTER_BELL:
+{
+	//filter algo from Andrew Simper
+	//https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf
+	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+
+	fxParamTmp *= fxParamTmp;
+
+	// Low pass... on the Frequency
+	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+	if (unlikely(fxParam1 > 1.0f)) {
+		fxParam1 = 1.0f;
+	}
+	if (unlikely(fxParam1 < 0.0f)) {
+		fxParam1 = 0.0f;
+	}
+
+	//A = 10 ^ (db / 40)
+	float A = (tanh2(params.effect.param2 * 2) * 1.5) + 0.5;
+
+	float res = 0.6;
+	float k = 1 / (0.0001 + res * A);
+	float g = 0.0001 + fxParam1;
+	float a1 = 1 / (1 + g * ( g + k));
+	float a2 = g * a1;
+	float a3 = g * a2;
+	float amp = k * (A * A - 1);
+
+	float *sp = this->sampleBlock;
+
+	float ic1eqL = v0L, ic2eqL = v1L;
+	float ic1eqR = v0R, ic2eqR = v1R;
+	float v1, v2, v3;
+
+	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+
+		// Left voice
+		v3 = (*sp) - ic2eqL;
+		v1 = a1 * ic1eqL + a2 * v3;
+		v2 = ic2eqL + a2 * ic1eqL + a3 * v3;
+		ic1eqL = 2 * v1 - ic1eqL;
+		ic2eqL = 2 * v2 - ic2eqL;
+
+		*sp = (*sp + satSin(amp * v1)) * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+
+		// Right voice
+		v3 = (*sp) - ic2eqR;
+		v1 = a1 * ic1eqR + a2 * v3;
+		v2 = ic2eqR + a2 * ic1eqR + a3 * v3;
+		ic1eqR = 2 * v1 - ic1eqR;
+		ic2eqR = 2 * v2 - ic2eqR;
+
+		*sp = (*sp + satSin(amp * v1)) * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+	}
+
+	v0L = ic1eqL;
+	v1L = ic2eqL;
+	v0R = ic1eqR;
+	v1R = ic2eqR;
+}
+break;
+case FILTER_LPHP:
+{
+	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+	fxParamTmp *= fxParamTmp;
+
+	// Low pass... on the Frequency
+	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+	if (unlikely(fxParam1 > 1.0f)) {
+		fxParam1 = 1.0f;
+	}
+	if (unlikely(fxParam1 < 0.0f)) {
+		fxParam1 = 0.0f;
+	}
+
+	int mixWet = (params.effect.param1 * 122);
+	float mixA =  2.2 * panTable[122 - mixWet];
+	float mixB =  2.2 * panTable[5 + mixWet];
+
+	float pattern = (1 - fxParam2 * fxParam1);
+
+	float *sp = this->sampleBlock;
+	float localv0L = v0L;
+	float localv1L = v1L;
+	float localv0R = v0R;
+	float localv1R = v1R;
+
+	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+
+		// Left voice
+		localv0L = pattern * localv0L + (fxParam1 * (-localv1L + (*sp)));
+		localv1L = pattern * localv1L + (fxParam1) * localv0L;
+
+		*sp = sigmoid(tanh2((localv1L * mixA) + ((*sp - localv1L) * mixB)))* mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+
+		// Right voice
+		localv0R = pattern * localv0R + (fxParam1 * (-localv1R + (*sp)));
+		localv1R = pattern * localv1R + (fxParam1) * localv0R;
+		
+		*sp = sigmoid(tanh2((localv1R * mixA) + ((*sp - localv1R) * mixB))) * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+	}
+	v0L = localv0L;
+	v1L = localv1L;
+	v0R = localv0R;
+	v1R = localv1R;
+}
+break;
+case FILTER_BPds:
+{
+	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+
+	//clip -1 1
+	if(fxParamTmp>1) {
+		fxParamTmp = 1;
+	} else if(fxParamTmp<-1) {
+		fxParamTmp = -1;
+	}
+
+	fxParamTmp *= fxParamTmp;
+
+	// Low pass... on the Frequency
+	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+	if (unlikely(fxParam1 > 1.0f)) {
+		fxParam1 = 1.0f;
+	}
+	if (unlikely(fxParam1 < 0.0f)) {
+		fxParam1 = 0.0f;
+	}
+	
+	float f = fxParam1 * 0.5;
+	float fb =  sqrt(0.5 - params.effect.param2 * 0.5);
+	float scale = sqrt(fb);
+
+	float *sp = this->sampleBlock;
+	float lowL = v0L, highL = 0, bandL = v1L;
+	float lowR = v0R, highR = 0, bandR = v1R;
+
+	int ii;
+	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+
+		// Left voice
+		for (ii=0; ii<2; ii++) {
+			lowL = lowL + f * bandL;
+			highL = scale * (*sp) - lowL - fb * bandL;
+			bandL = (f * highL) + bandL;
+		}
+		*sp = sigmoid(tanh2(bandL)) * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+
+		// Right voice
+		for (ii=0; ii<2; ii++) {
+			lowR = lowR + f * bandR;
+			highR = scale * (*sp) - lowR - fb * bandR;
+			bandR = (f * highR) + bandR;
+		}
+
+		*sp = sigmoid(tanh2(bandR)) * mixerGain;
+
+		if (unlikely(*sp > ratioTimbres)) {
+			*sp = ratioTimbres;
+		}
+		if (unlikely(*sp < -ratioTimbres)) {
+			*sp = -ratioTimbres;
+		}
+
+		sp++;
+	}
+
+	v0L = lowL;
+	v1L = bandL;
+	v0R = lowR;
+	v1R = bandR;
+}
+break;
+case FILTER_LPWS:
+	{
+		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+    	fxParamTmp *= fxParamTmp;
+
+    	// Low pass... on the Frequency
+    	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+    	if (unlikely(fxParam1 > 1.0f)) {
+    		fxParam1 = 1.0f;
+    	}
+    	if (unlikely(fxParam1 < 0.0f)) {
+    		fxParam1 = 0.0f;
+    	}
+		
+    	float pattern = (1 - 0.5 * fxParam1);
+
+    	float *sp = this->sampleBlock;
+    	float localv0L = v0L;
+    	float localv1L = v1L;
+    	float localv0R = v0R;
+    	float localv1R = v1R;
+
+		int mixWet = (params.effect.param2 * 127);
+		float mixA = panTable[mixWet] * mixerGain;
+		float mixB = panTable[127 - mixWet] * mixerGain;
+
+    	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+    		// Left voice
+    		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1) * (*sp);
+    		localv1L =  pattern * localv1L  +  (fxParam1) * (localv0L);
+
+ 			*sp = (sigmoid(tanh2(2 * localv1L)) * mixA + (mixB * (*sp)));
+
+    		if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
+    		}
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
+    		}
+
+    		sp++;
+
+    		// Right voice
+    		localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + (fxParam1) * (*sp);
+    		localv1R =  pattern * localv1R  +  (fxParam1) * (localv0R);
+
+ 			*sp = (sigmoid(tanh2(2 * localv1R)) * mixA + (mixB * (*sp)));
+
+    		if (unlikely(*sp > ratioTimbres)) {
+    			*sp = ratioTimbres;
+    		}
+    		if (unlikely(*sp < -ratioTimbres)) {
+    			*sp = -ratioTimbres;
+    		}
+
+    		sp++;
+    	}
+    	v0L = localv0L;
+    	v0R = localv0R;
+        v1L = localv1L;
+        v1R = localv1R;
+	}
+	break;
 case FILTER_TILT:
     {
         float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
@@ -1814,13 +1878,13 @@ case FILTER_TILT:
         float localv1R = v1R;
 
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
-	        // Left voice
-    		localv0L =  res * localv0L  -  (fxParam1) * localv1L  + sigmoid(*sp);
-    		localv1L =  res * localv1L  +  (fxParam1) * localv0L;
+			// Left voice
+			localv0L = res * localv0L - (fxParam1)*localv1L + sigmoid(*sp);
+			localv1L = res * localv1L + (fxParam1)*localv0L;
 
-            *sp = ((*sp) + lgain*(localv1L) + hgain*((*sp) - localv1L)) * mixerGain;
+			*sp = ((*sp) + lgain * (localv1L) + hgain * ((*sp) - localv1L)) * mixerGain;
 
-    		if (unlikely(*sp > ratioTimbres)) {
+			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
     		}
     		if (unlikely(*sp < -ratioTimbres)) {
@@ -1829,13 +1893,13 @@ case FILTER_TILT:
 
     		sp++;
 
-    		// Right voice
-            localv0R =  res * localv0R  -  (fxParam1) * localv1R  + sigmoid(*sp);
-    		localv1R =  res * localv1R  +  (fxParam1) * localv0R;
+			// Right voice
+			localv0R = res * localv0R - (fxParam1)*localv1R + sigmoid(*sp);
+			localv1R = res * localv1R + (fxParam1)*localv0R;
 
-            *sp = ((*sp) + lgain*(localv1R) + hgain*((*sp) - localv1R)) * mixerGain;
+			*sp = ((*sp) + lgain * (localv1R) + hgain * ((*sp) - localv1R)) * mixerGain;
 
-            if (unlikely(*sp > ratioTimbres)) {
+			if (unlikely(*sp > ratioTimbres)) {
                 *sp = ratioTimbres;
             }
             if (unlikely(*sp < -ratioTimbres)) {
@@ -1881,26 +1945,26 @@ case FILTER_STEREO:
         float coef_S = params.effect.param2*0.5;
 
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
-    		// Left voice
+			// Left voice
 			out = localv0L + pos * (*sp);
-    		localv0L =  (*sp) - pos * out;
-		    outL = out * mixerGain;
+			localv0L = (*sp) - pos * out;
+			outL = out * mixerGain;
 
-    		sp++;
-    		// Right voice
+			sp++;
+			// Right voice
 			out = localv0R - pos * (*sp);
-    		localv0R =  (*sp) + pos * out;
-		    outR = out * mixerGain;
+			localv0R = (*sp) + pos * out;
+			outR = out * mixerGain;
 
-            //stereo position :
-            m = (outL  + outR)*0.5;
-            s = (outR - outL )*coef_S;
-    		sp-=1;
-            (*sp) = m - s;
-            sp++;
-            (*sp) = m + s;
-            sp++;
-    	}
+			//stereo position :
+			m = (outL + outR) * 0.5;
+			s = (outR - outL) * coef_S;
+			sp -= 1;
+			(*sp) = m - s;
+			sp++;
+			(*sp) = m + s;
+			sp++;
+		}
         v0L = localv0L;
         v0R = localv0R;
 	}
@@ -1929,10 +1993,10 @@ case FILTER_SAT:
 		int mixWet = params.effect.param2 * 127;
 		float mixA = panTable[mixWet] * mixerGain;
 		float mixB = panTable[127 - mixWet] * mixerGain;
-		float a = (fxParam1 * 0.66) * thresholdNumberVoicesAttn;
-        int blend = 40 + fxParam1 * 40;
-        float blendA = panTable[blend];
-        float blendB = 1 - panTable[blend];
+		float a = (sqrt(fxParam1) * 0.4) * thresholdNumberVoicesAttn;
+		int blend = 40 + fxParam1 * 40;
+		float blendA = panTable[blend];
+		float blendB = 1 - panTable[blend];
 
 		for (int k = 0; k < BLOCK_SIZE; k++) {
 
@@ -2003,7 +2067,7 @@ case FILTER_SIGMOID:
     	float localv0R = v0R;
 
 		int mixWet = (params.effect.param2 * 127);
-		int drive = (27 + fxParam1 * 100);
+		int drive = (27 + sqrt(fxParam1) * 100);
 		float mixA = panTable[mixWet]  * mixerGain;
 		float mixB = panTable[127 - mixWet]  * mixerGain;
 		float gain = 1.1 + 44 * panTable[drive];
@@ -2056,22 +2120,24 @@ case FILTER_FOLD:
     		fxParam1 = 0.0f;
     	}
 
-		float *sp = this->sampleBlock;
+    	float *sp = this->sampleBlock;
     	float localv0L = v0L;
+    	float localv1L = v1L;
     	float localv0R = v0R;
+    	float localv1R = v1R;
 
-		int drive = (fxParam1 * 100);
+    	float pattern = (1 - 0.6 * fxParam2);
+
+		int drive = (sqrt(fxParam1) * 100);
 		float gain = (1 + 126 * panTable[drive]) * 0.25;
-		float gainCorrection = 2.6* (0.8 - (panTable[64+(drive>>1)] * 0.75));
-
-		int mixWet = (params.effect.param2 * 127);
-		float mixA = panTable[mixWet] * gainCorrection * mixerGain;
-		float mixB = panTable[127 - mixWet] * mixerGain;
+		float finalGain = 2.6 * (0.8 - (panTable[64+(drive>>1)] * 0.75)) * mixerGain;;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
-			localv0L = fold( (*sp) * gain );
-			*sp = ((sigmoid(localv0L) * mixA) + (mixB * (*sp))) ;
+    		localv0L =  pattern * localv0L  -  (fxParam2) * localv1L  + (fxParam2) * fold((*sp) * gain) ;
+    		localv1L =  pattern * localv1L  +  (fxParam2) * localv0L;
+
+			*sp = localv1L * finalGain;
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -2081,8 +2147,10 @@ case FILTER_FOLD:
     		}
 			sp++;
 
-			localv0R = fold( (*sp) * gain );
-			*sp = ((sigmoid(localv0R) * mixA) + (mixB * (*sp)));
+    		localv0R =  pattern * localv0R  -  (fxParam2) * localv1R  + (fxParam2) * fold((*sp) * gain);
+    		localv1R =  pattern * localv1R  +  (fxParam2) * localv0R;
+
+			*sp = localv1R * finalGain;
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -2093,8 +2161,10 @@ case FILTER_FOLD:
 			sp++;
     	}
 
-    	v0L = localv0L;
-    	v0R = localv0R;
+        v0L = localv0L;
+        v0R = localv0R;
+        v1L = localv1L;
+        v1R = localv1R;
 	}
 	break;
 case FILTER_WRAP:
@@ -2111,23 +2181,24 @@ case FILTER_WRAP:
     		fxParam1 = 0.0f;
     	}
 
-		float *sp = this->sampleBlock;
+    	float *sp = this->sampleBlock;
     	float localv0L = v0L;
+    	float localv1L = v1L;
     	float localv0R = v0R;
+    	float localv1R = v1R;
 
-		int drive = (fxParam1 * 100);
+    	float pattern = (1 - 0.6 * fxParam2);
+
+		int drive = (sqrt(fxParam1) * 100);
 		float gain = 0.5 * (1 + 126 * panTable[drive]);
-		float gainCorrection = (1 - (panTable[64+(drive>>1)] * 0.85));
-
-		int mixWet = (params.effect.param2 * 127);
-		float mixA = panTable[mixWet] * gainCorrection * mixerGain;
-		float mixB = panTable[127 - mixWet] * mixerGain;
+		float finalGain = (1 - (panTable[64+(drive>>1)] * 0.6)) * mixerGain;;
 
 		for (int k=0 ; k < BLOCK_SIZE ; k++) {
 			//LEFT
-			localv0L = wrap((*sp) * gain);
+    		localv0L =  pattern * localv0L  -  (fxParam2) * localv1L  + (fxParam2) * wrap((*sp) * gain) ;
+    		localv1L =  pattern * localv1L  +  (fxParam2) * localv0L;
 
-			*sp = ((sigmoid(localv0L) * mixA) + (mixB * (*sp))) ;
+			*sp = localv1L * finalGain;
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -2138,9 +2209,10 @@ case FILTER_WRAP:
 			sp++;
 
 			//RIGHT
-			localv0R = wrap((*sp) * gain);
+    		localv0R =  pattern * localv0R  -  (fxParam2) * localv1R  + (fxParam2) * wrap((*sp) * gain);
+    		localv1R =  pattern * localv1R  +  (fxParam2) * localv0R;
 
-			*sp = ((sigmoid(localv0R) * mixA) + (mixB * (*sp)));
+			*sp = localv1R * finalGain;
 
 			if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -2151,13 +2223,14 @@ case FILTER_WRAP:
 			sp++;
     	}
 
-    	v0L = localv0L;
-    	v0R = localv0R;
+        v0L = localv0L;
+        v0R = localv0R;
+        v1L = localv1L;
+        v1R = localv1R;
 	}
 	break;
 case FILTER_XOR:
 		{
-		//not really XOR, but who cares ;)
 		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
     	fxParamTmp *= fxParamTmp;
 
@@ -2182,8 +2255,8 @@ case FILTER_XOR:
     	float localv0R = v0R;
 
 		int mixWet = (params.effect.param2 * 127);
-		float mixA = panTable[mixWet] * mixerGain;;
-		float mixB = panTable[127 - mixWet] * mixerGain;;
+		float mixA = panTable[mixWet] * mixerGain;
+		float mixB = panTable[127 - mixWet] * mixerGain;
 		float out, s;
 
 		int digitsA, digitsB;
@@ -2254,7 +2327,7 @@ case FILTER_TEXTURE1:
 			float lowL = v0L, highL = 0, bandL = v1L;
 			float lowR = v0R, highR = 0, bandR = v1R;
 
-			float f = sigmoidPos(fxParam1) * 0.25;
+			float f = (fxParam1*fxParam1) * 0.25;
 			float fb =  sqrt(1 - params.effect.param2 * 0.999);
 			float scale = sqrt(fb);
 
@@ -2330,7 +2403,7 @@ case FILTER_TEXTURE2:
 		float lowL = v0L, highL = 0, bandL = v1L;
 		float lowR = v0R, highR = 0, bandR = v1R;
 
-		float f = sigmoidPos(fxParam1) * 0.5;
+		float f = (fxParam1*fxParam1) * 0.5;
 		float fb =  sqrt(1 - params.effect.param2 * 0.999);
 		float scale = sqrt(fb);
 
@@ -2401,7 +2474,7 @@ case FILTER_LPXOR:
     		fxParam1 = 0.0f;
     	}
 		
-    	float pattern = (1 - 0.9 * fxParam1);
+    	float pattern = (1 - 0.9 * sigmoidPos(fxParam1));
 
     	float *sp = this->sampleBlock;
     	float localv0L = v0L;
@@ -2536,69 +2609,6 @@ case FILTER_LPXOR2:
     		localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + (fxParam1) * (*sp);
     		localv1R =  pattern * localv1R  +  (fxParam1) * localv0R;
   			*sp = localv1R * mixerGain;
-
-    		if (unlikely(*sp > ratioTimbres)) {
-    			*sp = ratioTimbres;
-    		}
-    		if (unlikely(*sp < -ratioTimbres)) {
-    			*sp = -ratioTimbres;
-    		}
-
-    		sp++;
-    	}
-    	v0L = localv0L;
-    	v0R = localv0R;
-        v1L = localv1L;
-        v1R = localv1R;
-	}
-	break;
-case FILTER_LPWS:
-	{
-		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
-    	fxParamTmp *= fxParamTmp;
-
-    	// Low pass... on the Frequency
-    	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
-    	if (unlikely(fxParam1 > 1.0f)) {
-    		fxParam1 = 1.0f;
-    	}
-    	if (unlikely(fxParam1 < 0.0f)) {
-    		fxParam1 = 0.0f;
-    	}
-		
-    	float pattern = (1 - 0.5 * fxParam1);
-
-    	float *sp = this->sampleBlock;
-    	float localv0L = v0L;
-    	float localv1L = v1L;
-    	float localv0R = v0R;
-    	float localv1R = v1R;
-
-		int mixWet = (params.effect.param2 * 127);
-		float mixA = panTable[mixWet] * mixerGain;
-		float mixB = panTable[127 - mixWet] * mixerGain;
-
-    	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
-    		// Left voice
-    		localv0L =  pattern * localv0L  -  (fxParam1) * localv1L  + (fxParam1) * (*sp);
-    		localv1L =  pattern * localv1L  +  (fxParam1) * (localv0L);
-
- 			*sp = (sigmoid(tanh2(2 * localv1L)) * mixA + (mixB * (*sp)));
-
-    		if (unlikely(*sp > ratioTimbres)) {
-    			*sp = ratioTimbres;
-    		}
-    		if (unlikely(*sp < -ratioTimbres)) {
-    			*sp = -ratioTimbres;
-    		}
-
-    		sp++;
-
-    		// Right voice
-    		localv0R =  pattern * localv0R  -  (fxParam1) * localv1R  + (fxParam1) * (*sp);
-    		localv1R =  pattern * localv1R  +  (fxParam1) * (localv0R);
-
- 			*sp = (sigmoid(tanh2(2 * localv1R)) * mixA + (mixB * (*sp)));
 
     		if (unlikely(*sp > ratioTimbres)) {
     			*sp = ratioTimbres;
@@ -2811,11 +2821,6 @@ void Timbre::setNewEffecParam(int encoder) {
             fxParam1PlusMatrix = -1.0;
             break;
         }
-		case FILTER_FOLD:
-		{
-			fxParam2 = params.effect.param2 * 0.5 + 0.5 * pow(3, params.effect.param2*1.5);
-			break;
-		}
 		default:
 		  	switch (encoder) {
     		case ENCODER_EFFECT_TYPE:
