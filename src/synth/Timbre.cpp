@@ -106,6 +106,7 @@ inline static int __canTranspose( int _direction ) {
 
 #define RATIOINV 1./131072.
 #define SVFRANGE 1.2
+#define SVFOFFSET 0.151
 
 inline
 double exp1(double x) {
@@ -1194,7 +1195,7 @@ case FILTER_BP2:
 case FILTER_LP3:
 {
 	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
-	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
 
 	//clip -1 1
 	if(fxParamTmp>1) {
@@ -1268,7 +1269,7 @@ break;
 case FILTER_HP3: 
 {
 	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
-	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
 
 	//clip -1 1
 	if(fxParamTmp>1) {
@@ -1344,7 +1345,7 @@ break;
 case FILTER_BP3: 
 {
 	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
-	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
 
 	//clip -1 1
 	if(fxParamTmp>1) {
@@ -1420,7 +1421,7 @@ break;
 case FILTER_PEAK:
 {
 	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
-	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
 
 	//clip -1 1
 	if(fxParamTmp>1) {
@@ -1497,7 +1498,7 @@ case FILTER_NOTCH:
 {
 	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
 	//https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf
-	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
 
 	//clip -1 1
 	if(fxParamTmp>1) {
@@ -1574,7 +1575,7 @@ case FILTER_BELL:
 {
 	//filter algo from Andrew Simper
 	//https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf
-	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
 
 	fxParamTmp *= fxParamTmp;
 
@@ -1717,7 +1718,7 @@ case FILTER_LPHP:
 break;
 case FILTER_BPds:
 {
-	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
 
 	//clip -1 1
 	if(fxParamTmp>1) {
