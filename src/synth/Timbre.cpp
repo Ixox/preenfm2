@@ -108,6 +108,7 @@ inline static int __canTranspose( int _direction ) {
 
 #define SVFRANGE 1.23
 #define SVFOFFSET 0.151
+#define SVFGAINOFFSET 0.3
 
 #define LP2OFFSET -0.045
 
@@ -1222,12 +1223,14 @@ case FILTER_LP3:
 	}
 	
 	float f = fxParam1 * fxParam1 * SVFRANGE;
-	float fb =  sqrt3(1 - params.effect.param2 * 0.999);
+	float fb =  sqrt3(1 - fxParam2 * 0.999);
 	float scale = sqrt3(fb);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
 	float lowR = v0R, highR = 0, bandR = v1R;
+
+	float svfGain = (1 + SVFGAINOFFSET + fxParam2 * fxParam2 * 0.75) * mixerGain;
 
 	int ii;
 	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
@@ -1237,7 +1240,7 @@ case FILTER_LP3:
 			lowL = lowL + f * bandL;
 			bandL += f * (scale * sat33(*sp) - lowL - fb * (bandL));
 		}
-		*sp = lowL * mixerGain;
+		*sp = lowL * svfGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1254,7 +1257,7 @@ case FILTER_LP3:
 			bandR += f * (scale * sat33(*sp) - lowR - fb * (bandR));
 		}
 
-		*sp = lowR * mixerGain;
+		*sp = lowR * svfGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1296,12 +1299,14 @@ case FILTER_HP3:
 	}
 	
 	float f = fxParam1 * fxParam1 * SVFRANGE;
-	float fb =  sqrt3(1 - params.effect.param2 * 0.999);
+	float fb =  sqrt3(1 - fxParam2 * 0.999);
 	float scale = sqrt3(fb);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
 	float lowR = v0R, highR = 0, bandR = v1R;
+
+	float svfGain = (1 + SVFGAINOFFSET + fxParam2 * fxParam2 * 0.75) * mixerGain;
 
 	int ii;
 	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
@@ -1312,7 +1317,7 @@ case FILTER_HP3:
 			highL = scale * sat33(*sp) - lowL - fb * bandL;
 			bandL = f * highL + bandL;
 		}
-		*sp = (highL) * mixerGain;
+		*sp = (highL) * svfGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1330,7 +1335,7 @@ case FILTER_HP3:
 			bandR = f * highR + bandR;
 		}
 
-		*sp = (highR) * mixerGain;
+		*sp = (highR) * svfGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1372,12 +1377,14 @@ case FILTER_BP3:
 	}
 	
 	float f = fxParam1 * fxParam1 * SVFRANGE;
-	float fb =  sqrt3(0.5 - params.effect.param2 * 0.5);
+	float fb =  sqrt3(0.5 - fxParam2 * 0.5);
 	float scale = sqrt3(fb);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
 	float lowR = v0R, highR = 0, bandR = v1R;
+
+	float svfGain = (1 + SVFGAINOFFSET + fxParam2 * fxParam2 * 0.75) * mixerGain;
 
 	int ii;
 	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
@@ -1388,7 +1395,7 @@ case FILTER_BP3:
 			highL = scale * sat33(*sp) - lowL - fb * bandL;
 			bandL = f * highL + bandL;
 		}
-		*sp = (bandL) * mixerGain;
+		*sp = (bandL) * svfGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1406,7 +1413,7 @@ case FILTER_BP3:
 			bandR = f * highR + bandR;
 		}
 
-		*sp = (bandR) * mixerGain;
+		*sp = (bandR) * svfGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1448,12 +1455,14 @@ case FILTER_PEAK:
 	}
 	
 	float f = fxParam1 * fxParam1 * SVFRANGE;
-	float fb =  sqrt3(1 - params.effect.param2 * 0.999);
+	float fb =  sqrt3(1 - fxParam2 * 0.999);
 	float scale = sqrt3(fb);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
 	float lowR = v0R, highR = 0, bandR = v1R;
+
+	float svfGain = (1 + SVFGAINOFFSET + fxParam2 * fxParam2 * 0.75) * mixerGain;
 
 	int ii;
 	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
@@ -1464,7 +1473,7 @@ case FILTER_PEAK:
 			highL = scale * sat33(*sp) - lowL - fb * bandL;
 			bandL = f * highL + bandL;
 		}
-		*sp = (bandL + highL + lowL) * mixerGain;
+		*sp = (bandL + highL + lowL) * svfGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1482,7 +1491,7 @@ case FILTER_PEAK:
 			bandR = f * highR + bandR;
 		}
 
-		*sp = (bandR + highR + lowR) * mixerGain;
+		*sp = (bandR + highR + lowR) * svfGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1525,12 +1534,14 @@ case FILTER_NOTCH:
 	}
 	
 	float f = fxParam1 * fxParam1 * SVFRANGE;
-	float fb =  sqrt3(1 - params.effect.param2 * 0.6);
+	float fb =  sqrt3(1 - fxParam2 * 0.6);
 	float scale = sqrt3(fb);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
 	float lowR = v0R, highR = 0, bandR = v1R;
+
+	float svfGain = (1 + SVFGAINOFFSET) * mixerGain;
 
 	int ii;
 	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
@@ -1541,7 +1552,7 @@ case FILTER_NOTCH:
 			highL = scale * (*sp) - lowL - fb * bandL;
 			bandL = f * highL + bandL;
 		}
-		*sp = (highL + lowL) * mixerGain;
+		*sp = (highL + lowL) * svfGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1559,7 +1570,7 @@ case FILTER_NOTCH:
 			bandR = f * highR + bandR;
 		}
 
-		*sp = (highR + lowR) * mixerGain;
+		*sp = (highR + lowR) * svfGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1595,7 +1606,7 @@ case FILTER_BELL:
 	}
 
 	//A = 10 ^ (db / 40)
-	float A = (tanh2(params.effect.param2 * 2) * 1.5) + 0.5;
+	float A = (tanh2(fxParam2 * 2) * 1.5) + 0.5;
 
 	float res = 0.6;
 	float k = 1 / (0.0001 + res * A);
@@ -1611,6 +1622,8 @@ case FILTER_BELL:
 	float ic1eqR = v0R, ic2eqR = v1R;
 	float v1, v2, v3;
 
+	float svfGain = (1 + SVFGAINOFFSET) * mixerGain;
+
 	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 
 		// Left voice
@@ -1620,7 +1633,7 @@ case FILTER_BELL:
 		ic1eqL = 2 * v1 - ic1eqL;
 		ic2eqL = 2 * v2 - ic2eqL;
 
-		*sp = (*sp + sigmoid(amp * v1)) * mixerGain;
+		*sp = (*sp + sigmoid(amp * v1)) * svfGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1638,7 +1651,7 @@ case FILTER_BELL:
 		ic1eqR = 2 * v1 - ic1eqR;
 		ic2eqR = 2 * v2 - ic2eqR;
 
-		*sp = (*sp + sigmoid(amp * v1)) * mixerGain;
+		*sp = (*sp + sigmoid(amp * v1)) * svfGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1745,12 +1758,14 @@ case FILTER_BPds:
 	}
 	
 	float f = fxParam1 * fxParam1 * SVFRANGE;
-	float fb =  sqrt3(0.5 - params.effect.param2 * 0.5);
+	float fb =  sqrt3(0.5 - fxParam2 * 0.5);
 	float scale = sqrt3(fb);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
 	float lowR = v0R, highR = 0, bandR = v1R;
+
+	float svfGain = (1 + SVFGAINOFFSET + fxParam2 * fxParam2 * 0.75) * mixerGain;
 
 	int ii;
 	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
@@ -1761,7 +1776,7 @@ case FILTER_BPds:
 			highL = scale * (*sp) - lowL - fb * bandL;
 			bandL = (f * highL) + bandL;
 		}
-		*sp = sigmoid(tanh2(bandL)) * mixerGain;
+		*sp = sigmoid(tanh2(bandL)) * svfGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
@@ -1779,7 +1794,7 @@ case FILTER_BPds:
 			bandR = (f * highR) + bandR;
 		}
 
-		*sp = sigmoid(tanh2(bandR)) * mixerGain;
+		*sp = sigmoid(tanh2(bandR)) * svfGain;
 
 		if (unlikely(*sp > ratioTimbres)) {
 			*sp = ratioTimbres;
