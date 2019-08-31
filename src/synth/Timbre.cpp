@@ -105,8 +105,11 @@ inline static int __canTranspose( int _direction ) {
 #define SHORT2FLOAT 1./32768.
 
 #define RATIOINV 1./131072.
-#define SVFRANGE 1.2
+
+#define SVFRANGE 1.23
 #define SVFOFFSET 0.151
+
+#define LP2OFFSET -0.045
 
 inline
 double exp1(double x) {
@@ -999,7 +1002,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     }
 case FILTER_LP2:
     {
-        float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+        float fxParamTmp = LP2OFFSET + params.effect.param1 + matrixFilterFrequency;
     	fxParamTmp *= fxParamTmp;
 
     	// Low pass... on the Frequency
@@ -1010,8 +1013,9 @@ case FILTER_LP2:
     	if (unlikely(fxParam1 < 0.0f)) {
     		fxParam1 = 0.0f;
     	}
-		
-    	float pattern = (1 - fxParam2 * fxParam1);
+
+		float f = fxParam1;
+    	float pattern = (1 - fxParam2 * f);
 
     	float *sp = this->sampleBlock;
     	float localv0L = v0L;
@@ -1022,11 +1026,11 @@ case FILTER_LP2:
     	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 
     		// Left voice
-			localv0L = pattern * localv0L - fxParam1 * (localv1L + (*sp));
-			localv1L = pattern * localv1L + fxParam1 * localv0L;
+			localv0L = pattern * localv0L - f * (localv1L + (*sp));
+			localv1L = pattern * localv1L + f * localv0L;
 
-			localv0L = pattern * localv0L - fxParam1 * (localv1L + sat33(*sp));
-			localv1L = pattern * localv1L + fxParam1 * localv0L;
+			localv0L = pattern * localv0L - f * (localv1L + sat33(*sp));
+			localv1L = pattern * localv1L + f * localv0L;
 
 			*sp = localv1L * mixerGain;
 
@@ -1040,11 +1044,11 @@ case FILTER_LP2:
     		sp++;
 
     		// Right voice
-			localv0R = pattern * localv0R - fxParam1 * (localv1R + (*sp));
-			localv1R = pattern * localv1R + fxParam1 * localv0R;
+			localv0R = pattern * localv0R - f * (localv1R + (*sp));
+			localv1R = pattern * localv1R + f * localv0R;
 
-			localv0R = pattern * localv0R - fxParam1 * (localv1R + sat33(*sp));
-			localv1R = pattern * localv1R + fxParam1 * localv0R;
+			localv0R = pattern * localv0R - f * (localv1R + sat33(*sp));
+			localv1R = pattern * localv1R + f * localv0R;
 
 			*sp = localv1R * mixerGain;
 
@@ -1065,7 +1069,7 @@ case FILTER_LP2:
     break;
 case FILTER_HP2:
     {
-        float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+        float fxParamTmp = LP2OFFSET + params.effect.param1 + matrixFilterFrequency;
         fxParamTmp *= fxParamTmp;
 
         // Low pass... on the Frequency
@@ -1076,7 +1080,9 @@ case FILTER_HP2:
         if (unlikely(fxParam1 < 0.0f)) {
             fxParam1 = 0.0f;
         }
-        float pattern = (1 - fxParam2 * fxParam1);
+
+		float f = fxParam1;
+        float pattern = (1 - fxParam2 * f);
 
         float *sp = this->sampleBlock;
         float localv0L = v0L;
@@ -1087,11 +1093,11 @@ case FILTER_HP2:
         for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
             // Left voice
-			localv0L = pattern * localv0L + (fxParam1 * (-localv1L + (*sp)));
-			localv1L = pattern * localv1L + fxParam1 * localv0L;
+			localv0L = pattern * localv0L + (f * (-localv1L + (*sp)));
+			localv1L = pattern * localv1L + f * localv0L;
 
-			localv0L = pattern * localv0L + (fxParam1 * (-localv1L + sat33(*sp)));
-			localv1L = pattern * localv1L + fxParam1 * localv0L;
+			localv0L = pattern * localv0L + (f * (-localv1L + sat33(*sp)));
+			localv1L = pattern * localv1L + f * localv0L;
 
 			*sp = (*sp - localv1L) * mixerGain;
 
@@ -1105,11 +1111,11 @@ case FILTER_HP2:
             sp++;
 
             // Right voice
-			localv0R = pattern * localv0R + (fxParam1 * (-localv1R + (*sp)));
-			localv1R = pattern * localv1R + fxParam1 * localv0R;
+			localv0R = pattern * localv0R + (f * (-localv1R + (*sp)));
+			localv1R = pattern * localv1R + f * localv0R;
 
-			localv0R = pattern * localv0R + (fxParam1 * (-localv1R + sat33(*sp)));
-			localv1R = pattern * localv1R + fxParam1 * localv0R;
+			localv0R = pattern * localv0R + (f * (-localv1R + sat33(*sp)));
+			localv1R = pattern * localv1R + f * localv0R;
 
 			*sp = (*sp - localv1R) * mixerGain;
 
