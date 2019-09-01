@@ -1337,7 +1337,7 @@ case FILTER_BELL:
 
 	float res = 0.6;
 	float k = 1 / (0.0001 + res * A);
-	float g = 0.0001 + fxParam1 * SVFRANGE;
+	float g = 0.0001 + (fxParam1);
 	float a1 = 1 / (1 + g * (g + k));
 	float a2 = g * a1;
 	float a3 = g * a2;
@@ -1387,7 +1387,7 @@ case FILTER_LPHP:
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
 	int mixWet = (params.effect.param1 * 122);
-	float mixA = 2.5 * panTable[122 - mixWet];
+	float mixA = (2 + fxParam2 * 4) * panTable[122 - mixWet];
 	float mixB = 2.5 * panTable[5 + mixWet];
 
 	float f = fxParam1 * fxParam1 * 1.5;
@@ -1437,6 +1437,8 @@ case FILTER_BPds:
 
 	float svfGain = (1 + SVFGAINOFFSET + fxParam2 * fxParam2 * 0.75) * mixerGain;
 
+	float sat = 2 + fxParam2 * 2;
+
 	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 
 		// Left voice
@@ -1445,7 +1447,7 @@ case FILTER_BPds:
 			highL = scale * (*sp) - lowL - fb * bandL;
 			bandL = (f * highL) + bandL;
 		}
-		*sp++ = clamp(sat33(tanh2(bandL * 2)) * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sat33(tanh2(bandL * sat)) * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 		for (int ii=0; ii<2; ii++) {
@@ -1454,7 +1456,7 @@ case FILTER_BPds:
 			bandR = (f * highR) + bandR;
 		}
 
-		*sp++ = clamp(sat33(tanh2(bandR * 2)) * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sat33(tanh2(bandR * sat)) * svfGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = lowL;
