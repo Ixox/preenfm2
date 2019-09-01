@@ -1387,8 +1387,8 @@ case FILTER_LPHP:
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
 	int mixWet = (params.effect.param1 * 122);
-	float mixA = 2.2 * panTable[122 - mixWet];
-	float mixB = 2.2 * panTable[5 + mixWet];
+	float mixA = 2.5 * panTable[122 - mixWet];
+	float mixB = 2.5 * panTable[5 + mixWet];
 
 	float f = fxParam1 * fxParam1 * 1.5;
 	float pattern = (1 - fxParam2 * f);
@@ -1398,6 +1398,7 @@ case FILTER_LPHP:
 	float localv1L = v1L;
 	float localv0R = v0R;
 	float localv1R = v1R;
+	float gain = mixerGain * 1.3;
 
 	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 
@@ -1405,13 +1406,13 @@ case FILTER_LPHP:
 		localv0L = pattern * localv0L + (f * (-localv1L + (*sp)));
 		localv1L = pattern * localv1L + f * localv0L;
 
-		*sp++ = clamp(sigmoid(tanh2((localv1L * mixA) + ((*sp - localv1L) * mixB))) * mixerGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sat33(tanh2((localv1L * mixA) + ((*sp - localv1L) * mixB))) * gain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 		localv0R = pattern * localv0R + (f * (-localv1R + (*sp)));
 		localv1R = pattern * localv1R + f * localv0R;
 
-		*sp++ = clamp(sigmoid(tanh2((localv1R * mixA) + ((*sp - localv1R) * mixB))) * mixerGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sat33(tanh2((localv1R * mixA) + ((*sp - localv1R) * mixB))) * gain, -ratioTimbres, ratioTimbres);
 	}
 	v0L = localv0L;
 	v1L = localv1L;
@@ -1444,7 +1445,7 @@ case FILTER_BPds:
 			highL = scale * (*sp) - lowL - fb * bandL;
 			bandL = (f * highL) + bandL;
 		}
-		*sp++ = clamp(sigmoid(tanh2(bandL)) * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sat33(tanh2(bandL * 2)) * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 		for (int ii=0; ii<2; ii++) {
@@ -1453,7 +1454,7 @@ case FILTER_BPds:
 			bandR = (f * highR) + bandR;
 		}
 
-		*sp++ = clamp(sigmoid(tanh2(bandR)) * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sat33(tanh2(bandR * 2)) * svfGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = lowL;
