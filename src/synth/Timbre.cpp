@@ -171,6 +171,14 @@ float sigmoid(float x)
     else
         return x > 0.f ? 1.f : -1.f;
 }
+inline
+float sigmoid2(float x)
+{
+    if(sabs(x)<1.2)
+        return x*(1.5f - 0.5f * x * x);
+    else
+        return x > 0.f ? 0.936f : -0.936f;
+}
 float fold(float x) {
 	return (sabs(x + 0.25 - round(x + 0.25)) - 0.25);
 }
@@ -1349,7 +1357,7 @@ case FILTER_BELL:
 	float ic1eqR = v0R, ic2eqR = v1R;
 	float v1, v2, v3;
 
-	float svfGain = (1 + SVFGAINOFFSET) * mixerGain;
+	float svfGain = mixerGain;
 
 	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
 
@@ -1360,7 +1368,7 @@ case FILTER_BELL:
 		ic1eqL = 2 * v1 - ic1eqL;
 		ic2eqL = 2 * v2 - ic2eqL;
 
-		*sp++ = clamp((*sp + sigmoid(amp * v1)) * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp((*sp + sigmoid2(amp * v1)) * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 		v3 = (*sp) - ic2eqR;
@@ -1369,7 +1377,120 @@ case FILTER_BELL:
 		ic1eqR = 2 * v1 - ic1eqR;
 		ic2eqR = 2 * v2 - ic2eqR;
 
-		*sp++ = clamp((*sp + sigmoid(amp * v1)) * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp((*sp + sigmoid2(amp * v1)) * svfGain, -ratioTimbres, ratioTimbres);
+	}
+
+	v0L = ic1eqL;
+	v1L = ic2eqL;
+	v0R = ic1eqR;
+	v1R = ic2eqR;
+}
+break;
+case FILTER_LOWSHELF:
+{
+	//filter algo from Andrew Simper
+	//https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf
+	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
+	fxParamTmp *= fxParamTmp;
+	// Low pass... on the Frequency
+	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
+
+	//A = 10 ^ (db / 40)
+	float A = (tanh2(fxParam2 * 2) * 1) + 0.5;
+
+	float res = 0.5;
+	float k = 1 / (0.0001 + res);
+	float g = 0.0001 + (fxParam1);
+	float a1 = 1 / (1 + g * (g + k));
+	float a2 = g * a1;
+	float a3 = g * a2;
+	float m1 = k * (A - 1);
+	float m2 = (A * A - 1);
+
+	float *sp = this->sampleBlock;
+
+	float ic1eqL = v0L, ic2eqL = v1L;
+	float ic1eqR = v0R, ic2eqR = v1R;
+	float v1, v2, v3;
+
+	float svfGain = mixerGain * 0.8;
+
+	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+
+		// Left voice
+		v3 = (*sp) - ic2eqL;
+		v1 = a1 * ic1eqL + a2 * v3;
+		v2 = ic2eqL + a2 * ic1eqL + a3 * v3;
+		ic1eqL = 2 * v1 - ic1eqL;
+		ic2eqL = 2 * v2 - ic2eqL;
+
+		*sp++ = clamp((*sp + sigmoid2(m1 * v1 + m2 * v2)) * svfGain, -ratioTimbres, ratioTimbres);
+
+		// Right voice
+		v3 = (*sp) - ic2eqR;
+		v1 = a1 * ic1eqR + a2 * v3;
+		v2 = ic2eqR + a2 * ic1eqR + a3 * v3;
+		ic1eqR = 2 * v1 - ic1eqR;
+		ic2eqR = 2 * v2 - ic2eqR;
+
+		*sp++ = clamp((*sp + sigmoid2(m1 * v1 + m2 * v2)) * svfGain, -ratioTimbres, ratioTimbres);
+	}
+
+	v0L = ic1eqL;
+	v1L = ic2eqL;
+	v0R = ic1eqR;
+	v1R = ic2eqR;
+}
+break;
+case FILTER_HIGHSHELF:
+{
+	//filter algo from Andrew Simper
+	//https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf
+	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
+	fxParamTmp *= fxParamTmp;
+	// Low pass... on the Frequency
+	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
+
+	//A = 10 ^ (db / 40)
+	float A = (tanh2(fxParam2 * 2) * 1) + 0.5;
+
+	float res = 0.5;
+	float k = 1 / (0.0001 + res);
+	float g = 0.0001 + (fxParam1);
+	float a1 = 1 / (1 + g * (g + k));
+	float a2 = g * a1;
+	float a3 = g * a2;
+	float m0 = A * A;
+	float m1 = k * (A - 1) * A;
+	float m2 = (1 - A * A);
+
+	float *sp = this->sampleBlock;
+
+	float ic1eqL = v0L, ic2eqL = v1L;
+	float ic1eqR = v0R, ic2eqR = v1R;
+	float v1, v2, v3;
+
+	float svfGain = mixerGain * 0.8;
+
+	for (int k=0 ; k < BLOCK_SIZE  ; k++) {
+
+		// Left voice
+		v3 = (*sp) - ic2eqL;
+		v1 = a1 * ic1eqL + a2 * v3;
+		v2 = ic2eqL + a2 * ic1eqL + a3 * v3;
+		ic1eqL = 2 * v1 - ic1eqL;
+		ic2eqL = 2 * v2 - ic2eqL;
+
+		*sp++ = clamp((m0 * *sp + sigmoid2(m1 * v1 + m2 * v2)) * svfGain, -ratioTimbres, ratioTimbres);
+
+		// Right voice
+		v3 = (*sp) - ic2eqR;
+		v1 = a1 * ic1eqR + a2 * v3;
+		v2 = ic2eqR + a2 * ic1eqR + a3 * v3;
+		ic1eqR = 2 * v1 - ic1eqR;
+		ic2eqR = 2 * v2 - ic2eqR;
+
+		*sp++ = clamp((m0 * *sp + sigmoid2(m1 * v1 + m2 * v2)) * svfGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = ic1eqL;
@@ -1406,13 +1527,13 @@ case FILTER_LPHP:
 		localv0L = pattern * localv0L + (f * (-localv1L + (*sp)));
 		localv1L = pattern * localv1L + f * localv0L;
 
-		*sp++ = clamp(sat33(tanh2((localv1L * mixA) + ((*sp - localv1L) * mixB))) * gain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sigmoid2(tanh2((localv1L * mixA) + ((*sp - localv1L) * mixB))) * gain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 		localv0R = pattern * localv0R + (f * (-localv1R + (*sp)));
 		localv1R = pattern * localv1R + f * localv0R;
 
-		*sp++ = clamp(sat33(tanh2((localv1R * mixA) + ((*sp - localv1R) * mixB))) * gain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sigmoid2(tanh2((localv1R * mixA) + ((*sp - localv1R) * mixB))) * gain, -ratioTimbres, ratioTimbres);
 	}
 	v0L = localv0L;
 	v1L = localv1L;
