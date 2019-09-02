@@ -31,6 +31,12 @@ in this version, some more filters & fx :
 ###### Bell  :
 - state variable filter, boost if param amp > 0.5, else cut
 
+###### LowS :
+- state variable Low Shelf filter, boost if param amp > 0.5, else cut
+
+###### HigS :
+- state variable High Shelf filter, boost if param amp > 0.5, else cut
+
 ###### LpHp :
 - distortion filter, morph from lowpass at freq=0 to highpass at freq=1
 
@@ -74,3 +80,7 @@ in this version, some more filters & fx :
 - low pass filter with xor before filter
 
 
+Credits : 
+
+	many thanks to musicdsp.org for the good filter algo ( and more).
+	many thanks to Andrew Simper for the bell, low shelf and high shelf algo.
