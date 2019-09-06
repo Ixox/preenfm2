@@ -152,7 +152,9 @@ float sat25(float x)
 inline
 float sat33(float x)
 {
-	return x * (1 - (x * x * 0.125f));
+	if (unlikely(fabs(x) > 2.58f))
+		return 0;
+	return x * (1 - x * x * 0.15f);
 }
 //https://www.musicdsp.org/en/latest/Other/120-saturation.html
 inline
@@ -980,19 +982,19 @@ case FILTER_LP2:
     	for (int k=BLOCK_SIZE ; k--; ) {
 
 			// Left voice
-			localv0L = pattern * localv0L - f * sat33(localv1L + (*sp));
+			localv0L = pattern * localv0L - f * sat33(localv1L + *sp);
 			localv1L = pattern * localv1L + f * localv0L;
 
-			localv0L = pattern * localv0L - f * (localv1L + (*sp));
+			localv0L = pattern * localv0L - f * (localv1L + *sp);
 			localv1L = pattern * localv1L + f * localv0L;
 
 			*sp++ = clamp(localv1L * mixerGain, -ratioTimbres, ratioTimbres);
 
 			// Right voice
-			localv0R = pattern * localv0R - f * sat33(localv1R + (*sp));
+			localv0R = pattern * localv0R - f * sat33(localv1R + *sp);
 			localv1R = pattern * localv1R + f * localv0R;
 
-			localv0R = pattern * localv0R - f * (localv1R + (*sp));
+			localv0R = pattern * localv0R - f * (localv1R + *sp);
 			localv1R = pattern * localv1R + f * localv0R;
 
 			*sp++ = clamp(localv1R * mixerGain, -ratioTimbres, ratioTimbres);
@@ -1023,19 +1025,19 @@ case FILTER_HP2:
         for (int k=0 ; k < BLOCK_SIZE ; k++) {
 
 			// Left voice
-			localv0L = pattern * localv0L + (f * sat33(-localv1L + (*sp)));
+			localv0L = pattern * localv0L + f * sat33(-localv1L + *sp);
 			localv1L = pattern * localv1L + f * localv0L;
 
-			localv0L = pattern * localv0L + (f * (-localv1L + (*sp)));
+			localv0L = pattern * localv0L + f * (-localv1L + *sp);
 			localv1L = pattern * localv1L + f * localv0L;
 
 			*sp++ = clamp((*sp - localv1L) * mixerGain, -ratioTimbres, ratioTimbres);
 
 			// Right voice
-			localv0R = pattern * localv0R + (f * sat33(-localv1R + (*sp)));
+			localv0R = pattern * localv0R + f * sat33(-localv1R + *sp);
 			localv1R = pattern * localv1R + f * localv0R;
 
-			localv0R = pattern * localv0R + (f * (-localv1R + (*sp)));
+			localv0R = pattern * localv0R + f * (-localv1R + *sp);
 			localv1R = pattern * localv1R + f * localv0R;
 
 			*sp++ = clamp((*sp - localv1R) * mixerGain, -ratioTimbres, ratioTimbres);
@@ -1752,11 +1754,11 @@ case FILTER_SIGMOID:
 		for (int k=BLOCK_SIZE ; k--; ) {
 
 			// Left voice
-			localv0L = ((sat25(bias + (*sp) * gain) * gainCorrection) * b) + (localv0L * a);
+			localv0L = ((tanh2(bias + (*sp) * gain) * gainCorrection) * b) + (localv0L * a);
 			*sp++ = clamp((*sp - localv0L) * mixerGain, -ratioTimbres, ratioTimbres);
 
 			// Right voice
-			localv0R = ((sat25(bias + (*sp) * gain) * gainCorrection) * b) + (localv0R * a);
+			localv0R = ((tanh2(bias + (*sp) * gain) * gainCorrection) * b) + (localv0R * a);
 			*sp++ = clamp((*sp - localv0R) * mixerGain, -ratioTimbres, ratioTimbres);
 		}
 
@@ -2263,11 +2265,8 @@ void Timbre::setNewEffecParam(int encoder) {
     		break;
     	case FILTER_HP:
     	case FILTER_LP:
-        case FILTER_LP2:
-        case FILTER_HP2:
         case FILTER_TILT:
 		case FILTER_STEREO:
-		case FILTER_LPHP:
     		switch (encoder) {
     		case ENCODER_EFFECT_TYPE:
     			fxParam2 = 0.3f - params.effect.param2 * 0.3f;
@@ -2280,6 +2279,18 @@ void Timbre::setNewEffecParam(int encoder) {
     	    	// fxParam2 = pow(0.5, ((params.effect.param2 * 127)+24) / 16.0);
     			// => value from 0.35 to 0.0
     			fxParam2 = 0.27f - params.effect.param2 * 0.27f;
+    			break;
+    		}
+        	break;
+        case FILTER_LP2:
+        case FILTER_HP2:
+		case FILTER_LPHP:
+		    switch (encoder) {
+    		case ENCODER_EFFECT_TYPE:
+    			fxParam2 = 0.27f - params.effect.param2 * 0.267f;
+    			break;
+    		case ENCODER_EFFECT_PARAM2:
+    			fxParam2 = 0.27f - params.effect.param2 * 0.267f;
     			break;
     		}
         	break;
