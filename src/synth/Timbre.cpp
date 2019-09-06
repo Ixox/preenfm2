@@ -112,16 +112,9 @@ inline static int __canTranspose( int _direction ) {
 
 #define LP2OFFSET -0.045f
 
-inline
-double exp1(double x) {
-	//fast exp
-  x = 1.0f + x / 256.0f;
-  x *= x; x *= x; x *= x; x *= x;
-  x *= x; x *= x; x *= x; x *= x;
-  return x;
-}
 inline 
 float expf_fast(float a) {
+  //https://github.com/ekmett/approximate/blob/master/cbits/fast.c
   union { float f; int x; } u;
   u.x = (int) (12102203 * a + 1064866805);
   return u.f;
@@ -139,14 +132,13 @@ float sqrt3(const float x)
   u.i = (1 << 29) + (u.i >> 1) - (1 << 22);
   return u.x;
 } 
-/* single precision absolute value, a lot faster than fabsf() (if you use MSVC++ 6 Standard - others' implementations might be less slow) */
 inline
 float sabs(float a)
 {
+	//https://www.musicdsp.org/en/latest/Other/178-reasonably-accurate-fastish-tanh-approximation.html
 	const int b = (*((int *)(&a))) & 0x7FFFFFFF;
 	return *((float *)(&b));
 }
-/* approximates tanh(x/2) rather than tanh(x) - depending on how you're using this, fixing that could well be wasting a multiplication (though that isn't much, and it could be done with an integer addition in sabs instead)  */
 inline
 float tanh2(float x)
 {
@@ -156,46 +148,17 @@ inline
 float sat25(float x)
 { 
 	return x * (1.f - sabs(x * 0.25f));
-	// x * (1 - sabs(x * 0.25))
-	/*float sss = sabs(x * 0.25);
-	if (sss > 0.5) {
-		return x < 0 ? -1 : 1;
-	}
-	return x * (1 - sss);*/
-}
-inline 
-float sigmoidPos(float x)
-{
-	return tanh2((2 * x - 1) * 2.5) * 0.5 + 0.5;
 }
 inline
 float sat33(float x)
 {
 	return x * (1 - (x * x * 0.125f));
-	/*float xsq = x * x;
-	if (xsq > 1)
-		return x < 0 ? -1 : 1;
-	else
-		return x * (1 - (xsq * 0.125));*/
 }
 //https://www.musicdsp.org/en/latest/Other/120-saturation.html
 inline
 float sigmoid(float x)
 {
 	return x * (1.5f - 0.5f * x * x);
-	/*
-	if (sabs(x) < 1)
-		return x * (1.5f - 0.5f * x * x);
-	else
-		return x > 0.f ? 1.f : -1.f;*/
-}
-inline
-float sigmoid2(float x)
-{
-    if(sabs(x)<1.2f)
-		return x * (1.5f - 0.5f * x * x);
-	else
-        return x > 0.f ? 0.936f : -0.936f;
 }
 float fold(float x) {
 	return (sabs(x + 0.25 - (int)(x + 0.25)) - 0.25);
