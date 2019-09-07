@@ -1779,25 +1779,33 @@ case FILTER_FOLD:
 		float *sp = this->sampleBlock;
 		float localv0L = v0L;
 		float localv0R = v0R;
+		float localv1L = v1L;
+		float localv1R = v1R;
 
-		const float drive = sqrt3(fxParam1);
-		const float gain = (1 + 52 * (drive)) * 0.25f;
-		const float finalGain = (1 - (drive / (drive + 0.05f)) * 0.6f) * mixerGain;
+		float f = fxParam2 * fxParam2 + 0.1f;
+		float f4 = f * 4;
+		float pattern = (1 - 0.6f * f);
 
-		const float a = 0.95f - fxParam2 * 0.599999f;
-		const float b = 1.f - a;
+		float drive = sqrt3(fxParam1);
+		float gain = (1 + 52 * (drive)) * 0.25f;
+		float finalGain = (1 - (drive / (drive + 0.05f)) * 0.6f) * mixerGain;
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 			//LEFT
-			localv0L = (fold(*sp * gain) * b) + (localv0L * a);
-			*sp++ = clamp(localv0L * finalGain, -ratioTimbres, ratioTimbres);
+			localv0L = pattern * localv0L - f * localv1L + f4 * fold(*sp * gain);
+			localv1L = pattern * localv1L + f * localv0L;
+			*sp++ = clamp(localv1L * finalGain, -ratioTimbres, ratioTimbres);
+
 			//RIGHT
-			localv0R = (fold(*sp * gain) * b) + (localv0R * a);
+			localv0R = pattern * localv0R - f * localv1R + f4 * fold(*sp * gain);
+			localv1R = pattern * localv1R + f * localv0R;
 			*sp++ = clamp(localv0R * finalGain, -ratioTimbres, ratioTimbres);
 		}
 
         v0L = localv0L;
         v0R = localv0R;
+		v1L = localv1L;	
+        v1R = localv1R;
 	}
 	break;
 case FILTER_WRAP:
