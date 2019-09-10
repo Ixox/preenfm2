@@ -163,7 +163,7 @@ float sigmoid(float x)
 	return x * (1.5f - 0.5f * x * x);
 }
 float fold(float x) {
-	return (sabs(x + 0.25 - (int)(x + 0.25)) - 0.25);
+	return (sabs(x + 0.25f - (int)(x + 0.25f)) - 0.25f);
 }
 inline
 float wrap(float x) {
@@ -1739,31 +1739,39 @@ case FILTER_SIGMOID:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-		float *sp = this->sampleBlock;
-		float localv0L = v0L;
-		float localv0R = v0R;
+		float f = (fxParam2 * fxParam2) * 0.75f + 0.1f;
+		const float fb = 0.75f;
+		const float scale = sqrt3(fb);
 
-		const float a = 0.95f - fxParam2 * 0.599999f;
-		const float b = 1.f - a;
+		float *sp = this->sampleBlock;
+		float lowL = v0L, bandL = v1L;
+		float lowR = v0R, bandR = v1R;
 
 		const int drive = (27 + sqrt3(fxParam1) * 100);
-		const float gain = 1.1f + 22 * panTable[drive];
-		const float gainCorrection = (1.2f - sqrt3(panTable[64 + (drive >> 1)] * 0.8f));
+		const float gain = 1.1f + 44 * panTable[drive];
 		const float bias = -0.1f + (fxParam1 * 0.2f);
+
+		const float finalGain = (1.2f - sqrt3(panTable[64 + (drive >> 1)] * 0.8f)) * mixerGain;
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 
 			// Left voice
-			localv0L = ((tanh2(bias + (*sp) * gain) * gainCorrection) * b) + (localv0L * a);
-			*sp++ = clamp((*sp - localv0L) * mixerGain, -ratioTimbres, ratioTimbres);
+			lowL += f * bandL;
+			bandL += f * (scale * tanh2(bias + sat33(*sp) * gain) - lowL - fb * bandL);
+
+			*sp++ = clamp(lowL * finalGain, -ratioTimbres, ratioTimbres);
 
 			// Right voice
-			localv0R = ((tanh2(bias + (*sp) * gain) * gainCorrection) * b) + (localv0R * a);
-			*sp++ = clamp((*sp - localv0R) * mixerGain, -ratioTimbres, ratioTimbres);
+			lowR += f * bandR;
+			bandR += f * (scale * tanh2(bias + sat33(*sp) * gain) - lowR - fb * bandR);
+
+			*sp++ = clamp(lowR * finalGain, -ratioTimbres, ratioTimbres);
 		}
 
-    	v0L = localv0L;
-    	v0R = localv0R;
+		v0L = lowL;
+		v1L = bandL;
+		v0R = lowR;
+		v1R = bandR;
 	}
 	break;
 case FILTER_FOLD:
@@ -1776,36 +1784,36 @@ case FILTER_FOLD:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
+		float f = (fxParam2 * fxParam2) * 0.75f + 0.1f;
+		const float fb = 0.75f;
+		const float scale = sqrt3(fb);
+
 		float *sp = this->sampleBlock;
-		float localv0L = v0L;
-		float localv0R = v0R;
-		float localv1L = v1L;
-		float localv1R = v1R;
-
-		float f = fxParam2 * fxParam2 + 0.1f;
-		float f4 = f * 4;
-		float pattern = (1 - 0.6f * f);
-
+		float lowL = v0L, bandL = v1L;
+		float lowR = v0R, bandR = v1R;
+	
 		float drive = sqrt3(fxParam1);
-		float gain = (1 + 52 * (drive)) * 0.25f;
-		float finalGain = (1 - (drive / (drive + 0.05f)) * 0.6f) * mixerGain;
+		float gain = (0.25f + 13 * (drive));
+		const float svfGain = (1.2f - drive * 0.8f ) * mixerGain;
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 			//LEFT
-			localv0L = pattern * localv0L - f * localv1L + f4 * fold(*sp * gain);
-			localv1L = pattern * localv1L + f * localv0L;
-			*sp++ = clamp(localv1L * finalGain, -ratioTimbres, ratioTimbres);
+			lowL += f * bandL;
+			bandL += f * (scale * fold(*sp * gain) - lowL - fb * bandL);
+
+			*sp++ = lowL * svfGain;
 
 			//RIGHT
-			localv0R = pattern * localv0R - f * localv1R + f4 * fold(*sp * gain);
-			localv1R = pattern * localv1R + f * localv0R;
-			*sp++ = clamp(localv0R * finalGain, -ratioTimbres, ratioTimbres);
+			lowR += f * bandR;
+			bandR += f * (scale * fold(*sp * gain) - lowR - fb * bandR);
+
+			*sp++ = lowR * svfGain;
 		}
 
-        v0L = localv0L;
-        v0R = localv0R;
-		v1L = localv1L;	
-        v1R = localv1R;
+		v0L = lowL;
+		v1L = bandL;
+		v0R = lowR;
+		v1R = bandR;
 	}
 	break;
 case FILTER_WRAP:
@@ -1816,29 +1824,36 @@ case FILTER_WRAP:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-		float *sp = this->sampleBlock;
-		float localv0L = v0L;
-		float localv0R = v0R;
+		float f = (fxParam2 * fxParam2) * 0.75f + 0.1f;
+		const float fb = 0.75f;
+		const float scale = sqrt3(fb);
 
-		const float a = 0.95f - fxParam2 * 0.599999f;
-		const float b = 1.f - a;
+		float *sp = this->sampleBlock;
+		float lowL = v0L, bandL = v1L;
+		float lowR = v0R, bandR = v1R;
 
 		const float drive = sqrt3(fxParam1);
 		const float gain = (1 + 4 * (drive));
-		const float finalGain = (1 - sqrt3(drive) * 0.6f) * mixerGain;
+		const float svfGain = (1.2f - drive * 0.8f ) * mixerGain;
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 			//LEFT
-			localv0L = (wrap(*sp * gain) * b) + (localv0L * a);
-			*sp++ = clamp(localv0L * finalGain, -ratioTimbres, ratioTimbres);
+			lowL += f * bandL;
+			bandL += f * (scale * wrap(*sp * gain) - lowL - fb * bandL);
+
+			*sp++ = clamp(lowL * svfGain, -ratioTimbres, ratioTimbres);
 
 			//RIGHT
-			localv0R = (wrap(*sp * gain) * b) + (localv0R * a);
-			*sp++ = clamp(localv0R * finalGain, -ratioTimbres, ratioTimbres);
+			lowR += f * bandR;
+			bandR += f * (scale * wrap(*sp * gain) - lowR - fb * bandR);
+
+			*sp++ = clamp(lowR * svfGain, -ratioTimbres, ratioTimbres);
 		}
 
-        v0L = localv0L;
-        v0R = localv0R;
+		v0L = lowL;
+		v1L = bandL;
+		v0R = lowR;
+		v1R = bandR;
 	}
 	break;
 case FILTER_XOR:
