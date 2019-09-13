@@ -74,10 +74,10 @@ in this version, some more filters & fx :
 - bitmangling filtered texture 2, different kind
 
 ###### LPx1 :
-- low pass filter with xor after filter, can self oscillate
+- xor low pass filter + fold 
 
 ###### LPx2 :
-- low pass filter with xor before filter
+- xor low pass filter + fold, different kind
 
 
 Credits : 
