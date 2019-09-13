@@ -209,8 +209,8 @@ struct FilterRowDisplay filterRowDisplay[FILTER_LAST] = {
         { "Thrs", "Tone ", "Gain" },
         { "Freq", "Res ", "Gain" },
         { "Freq", "Res ", "Gain" },
-        { "Freq", "Mix ", "Gain" },
-        { "Freq", "Mix ", "Gain" }
+        { "Freq", "Fold", "Gain" },
+        { "Freq", "Fold", "Gain" }
 };
 
 

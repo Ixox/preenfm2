@@ -162,8 +162,10 @@ float sigmoid(float x)
 {
 	return x * (1.5f - 0.5f * x * x);
 }
-float fold(float x) {
-	return (sabs(x + 0.25f - roundf(x + 0.25f)) - 0.25f);
+float fold(float x4) {
+	// https://www.desmos.com/calculator/ge2wvg2wgj
+	// x4 = x / 4
+	return (sabs(x4 + 0.25f - roundf(x4 + 0.25f)) - 0.25f);
 }
 inline
 float wrap(float x) {
@@ -1751,7 +1753,6 @@ case FILTER_SIGMOID:
 		int drive = (27 + sqrt3(fxParam1) * 100);
 		float gain = 1.1f + 44 * panTable[drive];
 		float gainCorrection = (1.2f - sqrt3(panTable[64 + (drive >> 1)] * 0.6f));
-		float in, lopL = v0L, lopR = v0R;
 		float bias = -0.1f + (fxParam1 * 0.2f);
 
 		for (int k=BLOCK_SIZE ; k--; ) {
@@ -1793,7 +1794,7 @@ case FILTER_FOLD:
 		float localv1R = v1R;
 
 		float f = fxParam2;
-		float f4 = f * 4;
+		float f4 = f * 4;//optimisation
 		float pattern = (1 - 0.6f * f);
 
 		float drive = sqrt3(fxParam1);
@@ -1945,7 +1946,7 @@ case FILTER_TEXTURE1:
 
 				digitsL = FLOAT2SHORT * bandL;
 				lowDigitsL = (digitsL & lowBits);
-				bandL = SHORT2FLOAT * roundf((digitsL & highBits) ^ ((lowDigitsL ^ ll) & 0x1FFF));
+				bandL = SHORT2FLOAT * (int)((digitsL & highBits) ^ ((lowDigitsL ^ ll) & 0x1FFF));
 
 				*sp++ = clamp(highL * mixerGain, -ratioTimbres, ratioTimbres);
 
@@ -1956,7 +1957,7 @@ case FILTER_TEXTURE1:
 
 				digitsR = FLOAT2SHORT * bandR;
 				lowDigitsR = (digitsR & lowBits);
-				bandR = SHORT2FLOAT * roundf((digitsR & highBits) ^ ((lowDigitsR ^ ll) & 0x1FFF));
+				bandR = SHORT2FLOAT * (int)((digitsR & highBits) ^ ((lowDigitsR ^ ll) & 0x1FFF));
 
 				*sp++ = clamp(highR * mixerGain, -ratioTimbres, ratioTimbres);
 			}
@@ -1994,7 +1995,7 @@ case FILTER_TEXTURE2:
 			//LEFT
 			digitsL = FLOAT2SHORT * (bandL);
 			lowDigitsL = (digitsL & lowBits);
-			bandL = SHORT2FLOAT * roundf((digitsL & highBits) ^ ((lowDigitsL * ll) & 0x1FFF));
+			bandL = SHORT2FLOAT * (int)((digitsL & highBits) ^ ((lowDigitsL * ll) & 0x1FFF));
 
 			lowL = lowL + f * bandL;
 			highL = scale * (*sp) - lowL - fb * bandL;
@@ -2005,7 +2006,7 @@ case FILTER_TEXTURE2:
 			//RIGHT
 			digitsR = FLOAT2SHORT * (bandR);
 			lowDigitsR = (digitsR & lowBits);
-			bandR = SHORT2FLOAT * roundf((digitsR & highBits) ^ ((lowDigitsR * ll) & 0x1FFF));
+			bandR = SHORT2FLOAT * (int)((digitsR & highBits) ^ ((lowDigitsR * ll) & 0x1FFF));
 
 			lowR = lowR + f * bandR;
 			highR = scale * (*sp) - lowR - fb * bandR;
@@ -2034,43 +2035,40 @@ case FILTER_LPXOR:
 		float *sp = this->sampleBlock;
 		float localv0L = v0L;
 		float localv0R = v0R;
+		float digitized;
 
-		const uint8_t random = (*(uint8_t *)noise) & 0xff;
-		if (random > 250)
-		{
-			//add instability to avoid still loop
-			fxParam1 += ((random & 1) * 0.007874015748031f);
-		}
-
-		const int mixWet = (params.effect.param2 * 127);
-		const float mixA = panTable[mixWet] * mixerGain;
-		const float mixB = panTable[127 - mixWet] * mixerGain;
+		float drive = (fxParam2 * fxParam2);
+		float gain = (1 + 2 * drive);
 
 		int digitsAL, digitsBL, digitsAR, digitsBR;
 		digitsAL = digitsBL = digitsAR = digitsBR = 0;
-		const short bitmask = 0xffc;
 
-		for (int k=BLOCK_SIZE ; k--; ) {
+		const uint8_t random = (*(uint8_t *)noise) & 0xff;
+		if (random > 252) {
+			fxParam1 += ((random & 1) * 0.007874015748031f);
+		}
+
+		const short bitmask = 0xfac;
+
+		for (int k = BLOCK_SIZE; k--;) {
 			// Left voice
-			localv0L = (*sp * b) + (localv0L * a);
+			digitsAL = FLOAT2SHORT * fold(localv0L * gain);
+			digitsBL = FLOAT2SHORT * (*sp);
+			digitized = SHORT2FLOAT * (int)((digitsAL ^ (digitsBL & bitmask)));
+			localv0L = (*sp * b) + (digitized * a);
 
-			digitsAL = FLOAT2SHORT * localv0L;
-			localv0L = SHORT2FLOAT * roundf(digitsAL ^ digitsBL);
-			digitsBL = digitsAL & bitmask;
-
-			*sp++ = clamp((localv0L * mixA) + (mixB * (*sp)), -ratioTimbres, ratioTimbres);
+			*sp++ = clamp(localv0L * mixerGain, -ratioTimbres, ratioTimbres);
 
 			// Right voice
-			localv0R = (*sp * b) + (localv0R * a);
+			digitsAR = FLOAT2SHORT * fold(localv0R * gain);
+			digitsBR = FLOAT2SHORT * (*sp);
+			digitized = SHORT2FLOAT * (int)((digitsAR ^ (digitsBR & bitmask)));
+			localv0R = (*sp * b) + (digitized * a);
 
-			digitsAR = FLOAT2SHORT * localv0R;
-			localv0R = SHORT2FLOAT * roundf(digitsAR ^ digitsBR);
-			digitsBR = digitsAR & bitmask;
-
-			*sp++ = clamp((localv0R * mixA) + (mixB * (*sp)), -ratioTimbres, ratioTimbres);
+			*sp++ = clamp(localv0R * mixerGain, -ratioTimbres, ratioTimbres);
 		}
-		v0L = localv0L;
-		v0R = localv0R;
+    	v0L = localv0L;
+    	v0R = localv0R;
 	}
 	break;
 case FILTER_LPXOR2:
@@ -2089,15 +2087,14 @@ case FILTER_LPXOR2:
 		float localv0R = v0R;
 		float digitized;
 
-		const int mixWet = (params.effect.param2 * 127);
-		const float mixA = panTable[127 - mixWet];
-		const float mixB = (1 - mixA);
+		float drive = (fxParam2 * fxParam2);
+		float gain = (1 + 8 * (drive)) * 0.25f;
 
 		int digitsAL, digitsBL, digitsAR, digitsBR;
 		digitsAL = digitsBL = digitsAR = digitsBR = 0;
 
 		const uint8_t random = (*(uint8_t *)noise) & 0xff;
-		if (random > 250) {
+		if (random > 252) {
 			fxParam1 += ((random & 1) * 0.007874015748031f);
 		}
 
@@ -2106,17 +2103,17 @@ case FILTER_LPXOR2:
 		for (int k=BLOCK_SIZE ; k--; ) {
 			// Left voice
 			digitsAL = FLOAT2SHORT * localv0L;
-			digitsBL = FLOAT2SHORT * *sp;
-			digitized = SHORT2FLOAT * roundf((digitsAL ^ (digitsBL & bitmask)));
-			localv0L = (*sp * b) + (((localv0L * mixA) + (digitized * mixB)) * a);
+			digitsBL = FLOAT2SHORT * fold(*sp * gain);
+			digitized = SHORT2FLOAT * roundf((digitsAL | (digitsBL & bitmask)));
+			localv0L = (*sp * b) + (digitized * a);
 
 			*sp++ = clamp(localv0L * mixerGain, -ratioTimbres, ratioTimbres);
 
 			// Right voice
 			digitsAR = FLOAT2SHORT * localv0R;
-			digitsBR = FLOAT2SHORT * *sp;
-			digitized = SHORT2FLOAT * roundf((digitsAR ^ (digitsBR & bitmask)));
-			localv0R = (*sp * b) + (((localv0R * mixA) + (digitized * mixB)) * a);
+			digitsBR = FLOAT2SHORT * fold(*sp * gain);
+			digitized = SHORT2FLOAT * roundf((digitsAR | (digitsBR & bitmask)));
+			localv0R = (*sp * b) + (digitized * a);
 
 			*sp++ = clamp(localv0R * mixerGain, -ratioTimbres, ratioTimbres);
 		}
