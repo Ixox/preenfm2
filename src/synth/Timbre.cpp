@@ -111,6 +111,9 @@ inline static int __canTranspose( int _direction ) {
 #define SVFGAINOFFSET 0.3f
 
 #define LP2OFFSET -0.045f
+#define min(a,b)                ((a)<(b)?(a):(b))
+
+extern float noise[32];
 
 inline 
 float expf_fast(float a) {
@@ -156,6 +159,15 @@ float sat33(float x)
 		return 0;
 	return x * (1 - x * x * 0.15f);
 }
+inline
+float clamp(float d, float min, float max) {
+  const float t = unlikely(d < min) ? min : d;
+  return unlikely(t > max) ? max : t;
+}
+inline 
+float satSin(float x, int pos) {
+	return x + clamp(x, -0.002f, 0.05f) * sinTable[((int)(sabs(x) * 683) + pos) & 0x3FF];
+}
 //https://www.musicdsp.org/en/latest/Other/120-saturation.html
 inline
 float sigmoid(float x)
@@ -170,11 +182,6 @@ float fold(float x4) {
 inline
 float wrap(float x) {
 	return x - roundf(x);
-}
-inline
-float clamp(float d, float min, float max) {
-  const float t = unlikely(d < min) ? min : d;
-  return unlikely(t > max) ? max : t;
 }
 
 enum NewNoteType {
@@ -206,9 +213,6 @@ uint16_t Timbre::getArpeggiatorPattern() const
 const uint8_t midi_clock_tick_per_step[17]  = {
   192, 144, 96, 72, 64, 48, 36, 32, 24, 16, 12, 8, 6, 4, 3, 2, 1
 };
-
-extern float noise[32];
-
 
 float panTable[] = {
 		0.0000, 0.0007, 0.0020, 0.0036, 0.0055, 0.0077, 0.0101, 0.0128, 0.0156, 0.0186,
@@ -781,7 +785,11 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     break;
     case FILTER_MIXER:
     {
-    	float pan = params.effect.param1 * 2 - 1.0f ;
+		float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+		// Low pass... on the Frequency
+		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
+
+    	float pan = fxParam1 * 2 - 1.0f ;
     	float *sp = this->sampleBlock;
     	float sampleR, sampleL;
     	if (pan <= 0) {
@@ -922,7 +930,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
 
         if (fxParam1PlusMatrix != fxParam1PlusMatrixTmp) {
             fxParam1PlusMatrix = fxParam1PlusMatrixTmp;
-            recomputeBPValues();
+        	recomputeBPValues(params.effect.param2, fxParam1PlusMatrix * fxParam1PlusMatrix);
         }
 
         float localv0L = v0L;
@@ -984,7 +992,7 @@ case FILTER_LP2:
     	for (int k=BLOCK_SIZE ; k--; ) {
 
 			// Left voice
-			localv0L = pattern * localv0L - f * sat33(localv1L + *sp);
+			localv0L = pattern * localv0L - f * sat25(localv1L + *sp);
 			localv1L = pattern * localv1L + f * localv0L;
 
 			localv0L = pattern * localv0L - f * (localv1L + *sp);
@@ -993,7 +1001,7 @@ case FILTER_LP2:
 			*sp++ = clamp(localv1L * mixerGain, -ratioTimbres, ratioTimbres);
 
 			// Right voice
-			localv0R = pattern * localv0R - f * sat33(localv1R + *sp);
+			localv0R = pattern * localv0R - f * sat25(localv1R + *sp);
 			localv1R = pattern * localv1R + f * localv0R;
 
 			localv0R = pattern * localv0R - f * (localv1R + *sp);
@@ -1057,7 +1065,7 @@ case FILTER_BP2:
 
     if (fxParam1PlusMatrix != fxParam1PlusMatrixTmp) {
         fxParam1PlusMatrix = fxParam1PlusMatrixTmp;
-        recomputeBPValues();
+        recomputeBPValues(params.effect.param2, fxParam1PlusMatrix * fxParam1PlusMatrix);
     }
 
     float localv0L = v0L;
@@ -1120,7 +1128,7 @@ case FILTER_LP3:
 		// Left voice
 
 		lowL += f * bandL;
-		bandL += f * (scale * sat25(*sp) - lowL - fb * (bandL));
+		bandL += f * (scale * (*sp) - lowL - fb * sat25(bandL));
 		
 		lowL += f * bandL;
 		bandL += f * (scale * (*sp) - lowL - fb * (bandL));
@@ -1130,7 +1138,7 @@ case FILTER_LP3:
 		// Right voice
 
 		lowR += f * bandR;
-		bandR += f * (scale * sat25(*sp) - lowR - fb * (bandR));
+		bandR += f * (scale * (*sp) - lowR - fb * sat25(bandR));
 
 		lowR += f * bandR;
 		bandR += f * (scale * (*sp) - lowR - fb * (bandR));
@@ -1165,7 +1173,7 @@ case FILTER_HP3:
 	for (int k=BLOCK_SIZE ; k--; ) {
 		// Left voice
 		lowL = lowL + f * bandL;
-		highL = scale * sat25(*sp) - lowL - fb * bandL;
+		highL = scale * (*sp) - lowL - fb * sat33(bandL);
 		bandL = f * highL + bandL;
 
 		lowL = lowL + f * bandL;
@@ -1176,7 +1184,7 @@ case FILTER_HP3:
 
 		// Right voice
 		lowR = lowR + f * bandR;
-		highR = scale * sat25(*sp) - lowR - fb * bandR;
+		highR = scale * (*sp) - lowR - fb * sat33(bandR);
 		bandR = f * highR + bandR;
 
 		lowR = lowR + f * bandR;
@@ -1214,13 +1222,13 @@ case FILTER_BP3:
 
 		// Left voice
 		lowL = lowL + f * bandL;
-		highL = scale * sat25(*sp) - lowL - fb * bandL;
+		highL = scale * (*sp) - lowL - fb * sat25(bandL);
 		bandL = f * highL + bandL;
 		*sp++ = clamp(bandL * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 		lowR = lowR + f * bandR;
-		highR = scale * sat25(*sp) - lowR - fb * bandR;
+		highR = scale * (*sp) - lowR - fb * sat25(bandR);
 		bandR = f * highR + bandR;
 		*sp++ = clamp(bandR * svfGain, -ratioTimbres, ratioTimbres);
 	}
@@ -1257,7 +1265,7 @@ case FILTER_PEAK:
 		bandL = f * highL + bandL;
 
 		lowL = lowL + f * bandL;
-		highL = scale * sat25(*sp) - lowL - fb * bandL;
+		highL = scale * (*sp) - lowL - fb * sat33(bandL);
 		bandL = f * highL + bandL;
 
 		*sp++ = clamp((bandL + highL + lowL) * svfGain, -ratioTimbres, ratioTimbres);
@@ -1268,7 +1276,7 @@ case FILTER_PEAK:
 		bandR = f * highR + bandR;
 
 		lowR = lowR + f * bandR;
-		highR = scale * sat25(*sp) - lowR - fb * bandR;
+		highR = scale * (*sp) - lowR - fb * sat33(bandR);
 		bandR = f * highR + bandR;
 
 		*sp++ = clamp((bandR + highR + lowR) * svfGain, -ratioTimbres, ratioTimbres);
@@ -2098,7 +2106,7 @@ case FILTER_LPXOR2:
 			fxParam1 += ((random & 1) * 0.007874015748031f);
 		}
 
-		const short bitmask = 0xfba;
+		const short bitmask = 0xfba - (int)(fxParam1 * 7);
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 			// Left voice
@@ -2121,6 +2129,131 @@ case FILTER_LPXOR2:
     	v0R = localv0R;
 	}
 	break;
+case FILTER_LPSIN:
+    {
+	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
+	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+	fxParamTmp *= fxParamTmp;
+	// Low pass... on the Frequency
+	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
+
+	const float q = 0.25f;
+	const float f = fxParam2 * fxParam2;
+	const float pattern = (1 - q * f);
+	const int pos = (int)(fxParam1 * 2048);
+
+	float *sp = this->sampleBlock;
+	float localv0L = v0L;
+	float localv1L = v1L;
+	float localv0R = v0R;
+	float localv1R = v1R;
+
+	for (int k = BLOCK_SIZE; k--;) {
+
+		// Left voice
+		localv0L = pattern * localv0L - f * (satSin(localv1L, pos) + *sp);
+		localv1L = pattern * localv1L + f * localv0L;
+
+		*sp++ = clamp( (localv1L) * mixerGain, -ratioTimbres, ratioTimbres);
+
+		// Right voice
+		localv0R = pattern * localv0R - f * (satSin(localv1R, pos) + *sp);
+		localv1R = pattern * localv1R + f * localv0R;
+
+		*sp++ = clamp( (localv1R) * mixerGain, -ratioTimbres, ratioTimbres);
+	}
+	v0L = localv0L;
+	v1L = localv1L;
+	v0R = localv0R;
+	v1R = localv1R;
+
+    }
+    break;
+case FILTER_HPSIN:
+    {
+	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
+	fxParamTmp *= fxParamTmp;
+	// Low pass... on the Frequency
+	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
+
+	const float f = fxParam2 * fxParam2 * SVFRANGE;
+	const float fb = sqrt3(1 - 0.1f);
+	const float scale = sqrt3(fb);
+	const int pos = (int)(fxParam1 * 2048);
+
+	float *sp = this->sampleBlock;
+	float lowL = v0L, highL = 0, bandL = v1L;
+	float lowR = v0R, highR = 0, bandR = v1R;
+
+	const float svfGain = (1 + SVFGAINOFFSET + fxParam2 * fxParam2 * 0.75f) * mixerGain;
+
+	for (int k = BLOCK_SIZE ; k--; ) {
+		// Left voice
+		lowL = lowL + f * bandL;
+		highL = scale * (*sp) - lowL - fb * satSin(bandL, pos);
+		bandL = f * highL + bandL;
+
+		*sp++ = clamp( highL * svfGain, -ratioTimbres, ratioTimbres);
+
+		// Right voice
+		lowR = lowR + f * bandR;
+		highR = scale * (*sp) - lowR - fb * satSin(bandR, pos);
+		bandR = f * highR + bandR;
+
+		*sp++ = clamp( highR * svfGain, -ratioTimbres, ratioTimbres);
+	}
+
+	v0L = lowL;
+	v1L = bandL;
+	v0R = lowR;
+	v1R = bandR;
+    }
+    break;
+case FILTER_BPSIN:
+{
+	const float fb = 0.33f;
+	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
+	fxParamTmp *= fxParamTmp;
+	// Low pass... on the Frequency
+	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
+
+	float f = 0.05f + params.effect.param2 * params.effect.param2 * 0.33f;
+	const int pos = (int)(fxParam1 * 2048);
+
+	float f2 = f* f;
+	recomputeBPValues(fb, f2);
+
+    float localv0L = v0L;
+    float localv0R = v0R;
+    float localv1L = v1L;
+    float localv1R = v1R;
+    float *sp = this->sampleBlock;
+    float in,temp,localV;
+
+	const float inGain = 0.075f + (f2 * f2 * 3) ;
+
+	for (int k = BLOCK_SIZE ; k--; ) {
+		//Left
+		in = f * satSin(inGain * *sp, pos);
+		localV = in - fxParamA1 * localv0L -  fxParamA2 * localv1L;
+		*sp++ = clamp( (localV + fxParamB2 * localv1L) * mixerGain, -ratioTimbres, ratioTimbres);
+		localv1L =localv0L;
+		localv0L = localV;
+
+		//Right
+		in = f * satSin(inGain * *sp, pos);
+		localV = in - fxParamA1 * localv0R - fxParamA2 * localv1R;
+		*sp++ = clamp( (localV + fxParamB2 * localv1R) * mixerGain, -ratioTimbres, ratioTimbres);
+		localv1R = localv0R;
+		localv0R = localV;
+	}
+
+    v0L = localv0L;
+    v0R = localv0R;
+    v1L = localv1L;
+    v1R = localv1R;
+}
+break;
 case FILTER_OFF:
     {
     	// Filter off has gain...
@@ -2214,7 +2347,7 @@ void Timbre::setSeqStepValue(int whichStepSeq, int step, int value) {
     }
 }
 
-void Timbre::recomputeBPValues() {
+void Timbre::recomputeBPValues(float q, float fSquare) {
     //        /* filter coefficients */
     //        omega1  = 2 * PI * f/srate; // f is your center frequency
     //        sn1 = (float)sin(omega1);
@@ -2228,20 +2361,17 @@ void Timbre::recomputeBPValues() {
     //        a2= (1.0f - alpha1)/a0;          // a2/a0
     //        k = b0/a0;
 
-	float q = params.effect.param2;
-
     // frequency must be up to SR / 2.... So 1024 * param1 :
     // 1000 instead of 1024 to get rid of strange border effect....
-    float param1Square = fxParam1PlusMatrix * fxParam1PlusMatrix;
 
 	//limit low values to avoid cracklings :
-	if (param1Square < 0.1f && q < 0.15f) {
+	if (fSquare < 0.1f && q < 0.15f) {
 		q = 0.15f;
 	}
 
-	float sn1 = sinTable[(int)(12 + 1000 * param1Square)];
+	float sn1 = sinTable[(int)(12 + 1000 * fSquare)];
     // sin(x) = cos( PI/2 - x)
-    int cosPhase = 500 - 1000 * param1Square;
+    int cosPhase = 500 - 1000 * fSquare;
     if (cosPhase < 0) {
         cosPhase += 2048;
     }
@@ -2256,7 +2386,7 @@ void Timbre::recomputeBPValues() {
     float A0Inv = 1 / A0;
 
     float B0 = alpha1;
-    fxParamB1 = 0.0f;
+    //fxParamB1 = 0.0f;
     fxParamB2 = - alpha1 * A0Inv;
     fxParamA1 = -2.0f * cs1 * A0Inv;
     fxParamA2 = (1.0f - alpha1) * A0Inv;
@@ -2322,6 +2452,7 @@ void Timbre::setNewEffecParam(int encoder) {
         }
         case FILTER_BP:
         case FILTER_BP2:
+		case FILTER_BPSIN:
         {
             fxParam1PlusMatrix = -1.0f;
             break;

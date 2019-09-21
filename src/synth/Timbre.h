@@ -59,7 +59,7 @@ public:
     void afterNewParamsLoad();
     void setNewValue(int index, struct ParameterDisplay* param, float newValue);
     void setNewEffecParam(int encoder);
-    void recomputeBPValues();
+    void recomputeBPValues(float q, float param1Square);
     int getSeqStepValue(int whichStepSeq, int step);
     void setSeqStepValue(int whichStepSeq, int step, int value);
     // Arpegiator
