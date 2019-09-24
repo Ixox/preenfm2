@@ -165,8 +165,10 @@ float clamp(float d, float min, float max) {
   return unlikely(t > max) ? max : t;
 }
 inline 
-float satSin(float x, int pos) {
-	return x + clamp(x, -0.002f, 0.05f) * sinTable[((int)(sabs(x) * 683) + pos) & 0x3FF];
+float satSin(float x, float drive, int pos) {
+	//https://www.desmos.com/calculator/pdsqpi5lp6
+	int xabs = (int)(sabs(x));
+	return x + clamp(x, -0.002f, drive - (x * x * 0.1f)) * sinTable[(xabs * 1303 + pos) & 0x3FF];
 }
 //https://www.musicdsp.org/en/latest/Other/120-saturation.html
 inline
@@ -2148,16 +2150,24 @@ case FILTER_LPSIN:
 	float localv0R = v0R;
 	float localv1R = v1R;
 
+	float drive = fxParam1 * fxParam1;
+
 	for (int k = BLOCK_SIZE; k--;) {
 
 		// Left voice
-		localv0L = pattern * localv0L - f * (satSin(localv1L, pos) + *sp);
+		localv0L = pattern * localv0L - f * (satSin(localv1L, drive, pos) + *sp);
+		localv1L = pattern * localv1L + f * localv0L;
+		
+		localv0L = pattern * localv0L - f * (localv1L + *sp);
 		localv1L = pattern * localv1L + f * localv0L;
 
 		*sp++ = clamp( (localv1L) * mixerGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
-		localv0R = pattern * localv0R - f * (satSin(localv1R, pos) + *sp);
+		localv0R = pattern * localv0R - f * (satSin(localv1R, drive, pos) + *sp);
+		localv1R = pattern * localv1R + f * localv0R;
+
+		localv0R = pattern * localv0R - f * (localv1R + *sp);
 		localv1R = pattern * localv1R + f * localv0R;
 
 		*sp++ = clamp( (localv1R) * mixerGain, -ratioTimbres, ratioTimbres);
@@ -2177,7 +2187,7 @@ case FILTER_HPSIN:
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
 	const float f = fxParam2 * fxParam2 * SVFRANGE;
-	const float fb = sqrt3(1 - 0.1f);
+	const float fb = 0.94f;
 	const float scale = sqrt3(fb);
 	const int pos = (int)(fxParam1 * 2048);
 
@@ -2186,18 +2196,19 @@ case FILTER_HPSIN:
 	float lowR = v0R, highR = 0, bandR = v1R;
 
 	const float svfGain = (1 + SVFGAINOFFSET + fxParam2 * fxParam2 * 0.75f) * mixerGain;
-
+	float drive = fxParam1 * fxParam1 * 0.25f;
+	
 	for (int k = BLOCK_SIZE ; k--; ) {
 		// Left voice
 		lowL = lowL + f * bandL;
-		highL = scale * (*sp) - lowL - fb * satSin(bandL, pos);
+		highL = scale * satSin(*sp, drive, pos) - lowL - fb * bandL;
 		bandL = f * highL + bandL;
 
 		*sp++ = clamp( highL * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 		lowR = lowR + f * bandR;
-		highR = scale * (*sp) - lowR - fb * satSin(bandR, pos);
+		highR = scale * satSin(*sp, drive, pos) - lowR - fb * bandR;
 		bandR = f * highR + bandR;
 
 		*sp++ = clamp( highR * svfGain, -ratioTimbres, ratioTimbres);
@@ -2209,51 +2220,6 @@ case FILTER_HPSIN:
 	v1R = bandR;
     }
     break;
-case FILTER_BPSIN:
-{
-	const float fb = 0.33f;
-	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
-	fxParamTmp *= fxParamTmp;
-	// Low pass... on the Frequency
-	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
-
-	float f = 0.05f + params.effect.param2 * params.effect.param2 * 0.33f;
-	const int pos = (int)(fxParam1 * 2048);
-
-	float f2 = f* f;
-	recomputeBPValues(fb, f2);
-
-    float localv0L = v0L;
-    float localv0R = v0R;
-    float localv1L = v1L;
-    float localv1R = v1R;
-    float *sp = this->sampleBlock;
-    float in,temp,localV;
-
-	const float inGain = 0.075f + (f2 * f2 * 3) ;
-
-	for (int k = BLOCK_SIZE ; k--; ) {
-		//Left
-		in = f * satSin(inGain * *sp, pos);
-		localV = in - fxParamA1 * localv0L -  fxParamA2 * localv1L;
-		*sp++ = clamp( (localV + fxParamB2 * localv1L) * mixerGain, -ratioTimbres, ratioTimbres);
-		localv1L =localv0L;
-		localv0L = localV;
-
-		//Right
-		in = f * satSin(inGain * *sp, pos);
-		localV = in - fxParamA1 * localv0R - fxParamA2 * localv1R;
-		*sp++ = clamp( (localV + fxParamB2 * localv1R) * mixerGain, -ratioTimbres, ratioTimbres);
-		localv1R = localv0R;
-		localv0R = localV;
-	}
-
-    v0L = localv0L;
-    v0R = localv0R;
-    v1L = localv1L;
-    v1R = localv1R;
-}
-break;
 case FILTER_OFF:
     {
     	// Filter off has gain...
@@ -2452,7 +2418,6 @@ void Timbre::setNewEffecParam(int encoder) {
         }
         case FILTER_BP:
         case FILTER_BP2:
-		case FILTER_BPSIN:
         {
             fxParam1PlusMatrix = -1.0f;
             break;
