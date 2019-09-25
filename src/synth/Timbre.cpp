@@ -168,7 +168,7 @@ inline
 float satSin(float x, float drive, int pos) {
 	//https://www.desmos.com/calculator/pdsqpi5lp6
 	int xabs = (int)(sabs(x));
-	return x + clamp(x, -0.002f, drive - (x * x * 0.1f)) * sinTable[(xabs * 1303 + pos) & 0x3FF];
+	return x + clamp(x, -0.5f * drive, drive) * sinTable[(xabs * 1303 + pos) & 0x3FF];
 }
 //https://www.musicdsp.org/en/latest/Other/120-saturation.html
 inline
@@ -2133,50 +2133,43 @@ case FILTER_LPXOR2:
 	break;
 case FILTER_LPSIN:
     {
-	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
-	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
 	fxParamTmp *= fxParamTmp;
 	// Low pass... on the Frequency
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-	const float q = 0.25f;
-	const float f = fxParam2 * fxParam2;
-	const float pattern = (1 - q * f);
+	const float f = fxParam2 * fxParam2 * SVFRANGE;
+	const float fb = 0.45f;
+	const float scale = sqrt3(fb);
 	const int pos = (int)(fxParam1 * 2048);
 
 	float *sp = this->sampleBlock;
-	float localv0L = v0L;
-	float localv1L = v1L;
-	float localv0R = v0R;
-	float localv1R = v1R;
+	float lowL = v0L, highL = 0, bandL = v1L;
+	float lowR = v0R, highR = 0, bandR = v1R;
 
-	float drive = fxParam1 * fxParam1;
-
-	for (int k = BLOCK_SIZE; k--;) {
-
+	const float svfGain = (1 + SVFGAINOFFSET + fxParam2 * fxParam2 * 0.75f) * mixerGain;
+	float drive = fxParam1 * fxParam1 * 0.25f;
+	
+	for (int k = BLOCK_SIZE ; k--; ) {
 		// Left voice
-		localv0L = pattern * localv0L - f * (satSin(localv1L, drive, pos) + *sp);
-		localv1L = pattern * localv1L + f * localv0L;
-		
-		localv0L = pattern * localv0L - f * (localv1L + *sp);
-		localv1L = pattern * localv1L + f * localv0L;
+		lowL = lowL + f * bandL;
+		highL = scale * satSin(*sp, drive, pos) - lowL - fb * bandL;
+		bandL = f * highL + bandL;
 
-		*sp++ = clamp( (localv1L) * mixerGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp( lowL * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
-		localv0R = pattern * localv0R - f * (satSin(localv1R, drive, pos) + *sp);
-		localv1R = pattern * localv1R + f * localv0R;
+		lowR = lowR + f * bandR;
+		highR = scale * satSin(*sp, drive, pos) - lowR - fb * bandR;
+		bandR = f * highR + bandR;
 
-		localv0R = pattern * localv0R - f * (localv1R + *sp);
-		localv1R = pattern * localv1R + f * localv0R;
-
-		*sp++ = clamp( (localv1R) * mixerGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp( lowR * svfGain, -ratioTimbres, ratioTimbres);
 	}
-	v0L = localv0L;
-	v1L = localv1L;
-	v0R = localv0R;
-	v1R = localv1R;
 
+	v0L = lowL;
+	v1L = bandL;
+	v0R = lowR;
+	v1R = bandR;
     }
     break;
 case FILTER_HPSIN:
