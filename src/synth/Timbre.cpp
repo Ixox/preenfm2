@@ -145,17 +145,17 @@ float sabs(float a)
 inline
 float tanh2(float x)
 {
-	return x / (sabs(x) + 3.f / (2.f + x * x));
+	return x / (fabsf(x) + 3.f / (2.f + x * x));
 }
 inline
 float sat25(float x)
 { 
-	return x * (1.f - sabs(x * 0.25f));
+	return x * (1.f - fabsf(x * 0.25f));
 }
 inline
 float sat33(float x)
 {
-	if (unlikely(fabs(x) > 2.58f))
+	if (unlikely(fabsf(x) > 2.58f))
 		return 0;
 	return x * (1 - x * x * 0.15f);
 }
@@ -165,10 +165,9 @@ float clamp(float d, float min, float max) {
   return unlikely(t > max) ? max : t;
 }
 inline 
-float satSin(float x, float drive, int pos) {
+float satSin(float x, float drive, uint_fast16_t pos) {
 	//https://www.desmos.com/calculator/pdsqpi5lp6
-	int xabs = (int)(sabs(x));
-	return x + clamp(x, -0.5f * drive, drive) * sinTable[(xabs * 1303 + pos) & 0x3FF];
+	return x + clamp(x, -0.5f * drive, drive) * sinTable[((uint_fast16_t)(fabsf(x) * 360) + pos) & 0x3FF];
 }
 //https://www.musicdsp.org/en/latest/Other/120-saturation.html
 inline
@@ -179,7 +178,7 @@ float sigmoid(float x)
 float fold(float x4) {
 	// https://www.desmos.com/calculator/ge2wvg2wgj
 	// x4 = x / 4
-	return (sabs(x4 + 0.25f - roundf(x4 + 0.25f)) - 0.25f);
+	return (fabsf(x4 + 0.25f - roundf(x4 + 0.25f)) - 0.25f);
 }
 inline
 float wrap(float x) {
@@ -1725,7 +1724,7 @@ case FILTER_SAT:
 		for (int k=BLOCK_SIZE ; k--; ) {
 			//LEFT
 			localv0L = sigmoid(*sp);
-			if(sabs(localv0L) > threshold) {
+			if(fabsf(localv0L) > threshold) {
 				localv0L = localv0L > 1 ? thresTop : localv0L * invT;
 			}
 			localv0L = (*sp * b) + (localv0L * a);
@@ -1733,7 +1732,7 @@ case FILTER_SAT:
 
 			//RIGHT
 			localv0R = sigmoid(*sp);
-			if(sabs(localv0R) > threshold) {
+			if(fabsf(localv0R) > threshold) {
 				localv0R = localv0R > 1 ? thresTop : localv0R * invT;
 			}
 			localv0R = (*sp * b) + (localv0R * a);
@@ -1896,7 +1895,7 @@ case FILTER_XOR:
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 
-				if(sabs(*sp) > threshold) {
+				if(fabsf(*sp) > threshold) {
 					localv0L = (*sp) - pos * (localv0L + pos * (*sp));
 					digitsA = FLOAT2SHORT * (*sp);
 					digitsB = FLOAT2SHORT * localv0L;
@@ -1908,7 +1907,7 @@ case FILTER_XOR:
 				localv0L = (*sp * b) + (localv0L * a);
 				*sp++ = clamp(localv0L * mixerGain, -ratioTimbres, ratioTimbres);
 
-				if(sabs(*sp) > threshold) {
+				if(fabsf(*sp) > threshold) {
 					localv0R = (*sp) - pos * (localv0R + pos * (*sp));
 					digitsA = FLOAT2SHORT * (*sp);
 					digitsB = FLOAT2SHORT * localv0R;
