@@ -136,13 +136,6 @@ float sqrt3(const float x)
   return u.x;
 } 
 inline
-float sabs(float a)
-{
-	//https://www.musicdsp.org/en/latest/Other/178-reasonably-accurate-fastish-tanh-approximation.html
-	const int b = (*((int *)(&a))) & 0x7FFFFFFF;
-	return *((float *)(&b));
-}
-inline
 float tanh2(float x)
 {
 	return x / (fabsf(x) + 3.f / (2.f + x * x));
@@ -182,7 +175,7 @@ float fold(float x4) {
 }
 inline
 float wrap(float x) {
-	return x - roundf(x);
+	return x - floorf(x);
 }
 
 enum NewNoteType {
@@ -272,7 +265,7 @@ Timbre::Timbre() {
 
 
     // Init FX variables
-    v0L = v1L = v0R = v1R = 0.0f;
+    v0L = v1L = v2L = v3L = v0R = v1R = v2R = v3R = 0.0f;
     fxParam1PlusMatrix = -1.0;
 }
 
@@ -1419,7 +1412,7 @@ case FILTER_LOWSHELF:
 		ic1eqL = 2 * v1 - ic1eqL;
 		ic2eqL = 2 * v2 - ic2eqL;
 
-		*sp++ = clamp((*sp + (m1 * v1 + m2 * v2)) * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(((*sp) - k * v1) * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 		v3 = (*sp) - ic2eqR;
@@ -1428,7 +1421,7 @@ case FILTER_LOWSHELF:
 		ic1eqR = 2 * v1 - ic1eqR;
 		ic2eqR = 2 * v2 - ic2eqR;
 
-		*sp++ = clamp((*sp + (m1 * v1 + m2 * v2)) * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(((*sp) - k * v1) * svfGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = ic1eqL;
@@ -1943,9 +1936,9 @@ case FILTER_TEXTURE1:
 			const int highBits = 0xFFFFFD4F;
 			const int lowBits = ~(highBits);
 
-			const short ll = (short)((fxParam1)*lowBits);
+			const int ll = (int)(fxParam1 * lowBits);
 			int digitsL, digitsR;
-			short lowDigitsL, lowDigitsR;
+			int lowDigitsL, lowDigitsR;
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 				//LEFT
@@ -1955,7 +1948,7 @@ case FILTER_TEXTURE1:
 
 				digitsL = FLOAT2SHORT * bandL;
 				lowDigitsL = (digitsL & lowBits);
-				bandL = SHORT2FLOAT * (int)((digitsL & highBits) ^ ((lowDigitsL ^ ll) & 0x1FFF));
+				bandL = SHORT2FLOAT * (float)((digitsL & highBits) ^ ((lowDigitsL ^ ll) & 0x1FFF));
 
 				*sp++ = clamp(highL * mixerGain, -ratioTimbres, ratioTimbres);
 
@@ -1966,7 +1959,7 @@ case FILTER_TEXTURE1:
 
 				digitsR = FLOAT2SHORT * bandR;
 				lowDigitsR = (digitsR & lowBits);
-				bandR = SHORT2FLOAT * (int)((digitsR & highBits) ^ ((lowDigitsR ^ ll) & 0x1FFF));
+				bandR = SHORT2FLOAT * (float)((digitsR & highBits) ^ ((lowDigitsR ^ ll) & 0x1FFF));
 
 				*sp++ = clamp(highR * mixerGain, -ratioTimbres, ratioTimbres);
 			}
@@ -1996,15 +1989,15 @@ case FILTER_TEXTURE2:
 		const int highBits = 0xFFFFFFAF;
 		const int lowBits = ~(highBits);
 
-		const short ll = (short)((fxParam1)*lowBits);
+		const int ll = fxParam1 * lowBits;
 		int digitsL, digitsR;
-		short lowDigitsL, lowDigitsR;
+		int lowDigitsL, lowDigitsR;
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 			//LEFT
 			digitsL = FLOAT2SHORT * (bandL);
 			lowDigitsL = (digitsL & lowBits);
-			bandL = SHORT2FLOAT * (int)((digitsL & highBits) ^ ((lowDigitsL * ll) & 0x1FFF));
+			bandL = SHORT2FLOAT * (float)((digitsL & highBits) ^ ((lowDigitsL * ll) & 0x1FFF));
 
 			lowL = lowL + f * bandL;
 			highL = scale * (*sp) - lowL - fb * bandL;
@@ -2015,7 +2008,7 @@ case FILTER_TEXTURE2:
 			//RIGHT
 			digitsR = FLOAT2SHORT * (bandR);
 			lowDigitsR = (digitsR & lowBits);
-			bandR = SHORT2FLOAT * (int)((digitsR & highBits) ^ ((lowDigitsR * ll) & 0x1FFF));
+			bandR = SHORT2FLOAT * (float)((digitsR & highBits) ^ ((lowDigitsR * ll) & 0x1FFF));
 
 			lowR = lowR + f * bandR;
 			highR = scale * (*sp) - lowR - fb * bandR;
@@ -2052,7 +2045,7 @@ case FILTER_LPXOR:
 		int digitsAL, digitsBL, digitsAR, digitsBR;
 		digitsAL = digitsBL = digitsAR = digitsBR = 0;
 
-		const uint8_t random = (*(uint8_t *)noise) & 0xff;
+		const uint_fast8_t random = (*(uint_fast8_t *)noise) & 0xff;
 		if (random > 252) {
 			fxParam1 += ((random & 1) * 0.007874015748031f);
 		}
@@ -2063,7 +2056,7 @@ case FILTER_LPXOR:
 			// Left voice
 			digitsAL = FLOAT2SHORT * fold(localv0L * gain);
 			digitsBL = FLOAT2SHORT * (*sp);
-			digitized = SHORT2FLOAT * (int)((digitsAL ^ (digitsBL & bitmask)));
+			digitized = SHORT2FLOAT * (float)(digitsAL ^ (digitsBL & bitmask));
 			localv0L = (*sp * b) + (digitized * a);
 
 			*sp++ = clamp(localv0L * mixerGain, -ratioTimbres, ratioTimbres);
@@ -2071,7 +2064,7 @@ case FILTER_LPXOR:
 			// Right voice
 			digitsAR = FLOAT2SHORT * fold(localv0R * gain);
 			digitsBR = FLOAT2SHORT * (*sp);
-			digitized = SHORT2FLOAT * (int)((digitsAR ^ (digitsBR & bitmask)));
+			digitized = SHORT2FLOAT * (float)(digitsAR ^ (digitsBR & bitmask));
 			localv0R = (*sp * b) + (digitized * a);
 
 			*sp++ = clamp(localv0R * mixerGain, -ratioTimbres, ratioTimbres);
@@ -2113,7 +2106,7 @@ case FILTER_LPXOR2:
 			// Left voice
 			digitsAL = FLOAT2SHORT * localv0L;
 			digitsBL = FLOAT2SHORT * fold(*sp * gain);
-			digitized = SHORT2FLOAT * roundf((digitsAL | (digitsBL & bitmask)));
+			digitized = SHORT2FLOAT * (float)((digitsAL | (digitsBL & bitmask)));
 			localv0L = (*sp * b) + (digitized * a);
 
 			*sp++ = clamp(localv0L * mixerGain, -ratioTimbres, ratioTimbres);
@@ -2121,7 +2114,7 @@ case FILTER_LPXOR2:
 			// Right voice
 			digitsAR = FLOAT2SHORT * localv0R;
 			digitsBR = FLOAT2SHORT * fold(*sp * gain);
-			digitized = SHORT2FLOAT * roundf((digitsAR | (digitsBR & bitmask)));
+			digitized = SHORT2FLOAT * (float)((digitsAR | (digitsBR & bitmask)));
 			localv0R = (*sp * b) + (digitized * a);
 
 			*sp++ = clamp(localv0R * mixerGain, -ratioTimbres, ratioTimbres);
@@ -2140,7 +2133,7 @@ case FILTER_LPSIN:
 	const float f = fxParam2 * fxParam2 * SVFRANGE;
 	const float fb = 0.45f;
 	const float scale = sqrt3(fb);
-	const int pos = (int)(fxParam1 * 2048);
+	const int pos = (int)(fxParam1 * 2060);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
@@ -2181,7 +2174,7 @@ case FILTER_HPSIN:
 	const float f = fxParam2 * fxParam2 * SVFRANGE;
 	const float fb = 0.94f;
 	const float scale = sqrt3(fb);
-	const int pos = (int)(fxParam1 * 2048);
+	const int pos = (int)(fxParam1 * 2060);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
@@ -2212,6 +2205,61 @@ case FILTER_HPSIN:
 	v1R = bandR;
     }
     break;
+case FILTER_DOUBLENOTCH:
+{
+	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
+	float fxParamTmp = fabsf(params.effect.param1 + matrixFilterFrequency);
+	fxParam1 = ((fxParamTmp + 19.0f * fxParam1) * .05f);
+
+	float OffsetTmp = fabsf(params.effect.param2);
+	fxParam2 = ((OffsetTmp + 19.0f * fxParam2) * .05f);
+
+	const float f =  0.05f + wrap(fxParam1) * 0.92f;
+	const float f2 = 0.1f + wrap(fxParam1 + fxParam2 + 0.5f) * 0.89f;
+	const float fb = sqrt3(0.91f);
+	const float scale = sqrt3(fb);
+
+	float *sp = this->sampleBlock;
+	float lowL = v0L, highL = 0, bandL = v1L;
+	float lowR = v0R, highR = 0, bandR = v1R;
+	float lowL2 = v2L, highL2 = 0, bandL2 = v3L;
+	float lowR2 = v2R, highR2 = 0, bandR2 = v3R;
+
+	for (int k = BLOCK_SIZE ; k--; ) {
+		// Left voice
+		lowL = lowL + f * bandL;
+		highL = scale * (*sp) - lowL - fb * bandL;
+		bandL = f * highL + bandL;
+
+		lowL2 = lowL2 + f2 * bandL2;
+		highL2 = scale * (highL + lowL) - lowL2 - fb * sat33(bandL2);
+		bandL2 = f2 * highL2 + bandL2;
+
+		*sp++ = clamp((highL2 + lowL2) * mixerGain, -ratioTimbres, ratioTimbres);
+
+		// Right voice
+		lowR = lowR + f * bandR;
+		highR = scale * (*sp) - lowR - fb * bandR;
+		bandR = f * highR + bandR;
+
+		lowR2 = lowR2 + f2 * bandR2;
+		highR2 = scale * sat33(highR + lowR) - lowR2 - fb * (bandR2);
+		bandR2 = f2 * highR2 + bandR2;
+
+		*sp++ = clamp((highR2 + lowR2) * mixerGain, -ratioTimbres, ratioTimbres);
+	}
+
+	v0L = lowL;
+	v1L = bandL;
+	v0R = lowR;
+	v1R = bandR;
+
+	v2L = lowL2;
+	v3L = bandL2;
+	v2R = lowR2;
+	v3R = bandR2;
+}
+break;
 case FILTER_OFF:
     {
     	// Filter off has gain...
@@ -2246,8 +2294,7 @@ void Timbre::afterNewParamsLoad() {
 
 
     resetArpeggiator();
-    v0L = v1L = 0.0f;
-    v0R = v1R = 0.0f;
+    v0L = v1L = v2L = v3L = v0R = v1R = v2R = v3R = 0.0f;
     for (int k=0; k<NUMBER_OF_ENCODERS; k++) {
         setNewEffecParam(k);
     }
@@ -2354,8 +2401,8 @@ void Timbre::recomputeBPValues(float q, float fSquare) {
 
 void Timbre::setNewEffecParam(int encoder) {
 	if (encoder == 0) {
-	    v0L = v1L = 0.0f;
-	    v0R = v1R = 0.0f;
+	    v0L = v1L = v2L = v3L = v0R = v1R = v2R = v3R = 0.0f;
+
 	    for (int k=1; k<NUMBER_OF_ENCODERS; k++) {
 	        setNewEffecParam(k);
 	    }
