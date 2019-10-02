@@ -177,6 +177,18 @@ inline
 float wrap(float x) {
 	return x - floorf(x);
 }
+inline 
+float window(float x) {
+	if (x < 0 || x > 1) {
+		return 0;
+	} else if (x < 0.2f) {
+		return sqrt3( x * 5 );
+	} else if (x > 0.8f) {
+		return sqrt3(1 - (x-0.8f) * 5);
+	} else {
+		return 1;
+	}
+}
 
 enum NewNoteType {
 	NEW_NOTE_FREE = 0,
@@ -265,7 +277,7 @@ Timbre::Timbre() {
 
 
     // Init FX variables
-    v0L = v1L = v2L = v3L = v0R = v1R = v2R = v3R = 0.0f;
+    v0L = v1L = v2L = v3L = v4L = v5L = v0R = v1R = v2R = v3R = v4R = v5R = 0.0f;
     fxParam1PlusMatrix = -1.0;
 }
 
@@ -1412,7 +1424,7 @@ case FILTER_LOWSHELF:
 		ic1eqL = 2 * v1 - ic1eqL;
 		ic2eqL = 2 * v2 - ic2eqL;
 
-		*sp++ = clamp(((*sp) - k * v1) * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp((*sp + (m1 * v1 + m2 * v2)) * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 		v3 = (*sp) - ic2eqR;
@@ -1421,7 +1433,7 @@ case FILTER_LOWSHELF:
 		ic1eqR = 2 * v1 - ic1eqR;
 		ic2eqR = 2 * v2 - ic2eqR;
 
-		*sp++ = clamp(((*sp) - k * v1) * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp((*sp + (m1 * v1 + m2 * v2)) * svfGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = ic1eqL;
@@ -2205,7 +2217,7 @@ case FILTER_HPSIN:
 	v1R = bandR;
     }
     break;
-case FILTER_DOUBLENOTCH:
+case FILTER_TRIPLENOTCH:
 {
 	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
 	float fxParamTmp = fabsf(params.effect.param1 + matrixFilterFrequency);
@@ -2214,39 +2226,50 @@ case FILTER_DOUBLENOTCH:
 	float OffsetTmp = fabsf(params.effect.param2);
 	fxParam2 = ((OffsetTmp + 19.0f * fxParam2) * .05f);
 
-	const float f =  0.05f + wrap(fxParam1) * 0.92f;
-	const float f2 = 0.1f + wrap(fxParam1 + fxParam2 + 0.5f) * 0.89f;
-	const float fb = sqrt3(0.91f);
-	const float scale = sqrt3(fb);
+	const float offset = fxParam2 * 0.88f - 0.44f;
+
+	const float f1 = clamp((fxParam1), 0.001f, 0.99f);
+	const float f2 = clamp((fxParam1 + offset), 0.001f, 0.99f);
+	const float f3 = clamp((fxParam1 + offset * 2), 0.001f, 0.99f);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
 	float lowR = v0R, highR = 0, bandR = v1R;
 	float lowL2 = v2L, highL2 = 0, bandL2 = v3L;
 	float lowR2 = v2R, highR2 = 0, bandR2 = v3R;
+	float lowL3 = v4L, highL3 = 0, bandL3 = v5L;
+	float lowR3 = v4R, highR3 = 0, bandR3 = v5R;
 
 	for (int k = BLOCK_SIZE ; k--; ) {
 		// Left voice
-		lowL = lowL + f * bandL;
-		highL = scale * (*sp) - lowL - fb * bandL;
-		bandL = f * highL + bandL;
+		lowL = lowL + f1 * bandL;
+		highL = (*sp) - lowL - bandL;
+		bandL = f1 * highL + bandL;
 
 		lowL2 = lowL2 + f2 * bandL2;
-		highL2 = scale * (highL + lowL) - lowL2 - fb * sat33(bandL2);
-		bandL2 = f2 * highL2 + bandL2;
+		highL2 = (highL + lowL) - lowL2 - (bandL2);
+		bandL2 = f2 * sat25(highL2) + bandL2;
 
-		*sp++ = clamp((highL2 + lowL2) * mixerGain, -ratioTimbres, ratioTimbres);
+		lowL3 = lowL3 + f3 * bandL3;
+		highL3 = (highL2 + lowL2) - lowL3 - bandL3;
+		bandL3 = f3 * highL3 + bandL3;
+
+		*sp++ = clamp((highL3 + lowL3) * mixerGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
-		lowR = lowR + f * bandR;
-		highR = scale * (*sp) - lowR - fb * bandR;
-		bandR = f * highR + bandR;
+		lowR = lowR + f1 * bandR;
+		highR = (*sp) - lowR - bandR;
+		bandR = f1 * highR + bandR;
 
 		lowR2 = lowR2 + f2 * bandR2;
-		highR2 = scale * sat33(highR + lowR) - lowR2 - fb * (bandR2);
-		bandR2 = f2 * highR2 + bandR2;
+		highR2 = (highR + lowR) - lowR2 - (bandR2);
+		bandR2 = f2 * sat25(highR2) + bandR2;
 
-		*sp++ = clamp((highR2 + lowR2) * mixerGain, -ratioTimbres, ratioTimbres);
+		lowR3 = lowR3 + f3 * bandR3;
+		highR3 = (highR2 + lowR2) - lowR3 - bandR3;
+		bandR3 = f3 * highR3 + bandR3;
+
+		*sp++ = clamp((highR3 + lowR3) * mixerGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = lowL;
@@ -2258,6 +2281,90 @@ case FILTER_DOUBLENOTCH:
 	v3L = bandL2;
 	v2R = lowR2;
 	v3R = bandR2;
+
+	v4L = lowL3;
+	v5L = bandL3;
+	v4R = lowR3;
+	v5R = bandR3;
+}
+break;
+case FILTER_APTRIPLE:
+{
+	float fxParamTmp = fabsf(params.effect.param1 + matrixFilterFrequency);
+	fxParam1 = ((fxParamTmp + 19.0f * fxParam1) * .05f);
+
+	float OffsetTmp = fabsf(params.effect.param2);
+	fxParam2 = ((OffsetTmp + 19.0f * fxParam2) * .05f);
+
+	const float offset = fxParam2 * 0.66f - 0.33f;
+
+	const float f1 = clamp((fxParam1), 0.001f, 0.99f) * 1.8f - 0.9f;
+	const float f2 = clamp((fxParam1 + offset), 0.001f, 0.99f) * 1.8f - 0.9f;
+	const float f3 = clamp((fxParam1 + offset * 2), 0.001f, 0.99f) * 1.8f - 0.9f;;
+
+	float *sp = this->sampleBlock;
+	float lowL = v0L, highL = 0, bandL = v1L;
+	float lowR = v0R, highR = 0, bandR = v1R;
+	float lowL2 = v2L, highL2 = 0, bandL2 = v3L;
+	float lowR2 = v2R, highR2 = 0, bandR2 = v3R;
+	float lowL3 = v4L, highL3 = 0, bandL3 = v5L;
+	float lowR3 = v4R, highR3 = 0, bandR3 = v5R;
+	float out;
+
+	//s = in + g * ( out = s - g * in );
+
+	/*xx = vin+r*(y4*2-y3A),
+     y0 =   buf0 + f *  (xx-y0), 
+     y0A = y0*2-xx,
+     y1 =   buf1 +f * (y0A-y1),
+     y1A = y1*2-y0A,
+     y2 =  buf2 +f * (y1A-y2),
+     y2A = y2*2-y1A,
+     y3 =  buf3 +f * (y2A-y3),
+     y3A = y3*2-y2A,
+     y4 =  buf4 +fg * (y3A-y4*/
+
+	for (int k = BLOCK_SIZE ; k--; ) {
+		// Left voice
+		
+		lowL = (*sp) + f1 * (bandL = lowL - f1 * (*sp));
+		highL = (bandL + (*sp)) * 0.5f;
+
+		lowL2 = highL + f2 * (bandL2 = (lowL2) - f2 * highL);
+		highL2 = ((bandL2) + highL) * 0.5f;
+
+		lowL3 = lowL2 + f3 * (bandL3 = lowL3 - f3 * lowL2);
+		highL3 = (bandL3 + highL2) * 0.5f;
+
+		*sp++ = clamp(highL3 * mixerGain, -ratioTimbres, ratioTimbres);
+
+		// Right voice
+		lowR = (*sp) + f1 * (bandR = lowR - f1 * (*sp));
+		highR = (bandR + (*sp)) * 0.5f;
+
+		lowR2 = lowR + f2 * (bandR2 = (lowR2) - f2 * lowR);
+		highR2 = ((bandR2) + highR) * 0.5f;
+
+		lowR3 = lowR2 + f3 * (bandR3 = lowR3 - f3 * lowR2);
+		highR3 = (bandR3 + highR2) * 0.5f;
+
+		*sp++ = clamp(highR3 * mixerGain, -ratioTimbres, ratioTimbres);
+	}
+
+	v0L = lowL;
+	v1L = bandL;
+	v0R = lowR;
+	v1R = bandR;
+
+	v2L = lowL2;
+	v3L = bandL2;
+	v2R = lowR2;
+	v3R = bandR2;
+
+	v4L = lowL3;
+	v5L = bandL3;
+	v4R = lowR3;
+	v5R = bandR3;
 }
 break;
 case FILTER_OFF:
@@ -2294,7 +2401,7 @@ void Timbre::afterNewParamsLoad() {
 
 
     resetArpeggiator();
-    v0L = v1L = v2L = v3L = v0R = v1R = v2R = v3R = 0.0f;
+    v0L = v1L = v2L = v3L = v4L = v5L = v0R = v1R = v2R = v3R = v4R = v5R = 0.0f;
     for (int k=0; k<NUMBER_OF_ENCODERS; k++) {
         setNewEffecParam(k);
     }
@@ -2401,7 +2508,7 @@ void Timbre::recomputeBPValues(float q, float fSquare) {
 
 void Timbre::setNewEffecParam(int encoder) {
 	if (encoder == 0) {
-	    v0L = v1L = v2L = v3L = v0R = v1R = v2R = v3R = 0.0f;
+   		v0L = v1L = v2L = v3L = v4L = v5L = v0R = v1R = v2R = v3R = v4R = v5R = 0.0f;
 
 	    for (int k=1; k<NUMBER_OF_ENCODERS; k++) {
 	        setNewEffecParam(k);
