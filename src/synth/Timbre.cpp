@@ -1978,56 +1978,81 @@ case FILTER_XOR:
 	}
 	break;
 case FILTER_TEXTURE1:
-		{
-			float fxParamTmp = (params.effect.param1 + matrixFilterFrequency);
-			fxParamTmp *= fxParamTmp;
+	{
+		float fxParamTmp = (params.effect.param1 + matrixFilterFrequency);
+		fxParamTmp *= fxParamTmp;
 
-			// Low pass... on the Frequency
-			fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
+		// Low pass... on the Frequency
+		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-			float *sp = this->sampleBlock;
-			float lowL = v0L, highL = 0, bandL = v1L;
-			float lowR = v0R, highR = 0, bandR = v1R;
+		float *sp = this->sampleBlock;
+		float lowL = v0L, highL = 0, bandL = v1L;
+		float lowR = v0R, highR = 0, bandR = v1R;
 
-			const float f = (fxParam1 * fxParam1) * 0.5f;
-			const float fb = fxParam2;
-			const float scale = sqrt3(fb);
+		float _ly1L = v2L, _ly1R = v2R;
+		float _lx1L = v3L, _lx1R = v3R;
+		float _ly2L = v4L, _ly2R = v4R;
+		float _lx2L = v5L, _lx2R = v5R;
 
-			const int highBits = 0xFFFFFD4F;
-			const int lowBits = ~(highBits);
+		const float f = (fxParam1 * fxParam1) * 0.5f;
+		const float fb = fxParam2;
+		const float scale = sqrt3(fb);
 
-			const int ll = (int)(fxParam1 * lowBits);
-			int digitsL, digitsR;
-			int lowDigitsL, lowDigitsR;
+		const float f1 = clamp(fold(f) * 4, 0.001f, 1); // allpass F
+		float coef1 = (1.0f - f1) / (1.0f + f1);
+		const float f2 = clamp(fold(f + 0.0833f) * 4, 0.001f, 1); // allpass F2
+		float coef2 = (1.0f - f2) / (1.0f + f2);
+
+		const int highBits = 0xFFFFFD4F;
+		const int lowBits = ~(highBits);
+
+		const int ll = (int)(fxParam1 * lowBits);
+		int digitsL, digitsR;
+		int lowDigitsL, lowDigitsR;
 
 		for (int k=BLOCK_SIZE ; k--; ) {
-				//LEFT
-				lowL = lowL + f * bandL;
-				highL = scale * (*sp) - lowL - fb * bandL;
-				bandL = f * highL + bandL;
+			//LEFT
+			lowL = lowL + f * bandL;
+			highL = scale * (*sp) - lowL - fb * bandL;
+			bandL = f * highL + bandL;
 
-				digitsL = FLOAT2SHORT * bandL;
-				lowDigitsL = (digitsL & lowBits);
-				bandL = SHORT2FLOAT * (float)((digitsL & highBits) ^ ((lowDigitsL ^ ll) & 0x1FFF));
+			digitsL = FLOAT2SHORT * bandL;
+			lowDigitsL = (digitsL & lowBits);
+			bandL = SHORT2FLOAT * (float)((digitsL & highBits) ^ ((lowDigitsL ^ ll) & 0x1FFF));
 
-				*sp++ = clamp(highL * mixerGain, -ratioTimbres, ratioTimbres);
+			_ly1L = coef1 * (_ly1L + highL) - _lx1L; // allpass
+			_lx1L = highL;
+			_ly2L = coef2 * (_ly2L + _ly1L) - _lx2L; // allpass 2
+			_lx2L = _ly1L;
 
-				//RIGHT
-				lowR = lowR + f * bandR;
-				highR = scale * (*sp) - lowR - fb * bandR;
-				bandR = f * highR + bandR;
+			*sp++ = clamp(_ly2L * mixerGain, -ratioTimbres, ratioTimbres);
 
-				digitsR = FLOAT2SHORT * bandR;
-				lowDigitsR = (digitsR & lowBits);
-				bandR = SHORT2FLOAT * (float)((digitsR & highBits) ^ ((lowDigitsR ^ ll) & 0x1FFF));
+			//RIGHT
+			lowR = lowR + f * bandR;
+			highR = scale * (*sp) - lowR - fb * bandR;
+			bandR = f * highR + bandR;
 
-				*sp++ = clamp(highR * mixerGain, -ratioTimbres, ratioTimbres);
-			}
+			digitsR = FLOAT2SHORT * bandR;
+			lowDigitsR = (digitsR & lowBits);
+			bandR = SHORT2FLOAT * (float)((digitsR & highBits) ^ ((lowDigitsR ^ ll) & 0x1FFF));
 
-			v0L = lowL;
-			v1L = bandL;
-			v0R = lowR;
-			v1R = bandR;
+			_ly1R = coef1 * (_ly1R + highR) - _lx1R; // allpass
+			_lx1R = highR;
+			_ly2R = coef2 * (_ly2R + _ly1R) - _lx2R; // allpass 2
+			_lx2R = _ly1R;
+
+			*sp++ = clamp(_ly2R * mixerGain, -ratioTimbres, ratioTimbres);
+		}
+
+		v0L = lowL;
+		v1L = bandL;
+		v0R = lowR;
+		v1R = bandR;
+
+		v2L = _ly1L; v2R = _ly1R;
+		v3L = _lx1L; v3R = _lx1R;
+		v4L = _ly2L; v4R = _ly2R;
+		v5L = _lx2L; v5R = _lx2R;
 	}
     break;
 case FILTER_TEXTURE2:
@@ -2042,9 +2067,19 @@ case FILTER_TEXTURE2:
 		float lowL = v0L, highL = 0, bandL = v1L;
 		float lowR = v0R, highR = 0, bandR = v1R;
 
+		float _ly1L = v2L, _ly1R = v2R;
+		float _lx1L = v3L, _lx1R = v3R;
+		float _ly2L = v4L, _ly2R = v4R;
+		float _lx2L = v5L, _lx2R = v5R;
+
 		const float f = (fxParam1 * fxParam1) * 0.5f;
 		const float fb = fxParam2;
 		const float scale = sqrt3(fb);
+
+		const float f1 = clamp(fold(f) * 4, 0.001f, 1); // allpass F
+		float coef1 = (1.0f - f1) / (1.0f + f1);
+		const float f2 = clamp(fold(f + 0.0833f) * 4, 0.001f, 1); // allpass F2
+		float coef2 = (1.0f - f2) / (1.0f + f2);
 
 		const int highBits = 0xFFFFFFAF;
 		const int lowBits = ~(highBits);
@@ -2063,7 +2098,12 @@ case FILTER_TEXTURE2:
 			highL = scale * (*sp) - lowL - fb * bandL;
 			bandL = f * highL + bandL;
 
-			*sp++ = clamp(bandL * mixerGain, -ratioTimbres, ratioTimbres);
+			_ly1L = coef1 * (_ly1L + bandL) - _lx1L; // allpass
+			_lx1L = bandL;
+			_ly2L = coef2 * (_ly2L + _ly1L) - _lx2L; // allpass 2
+			_lx2L = _ly1L;
+
+			*sp++ = clamp(_ly2L * mixerGain, -ratioTimbres, ratioTimbres);
 
 			//RIGHT
 			digitsR = FLOAT2SHORT * (bandR);
@@ -2074,13 +2114,23 @@ case FILTER_TEXTURE2:
 			highR = scale * (*sp) - lowR - fb * bandR;
 			bandR = f * highR + bandR;
 
-			*sp++ = clamp(bandR * mixerGain, -ratioTimbres, ratioTimbres);
+			_ly1R = coef1 * (_ly1R + bandR) - _lx1R; // allpass
+			_lx1R = bandR;
+			_ly2R = coef2 * (_ly2R + _ly1R) - _lx2R; // allpass 2
+			_lx2R = _ly1R;
+
+			*sp++ = clamp(_ly2R * mixerGain, -ratioTimbres, ratioTimbres);
 		}
 
 		v0L = lowL;
 		v1L = bandL;
 		v0R = lowR;
 		v1R = bandR;
+
+		v2L = _ly1L; v2R = _ly1R;
+		v3L = _lx1L; v3R = _lx1R;
+		v4L = _ly2L; v4R = _ly2R;
+		v5L = _lx2L; v5R = _lx2R;
     }
     break;
 case FILTER_LPXOR:
