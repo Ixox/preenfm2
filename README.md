@@ -50,7 +50,7 @@ in this version, some more filters & fx :
 - emphasis on low (mod < 0.5) or high frequency (mod > 0.5), Freq = breakpoint
 
 ###### Pann :
-- stereo enhancer : wide = 0, the signal is mono, wide = 1, the signal is stereo, pos is the pseudo pan position
+- stereo placement tool : pos = panning, sprd = phase position or something
 
 ###### Sat  :
 - kind of guitar saturation ; signal over threshold is distorded
@@ -79,8 +79,25 @@ in this version, some more filters & fx :
 ###### LPx2 :
 - xor low pass filter + fold, different kind
 
+###### LpSn :
+- saturated low pass filter, for polyphonic context 
+
+###### HpSn :
+- saturated high pass filter, for polyphonic context 
+
+###### Not3 :
+- triple notch filter, Sprd to spread the 2 poles around the center frequency
+
+###### Ap3 :
+- all pass triple filter, Sprd to spread the 2 poles around the center frequency
+
+###### Ap3b :
+- all pass triple filter, resonant version, Sprd to spread the 2 poles around the center frequency
+
 
 Credits : 
 
-	many thanks to musicdsp.org for the good filter algo ( and more).
-	many thanks to Andrew Simper for the bell, low shelf and high shelf algo.
+	many thanks to :
+	- musicdsp.org for the good filters algo ( and more).
+	- Andrew Simper for the bell, low shelf and high shelf algo.
+	- Dennis Cronin for the allpass algo.
