@@ -50,7 +50,7 @@ in this version, some more filters & fx :
 - emphasis on low (mod < 0.5) or high frequency (mod > 0.5), Freq = breakpoint
 
 ###### Pann :
-- stereo placement tool : pos = panning, sprd = phase position or something
+- stereo placement tool : pos = panning, sprd = 3 x pole spread
 
 ###### Sat  :
 - kind of guitar saturation ; signal over threshold is distorded
