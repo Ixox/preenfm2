@@ -85,15 +85,17 @@ in this version, some more filters & fx :
 ###### HpSn :
 - saturated high pass filter, for polyphonic context 
 
-###### Not3 :
-- triple notch filter, Sprd to spread the 2 poles around the center frequency
+###### Not4 :
+- quad notch filter, Sprd the 4 poles around the center frequency
 
-###### Ap3 :
-- all pass triple filter, Sprd to spread the 2 poles around the center frequency
+###### Ap4 :
+- all pass quad filter, Sprd the 4 poles around the center frequency
 
-###### Ap3b :
-- all pass triple filter, resonant version, Sprd to spread the 2 poles around the center frequency
+###### Ap4b :
+- all pass quad filter, resonant version, Sprd the 4 poles around the center frequency
 
+###### Ap4D :
+- all pass quad filter, diffusion version, Sprd the 4 poles around the center frequency
 
 Credits : 
 
