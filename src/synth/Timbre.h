@@ -220,10 +220,8 @@ private:
     float fxPhase;
     // save float fxParam1 to detect modification
     float fxParam1PlusMatrix;
-
     // lfoUsed
     uint8_t lfoUSed[NUMBER_OF_LFO];
-
 };
 
 #endif /* TIMBRE_H_ */
