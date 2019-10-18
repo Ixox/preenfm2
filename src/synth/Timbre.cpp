@@ -1132,35 +1132,35 @@ case FILTER_LP3:
 
 	float _ly1L = v2L, _ly1R = v2R;
 	float _lx1L = v3L, _lx1R = v3R;
-	const float f1 = clamp(f * 0.9f, filterWindowMin, filterWindowMax);
+	const float f1 = clamp(0.33f + f * 0.43f, filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - f1) / (1.0f + f1);
 
 	for (int k = BLOCK_SIZE; k--;)	{
 		// Left voice
 
-		lowL += f * bandL;
-		bandL += f * (scale * *sp - lowL - fb * sat25(bandL));
+		_ly1L = coef1 * (_ly1L + *sp) - _lx1L; // allpass
+		_lx1L = *sp;
 
 		lowL += f * bandL;
-		bandL += f * (scale * *sp - lowL - fb * (bandL));
+		bandL += f * (scale * _ly1L - lowL - fb * sat25(bandL));
 
-		_ly1L = coef1 * (_ly1L + lowL) - _lx1L; // allpass
-		_lx1L = lowL;
+		lowL += f * bandL;
+		bandL += f * (scale * _ly1L - lowL - fb * (bandL));
 
-		*sp++ = clamp(_ly1L * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(lowL * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 
-		lowR += f * bandR;
-		bandR += f * (scale * *sp - lowR - fb * sat25(bandR));
+		_ly1R = coef1 * (_ly1R + *sp) - _lx1R; // allpass
+		_lx1R = *sp;
 
 		lowR += f * bandR;
-		bandR += f * (scale * *sp - lowR - fb * (bandR));
+		bandR += f * (scale * _ly1R - lowR - fb * sat25(bandR));
 
-		_ly1R = coef1 * (_ly1R + lowR) - _lx1R; // allpass
-		_lx1R = lowR;
+		lowR += f * bandR;
+		bandR += f * (scale * _ly1R - lowL - fb * (bandR));
 
-		*sp++ = clamp(_ly1R * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(lowR * svfGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = lowL;
@@ -1190,27 +1190,39 @@ case FILTER_HP3:
 
 	const float svfGain = (1 + SVFGAINOFFSET + fxParam2 * fxParam2 * 0.75f) * mixerGain;
 
+	float _ly1L = v2L, _ly1R = v2R;
+	float _lx1L = v3L, _lx1R = v3R;
+	const float f1 = clamp(0.15f + f * 0.33f, filterWindowMin, filterWindowMax);
+	float coef1 = (1.0f - f1) / (1.0f + f1);
+
 	for (int k=BLOCK_SIZE ; k--; ) {
 		// Left voice
+		_ly1L = coef1 * (_ly1L + *sp) - _lx1L; // allpass
+		_lx1L = *sp;
+
 		lowL = lowL + f * bandL;
-		highL = scale * (*sp) - lowL - fb * sat33(bandL);
+		highL = scale * (_ly1L) - lowL - fb * sat33(bandL);
 		bandL = f * highL + bandL;
 
 		lowL = lowL + f * bandL;
-		highL = scale * (*sp) - lowL - fb * bandL;
+		highL = scale * (_ly1L) - lowL - fb * bandL;
 		bandL = f * highL + bandL;
+
 
 		*sp++ = clamp(highL * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
+		_ly1R = coef1 * (_ly1R + *sp) - _lx1R; // allpass
+		_lx1R = *sp;
+
 		lowR = lowR + f * bandR;
-		highR = scale * (*sp) - lowR - fb * sat33(bandR);
+		highR = scale * (_ly1R) - lowR - fb * sat33(bandR);
 		bandR = f * highR + bandR;
 
 		lowR = lowR + f * bandR;
-		highR = scale * (*sp) - lowR - fb * bandR;
+		highR = scale * (_ly1R) - lowR - fb * bandR;
 		bandR = f * highR + bandR;
-
+		
 		*sp++ = clamp(highR * svfGain, -ratioTimbres, ratioTimbres);
 	}
 
@@ -1218,6 +1230,9 @@ case FILTER_HP3:
 	v1L = bandL;
 	v0R = lowR;
 	v1R = bandR;
+
+	v2L = _ly1L; v2R = _ly1R;
+	v3L = _lx1L; v3R = _lx1R;
 }
 break;
 case FILTER_BP3: 
@@ -1229,7 +1244,7 @@ case FILTER_BP3:
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
 	const float f = fxParam1 * fxParam1 * SVFRANGE;
-	const float fb = sqrt3(0.5f - fxParam2 * 0.5f);
+	const float fb = sqrt3(0.5f - fxParam2 * 0.495f);
 	const float scale = sqrt3(fb);
 
 	float *sp = this->sampleBlock;
@@ -1240,30 +1255,40 @@ case FILTER_BP3:
 
 	float _ly1L = v2L, _ly1R = v2R;
 	float _lx1L = v3L, _lx1R = v3R;
-	const float f1 = clamp(sqrt3(fxParam1) , filterWindowMin, filterWindowMax);
+	float _ly2L = v4L, _ly2R = v4R;
+	float _lx2L = v5L, _lx2R = v5R;
+	const float f1 = clamp(f * 0.56f , filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - f1) / (1.0f + f1);
+	const float f2 = clamp(0.25f + f * 0.08f , filterWindowMin, filterWindowMax);
+	float coef2 = (1.0f - f1) / (1.0f + f1);
 
 	for (int k=BLOCK_SIZE ; k--; ) {
 
 		// Left voice
+		_ly1L = coef1 * (_ly1L + *sp) - _lx1L; // allpass
+		_lx1L = *sp;
+
 		lowL = lowL + f * bandL;
-		highL = scale * *sp - lowL - fb * sat25(bandL);
+		highL = scale * _ly1L - lowL - fb * sat25(bandL);
 		bandL = f * highL + bandL;
+		
+		_ly2L = coef2 * (_ly2L + bandL) - _lx2L; // allpass 2
+		_lx2L = bandL;
 
-		_ly1L = coef1 * (_ly1L + bandL) - _lx1L; // allpass
-		_lx1L = bandL;
-
-		*sp++ = clamp(_ly1L * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(_ly2L * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
+		_ly1R = coef1 * (_ly1R + *sp) - _lx1R; // allpass
+		_lx1R = *sp;
+
 		lowR = lowR + f * bandR;
-		highR = scale * *sp - lowR - fb * sat25(bandR);
+		highR = scale * _ly1R - lowR - fb * sat25(bandR);
 		bandR = f * highR + bandR;
 
-		_ly1R = coef1 * (_ly1R + bandR) - _lx1R; // allpass
-		_lx1R = bandR;
+		_ly2R = coef2 * (_ly2R + bandR) - _lx2R; // allpass 2
+		_lx2R = bandR;
 
-		*sp++ = clamp(_ly1R * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(_ly2R * svfGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = lowL;
@@ -1273,6 +1298,9 @@ case FILTER_BP3:
 
 	v2L = _ly1L; v2R = _ly1R;
 	v3L = _lx1L; v3R = _lx1R;
+	v4L = _ly2L; v4R = _ly2R;
+	v5L = _lx2L; v5R = _lx2R;
+
 }
 break;
 case FILTER_PEAK:
@@ -1295,7 +1323,7 @@ case FILTER_PEAK:
 
 	float _ly1L = v2L, _ly1R = v2R;
 	float _lx1L = v3L, _lx1R = v3R;
-	const float f1 = clamp(f * 0.9f, filterWindowMin, filterWindowMax);
+	const float f1 = clamp(0.27f + f * 0.33f, filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - f1) / (1.0f + f1);
 
 	float out;
@@ -1359,8 +1387,14 @@ case FILTER_NOTCH:
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
 	float lowR = v0R, highR = 0, bandR = v1R;
+	float notch;
 
 	const float svfGain = (1 + SVFGAINOFFSET) * mixerGain;
+
+	float _ly1L = v2L, _ly1R = v2R;
+	float _lx1L = v3L, _lx1R = v3R;
+	const float f1 = clamp(fxParam1 * 0.66f , filterWindowMin, filterWindowMax);
+	float coef1 = (1.0f - f1) / (1.0f + f1);
 
 	for (int k=0 ; k < BLOCK_SIZE; k++) {
 
@@ -1368,19 +1402,32 @@ case FILTER_NOTCH:
 		lowL = lowL + f * bandL;
 		highL = scale * (*sp) - lowL - fb * bandL;
 		bandL = f * highL + bandL;
-		*sp++ = clamp((highL + lowL) * svfGain, -ratioTimbres, ratioTimbres);
+		notch = (highL + lowL);
+
+		_ly1L = coef1 * (_ly1L + notch) - _lx1L; // allpass
+		_lx1L = notch;
+
+		*sp++ = clamp(_ly1L * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 		lowR = lowR + f * bandR;
 		highR = scale * (*sp) - lowR - fb * bandR;
 		bandR = f * highR + bandR;
-		*sp++ = clamp((highR + lowR) * svfGain, -ratioTimbres, ratioTimbres);
+		notch = (highR + lowR);
+
+		_ly1R = coef1 * (_ly1R + notch) - _lx1R; // allpass
+		_lx1R = notch;
+
+		*sp++ = clamp(_ly1R * svfGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = lowL;
 	v1L = bandL;
 	v0R = lowR;
 	v1R = bandR;
+
+	v2L = _ly1L; v2R = _ly1R;
+	v3L = _lx1L; v3R = _lx1R;
 }
 break;
 case FILTER_BELL:
@@ -1407,7 +1454,12 @@ case FILTER_BELL:
 
 	float ic1eqL = v0L, ic2eqL = v1L;
 	float ic1eqR = v0R, ic2eqR = v1R;
-	float v1, v2, v3;
+	float v1, v2, v3, out;
+
+	float _ly1L = v2L, _ly1R = v2R;
+	float _lx1L = v3L, _lx1R = v3R;
+	const float f1 = clamp(0.25f + fxParam1 * 0.33f , filterWindowMin, filterWindowMax);
+	float coef1 = (1.0f - f1) / (1.0f + f1);
 
 	for (int k=BLOCK_SIZE ; k--; ) {
 
@@ -1417,8 +1469,13 @@ case FILTER_BELL:
 		v2 = ic2eqL + a2 * ic1eqL + a3 * v3;
 		ic1eqL = 2 * v1 - ic1eqL;
 		ic2eqL = 2 * v2 - ic2eqL;
+		
+		_ly1L = coef1 * (_ly1L + v1) - _lx1L; // allpass
+		_lx1L = v1;
 
-		*sp++ = clamp((*sp + (amp * v1)) * mixerGain, -ratioTimbres, ratioTimbres);
+		out = (*sp + (amp * _ly1L));
+
+		*sp++ = clamp(out * mixerGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 		v3 = (*sp) - ic2eqR;
@@ -1427,13 +1484,21 @@ case FILTER_BELL:
 		ic1eqR = 2 * v1 - ic1eqR;
 		ic2eqR = 2 * v2 - ic2eqR;
 
-		*sp++ = clamp((*sp + (amp * v1)) * mixerGain, -ratioTimbres, ratioTimbres);
+		_ly1R = coef1 * (_ly1R + v1) - _lx1R; // allpass
+		_lx1R = v1;
+
+		out = (*sp + (amp * _ly1R));
+
+		*sp++ = clamp(out * mixerGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = ic1eqL;
 	v1L = ic2eqL;
 	v0R = ic1eqR;
 	v1R = ic2eqR;
+
+	v2L = _ly1L; v2R = _ly1R;
+	v3L = _lx1L; v3R = _lx1R;
 }
 break;
 case FILTER_LOWSHELF:
@@ -1461,9 +1526,14 @@ case FILTER_LOWSHELF:
 
 	float ic1eqL = v0L, ic2eqL = v1L;
 	float ic1eqR = v0R, ic2eqR = v1R;
-	float v1, v2, v3;
+	float v1, v2, v3, out;
 
 	const float svfGain = mixerGain * 0.8f;
+
+	float _ly1L = v2L, _ly1R = v2R;
+	float _lx1L = v3L, _lx1R = v3R;
+	const float f1 = clamp(0.33f + fxParam1 * 0.33f , filterWindowMin, filterWindowMax);
+	float coef1 = (1.0f - f1) / (1.0f + f1);
 
 	for (int k=BLOCK_SIZE ; k--; ) {
 
@@ -1473,8 +1543,11 @@ case FILTER_LOWSHELF:
 		v2 = ic2eqL + a2 * ic1eqL + a3 * v3;
 		ic1eqL = 2 * v1 - ic1eqL;
 		ic2eqL = 2 * v2 - ic2eqL;
+		out = (*sp + (m1 * v1 + m2 * v2));
+		_ly1L = coef1 * (_ly1L + out) - _lx1L; // allpass
+		_lx1L = out;
 
-		*sp++ = clamp((*sp + (m1 * v1 + m2 * v2)) * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(_ly1L * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 		v3 = (*sp) - ic2eqR;
@@ -1482,14 +1555,21 @@ case FILTER_LOWSHELF:
 		v2 = ic2eqR + a2 * ic1eqR + a3 * v3;
 		ic1eqR = 2 * v1 - ic1eqR;
 		ic2eqR = 2 * v2 - ic2eqR;
+		out = (*sp + (m1 * v1 + m2 * v2));
 
-		*sp++ = clamp((*sp + (m1 * v1 + m2 * v2)) * svfGain, -ratioTimbres, ratioTimbres);
+		_ly1R = coef1 * (_ly1R + out) - _lx1R; // allpass
+		_lx1R = out;
+
+		*sp++ = clamp(_ly1R * svfGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = ic1eqL;
 	v1L = ic2eqL;
 	v0R = ic1eqR;
 	v1R = ic2eqR;
+
+	v2L = _ly1L; v2R = _ly1R;
+	v3L = _lx1L; v3R = _lx1R;
 }
 break;
 case FILTER_HIGHSHELF:
@@ -1518,9 +1598,14 @@ case FILTER_HIGHSHELF:
 
 	float ic1eqL = v0L, ic2eqL = v1L;
 	float ic1eqR = v0R, ic2eqR = v1R;
-	float v1, v2, v3;
+	float v1, v2, v3, out;
 
 	const float svfGain = mixerGain * 0.8f;
+
+	float _ly1L = v2L, _ly1R = v2R;
+	float _lx1L = v3L, _lx1R = v3R;
+	const float f1 = clamp(0.33f + fxParam1 * 0.33f , filterWindowMin, filterWindowMax);
+	float coef1 = (1.0f - f1) / (1.0f + f1);
 
 	for (int k=BLOCK_SIZE ; k--; ) {
 
@@ -1530,8 +1615,12 @@ case FILTER_HIGHSHELF:
 		v2 = ic2eqL + a2 * ic1eqL + a3 * v3;
 		ic1eqL = 2 * v1 - ic1eqL;
 		ic2eqL = 2 * v2 - ic2eqL;
+		
+		out = (m0 * *sp + (m1 * v1 + m2 * v2));
+		_ly1L = coef1 * (_ly1L + out) - _lx1L; // allpass
+		_lx1L = out;
 
-		*sp++ = clamp((m0 * *sp + (m1 * v1 + m2 * v2)) * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(_ly1L * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 		v3 = (*sp) - ic2eqR;
@@ -1540,13 +1629,20 @@ case FILTER_HIGHSHELF:
 		ic1eqR = 2 * v1 - ic1eqR;
 		ic2eqR = 2 * v2 - ic2eqR;
 
-		*sp++ = clamp((m0 * *sp + (m1 * v1 + m2 * v2)) * svfGain, -ratioTimbres, ratioTimbres);
+		out = (m0 * *sp + (m1 * v1 + m2 * v2));
+		_ly1R = coef1 * (_ly1R + out) - _lx1R; // allpass
+		_lx1R = out;
+
+		*sp++ = clamp(_ly1R * svfGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = ic1eqL;
 	v1L = ic2eqL;
 	v0R = ic1eqR;
 	v1R = ic2eqR;
+
+	v2L = _ly1L; v2R = _ly1R;
+	v3L = _lx1L; v3R = _lx1R;
 }
 break;
 case FILTER_LPHP:
@@ -1572,7 +1668,7 @@ case FILTER_LPHP:
 
 	float _ly1L = v2L, _ly1R = v2R;
 	float _lx1L = v3L, _lx1R = v3R;
-	const float f1 = clamp(fxParam1 - 0.15f , filterWindowMin, filterWindowMax);
+	const float f1 = clamp(0.27f + fxParam1 * 0.44f , filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - f1) / (1.0f + f1);
 
 	const float gain = mixerGain * 1.3f;
@@ -1623,25 +1719,39 @@ case FILTER_BPds:
 
 	const float sat = 1 + fxParam2;
 
+	float _ly1L = v2L, _ly1R = v2R;
+	float _lx1L = v3L, _lx1R = v3R;
+	const float f1 = clamp(fxParam1 * 0.35f , filterWindowMin, filterWindowMax);
+	float coef1 = (1.0f - f1) / (1.0f + f1);
+
 	for (int k=BLOCK_SIZE ; k--; ) {
 
 		// Left voice
 		lowL = lowL + f * bandL;
 		highL = scale * (*sp) - lowL - fb * bandL;
 		bandL = (f * highL) + bandL;
-		*sp++ = clamp(sat25((bandL * sat)) * svfGain, -ratioTimbres, ratioTimbres);
+		_ly1L = coef1 * (_ly1L + bandL) - _lx1L; // allpass
+		_lx1L = bandL;
+			
+		*sp++ = clamp(sat25((_ly1L * sat)) * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 		lowR = lowR + f * bandR;
 		highR = scale * (*sp) - lowR - fb * bandR;
 		bandR = (f * highR) + bandR;
-		*sp++ = clamp(sat25((bandR * sat)) * svfGain, -ratioTimbres, ratioTimbres);
+		_ly1R = coef1 * (_ly1R + bandR) - _lx1R; // allpass
+		_lx1R = bandR;
+
+		*sp++ = clamp(sat25((_ly1R * sat)) * svfGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = lowL;
 	v1L = bandL;
 	v0R = lowR;
 	v1R = bandR;
+
+	v2L = _ly1L; v2R = _ly1R;
+	v3L = _lx1L; v3R = _lx1R;
 }
 break;
 case FILTER_LPWS:
@@ -1665,7 +1775,7 @@ case FILTER_LPWS:
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(fxParam1 - 0.26f , filterWindowMin, filterWindowMax);
+		const float f1 = 0.27f + fxParam1 * 0.027;//clamp(fxParam1 - 0.26f , filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		for (int k=BLOCK_SIZE ; k--; ) {
@@ -1700,7 +1810,7 @@ case FILTER_TILT:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-		const float f1 = clamp(fxParam1 + 0.09f , filterWindowMin, filterWindowMax);
+		const float f1 = clamp(fxParam1 * 0.24f + 0.09f , filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		const float res = 0.85f;
@@ -1944,17 +2054,30 @@ case FILTER_FOLD:
 
 		float drive = sqrt3(fxParam1);
 		float gain = (1 + 52 * (drive)) * 0.25f;
-		float finalGain = (1 - (drive / (drive + 0.05f)) * 0.7f) * mixerGain  * 0.75f;
+		float finalGain = (1 - (drive / (drive + 0.05f)) * 0.7f) * mixerGain  * 0.95f;
+	
+		float _ly1L = v2L, _ly1R = v2R;
+		float _lx1L = v3L, _lx1R = v3R;
+		const float f1 = clamp(0.57f - fxParam1 * 0.43f, filterWindowMin, filterWindowMax);
+		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 			//LEFT
-			localv0L = pattern * localv0L - f * localv1L + f4 * fold(*sp * gain);
+			_ly1L = coef1 * (_ly1L + *sp) - _lx1L; // allpass
+			_lx1L = *sp;
+
+			localv0L = pattern * localv0L - f * localv1L + f4 * fold(_ly1L * gain);
 			localv1L = pattern * localv1L + f * localv0L;
+
 			*sp++ = clamp(localv1L * finalGain, -ratioTimbres, ratioTimbres);
 
 			//RIGHT
-			localv0R = pattern * localv0R - f * localv1R + f4 * fold(*sp * gain);
+			_ly1R = coef1 * (_ly1R + *sp) - _lx1R; // allpass
+			_lx1R = *sp;
+
+			localv0R = pattern * localv0R - f * localv1R + f4 * fold(_ly1R * gain);
 			localv1R = pattern * localv1R + f * localv0R;
+
 			*sp++ = clamp(localv1R * finalGain, -ratioTimbres, ratioTimbres);
 		}
 
@@ -1962,6 +2085,9 @@ case FILTER_FOLD:
         v0R = localv0R;
         v1L = localv1L;
         v1R = localv1R;
+
+		v2L = _ly1L; v2R = _ly1R;
+		v3L = _lx1L; v3R = _lx1R;
 	}
 	break;
 case FILTER_WRAP:
@@ -1983,24 +2109,38 @@ case FILTER_WRAP:
 
 		float drive = sqrt3(fxParam1);
 		float gain = (1 + 4 * (drive));
-		float finalGain = (1 - sqrt3(drive) * 0.6f) * mixerGain * 0.75f;
+		float finalGain = (1 - sqrt3(drive) * 0.6f) * mixerGain * 0.95f;
+
+		float _ly1L = v2L, _ly1R = v2R;
+		float _lx1L = v3L, _lx1R = v3R;
+		const float f1 = clamp(0.58f - fxParam1 * 0.43f, filterWindowMin, filterWindowMax);
+		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 			//LEFT
 			localv0L = pattern * localv0L + f * (wrap(*sp * gain) - localv1L);
 			localv1L = pattern * localv1L + f * localv0L;
-			*sp++ = clamp(localv1L * finalGain, -ratioTimbres, ratioTimbres);
+
+			_ly1L = coef1 * (_ly1L + localv1L) - _lx1L; // allpass
+			_lx1L = localv1L;
+			*sp++ = clamp(_ly1L * finalGain, -ratioTimbres, ratioTimbres);
 
 			//RIGHT
 			localv0R = pattern * localv0R + f * (wrap(*sp * gain) - localv1R);
 			localv1R = pattern * localv1R + f * localv0R;
-			*sp++ = clamp(localv1R * finalGain, -ratioTimbres, ratioTimbres);
+
+			_ly1R = coef1 * (_ly1R + localv1R) - _lx1R; // allpass
+			_lx1R = localv1R;
+			*sp++ = clamp(_ly1R * finalGain, -ratioTimbres, ratioTimbres);
 		}
 
         v0L = localv0L;
         v0R = localv0R;
         v1L = localv1L;
         v1R = localv1R;
+
+		v2L = _ly1L; v2R = _ly1R;
+		v3L = _lx1L; v3R = _lx1R;
 	}
 	break;
 case FILTER_XOR:
@@ -2078,7 +2218,7 @@ case FILTER_TEXTURE1:
 		float lowR = v0R, highR = 0, bandR = v1R;
 		float notch;
 
-		const float f = (fxParam1 * fxParam1) * 0.5f;
+		const float f = (fxParam1 * fxParam1 * fxParam1) * 0.5f;
 		const float fb = fxParam2;
 		const float scale = sqrt3(fb);
 
@@ -2088,6 +2228,11 @@ case FILTER_TEXTURE1:
 		const int ll = (int)(fxParam1 * lowBits);
 		int digitsL, digitsR;
 		int lowDigitsL, lowDigitsR;
+
+		float _ly1L = v2L, _ly1R = v2R;
+		float _lx1L = v3L, _lx1R = v3R;
+		const float f1 = clamp(0.33f + f * 0.47f, filterWindowMin, filterWindowMax);
+		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 			//LEFT
@@ -2104,7 +2249,10 @@ case FILTER_TEXTURE1:
 			highL = scale * (notch) - lowL - fb * bandL;
 			bandL = f * highL + bandL;
 
-			*sp++ = clamp(highL * mixerGain, -ratioTimbres, ratioTimbres);
+			_ly1L = coef1 * (_ly1L + notch) - _lx1L; // allpass
+			_lx1L = notch;
+
+			*sp++ = clamp(_ly1L * mixerGain, -ratioTimbres, ratioTimbres);
 
 			//RIGHT
 			lowR = lowR + f * bandR;
@@ -2120,13 +2268,19 @@ case FILTER_TEXTURE1:
 			highR = scale * (notch) - lowR - fb * bandR;
 			bandR = f * highR + bandR;
 
-			*sp++ = clamp(highR * mixerGain, -ratioTimbres, ratioTimbres);
+			_ly1R = coef1 * (_ly1R + notch) - _lx1R; // allpass
+			_lx1R = notch;
+
+			*sp++ = clamp(_ly1R * mixerGain, -ratioTimbres, ratioTimbres);
 		}
 
 		v0L = lowL;
 		v1L = bandL;
 		v0R = lowR;
 		v1R = bandR;
+
+		v2L = _ly1L; v2R = _ly1R;
+		v3L = _lx1L; v3R = _lx1R;
 	}
     break;
 case FILTER_TEXTURE2:
@@ -2147,7 +2301,7 @@ case FILTER_TEXTURE2:
 		float lowR = v0R, highR = 0, bandR = v1R;
 		float notch;
 
-		const float f = (fxParam1 * fxParam1) * 0.5f;
+		const float f = (fxParam1 * fxParam1 * fxParam1) * 0.5f;
 		const float fb = fxParam2;
 		const float scale = sqrt3(fb);
 
@@ -2157,6 +2311,15 @@ case FILTER_TEXTURE2:
 		const int ll = fxParam1 * lowBits;
 		int digitsL, digitsR;
 		int lowDigitsL, lowDigitsR;
+
+		float _ly1L = v2L, _ly1R = v2R;
+		float _lx1L = v3L, _lx1R = v3R;
+		float _ly2L = v4L, _ly2R = v4R;
+		float _lx2L = v5L, _lx2R = v5R;
+		const float f1 = clamp(0.57f - fxParam1 * 0.33f, filterWindowMin, filterWindowMax);
+		float coef1 = (1.0f - f1) / (1.0f + f1);
+		const float f2 = clamp(0.50f - fxParam1 * 0.39f , filterWindowMin, filterWindowMax);
+		float coef2 = (1.0f - f1) / (1.0f + f1);
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 			//LEFT
@@ -2169,11 +2332,17 @@ case FILTER_TEXTURE2:
 			lowDigitsL = (digitsL & lowBits);
 			bandL = SHORT2FLOAT * (float)((digitsL & highBits) ^ ((lowDigitsL * ll) & 0x1FFF));
 
-			lowL = lowL + f * bandL;
-			highL = scale * (notch) - lowL - fb * bandL;
-			bandL = f * highL + bandL;
+			_ly1L = coef1 * (_ly1L + notch) - _lx1L; // allpass
+			_lx1L = notch;
+			
+			/*lowL = lowL + f * bandL;
+			highL = scale * (_ly1L) - lowL - fb * bandL;
+			bandL = f * highL + bandL;*/
 
-			*sp++ = clamp((bandL) * mixerGain, -ratioTimbres, ratioTimbres);
+			_ly2L = coef2 * (_ly2L + _ly1L) - _lx2L; // allpass 2
+			_lx2L = _ly1L;
+
+			*sp++ = clamp(_ly2L * mixerGain, -ratioTimbres, ratioTimbres);
 
 			//RIGHT
 			lowR = lowR + f * bandR;
@@ -2185,17 +2354,28 @@ case FILTER_TEXTURE2:
 			lowDigitsR = (digitsR & lowBits);
 			bandR = SHORT2FLOAT * (float)((digitsR & highBits) ^ ((lowDigitsR * ll) & 0x1FFF));
 
-			lowR = lowR + f * bandR;
-			highR = scale * (notch) - lowR - fb * bandR;
-			bandR = f * highR + bandR;
+			_ly1R = coef1 * (_ly1R + notch) - _lx1R; // allpass
+			_lx1R = notch;
 
-			*sp++ = clamp((bandR) * mixerGain, -ratioTimbres, ratioTimbres);
+			/*lowR = lowR + f * bandR;
+			highR = scale * (notch) - lowR - fb * bandR;
+			bandR = f * highR + bandR;*/
+
+			_ly2R = coef2 * (_ly2R + _ly1R) - _lx2R; // allpass 2
+			_lx2R = _ly1R;
+
+			*sp++ = clamp(_ly2R * mixerGain, -ratioTimbres, ratioTimbres);
 		}
 
 		v0L = lowL;
 		v1L = bandL;
 		v0R = lowR;
 		v1R = bandR;
+
+		v2L = _ly1L; v2R = _ly1R;
+		v3L = _lx1L; v3R = _lx1R;
+		v4L = _ly2L; v4R = _ly2R;
+		v5L = _lx2L; v5R = _lx2R;
     }
     break;
 case FILTER_LPXOR:
@@ -2212,6 +2392,7 @@ case FILTER_LPXOR:
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
 		const float a = 1.f - fxParam1;
+		const float a2f = a * SHORT2FLOAT;
 		const float b = 1.f - a;
 
 		float *sp = this->sampleBlock;
@@ -2227,27 +2408,39 @@ case FILTER_LPXOR:
 
 		const short bitmask = 0xfac;
 
+		float _ly1L = v2L, _ly1R = v2R;
+		float _lx1L = v3L, _lx1R = v3R;
+		const float f1 = clamp(0.27f + fxParam1 * 0.5f, filterWindowMin, filterWindowMax);
+		float coef1 = (1.0f - f1) / (1.0f + f1);
+
 		for (int k = BLOCK_SIZE; k--;) {
 			// Left voice
 			digitsAL = FLOAT2SHORT * fold(localv0L * gain);
 			digitsBL = FLOAT2SHORT * (*sp);
-			digitized = SHORT2FLOAT * (float)(digitsAL ^ (digitsBL & bitmask));
-			localv0L = (*sp * b) + (digitized * a);
-			localv0L = (*sp * b) + (localv0L * a);
+			digitized = (float)(digitsAL ^ (digitsBL & bitmask));
+			localv0L = (*sp * b) + (digitized * a2f);
 
-			*sp++ = clamp(localv0L * mixerGain, -ratioTimbres, ratioTimbres);
+			_ly1L = coef1 * (_ly1L + localv0L) - _lx1L; // allpass
+			_lx1L = localv0L;
+
+			*sp++ = clamp(_ly1L * mixerGain, -ratioTimbres, ratioTimbres);
 
 			// Right voice
 			digitsAR = FLOAT2SHORT * fold(localv0R * gain);
 			digitsBR = FLOAT2SHORT * (*sp);
-			digitized = SHORT2FLOAT * (float)(digitsAR ^ (digitsBR & bitmask));
-			localv0R = (*sp * b) + (digitized * a);
-			localv0R = (*sp * b) + (localv0R * a);
+			digitized = (float)(digitsAR ^ (digitsBR & bitmask));
+			localv0R = (*sp * b) + (digitized * a2f);
 
-			*sp++ = clamp(localv0R * mixerGain, -ratioTimbres, ratioTimbres);
+			_ly1R = coef1 * (_ly1R + localv0R) - _lx1R; // allpass
+			_lx1R = localv0R;
+
+			*sp++ = clamp(_ly1R * mixerGain, -ratioTimbres, ratioTimbres);
 		}
     	v0L = localv0L;
     	v0R = localv0R;
+
+		v2L = _ly1L; v2R = _ly1R;
+		v3L = _lx1L; v3R = _lx1R;
 	}
 	break;
 case FILTER_LPXOR2:
@@ -2264,6 +2457,7 @@ case FILTER_LPXOR2:
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
 		const float a = 1.f - fxParam1;
+		const float a2f = a * SHORT2FLOAT;
 		const float b = 1.f - a;
 
 		float *sp = this->sampleBlock;
@@ -2279,27 +2473,39 @@ case FILTER_LPXOR2:
 
 		const short bitmask = 0xfba - (int)(fxParam1 * 7);
 
+		float _ly1L = v2L, _ly1R = v2R;
+		float _lx1L = v3L, _lx1R = v3R;
+		const float f1 = clamp(0.27f + fxParam1 * 0.4f, filterWindowMin, filterWindowMax);
+		float coef1 = (1.0f - f1) / (1.0f + f1);
+
 		for (int k=BLOCK_SIZE ; k--; ) {
 			// Left voice
 			digitsAL = FLOAT2SHORT * localv0L;
 			digitsBL = FLOAT2SHORT * fold(*sp * gain);
-			digitized = SHORT2FLOAT * (float)((digitsAL | (digitsBL & bitmask)));
-			localv0L = (*sp * b) + (digitized * a);
-			localv0L = (*sp * b) + (localv0L * a);
+			digitized = ((digitsAL | (digitsBL & bitmask)));
+			localv0L = (*sp * b) + (digitized * a2f);
 
-			*sp++ = clamp(localv0L * mixerGain, -ratioTimbres, ratioTimbres);
+			_ly1L = coef1 * (_ly1L + localv0L) - _lx1L; // allpass
+			_lx1L = localv0L;
+
+			*sp++ = clamp(_ly1L * mixerGain, -ratioTimbres, ratioTimbres);
 
 			// Right voice
 			digitsAR = FLOAT2SHORT * localv0R;
 			digitsBR = FLOAT2SHORT * fold(*sp * gain);
-			digitized = SHORT2FLOAT * (float)((digitsAR | (digitsBR & bitmask)));
-			localv0R = (*sp * b) + (digitized * a);
-			localv0R = (*sp * b) + (localv0R * a);
+			digitized = ((digitsAR | (digitsBR & bitmask)));
+			localv0R = (*sp * b) + (digitized * a2f);
 
-			*sp++ = clamp(localv0R * mixerGain, -ratioTimbres, ratioTimbres);
+			_ly1R = coef1 * (_ly1R + localv0R) - _lx1R; // allpass
+			_lx1R = localv0R;
+
+			*sp++ = clamp(_ly1R * mixerGain, -ratioTimbres, ratioTimbres);
 		}
     	v0L = localv0L;
     	v0R = localv0R;
+
+		v2L = _ly1L; v2R = _ly1R;
+		v3L = _lx1L; v3R = _lx1R;
 	}
 	break;
 case FILTER_LPSIN:
@@ -2670,23 +2876,27 @@ case FILTER_AP4D :
 	float OffsetTmp = fabsf(params.effect.param2);
 	fxParam2 = ((OffsetTmp + 9.0f * fxParam2) * .1f);
 
-	const float offset = fxParam2 * fxParam2 * 0.33f;
+	const float offset = fxParam2 * fxParam2 * 0.17f;
 	float lrDelta = randomF * 0.00002f;
 
-	const float range = 0.47f;
+	const float range1 = 0.02f;
+	const float range2 = 0.09f;
+	const float range3 = 0.33f;
+	const float range4 = 0.47f;
+	const float lowlimit = 0.027f;
 
-	const float f1L = clamp(fold((fxParam1 - offset - lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
-	const float f2L = clamp(fold((fxParam1 + offset + lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
-	const float f3L = clamp(fold((fxParam1 - (offset * 2) - lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
-	const float f4L = clamp(fold((fxParam1 + (offset * 2) + lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
+	const float f1L = clamp(fold((lowlimit + fxParam1 + offset - lrDelta) * range1) * 2, filterWindowMin, filterWindowMax);
+	const float f2L = clamp(fold((lowlimit + fxParam1 - offset + lrDelta) * range2) * 2, filterWindowMin, filterWindowMax);
+	const float f3L = clamp(fold((lowlimit + fxParam1 + (offset * 2) - lrDelta) * range3) * 2, filterWindowMin, filterWindowMax);
+	const float f4L = clamp(fold((lowlimit + fxParam1 - (offset * 2) + lrDelta) * range4) * 2, filterWindowMin, filterWindowMax);
 	float coef1L = (1.0f - f1L) / (1.0f + f1L);
 	float coef2L = (1.0f - f2L) / (1.0f + f2L);
 	float coef3L = (1.0f - f3L) / (1.0f + f3L);
 	float coef4L = (1.0f - f4L) / (1.0f + f4L);
-	const float f1R = clamp(fold((f1L - lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
-	const float f2R = clamp(fold((f2L + lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
-	const float f3R = clamp(fold((f3L - lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
-	const float f4R = clamp(fold((f3L + lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
+	const float f1R = clamp(fold((f1L + lrDelta) * range1) * 2, filterWindowMin, filterWindowMax);
+	const float f2R = clamp(fold((f2L - lrDelta) * range2) * 2, filterWindowMin, filterWindowMax);
+	const float f3R = clamp(fold((f3L + lrDelta) * range3) * 2, filterWindowMin, filterWindowMax);
+	const float f4R = clamp(fold((f3L - lrDelta) * range4) * 2, filterWindowMin, filterWindowMax);
 	float coef1R = (1.0f - f1R) / (1.0f + f1R);
 	float coef2R = (1.0f - f2R) / (1.0f + f2R);
 	float coef3R = (1.0f - f3R) / (1.0f + f3R);
