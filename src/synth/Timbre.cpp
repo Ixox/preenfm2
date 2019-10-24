@@ -2981,14 +2981,20 @@ case FILTER_FORMANTIC:
 
 	float param2Tmp = fabsf(params.effect.param2);
 	fxParam2 = ((param2Tmp + 19.0f * fxParam2) * .05f);
-	const float frange = 0.375f;
-	const float f = fxParam1 * fxParam1 * frange;
+	const float frange = 0.23f;
+	const float f = 0.02f + fxParam1 * fxParam1 * frange;
 	const float fb = 0.1f - fxParam1 * 0.05f;;
 	const float scale = sqrt3(fb);
 
-	const float f2 = clamp(f + fabsf(fold((f - (frange * 0.5f)) * 4 * fxParam2) ), filterWindowMin, filterWindowMax);
-	const float fb2 = 0.15f - fxParam1 * 0.05f;
+	const float fold2 = fold((f - (frange * 0.5f)) * 7 * fxParam2) + 0.5f;
+	const float f2 = clamp(0.07f + f + fold2 * 0.47f, filterWindowMin, filterWindowMax);
+	const float fb2 = 0.19f - f2 * 0.08f;
 	const float scale2 = sqrt3(fb2);
+
+	const float fold3 = fold((f - (frange * 0.5f)) * 5 * fxParam2) + 0.5f;
+	const float f3 = clamp(0.11f + f + fold3 * 0.66f, filterWindowMin, filterWindowMax);
+	const float fb3 = 0.25f - f3 * 0.15f;
+	const float scale3 = sqrt3(fb3);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
@@ -2997,66 +3003,66 @@ case FILTER_FORMANTIC:
 	float lowL2 = v2L, highL2 = 0, bandL2 = v3L;
 	float lowR2 = v2R, highR2 = 0, bandR2 = v3R;
 
+	float lowL3 = v4L, highL3 = 0, bandL3 = v5L;
+	float lowR3 = v4R, highR3 = 0, bandR3 = v5R;
+
 	const float svfGain = (1 + SVFGAINOFFSET + fxParam2 * fxParam2 * 0.75f) * mixerGain;
 
-	float _ly1L = v4L, _ly1R = v4R;
-	float _lx1L = v5L, _lx1R = v5R;
-
-	float _ly3L = v6L, _ly3R = v6R;
-	float _lx3L = v7L, _lx3R = v7R;
+	float _ly1L = v6L, _ly1R = v6R;
+	float _lx1L = v7L, _lx1R = v7R;
 	
-	const float fap1 = clamp(0.57f - f, filterWindowMin, filterWindowMax);
+	const float fap1 = clamp(0.57f - f2, filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - fap1) / (1.0f + fap1);
-	const float nestedf = clamp(0.66f - f2, filterWindowMin, filterWindowMax);
-	float coef2 = (1.0f - nestedf) / (1.0f + nestedf);
 
 	float out;
 
 	for (int k=BLOCK_SIZE ; k--; ) {
 
 		// ----------- Left voice
-		// peak
+		// bandpass 1
 		lowL = lowL + f * bandL;
-		highL = scale * *sp - lowL - fb * sat33(bandL);
+		highL = scale * *sp - lowL - fb * (bandL);
 		bandL = f * highL + bandL;
 
-		// bandpass
+		// bandpass 2
 		lowL2 = lowL2 + f2 * bandL2;
-		highL2 = scale2 * *sp - lowL2 - fb2 * sat33(bandL2);
+		highL2 = scale2 * *sp - lowL2 - fb2 * (bandL2);
 		bandL2 = f2 * highL2 + bandL2;
 
-		out = bandL + (bandL2);
+		// bandpass 3
+		lowL3 = lowL3 + f3 * bandL3;
+		highL3 = scale3 * *sp - lowL3 - fb3 * (bandL3);
+		bandL3 = f3 * highL3 + bandL3;
+
+		out = bandL + bandL2 + bandL3;
 
  		// allpass
-		_ly1L = coef1 * (_ly3L + out) - _lx1L;
+		_ly1L = coef1 * (_ly1L + out) - _lx1L;
 		_lx1L = out;
-
-		 // nested allpass filter
-		_ly3L = coef2 * (_ly3L + _ly1L) - _lx3L;
-		_lx3L = _ly1L;
 
 		*sp++ = clamp(_ly1L * svfGain, -ratioTimbres, ratioTimbres);
 
 		// ----------- Right voice
-		// peak
+		// bandpass 1
 		lowR = lowR + f * bandR;
-		highR = scale * *sp - lowR - fb * sat33(bandR);
+		highR = scale * *sp - lowR - fb * (bandR);
 		bandR = f * highR + bandR;
 
-		// bandpass
+		// bandpass 2
 		lowR2 = lowR2 + f2 * bandR2;
-		highR2 = scale2 * *sp - lowR2 - fb2 * sat33(bandR2);
+		highR2 = scale2 * *sp - lowR2 - fb2 * (bandR2);
 		bandR2 = f2 * highR2 + bandR2;
 
-		out = bandR + (bandR2);
+		// bandpass 3
+		lowR3 = lowR3 + f3 * bandR3;
+		highR3 = scale3 * *sp - lowR3 - fb3 * (bandR3);
+		bandR3 = f3 * highR3 + bandR3;
+
+		out = bandR + bandR2 + bandR3;
 
 		// allpass
-		_ly1R = coef1 * (_ly3R + out) - _lx1R;
+		_ly1R = coef1 * (_ly1R + out) - _lx1R;
 		_lx1R = out;
-
-		 // nested allpass filter
-		_ly3R = coef2 * (_ly3R + _ly1R) - _lx3R; // nested filter
-		_lx3R = _ly1R;
 
 		*sp++ = clamp(_ly1R * svfGain, -ratioTimbres, ratioTimbres);
 	}
@@ -3071,10 +3077,13 @@ case FILTER_FORMANTIC:
 	v2R = lowR2;
 	v3R = bandR2;
 
-	v4L = _ly1L; v4R = _ly1R;
-	v5L = _lx1L; v5R = _lx1R;
-	v6L = _ly3L; v6R = _ly3R;
-	v7L = _lx3L; v7R = _lx3R;
+	v4L = lowL3;
+	v5L = bandL3;
+	v4R = lowR3;
+	v5R = bandR3;
+
+	v6L = _ly1L; v6R = _ly1R;
+	v7L = _lx1L; v7R = _lx1R;
 }
 break;
 case FILTER_OFF:
