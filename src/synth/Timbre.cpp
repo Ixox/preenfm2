@@ -2982,18 +2982,23 @@ case FILTER_FORMANTIC:
 	float param2Tmp = fabsf(params.effect.param2);
 	fxParam2 = ((param2Tmp + 19.0f * fxParam2) * .05f);
 	const float frange = 0.23f;
-	const float f = 0.02f + fxParam1 * fxParam1 * frange;
-	const float fb = 0.1f - fxParam1 * 0.05f;;
+	const float f = 0.02f + fxParam1 * frange;
+	const float fb = 0.075f + fxParam1 * 0.03f;;
 	const float scale = sqrt3(fb);
 
-	const float fold2 = fold((f - (frange * 0.5f)) * 7 * fxParam2) + 0.5f;
-	const float f2 = clamp(0.07f + f + fold2 * 0.47f, filterWindowMin, filterWindowMax);
-	const float fb2 = 0.19f - f2 * 0.08f;
+	const float bipolarf = f - (frange * 0.5f);
+	const float offset = 0;//(fold(sigmoid(bipolarf * 13)) + 0.5f) * 0.05f;
+
+	const float fold2 = fold(sigmoid(bipolarf * 21 * fxParam2)) + 0.5f;
+	const float f2offset = 0.07f + fold2 * 0.35f;
+	const float f2 = clamp(f + f2offset , filterWindowMin, filterWindowMax);
+	const float fb2 = 0.1f - fold2 * 0.04f;
 	const float scale2 = sqrt3(fb2);
 
-	const float fold3 = fold((f - (frange * 0.5f)) * 5 * fxParam2) + 0.5f;
-	const float f3 = clamp(0.11f + f + fold3 * 0.66f, filterWindowMin, filterWindowMax);
-	const float fb3 = 0.25f - f3 * 0.15f;
+	const float fold3 = fold(sigmoid(bipolarf * 17 * fxParam2)) + 0.5f;
+	const float f3offset = 0.05f + fold3 * 0.07f;
+	const float f3 = clamp(f2 + f3offset , filterWindowMin, filterWindowMax);
+	const float fb3 = 0.14f - fold3 * 0.07f;
 	const float scale3 = sqrt3(fb3);
 
 	float *sp = this->sampleBlock;
@@ -3006,12 +3011,12 @@ case FILTER_FORMANTIC:
 	float lowL3 = v4L, highL3 = 0, bandL3 = v5L;
 	float lowR3 = v4R, highR3 = 0, bandR3 = v5R;
 
-	const float svfGain = (1 + SVFGAINOFFSET + fxParam2 * fxParam2 * 0.75f) * mixerGain;
+	const float svfGain = (1 + SVFGAINOFFSET) * mixerGain;
 
 	float _ly1L = v6L, _ly1R = v6R;
 	float _lx1L = v7L, _lx1R = v7R;
 	
-	const float fap1 = clamp(0.57f - f2, filterWindowMin, filterWindowMax);
+	const float fap1 = clamp(0.5f - f, filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - fap1) / (1.0f + fap1);
 
 	float out;
