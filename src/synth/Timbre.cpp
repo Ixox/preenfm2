@@ -2714,7 +2714,7 @@ case FILTER_AP4 :
 	fxParam2 = ((OffsetTmp + 9.0f * fxParam2) * .1f);
 
 	const float offset = fxParam2 * fxParam2 * 0.17f;
-	const float lrDelta = 0.0000002f * fxParam1;
+	const float lrDelta = 0.00000002f * fxParam1;
 
 	const float range = 0.47f;
 
@@ -2800,7 +2800,7 @@ case FILTER_AP4B :
 	fxParam2 = ((OffsetTmp + 9.0f * fxParam2) * .1f);
 
 	const float offset = fxParam2 * fxParam2 * 0.17f;
-	const float lrDelta = 0.000000003f;
+	const float lrDelta = 0.0000000015f;
 
 	const float range = 0.47f;
 
@@ -2979,24 +2979,23 @@ case FILTER_FORMANTIC:
 	// Low pass... on the Frequency
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-	float param2Tmp = fabsf(params.effect.param2);
+	float param2Tmp = (params.effect.param2);
 	fxParam2 = ((param2Tmp + 19.0f * fxParam2) * .05f);
-	const float frange = 0.23f;
+	const float frange = 0.225f;
 	const float f = 0.02f + fxParam1 * frange;
 	const float fb = 0.075f + fxParam1 * 0.03f;;
 	const float scale = sqrt3(fb);
 
-	const float bipolarf = f - (frange * 0.5f);
-	const float offset = 0;//(fold(sigmoid(bipolarf * 13)) + 0.5f) * 0.05f;
+	const float bipolarf = frange * (fxParam1 - 0.5f);
 
-	const float fold2 = fold(sigmoid(bipolarf * 21 * fxParam2)) + 0.5f;
-	const float f2offset = 0.07f + fold2 * 0.35f;
+	const float fold2 = fold(sigmoid(bipolarf * 21 * fxParam2)) + 0.25f; // 0 < fold2 < 0.5
+	const float f2offset = 0.055f + fold2 * 0.25f;
 	const float f2 = clamp(f + f2offset , filterWindowMin, filterWindowMax);
-	const float fb2 = 0.1f - fold2 * 0.04f;
+	const float fb2 = 0.08f - fold2 * 0.04f;
 	const float scale2 = sqrt3(fb2);
 
-	const float fold3 = fold(sigmoid(bipolarf * 17 * fxParam2)) + 0.5f;
-	const float f3offset = 0.05f + fold3 * 0.07f;
+	const float fold3 = fold(sigmoid(bipolarf * 17 * fxParam2));
+	const float f3offset = 0.05f + fold3 * 0.25f;
 	const float f3 = clamp(f2 + f3offset , filterWindowMin, filterWindowMax);
 	const float fb3 = 0.14f - fold3 * 0.07f;
 	const float scale3 = sqrt3(fb3);
