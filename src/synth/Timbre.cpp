@@ -143,6 +143,12 @@ float tanh2(float x)
 	return x / (fabsf(x) + 3.f / (2.f + x * x));
 }
 inline
+float tanh3(float x)
+{
+	//return x / (0.7f + fabsf(0.8f * x));
+	return 1.5f * x / (1.7f + fabsf(0.34f * x * x));
+}
+inline
 float sat25(float x)
 { 
 	if (unlikely(fabsf(x) > 4))
@@ -1456,7 +1462,7 @@ case FILTER_BELL:
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
 	//A = 10 ^ (db / 40)
-	const float A = (tanh2(fxParam2 * 2) * 1.5f) + 0.5f;
+	const float A = (tanh3(fxParam2 * 2) * 1.5f) + 0.5f;
 
 	const float res = 0.6f;
 	const float k = 1 / (0.0001f + res * A);
@@ -1527,7 +1533,7 @@ case FILTER_LOWSHELF:
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
 	//A = 10 ^ (db / 40)
-	const float A = (tanh2(fxParam2 * 2) * 1) + 0.5f;
+	const float A = (tanh3(fxParam2 * 2) * 1) + 0.5f;
 
 	const float res = 0.5f;
 	const float k = 1 / (0.0001f + res);
@@ -1598,7 +1604,7 @@ case FILTER_HIGHSHELF:
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
 	//A = 10 ^ (db / 40)
-	const float A = (tanh2(fxParam2 * 2) * 1) + 0.5f;
+	const float A = (tanh3(fxParam2 * 2) * 1) + 0.5f;
 
 	const float res = 0.5f;
 	const float k = 1 / (0.0001f + res);
@@ -2028,14 +2034,14 @@ case FILTER_SIGMOID:
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 			// Left voice
-			localv0L = tanh2(bias + sat33(*sp) * gain) * gainCorrection;
+			localv0L = tanh3(bias + sat33(*sp) * gain) * gainCorrection;
 			localv0L = pattern * localv0L + f * (*sp - localv1L);
 			localv1L = pattern * localv1L + f * localv0L;
 
 			*sp++ = clamp((*sp - localv1L) * mixerGain, -ratioTimbres, ratioTimbres);
 
 			// Right voice
-			localv0R = tanh2(bias + sat33(*sp) * gain) * gainCorrection;
+			localv0R = tanh3(bias + sat33(*sp) * gain) * gainCorrection;
 			localv0R = pattern * localv0R + f * (*sp - localv1R);
 			localv1R = pattern * localv1R + f * localv0R;
 
@@ -2531,7 +2537,7 @@ case FILTER_LPSIN:
 	// Low pass... on the Frequency
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-	const float f = fxParam2 * fxParam2 * SVFRANGE;
+	const float f = fxParam2 * fxParam2 * fxParam2;
 	const float fb = 0.45f;
 	const float scale = sqrt3(fb);
 	const int pos = (int)(fxParam1 * 2060);
@@ -2572,7 +2578,7 @@ case FILTER_HPSIN:
 	// Low pass... on the Frequency
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-	const float f = fxParam2 * fxParam2 * SVFRANGE;
+	const float f = fxParam2 * fxParam2 * fxParam2;
 	const float fb = 0.94f;
 	const float scale = sqrt3(fb);
 	const int pos = (int)(fxParam1 * 2060);
@@ -2611,14 +2617,18 @@ case FILTER_QUADNOTCH:
 	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
 	float fxParamTmp = (params.effect.param1 + matrixFilterFrequency);
 	fxParamTmp *= fxParamTmp;
-	fxParam1 = ((fxParamTmp + 9.0f * fxParam1) * .1f);
 
+	const float bipolarf = (fxParam1 - 0.5f);
+	const float folded = fold(sigmoid(bipolarf * 13 * fxParam2)) * 4; // - < folded < 1
+
+	fxParam1 = ((fxParamTmp + 9.0f * fxParam1) * .1f);
+	
 	float OffsetTmp = fabsf(params.effect.param2);
 	fxParam2 = ((OffsetTmp + 9.0f * fxParam2) * .1f);
 
 	const float offset = fxParam2 * fxParam2 * 0.17f;
-	const float lrDelta = 0.00002f * fxParam1;
-
+	const float spread = 0.8f + fxParam2 * 0.8f;
+	const float lrDelta = 0.005f * folded;
 	const float range = 0.47f;
 
 	const float windowMin = 0.005f, windowMax = 0.99f;
@@ -2713,8 +2723,12 @@ case FILTER_AP4 :
 	float OffsetTmp = fabsf(params.effect.param2);
 	fxParam2 = ((OffsetTmp + 9.0f * fxParam2) * .1f);
 
+	const float bipolarf = (fxParam1 - 0.5f);
+
+	const float folded = fold(sigmoid(bipolarf * 7 * fxParam2)) * 4; // -1 < folded < 1
+
 	const float offset = fxParam2 * fxParam2 * 0.17f;
-	const float lrDelta = 0.00000002f * fxParam1;
+	const float lrDelta = 0.005f * folded;
 
 	const float range = 0.47f;
 
@@ -2729,7 +2743,7 @@ case FILTER_AP4 :
 	const float f1R = clamp(fold((f1L - lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
 	const float f2R = clamp(fold((f2L + lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
 	const float f3R = clamp(fold((f3L - lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
-	const float f4R = clamp(fold((f3L + lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
+	const float f4R = clamp(fold((f4L + lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
 	float coef1R = (1.0f - f1R) / (1.0f + f1R);
 	float coef2R = (1.0f - f2R) / (1.0f + f2R);
 	float coef3R = (1.0f - f3R) / (1.0f + f3R);
@@ -2747,7 +2761,7 @@ case FILTER_AP4 :
 	float _lx3L = v6L, _lx3R = v6R;
 	float _lx4L = v7L, _lx4R = v7R;
 	float _feedback = 0.08f;
-	float _crossFeedback = 0.06f;
+	float _crossFeedback = 0.16f;
 	float finalGain = mixerGain * 0.5f;
 
 	for (int k = BLOCK_SIZE ; k--; ) {
@@ -2799,8 +2813,11 @@ case FILTER_AP4B :
 	float OffsetTmp = fabsf(params.effect.param2);
 	fxParam2 = ((OffsetTmp + 9.0f * fxParam2) * .1f);
 
+	const float bipolarf = (fxParam1 - 0.5f);
+	const float folded = fold(sigmoid(bipolarf * 19 * fxParam2)) * 4; // -1 < folded < 1
+
 	const float offset = fxParam2 * fxParam2 * 0.17f;
-	const float lrDelta = 0.0000000015f;
+	const float lrDelta = 0.005f * folded;
 
 	const float range = 0.47f;
 
@@ -2812,10 +2829,10 @@ case FILTER_AP4B :
 	float coef2L = (1.0f - f2L) / (1.0f + f2L);
 	float coef3L = (1.0f - f3L) / (1.0f + f3L);
 	float coef4L = (1.0f - f4L) / (1.0f + f4L);
-	const float f1R = clamp(fold((fxParam1 + offset + lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
-	const float f2R = clamp(fold((fxParam1 - offset - lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
-	const float f3R = clamp(fold((fxParam1 + (offset * 2) + lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
-	const float f4R = clamp(fold((fxParam1 - (offset * 2) - lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
+	const float f1R = clamp(fold((fxParam1 - offset + lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
+	const float f2R = clamp(fold((fxParam1 + offset - lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
+	const float f3R = clamp(fold((fxParam1 - (offset * 2) + lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
+	const float f4R = clamp(fold((fxParam1 + (offset * 2) - lrDelta) * range) * 2, filterWindowMin, filterWindowMax);
 	float coef1R = (1.0f - f1R) / (1.0f + f1R);
 	float coef2R = (1.0f - f2R) / (1.0f + f2R);
 	float coef3R = (1.0f - f3R) / (1.0f + f3R);
@@ -2981,34 +2998,35 @@ case FILTER_FORMANTIC:
 
 	float param2Tmp = (params.effect.param2);
 	fxParam2 = ((param2Tmp + 19.0f * fxParam2) * .05f);
-	const float frange = 0.225f;
-	const float f = 0.02f + fxParam1 * frange;
-	const float fb = 0.075f + fxParam1 * 0.03f;;
+	const float frange = 0.19f;
+	const float f = 0.005f + sqrt3(fxParam1) * frange;
+	const float fb = 0.065f + fxParam1 * 0.01f;;
 	const float scale = sqrt3(fb);
 
 	const float bipolarf = frange * (fxParam1 - 0.5f);
+	const float spread = 0.55f + fxParam2 * 0.9f;
 
 	const float fold2 = fold(sigmoid(bipolarf * 21 * fxParam2)) + 0.25f; // 0 < fold2 < 0.5
-	const float f2offset = 0.055f + fold2 * 0.25f;
+	const float f2offset = 0.055f * spread + fold2 * 0.25f;
 	const float f2 = clamp(f + f2offset , filterWindowMin, filterWindowMax);
-	const float fb2 = 0.08f - fold2 * 0.04f;
+	const float fb2 = 0.09f - fold2 * 0.02f;
 	const float scale2 = sqrt3(fb2);
 
 	const float fold3 = fold(sigmoid(bipolarf * 17 * fxParam2));
-	const float f3offset = 0.05f + fold3 * 0.25f;
+	const float f3offset = 0.05f * spread + fold3 * 0.25f;
 	const float f3 = clamp(f2 + f3offset , filterWindowMin, filterWindowMax);
-	const float fb3 = 0.14f - fold3 * 0.07f;
+	const float fb3 = 0.13f - fold3 * 0.03f;
 	const float scale3 = sqrt3(fb3);
 
 	float *sp = this->sampleBlock;
-	float lowL = v0L, highL = 0, bandL = v1L;
-	float lowR = v0R, highR = 0, bandR = v1R;
+	float lowL = v0L, bandL = v1L;
+	float lowR = v0R, bandR = v1R;
 
-	float lowL2 = v2L, highL2 = 0, bandL2 = v3L;
-	float lowR2 = v2R, highR2 = 0, bandR2 = v3R;
+	float lowL2 = v2L, bandL2 = v3L;
+	float lowR2 = v2R, bandR2 = v3R;
 
-	float lowL3 = v4L, highL3 = 0, bandL3 = v5L;
-	float lowR3 = v4R, highR3 = 0, bandR3 = v5R;
+	float lowL3 = v4L, bandL3 = v5L;
+	float lowR3 = v4R, bandR3 = v5R;
 
 	const float svfGain = (1 + SVFGAINOFFSET) * mixerGain;
 
@@ -3024,21 +3042,18 @@ case FILTER_FORMANTIC:
 
 		// ----------- Left voice
 		// bandpass 1
-		lowL = lowL + f * bandL;
-		highL = scale * *sp - lowL - fb * (bandL);
-		bandL = f * highL + bandL;
+		lowL += f * bandL;
+		bandL += f * (scale * *sp - lowL - fb * bandL);
 
 		// bandpass 2
-		lowL2 = lowL2 + f2 * bandL2;
-		highL2 = scale2 * *sp - lowL2 - fb2 * (bandL2);
-		bandL2 = f2 * highL2 + bandL2;
+		lowL2 += f2 * bandL2;
+		bandL2 += f2 * (scale2 * *sp - lowL2 - fb2 * bandL2);
 
 		// bandpass 3
-		lowL3 = lowL3 + f3 * bandL3;
-		highL3 = scale3 * *sp - lowL3 - fb3 * (bandL3);
-		bandL3 = f3 * highL3 + bandL3;
+		lowL3 += f3 * bandL3;
+		bandL3 += f3 * (scale3 * *sp - lowL3 - fb3 * bandL3);
 
-		out = bandL + bandL2 + bandL3;
+		out = bandL * 0.88f + (bandL2 + bandL3);
 
  		// allpass
 		_ly1L = coef1 * (_ly1L + out) - _lx1L;
@@ -3048,21 +3063,18 @@ case FILTER_FORMANTIC:
 
 		// ----------- Right voice
 		// bandpass 1
-		lowR = lowR + f * bandR;
-		highR = scale * *sp - lowR - fb * (bandR);
-		bandR = f * highR + bandR;
+		lowR += f * bandR;
+		bandR += f * (scale * *sp - lowR - fb * bandR);
 
 		// bandpass 2
-		lowR2 = lowR2 + f2 * bandR2;
-		highR2 = scale2 * *sp - lowR2 - fb2 * (bandR2);
-		bandR2 = f2 * highR2 + bandR2;
+		lowR2 += f2 * bandR2;
+		bandR2 += f2 * (scale2 * *sp - lowR2 - fb2 * bandR2);
 
 		// bandpass 3
-		lowR3 = lowR3 + f3 * bandR3;
-		highR3 = scale3 * *sp - lowR3 - fb3 * (bandR3);
-		bandR3 = f3 * highR3 + bandR3;
+		lowR3 += f3 * bandR3;
+		bandR3 += f3 * (scale3 * *sp - lowR3 - fb3 * bandR3);
 
-		out = bandR + bandR2 + bandR3;
+		out = bandR * 0.88f + (bandR2 + bandR3);
 
 		// allpass
 		_ly1R = coef1 * (_ly1R + out) - _lx1R;

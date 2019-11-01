@@ -97,6 +97,9 @@ in this version, some more filters & fx :
 ###### Ap4D :
 - all pass quad filter, diffusion version, Sprd the 4 poles around the center frequency
 
+###### Oryx :
+- formant filter 
+
 Credits : 
 
 	many thanks to :
