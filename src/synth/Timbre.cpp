@@ -3102,6 +3102,98 @@ case FILTER_FORMANTIC:
 	v7L = _lx1L; v7R = _lx1R;
 }
 break;
+case FILTER_LADDER:
+{
+	//https://www.musicdsp.org/en/latest/Filters/240-karlsen-fast-ladder.html
+	float fxParamTmp = (params.effect.param1 + matrixFilterFrequency);
+	fxParamTmp *= fxParamTmp;
+
+	fxParam1 = ((fxParamTmp + 9.0f * fxParam1) * .1f);
+	float cut = clamp(fxParam1, filterWindowMin, filterWindowMax);
+
+	float OffsetTmp = fabsf(params.effect.param2);
+	fxParam2 = ((OffsetTmp + 9.0f * fxParam2) * .1f);
+	float res = fxParam2;
+
+	float *sp = this->sampleBlock;
+
+	float buf1L = v0L, buf2L = v1L, buf3L = v2L, buf4L = v3L;
+	float buf1R = v0R, buf2R = v1R, buf3R = v2R, buf4R = v3R;
+	
+	float _ly1L = v4L, _lx1L = v5L;
+	float _ly1R = v4R, _lx1R = v5R;
+
+	float _ly2L = v6L, _ly2R = v6R;
+	float _lx2L = v7L, _lx2R = v7R;
+
+	float resoclip;
+
+	const float bipolarf = fxParam1 - 0.5f;
+	const float fold3 = (fold(15 * bipolarf) + 0.125f) * 1.5f;
+	const float f1 = clamp(0.33f + fold3 * 0.47f, filterWindowMin, filterWindowMax);
+	float coef1 = (1.0f - f1) / (1.0f + f1);
+	const float f2 = clamp(f1 * f1, filterWindowMin, filterWindowMax);
+	float coef2 = (1.0f - f2) / (1.0f + f2);
+
+	for (int k = BLOCK_SIZE ; k--; ) {
+		// Left voice
+
+		*sp = *sp - (sat33(buf4L) * res);
+		buf1L = ((*sp - buf1L) * cut) + buf1L;
+		buf2L = ((buf1L - buf2L) * cut) + buf2L;
+
+		_ly1L = coef1 * (_ly1L + buf2L) - _lx1L; // allpass
+		_lx1L = buf2L;
+
+		buf3L = ((_ly1L - buf3L) * cut) + buf3L;
+		
+		_ly2L = coef2 * (_ly2L + buf3L) - _lx2L; // allpass
+		_lx2L = buf3L;
+
+		buf4L = ((_ly2L - buf4L) * cut) + buf4L;
+
+		*sp++ = clamp(buf4L * mixerGain, -ratioTimbres, ratioTimbres);
+
+		// Right voice
+		*sp = *sp - (sat33(buf4R) * res);
+		buf1R = ((*sp - buf1R) * cut) + buf1R;
+		buf2R = ((buf1R - buf2R) * cut) + buf2R;
+
+		_ly1R = coef1 * (_ly1R + buf2R) - _lx1R; // allpass
+		_lx1R = buf2R;
+
+		buf3R = ((_ly1R - buf3R) * cut) + buf3R;
+
+		_ly2R = coef2 * (_ly2R + buf3R) - _lx2R; // allpass
+		_lx2R = buf3R;
+
+		buf4R = ((_ly2R - buf4R) * cut) + buf4R;
+
+		*sp++ = clamp(buf4R * mixerGain, -ratioTimbres, ratioTimbres);
+	}
+
+	v0L = buf1L;
+	v1L = buf2L;
+	v2L = buf3L;
+	v3L = buf4L;
+
+	v0R = buf1R;
+	v1R = buf2R;
+	v2R = buf3R;
+	v3R = buf4R;
+
+	v4L = _ly1L;
+	v5L = _lx1L;
+	v4R = _ly1R;
+	v5R = _lx1R;
+
+	v6L = _ly2L;
+	v6R = _ly2R;
+	v7L = _lx2L;
+	v7R = _lx2R;
+
+	break;
+}
 case FILTER_OFF:
     {
     	// Filter off has gain...

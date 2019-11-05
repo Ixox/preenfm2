@@ -100,6 +100,9 @@ in this version, some more filters & fx :
 ###### Oryx :
 - formant filter 
 
+###### La+d :
+- ladder + allpass filter 
+
 Credits : 
 
 	many thanks to :
