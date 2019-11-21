@@ -3097,14 +3097,14 @@ case FILTER_ORYX:
 	const float frange = 0.14f;
 	const float bipolarf = (fxParam1 - 0.5f);
 
-	const float f1 = rootf + ((fxParam1 > 0.5f) ? (1 - fxParam1) : fxParam1) * frange;
+	const float f1 = rootf + sigmoidPos((fxParam1 > 0.5f) ? (1 - fxParam1) : fxParam1) * frange;
 	const float fb = 0.067f + fxParam1 * 0.01f + noise[0] * 0.002f;
 	const float scale = sqrt3(fb);
 
 	const float spread = 1 + (fxParam2 * 0.13f);
 
 	const float fold2 = fold(0.125f + sigmoid(bipolarf * 21 * fxParam2) * frange ) + 0.25f;
-	const float f2 = rootf + frange + sigmoidPos(1 - fxParam1 + fold2 * 0.25f) * spread * frange * 1.25f;
+	const float f2 = rootf + frange * 1.15f + sigmoidPos(1 - fxParam1 + fold2 * 0.25f) * spread * frange * 1.25f;
 	const float fb2 = 0.11f - fold2 * 0.04f - noise[1] * 0.0015f;
 	const float scale2 = sqrt3(fb2);
 
@@ -3124,9 +3124,6 @@ case FILTER_ORYX:
 	float lowR3 = v4R, bandR3 = v5R;
 
 	const float svfGain = (1 + SVFGAINOFFSET) * mixerGain;
-
-	float _ly1L = v6L, _ly1R = v6R;
-	float _lx1L = v7L, _lx1R = v7R;
 	
 	const float fap1 = clamp(f1, filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - fap1) / (1.0f + fap1);
@@ -3134,6 +3131,9 @@ case FILTER_ORYX:
 	float out;
 	const float r = 0.985f;
 	float nz;
+	float drift = v6L;
+	float nexDrift = noise[7] * 0.02f;
+	float deltaD = (nexDrift - drift) * 0.000625f;
 
 	for (int k=BLOCK_SIZE ; k--; ) {
 		nz = noise[k] * 0.013f;
@@ -3142,7 +3142,7 @@ case FILTER_ORYX:
 		*sp = lowL + ((-lowL + *sp) * (r + nz));
 		// bandpass 1
 		lowL += f1 * bandL;
-		bandL += f1 * (scale * *sp - lowL - (fb + nz) * bandL);
+		bandL += f1 * (scale * *sp - lowL - (fb + nz - drift) * bandL);
 
 		// bandpass 2
 		lowL2 += f2 * bandL2;
@@ -3160,7 +3160,7 @@ case FILTER_ORYX:
 		*sp = lowR + ((-lowR + *sp) * (r - nz));
 		// bandpass 1
 		lowR += f1 * bandR;
-		bandR += f1 * (scale * *sp - lowR - (fb - nz) * bandR);
+		bandR += f1 * (scale * *sp - lowR - (fb - nz + drift) * bandR);
 
 		// bandpass 2
 		lowR2 += f2 * bandR2;
@@ -3173,6 +3173,8 @@ case FILTER_ORYX:
 		out = (bandR) + (bandR2 + bandR3);
 
 		*sp++ = clamp(out * svfGain, -ratioTimbres, ratioTimbres);
+
+		drift += deltaD;
 	}
 
 	v0L = lowL;
@@ -3190,8 +3192,7 @@ case FILTER_ORYX:
 	v4R = lowR3;
 	v5R = bandR3;
 
-	v6L = _ly1L; v6R = _ly1R;
-	v7L = _lx1L; v7R = _lx1R;
+	v6L = nexDrift;
 }
 break;
 case FILTER_ORYX2:
@@ -3205,23 +3206,23 @@ case FILTER_ORYX2:
 
 	float param2Tmp = (params.effect.param2);
 	fxParam2 = ((param2Tmp + 19.0f * fxParam2) * .05f);
-	const float rootf = 0.011f + ((fxParam2 * fxParam2) - 0.005f) * 0.08f;
-	const float frange = 0.14f;
-	const float bipolarf = (fxParam1 - 0.5f);
+	const float rootf = 0.031f + (fxParam2) * 0.031f;
+	const float frange = 0.22f;
+	const float bipolarf = sigmoid(fxParam1 - 0.5f);
 
-	const float f1 = rootf + ((fxParam1 > 0.5f) ? (1 - fxParam1) : fxParam1) * frange;
+	const float f1 = rootf + sigmoidPos((fxParam1 > 0.55f) ? (0.7f - (fxParam1 * 0.7f)) : (fxParam1 * fxParam1)) * frange;
 	const float fb = 0.067f + fxParam1 * 0.01f + noise[0] * 0.002f;
 	const float scale = sqrt3(fb);
 
 	const float spread = 1 + (fxParam2 * 0.13f);
 
 	const float fold2 = fold(0.125f + sigmoid(bipolarf * 21 * fxParam2) * frange ) + 0.25f;
-	const float f2 = rootf + frange * 2.2f - (sigmoidPos((1 - fxParam1) + fold2 * 0.25f) - 0.5f) * spread * frange * 0.5f;
+	const float f2 = rootf + frange * 1.1f - (sigmoidPos(fxParam1 + fold2 * 0.25f) - 0.5f) * spread * frange * 0.5f;
 	const float fb2 = 0.11f - f1 * fold2 * 0.4f - noise[1] * 0.0015f;
 	const float scale2 = sqrt3(fb2);
 
 	const float fold3 = fold(sigmoid(bipolarf * 17 * fxParam2) * frange);
-	const float f3 = rootf + frange * 2.7f - tanh3(1 - (fxParam1 * 2 - fold3 * 0.2f)) * spread * frange * 0.25f;
+	const float f3 = rootf + frange * 1.35f - tanh3(((1 - fxParam1) * 2 - fold3 * 0.2f)) * spread * frange * 0.25f;
 	const float fb3 = 0.13f - f1 * fold3 * 0.5f - noise[2] * 0.001f;
 	const float scale3 = sqrt3(fb3);
 
@@ -3236,9 +3237,6 @@ case FILTER_ORYX2:
 	float lowR3 = v4R, bandR3 = v5R;
 
 	const float svfGain = (1 + SVFGAINOFFSET) * mixerGain;
-
-	float _ly1L = v6L, _ly1R = v6R;
-	float _lx1L = v7L, _lx1R = v7R;
 	
 	const float fap1 = clamp(f1, filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - fap1) / (1.0f + fap1);
@@ -3246,6 +3244,9 @@ case FILTER_ORYX2:
 	float out;
 	const float r = 0.985f;
 	float nz;
+	float drift = v6L;
+	float nexDrift = noise[7] * 0.02f;
+	float deltaD = (nexDrift - drift) * 0.000625f;
 
 	for (int k=BLOCK_SIZE ; k--; ) {
 		nz = noise[k] * 0.016f;
@@ -3254,10 +3255,10 @@ case FILTER_ORYX2:
 		*sp = lowL + ((-lowL + *sp) * (r + nz));
 		// bandpass 1
 		lowL += f1 * bandL;
-		bandL += f1 * (scale * *sp - lowL - (fb + nz) * bandL);
+		bandL += f1 * (scale * *sp - lowL - (fb + nz - drift) * bandL);
 
 		// bandpass 2
-		lowL2 += f2 * bandL2;
+		lowL2 += (f2 + drift) * bandL2;
 		bandL2 += f2 * (scale2 * *sp - lowL2 - fb2 * bandL2);
 
 		// bandpass 3
@@ -3272,10 +3273,10 @@ case FILTER_ORYX2:
 		*sp = lowR + ((-lowR + *sp) * (r - nz));
 		// bandpass 1
 		lowR += f1 * bandR;
-		bandR += f1 * (scale * *sp - lowR - (fb - nz) * bandR);
+		bandR += f1 * (scale * *sp - lowR - (fb - nz + drift) * bandR);
 
 		// bandpass 2
-		lowR2 += f2 * bandR2;
+		lowR2 += (f2 + drift) * bandR2;
 		bandR2 += f2 * (scale2 * *sp - lowR2 - fb2 * bandR2);
 
 		// bandpass 3
@@ -3285,6 +3286,8 @@ case FILTER_ORYX2:
 		out = (bandR) + (bandR2 + bandR3);
 
 		*sp++ = clamp(out * svfGain, -ratioTimbres, ratioTimbres);
+
+		drift += deltaD;
 	}
 
 	v0L = lowL;
@@ -3302,8 +3305,7 @@ case FILTER_ORYX2:
 	v4R = lowR3;
 	v5R = bandR3;
 
-	v6L = _ly1L; v6R = _ly1R;
-	v7L = _lx1L; v7R = _lx1R;
+	v6L = nexDrift;
 }
 break;
 case FILTER_LADDER:
@@ -3569,7 +3571,6 @@ case FILTER_18DB:
 break;
 case FILTER_DIOD:
 {
-	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
 	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
 	fxParamTmp *= fxParamTmp;
 	// Low pass... on the Frequency
@@ -3577,10 +3578,10 @@ case FILTER_DIOD:
 
 	const float f = fxParam1 * fxParam1;
 	const float fmeta = f * sigmoid(f);
-	const float fb = sqrt3(1 - fxParam2 * 0.999f);
+	const float fb = sqrt3(0.7f - fxParam2 * 0.699f);
 	const float scale = sqrt3(fb);
 
-	float dc  = f * 0.1f * fb;
+	float dc  = f * 0.05f * fb;
 	const float f2 = 0.25f + f * 0.5f;
 
 	float *sp = this->sampleBlock;
@@ -3594,14 +3595,7 @@ case FILTER_DIOD:
 	const float f1 = clamp(0.33f + f * 0.43f, filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - f1) / (1.0f + f1);
 
-	const float a = 0.25f;
-	const float b = 1.f - a;
-
-	float _ly4L = v6L, _ly4R = v6R;
-	float _lx4L = v7L, _lx4R = v7R;
-
 	float attn = 0.05f + 0.2f * f * f * f;
-	//float attn = 0.5f;
 	float r = 0.985f;
 	float hibp;
 
@@ -3640,129 +3634,96 @@ case FILTER_DIOD:
 
 	v2L = _ly1L; v2R = _ly1R;
 	v3L = _lx1L; v3R = _lx1R;
-
-	v6L = _ly4L; v6R = _ly4R;
-	v7L = _lx4L; v7R = _lx4R;
 }
 break;
-case FILTER_DIOD2:
+case FILTER_KRMG:
 {
-	//https://www.kvraudio.com/forum/viewtopic.php?f=33&t=346155
-	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
+	//https://github.com/ddiakopoulos/MoogLadders/blob/master/src/KrajeskiModel.h
+	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
 	fxParamTmp *= fxParamTmp;
 	// Low pass... on the Frequency
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
-	float fc = fxParam1 * 0.66f;
 
-	float ah, bh; // feedback HPF coeffs
+	const float wc = fxParam1 * fxParam1;
+	const float wc2 = wc * wc;
+	const float wc3 = wc2 * wc;
 
-	// fc: normalized cutoff frequency in the range [0..1] => 0 HZ .. Nyquist
-	const float K = fc * M_PI;
-	ah = (K - 2) / (K + 2);
-	bh = 2 / (K + 2);
-
-	// q: resonance in the range [0..1]
-	float q = fxParam2;
-	float k = 20 * q;
-	float A = 1 + 0.5f * k; // resonance gain compensation
-
-	const float a = 2 * ftan(0.5f * K); // dewarping
-	const float ainv = 1 / a;
-	const float a2 = a * a;
-	const float a4 = a2 * a2;
-	const float b = 2 * a + 1;
-	const float b2 = b * b;
-	const float c = 1 / (2 * a4 - 4 * a2 * b2 + b2 * b2);
-	const float g0 = 2 * a4 * c;
-	const float g = g0 * bh;
-	const float invg = 1 / (1 + g * k);
-	const float b2m3a2b = (b2 - 3 * a2) * b;
-	const float b2m2a2a = (b2 - 2 * a2) * a;
-	const float a2b = a2 * b;
-	const float a2a = a2 * a;
+	const float g = 0.9892f * wc - 0.4342f * wc2 + 0.1381f * wc3 - 0.0202f * wc2 * wc2;
+	const float drive = 1.0f;
+	const float gComp = 0.99999f;
+	const float resonance = fxParam2;
+	const float gRes = 4 * resonance * (1.0029f + 0.0526f * wc - 0.926f * wc2 + 0.0218f * wc3);
 
 	float *sp = this->sampleBlock;
+	float state0L = v0L, state1L = v1L, state2L = v2L, state3L = v3L, state4L = v4L;
+	float delay0L = v5L, delay1L = v6L, delay2L = v7L, delay3L = v8L;
 
-	float buf1L = v0L, buf2L = v1L, buf3L = v2L, buf4L = v3L, buf5L = v4L, buf6L = v5L;
-	float buf1R = v0R, buf2R = v1R, buf3R = v2R, buf4R = v3R, buf5R = v4R, buf6R = v5R;
+	float state0R = v0R, state1R = v1R, state2R = v2R, state3R = v3R, state4R = v4R;
+	float delay0R = v5R, delay1R = v6R, delay2R = v7R, delay3R = v8R;
 
-	float y0, y1, y2, y3, y4, y5;
-	float s, s0, out;
+	const float va1 = 0.3f / 1.3f;
+	const float va2 = 1 / 1.3f;
 
 	for (int k = BLOCK_SIZE; k--;)
 	{
-		// Left voice ---------------------------------------------------
+		// Left voice
 
-		// current state
-		s0 = (a2a * buf1L + a2b * buf2L + buf3L * b2m2a2a + buf4L * b2m3a2b) * c;
-		s = bh * s0 - buf5L;
+		state0L = tanh4(drive * (*sp - gRes * (state4L - gComp * *sp)));
 
-		// solve feedback loop (linear)
-		y5 = (g * (*sp) + s) * invg;
+		state1L = g * (va1 * state0L + va2 * delay0L - state1L) + state1L;
+		delay0L = state0L;
 
-		// input clipping
-		y0 = clamp((*sp) - k * y5, -ratioTimbres, ratioTimbres);
-		y5 = g * y0 + s;
+		state2L = g * (va1 * state1L + va2 * delay1L - state2L) + state2L;
+		delay1L = state1L;
 
-		// compute integrator outputs
-		y4 = g0 * y0 + s0;
-		y3 = (b * y4 - buf4L) * ainv;
-		y2 = (b * y3 - a * y4 - buf3L) * ainv;
-		y1 = (b * y2 - a * y3 - buf2L) * ainv;
+		state3L = g * (va1 * state2L + va2 * delay2L - state3L) + state3L;
+		delay2L = state2L;
 
-		// update filter state
-		buf1L += a4 * (y0 - y1 + y2);
-		buf2L += a2 * (y1 - 2 * y2 + y3);
-		buf3L += a2 * (y2 - 2 * y3 + y4);
-		buf4L += a2 * (y3 - 2 * y4);
-		buf5L = bh * y4 + ah * y5; // hp
+		state4L = g * (va1 * state3L + va2 * delay3L - state4L) + state4L;
+		delay3L = state3L;
 
-		out = clamp(A * y4 * mixerGain, -ratioTimbres, ratioTimbres);
-		*sp++ = out;
-		*sp++ = out;
+		*sp++ = clamp(state4L * mixerGain, -ratioTimbres, ratioTimbres);
 
-		// Right voice ---------------------------------------------------
+		// Right voice
 
-		// current state
-		/*s0 = (a2a * buf1R + a2b * buf2R + buf3R * b2m2a2a + buf4R * b2m3a2b) * c;
-		s = bh * s0 - buf5R;
+		state0R = tanh4(drive * (*sp - gRes * (state4R - gComp * *sp)));
 
-		// solve feedback loop (linear)
-		y5 = (g * (*sp) + s) * invg;
+		state1R = g * (va1 * state0R + va2 * delay0R - state1R) + state1R;
+		delay0R = state0R;
 
-		// input clipping
-		y0 = clamp((*sp) - k * y5, -ratioTimbres, ratioTimbres);
-		y5 = g * y0 + s;
+		state2R = g * (va1 * state1R + va2 * delay1R - state2R) + state2R;
+		delay1R = state1R;
 
-		// compute integrator outputs
-		y4 = g0 * y0 + s0;
-		y3 = (b * y4 - buf4R) * ainv;
-		y2 = (b * y3 - a * y4 - buf3R) * ainv;
-		y1 = (b * y2 - a * y3 - buf2R) * ainv;
+		state3R = g * (va1 * state2R + va2 * delay2R - state3R) + state3R;
+		delay2R = state2R;
 
-		// update filter state
-		buf1R += a4 * (y0 - y1 + y2);
-		buf2R += a2 * (y1 - 2 * y2 + y3);
-		buf3R += a2 * (y2 - 2 * y3 + y4);
-		buf4R += a2 * (y3 - 2 * y4);
-		buf5R = bh * y4 + ah * y5;
+		state4R = g * (va1 * state3R + va2 * delay3R - state4R) + state4R;
+		delay3R = state3R;
 
-		*sp++ = clamp(A * y4 * mixerGain, -ratioTimbres, ratioTimbres);*/
+		*sp++ = clamp(state4R * mixerGain, -ratioTimbres, ratioTimbres);
 	}
 
-	v0L = buf1L;
-	v1L = buf2L;
-	v2L = buf3L;
-	v3L = buf4L;
-	v4L = buf5L;
-	v5L = buf6L;
+	v0L = state0L;
+	v1L = state1L;
+	v2L = state2L;
+	v3L = state3L;
+	v4L = state4L;
 
-	v0R = buf1R;
-	v1R = buf2R;
-	v2R = buf3R;
-	v3R = buf4R;
-	v4R = buf5R;
-	v5R = buf6R;
+	v5L = delay0L;
+	v6L = delay1L;
+	v7L = delay2L;
+	v8L = delay3L;
+
+	v0R = state0R;
+	v1R = state1R;
+	v2R = state2R;
+	v3R = state3R;
+	v4R = state4R;
+
+	v5R = delay0R;
+	v6R = delay1R;
+	v7R = delay2R;
+	v8R = delay3R;
 }
 break;
 case FILTER_OFF:
