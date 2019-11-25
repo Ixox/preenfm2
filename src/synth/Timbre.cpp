@@ -3097,21 +3097,17 @@ case FILTER_ORYX:
 	const float frange = 0.14f;
 	const float bipolarf = (fxParam1 - 0.5f);
 
-	const float f1 = rootf + sigmoidPos((fxParam1 > 0.5f) ? (1 - fxParam1) : fxParam1) * frange;
-	const float fb = 0.077f + fxParam1 * 0.01f + noise[0] * 0.002f;
+	float f1 = rootf + sigmoidPos((fxParam1 > 0.5f) ? (1 - fxParam1) : fxParam1) * frange;
+	/*//f1 = fold(sigmoid(((f1 - 0.5f) * (2/frange)) * 7 * fxParam2)) * 4; // -1 < folded < 1*/
+	const float fb = 0.08f + fxParam1 * 0.01f + noise[0] * 0.002f;
 	const float scale = sqrt3(fb);
 
 	const float spread = 1 + (fxParam2 * 0.13f);
 
 	const float fold2 = fold(0.125f + sigmoid(bipolarf * 21 * fxParam2) * frange ) + 0.25f;
 	const float f2 = rootf + frange * 1.15f + sigmoidPos(1 - fxParam1 + fold2 * 0.25f) * spread * frange * 1.25f;
-	const float fb2 = 0.11f - fold2 * 0.04f - noise[1] * 0.0015f;
+	const float fb2 = 0.21f - fold2 * 0.08f - noise[1] * 0.0015f;
 	const float scale2 = sqrt3(fb2);
-
-	/*const float fold3 = fold(sigmoid(bipolarf * 17 * fxParam2) * frange);
-	const float f3 = rootf + frange * 2.25f + tanh3(1 - (fxParam1 * 2 - fold3 * 0.2f)) * spread * frange * 0.5f;
-	const float fb3 = 0.13f - fold3 * 0.05f - noise[2] * 0.001f;
-	const float scale3 = sqrt3(fb3);*/
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, bandL = v1L;
@@ -3135,10 +3131,10 @@ case FILTER_ORYX:
 	float nexDrift = noise[7] * 0.02f;
 	float deltaD = (nexDrift - drift) * 0.000625f;
 
-	const float sat = 1.2f;
+	const float sat = 1.55f;
 
 	for (int k=BLOCK_SIZE ; k--; ) {
-		nz = noise[k] * 0.013f;
+		nz = noise[k] * 0.005f;
 
 		// ----------- Left voice
 		*sp = (lowL + ((-lowL + *sp) * (r + nz)));
@@ -3150,11 +3146,7 @@ case FILTER_ORYX:
 		lowL2 += f2 * bandL2;
 		bandL2 += f2 * (scale2 * *sp - lowL2 - fb2 * bandL2);
 
-		// bandpass 3
-		/*lowL3 += f3 * bandL3;
-		bandL3 += f3 * (scale3 * *sp - lowL3 - fb3 * bandL3);*/
-
-		out = sat33((bandL * sat) + bandL2);
+		out = sat25((bandL * sat)) + bandL2;
 
 		*sp++ = clamp(out * svfGain, -ratioTimbres, ratioTimbres);
 
@@ -3168,11 +3160,7 @@ case FILTER_ORYX:
 		lowR2 += f2 * bandR2;
 		bandR2 += f2 * (scale2 * *sp - lowR2 - fb2 * bandR2);
 
-		// bandpass 3
-		/*lowR3 += f3 * bandR3;
-		bandR3 += f3 * (scale3 * *sp - lowR3 - fb3 * bandR3);*/
-
-		out = sat33((bandR * sat) + bandR2);
+		out = sat25((bandR * sat)) + bandR2;
 
 		*sp++ = clamp(out * svfGain, -ratioTimbres, ratioTimbres);
 
@@ -3326,7 +3314,7 @@ case FILTER_ORYX3:
 	const float bipolarf = (fxParam1 - 0.5f);
 
 	const float f1 = rootf + sigmoidPos((fxParam1 > 0.5f) ? (1 - fxParam1) : fxParam1) * frange;
-	const float fb = 0.067f + fxParam1 * 0.01f + noise[0] * 0.002f;
+	const float fb = 0.082f + fxParam1 * 0.01f + noise[0] * 0.002f;
 	const float scale = sqrt3(fb);
 
 	const float spread = 1 + (fxParam2 * 0.13f);
@@ -3366,6 +3354,9 @@ case FILTER_ORYX3:
 	const float apf2 = clamp(0.3f + fxParam2 * fxParam2 * 0.4f , filterWindowMin, filterWindowMax);
 	float coef2 = (1.0f - apf2) / (1.0f + apf2);
 
+	float sat = 1.65f;
+	float sat2 = 1.45f;
+
 	for (int k=BLOCK_SIZE ; k--; ) {
 		nz = noise[k] * 0.013f;
 
@@ -3384,7 +3375,7 @@ case FILTER_ORYX3:
 		low3 += f3 * band3;
 		band3 += f3 * (scale3 * in - low3 - fb3 * band3);
 
-		out = sat33(band) + tanh4(band2 + band3);
+		out = sat25(band * sat) + tanh4((band2 * sat) + band3  * 0.75f) * 0.5f;
 
 		// ----------- Left voice
 		_ly1L = coef1 * (_ly1L + out) - _lx1L; // allpass
@@ -3764,7 +3755,7 @@ case FILTER_KRMG:
 	const float g = 0.9892f * wc - 0.4342f * wc2 + 0.1381f * wc3 - 0.0202f * wc2 * wc2;
 	const float drive = 1;
 	const float gComp = 1;
-	const float resonance = fxParam2;
+	const float resonance = fxParam2 * 0.72f - fxParam1 * 0.05f;
 	const float gRes = 4 * resonance * (1.0029f + 0.0526f * wc - 0.926f * wc2 + 0.0218f * wc3);
 
 	float *sp = this->sampleBlock;
@@ -3776,13 +3767,19 @@ case FILTER_KRMG:
 
 	const float va1 = 0.2307692308f;//0.3f / 1.3f;
 	const float va2 = 0.7692307692f;//1 / 1.3f;
-	float r = 0.985f;
+	float r = 0.989f;
+
+	float drift = fxParamB2;
+	float nz;
+	float nexDrift = noise[7] * 0.015f;
+	float deltaD = (nexDrift - drift) * 0.000625f;
 
 	for (int k = BLOCK_SIZE; k--;)
 	{
+		nz = noise[k] * 0.012f;
 		// Left voice
 		*sp = (state4L + ((-state4L + *sp) * r));
-		state0L = tanh4(drive * (*sp - gRes * (state4L - gComp * *sp)));
+		state0L = tanh4((drive - drift  + nz) * (*sp - gRes * (state4L - gComp * *sp)));
 
 		state1L = g * (va1 * state0L + va2 * delay0L - state1L) + state1L;
 		delay0L = state0L;
@@ -3800,7 +3797,7 @@ case FILTER_KRMG:
 
 		// Right voice
 		*sp = (state4R + ((-state4R + *sp) * r));
-		state0R = tanh4(drive * (*sp - gRes * (state4R - gComp * *sp)));
+		state0R = tanh4((drive + drift - nz) * (*sp - gRes * (state4R - gComp * *sp)));
 
 		state1R = g * (va1 * state0R + va2 * delay0R - state1R) + state1R;
 		delay0R = state0R;
@@ -3815,6 +3812,8 @@ case FILTER_KRMG:
 		delay3R = state3R;
 
 		*sp++ = clamp(state4R * mixerGain, -ratioTimbres, ratioTimbres);
+
+		drift += deltaD;
 	}
 
 	v0L = state0L;
@@ -3838,9 +3837,11 @@ case FILTER_KRMG:
 	v6R = delay1R;
 	v7R = delay2R;
 	v8R = delay3R;
+
+	fxParamB2 = nexDrift;
 }
 break;
-case FILTER_TEEBEE:
+/* case FILTER_TEEBEE:
 {
 const float filterpoles[10][64] = {
 {-1.42475857e-02, -1.10558351e-02, -9.58097367e-03,
@@ -4064,7 +4065,7 @@ const float filterpoles[10][64] = {
 	9.93007906e-01, 9.97070310e-01, 1.00108302e+00,
 	1.00504744e+00}};
 }
-break;
+break; */
 case FILTER_OFF:
     {
     	// Filter off has gain...
