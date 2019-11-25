@@ -98,10 +98,29 @@ in this version, some more filters & fx :
 - all pass quad filter, diffusion version, Sprd the 4 poles around the center frequency
 
 ###### Oryx :
-- formant filter 
+- 2 peaks formant filter with some distortion
+
+###### Orx2 :
+- 3 peaks formant filter
+
+###### Orx3 :
+- 3 peaks formant filter + more distortion
+
+###### 18db :
+- 3 pole soft LP
 
 ###### La+d :
-- ladder + allpass filter 
+- ladder version 1
+
+###### Lad+ :
+- ladder version 2
+
+###### Diod :
+- ladder version 3
+
+###### L+d+ :
+- ladder version 4
+
 
 Credits : 
 
@@ -109,3 +128,4 @@ Credits :
 	- musicdsp.org for the good filters algo ( and more).
 	- Andrew Simper for the bell, low shelf and high shelf algo.
 	- Dennis Cronin for the allpass algo.
+	- Karlsen, Stilson et al. for the ladder algo
