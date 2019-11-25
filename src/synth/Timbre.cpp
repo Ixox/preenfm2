@@ -3354,8 +3354,8 @@ case FILTER_ORYX3:
 	const float apf2 = clamp(0.3f + fxParam2 * fxParam2 * 0.4f , filterWindowMin, filterWindowMax);
 	float coef2 = (1.0f - apf2) / (1.0f + apf2);
 
-	float sat = 1.65f;
-	float sat2 = 1.45f;
+	float sat = 1.45f;
+	float sat2 = 1.65f;
 
 	for (int k=BLOCK_SIZE ; k--; ) {
 		nz = noise[k] * 0.013f;
@@ -3375,7 +3375,7 @@ case FILTER_ORYX3:
 		low3 += f3 * band3;
 		band3 += f3 * (scale3 * in - low3 - fb3 * band3);
 
-		out = sat25(band * sat) + tanh4((band2 * sat) + band3  * 0.75f) * 0.5f;
+		out = sat25(band * sat) + tanh4((band2 * sat2) + band3  * 0.75f) * 0.5f;
 
 		// ----------- Left voice
 		_ly1L = coef1 * (_ly1L + out) - _lx1L; // allpass
