@@ -121,6 +121,8 @@ in this version, some more filters & fx :
 ###### L+d+ :
 - ladder version 4
 
+###### H3O+ :
+- tb303 filter like
 
 Credits : 
 
@@ -129,3 +131,4 @@ Credits :
 	- Andrew Simper for the bell, low shelf and high shelf algo.
 	- Dennis Cronin for the allpass algo.
 	- Karlsen, Stilson et al. for the ladder algo
+	- Andy Sloane for the 303 filter algo
