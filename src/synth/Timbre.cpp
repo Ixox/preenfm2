@@ -2283,6 +2283,8 @@ case FILTER_SIGMOID:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
+		float velocity = voices[this->lastPlayedNote]->getVelocity();
+
 		float *sp = this->sampleBlock;
 		float localv0L = v0L;
 		float localv1L = v1L;
@@ -2292,7 +2294,7 @@ case FILTER_SIGMOID:
 		float f = fxParam2 * 0.5f + 0.12f;
 		float pattern = (1 - 0.7f * f);
 
-		int drive = (27 + sqrt3(fxParam1) * 100);
+		int drive = (27 + velocity * 24 + sqrt3(fxParam1) * 86);
 		float gain = 1.1f + 44 * panTable[drive];
 		float gainCorrection = (1.2f - sqrt3(panTable[64 + (drive >> 1)] * 0.6f));
 		float bias = -0.1f + (fxParam1 * 0.2f);
@@ -2329,6 +2331,8 @@ case FILTER_FOLD:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
+		float velocity = voices[this->lastPlayedNote]->getVelocity();
+
 		float *sp = this->sampleBlock;
 		float localv0L = v0L;
 		float localv1L = v1L;
@@ -2345,7 +2349,7 @@ case FILTER_FOLD:
 	
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(0.57f - fxParam1 * 0.43f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.57f - fxParam1 * 0.43f + velocity * 0.3f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		for (int k=BLOCK_SIZE ; k--; ) {
@@ -2385,6 +2389,8 @@ case FILTER_WRAP:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
+		float velocity = voices[this->lastPlayedNote]->getVelocity();
+
 		float *sp = this->sampleBlock;
 		float localv0L = v0L;
 		float localv1L = v1L;
@@ -2400,7 +2406,7 @@ case FILTER_WRAP:
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(0.58f - fxParam1 * 0.43f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.58f - fxParam1 * 0.43f + velocity * 0.3f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		for (int k=BLOCK_SIZE ; k--; ) {
@@ -2708,6 +2714,8 @@ case FILTER_LPXOR:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
+		float velocity = voices[this->lastPlayedNote]->getVelocity();
+
 		const float a = 1.f - fxParam1;
 		const float a2f = a * SHORT2FLOAT;
 		const float b = 1.f - a;
@@ -2727,7 +2735,7 @@ case FILTER_LPXOR:
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(0.27f + fxParam1 * 0.5f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.27f + fxParam1 * 0.2f + velocity * 0.4f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		const float r = 0.9940f;
@@ -2779,6 +2787,8 @@ case FILTER_LPXOR2:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
+		float velocity = voices[this->lastPlayedNote]->getVelocity();
+
 		const float a = 1.f - fxParam1;
 		const float a2f = a * SHORT2FLOAT;
 		const float b = 1.f - a;
@@ -2798,7 +2808,7 @@ case FILTER_LPXOR2:
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(0.27f + fxParam1 * 0.4f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.27f + fxParam1 * 0.2f + velocity * 0.4f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		const float r = 0.9940f;
@@ -3822,6 +3832,8 @@ case FILTER_LADDER2:
 	fxParam1 = ((fxParamTmp + 9.0f * fxParam1) * .1f);
 	float cut = clamp(sqrt3(fxParam1), filterWindowMin, filterWindowMax);
 
+	float velocity = voices[this->lastPlayedNote]->getVelocity();
+
 	float OffsetTmp = fabsf(params.effect.param2);
 	fxParam2 = ((OffsetTmp + 9.0f * fxParam2) * .1f);
 	float res = fxParam2;
@@ -3841,7 +3853,7 @@ case FILTER_LADDER2:
 
 	const float bipolarf = fxParam1 - 0.5f;
 	const float fold3 = (fold(13 * bipolarf) + 0.125f) * 0.25f;
-	const float f1 = clamp(0.33f + fold3 * (1 - cut * 0.5f) , filterWindowMin, filterWindowMax);
+	const float f1 = clamp(0.33f + fold3 * (1 - cut * 0.5f) + velocity * 0.33f, filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - f1) / (1.0f + f1);
 	const float f2 = clamp(f1 * f1, filterWindowMin, filterWindowMax);
 	float coef2 = (1.0f - f2) / (1.0f + f2);
@@ -3905,6 +3917,8 @@ case FILTER_DIOD:
 	// Low pass... on the Frequency
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
+	float velocity = voices[this->lastPlayedNote]->getVelocity();
+
 	const float f = fxParam1 * fxParam1;
 	const float fmeta = f * sigmoid(f);
 	const float fb = sqrt3(0.7f - fxParam2 * 0.699f);
@@ -3921,7 +3935,7 @@ case FILTER_DIOD:
 
 	float _ly1L = v2L, _ly1R = v2R;
 	float _lx1L = v3L, _lx1R = v3R;
-	const float f1 = clamp(0.33f + f * 0.43f, filterWindowMin, filterWindowMax);
+	const float f1 = clamp(0.33f + f * 0.43f + velocity * 0.33f, filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - f1) / (1.0f + f1);
 
 	float attn = 0.05f + 0.2f * f * f * f;
@@ -3973,12 +3987,14 @@ case FILTER_KRMG:
 	// Low pass... on the Frequency
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
+	float velocity = voices[this->lastPlayedNote]->getVelocity();
+
 	const float wc = fxParam1 * fxParam1;
 	const float wc2 = wc * wc;
 	const float wc3 = wc2 * wc;
 
 	const float g = 0.9892f * wc - 0.4342f * wc2 + 0.1381f * wc3 - 0.0202f * wc2 * wc2;
-	const float drive = 1;
+	const float drive = 0.9f + velocity * 0.19f;
 	const float gComp = 1;
 	const float resonance = fxParam2 * 0.72f - fxParam1 * 0.05f;
 	const float gRes = 4 * resonance * (1.0029f + 0.0526f * wc - 0.926f * wc2 + 0.0218f * wc3);
@@ -4074,6 +4090,8 @@ case FILTER_TEEBEE:
 	// Low pass... on the Frequency
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
+	float velocity = voices[this->lastPlayedNote]->getVelocity();
+
 	float *sp = this->sampleBlock;
 	float state0L = v0L, state1L = v1L, state2L = v2L, state3L = v3L, state4L = v4L;
 	float state0R = v0R, state1R = v1R, state2R = v2R, state3R = v3R, state4R = v4R;
@@ -4082,8 +4100,8 @@ case FILTER_TEEBEE:
 	float vcf_reso = fxParam2 * 1.065f;
 	float vcf_cutoff = fxParam1 * 1.065f;
 
-	float vcf_e0 = expf_fast(5.22617147f + 1.70418937f * vcf_cutoff - 0.68382928f * vcf_cutoff) + 103;
-	float vcf_e1 = expf_fast(5.55921003f + 2.17788267f * vcf_cutoff + 1.99224351f * vcf_cutoff) + 103;
+	float vcf_e0 = expf_fast(5.22617147f + 1.12f * vcf_cutoff) + 103;
+	float vcf_e1 = expf_fast(5.55921003f + 3.2f * vcf_cutoff) + 103;
 
 	vcf_e0 *= 2 * 3.14159265358979f / PREENFM_FREQUENCY;
 	vcf_e1 *= 2 * 3.14159265358979f / PREENFM_FREQUENCY;
@@ -4148,7 +4166,8 @@ case FILTER_TEEBEE:
 	f2b = (f2a0 + f2a1 + f2a2);
 
 	float in, y;
-	float drive = 1.27f + (1 - fxParam1) * 0.37f;
+	float drive = 1 + (1 - fxParam1 * 0.65f) * 0.37f + velocity;
+	float drive2 = 1 - fxParam1 * fxParam1 * 0.05f + velocity * velocity * 0.7f;
 
 	for (int k = BLOCK_SIZE; k--;)
 	{
@@ -4167,7 +4186,7 @@ case FILTER_TEEBEE:
 		state3L = state4L - f2a1 * y;
 		state4L = -f2a2 * y;
 
-		*sp++ = clamp(sat33(y * drive) * mixerGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sat33(y * drive2) * mixerGain, -ratioTimbres, ratioTimbres);
 
 		// -------- -------- -------- Right
 		in = tanh4(*sp * drive);
@@ -4184,7 +4203,7 @@ case FILTER_TEEBEE:
 		state3R = state4R - f2a1 * y;
 		state4R = -f2a2 * y;
 
-		*sp++ = clamp(sat33(y * drive) * mixerGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sat33(y * drive2) * mixerGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = state0L;
@@ -4193,13 +4212,11 @@ case FILTER_TEEBEE:
 	v3L = state3L;
 	v4L = state4L;
 
-
 	v0R = state0R;
 	v1R = state1R;
 	v2R = state2R;
 	v3R = state3R;
 	v4R = state4R;
-
 }
 break;
 case FILTER_OFF:
