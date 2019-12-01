@@ -227,6 +227,7 @@ enum NewNoteType {
 	NEW_NOTE_OLD,
 	NEW_NOTE_NONE
 };
+//TB303 filter emulation ------
 const float filterpoles[10][64] = {
 	{-1.42475857e-02, -1.10558351e-02, -9.58097367e-03,
 	 -8.63568249e-03, -7.94942757e-03, -7.41570560e-03,
@@ -448,7 +449,6 @@ const float filterpoles[10][64] = {
 	 9.80507456e-01, 9.84728057e-01, 9.88894335e-01,
 	 9.93007906e-01, 9.97070310e-01, 1.00108302e+00,
 	 1.00504744e+00}};
-
 arp_pattern_t lut_res_arpeggiator_patterns[ ARPEGGIATOR_PRESET_PATTERN_COUNT ]  = {
   ARP_PATTERN(21845), ARP_PATTERN(62965), ARP_PATTERN(46517), ARP_PATTERN(54741),
   ARP_PATTERN(43861), ARP_PATTERN(22869), ARP_PATTERN(38293), ARP_PATTERN(2313),
@@ -4080,10 +4080,10 @@ case FILTER_TEEBEE:
 
 	//var pos = 28*4 - 96*initialpos;
 	float vcf_reso = fxParam2 * 1.065f;
-	float vcf_cutoff = fxParam1 * 1.25f;
+	float vcf_cutoff = fxParam1 * 1.065f;
 
 	float vcf_e0 = expf_fast(5.22617147f + 1.70418937f * vcf_cutoff - 0.68382928f * vcf_cutoff) + 103;
-	float vcf_e1 = expf_fast(5.55921003f + 2.17788267f * vcf_cutoff) + 103;
+	float vcf_e1 = expf_fast(5.55921003f + 2.17788267f * vcf_cutoff + 1.99224351f * vcf_cutoff) + 103;
 
 	vcf_e0 *= 2 * 3.14159265358979f / PREENFM_FREQUENCY;
 	vcf_e1 *= 2 * 3.14159265358979f / PREENFM_FREQUENCY;
@@ -4129,8 +4129,8 @@ case FILTER_TEEBEE:
 	f0a1 = -p0f;
 
 	// adjust gain
-	f0b0 *= targetgain * (-1 - p0f) * - 0.5f;
-	f0b1 *= targetgain * (-1 - p0f) * - 0.5f;
+	f0b0 *= targetgain * (-1 - p0f) * -0.5f;
+	f0b1 *= targetgain * (-1 - p0f) * -0.5f;
 
 	// (z - exp(p)) (z - exp(p*)) ->
 	// z^2 - 2 z exp(Re[p]) cos(Im[p]) + exp(Re[p])^2
@@ -4139,69 +4139,52 @@ case FILTER_TEEBEE:
 	f1a0 = 1;
 	f1a1 = -2 * exp_p1r * cosf(p1i);
 	f1a2 = exp_p1r * exp_p1r;
-	f1b = f1a0 + f1a1 + f1a2;
+	f1b = (f1a0 + f1a1 + f1a2);
 
 	const float exp_p2r = expf_fast(p2r);
 	f2a0 = 1;
 	f2a1 = -2 * exp_p2r * cosf(p2i);
 	f2a2 = exp_p2r * exp_p2r;
-	f2b = f2a0 + f2a1 + f2a2;
+	f2b = (f2a0 + f2a1 + f2a2);
 
 	float in, y;
-	float drive = 1 + fxParam1 * 0.85f;
-
-	float _ly1L = v5L, _ly1R = v5R;
-	float _lx1L = v6L, _lx1R = v6R;
-	const float f1 = clamp(0.22f + fxParam1 * 0.43f, filterWindowMin, filterWindowMax);
-	float coef1 = (1.0f - f1) / (1.0f + f1);
+	float drive = 1.27f + (1 - fxParam1) * 0.37f;
 
 	for (int k = BLOCK_SIZE; k--;)
 	{
 		// -------- -------- -------- Left
 		in = tanh4(*sp * drive);
-		y = f0b0 * in + state0L;
+		y = (f0b0 * in + state0L);
 		state0L = f0b1 * in - f0a1 * y;
-
-		// second stage two-pole
 
 		// first two-pole stage
 		y = f1b * y + state1L;
 		state1L = state2L - f1a1 * y;
 		state2L = -f1a2 * y;
 
-		// second two-pole stage (four poles total, 24dB/octave rolloff)
+		// second two-pole stage
 		y = f2b * y + state3L;
 		state3L = state4L - f2a1 * y;
 		state4L = -f2a2 * y;
 
-		in = sat66(y * drive);
-		_ly1L = coef1 * (_ly1L + in) - _lx1L; // allpass
-		_lx1L = in;
-
-		*sp++ = clamp(_ly1L * mixerGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sat33(y * drive) * mixerGain, -ratioTimbres, ratioTimbres);
 
 		// -------- -------- -------- Right
 		in = tanh4(*sp * drive);
-		y = f0b0 * in + state0R;
+		y = (f0b0 * in + state0R);
 		state0R = f0b1 * in - f0a1 * y;
-
-		// second stage two-pole
 
 		// first two-pole stage
 		y = f1b * y + state1R;
 		state1R = state2R - f1a1 * y;
 		state2R = -f1a2 * y;
 
-		// second two-pole stage (four poles total, 24dB/octave rolloff)
+		// second two-pole stage
 		y = f2b * y + state3R;
 		state3R = state4R - f2a1 * y;
 		state4R = -f2a2 * y;
 
-		in = sat66(y * drive);
-		_ly1R = coef1 * (_ly1R + in) - _lx1R; // allpass
-		_lx1R = in;
-
-		*sp++ = clamp(_ly1R * mixerGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sat33(y * drive) * mixerGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = state0L;
@@ -4209,16 +4192,14 @@ case FILTER_TEEBEE:
 	v2L = state2L;
 	v3L = state3L;
 	v4L = state4L;
-	v5L = _ly1L;
-	v6L = _lx1L;
+
 
 	v0R = state0R;
 	v1R = state1R;
 	v2R = state2R;
 	v3R = state3R;
 	v4R = state4R;
-	v5R = _ly1R;
-	v6R = _lx1R;
+
 }
 break;
 case FILTER_OFF:
