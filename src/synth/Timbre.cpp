@@ -2293,8 +2293,8 @@ case FILTER_SIGMOID:
 
 		float f = fxParam2 * 0.5f + 0.12f;
 		float pattern = (1 - 0.7f * f);
-
-		int drive = (27 + velocity * 24 + sqrt3(fxParam1) * 86);
+		float invAttn = sqrt3(numberOfVoiceInverse);
+		int drive = (27 + velocity * 24 * invAttn + sqrt3(fxParam1) * 86);
 		float gain = 1.1f + 44 * panTable[drive];
 		float gainCorrection = (1.2f - sqrt3(panTable[64 + (drive >> 1)] * 0.6f));
 		float bias = -0.1f + (fxParam1 * 0.2f);
@@ -3994,7 +3994,7 @@ case FILTER_KRMG:
 	const float wc3 = wc2 * wc;
 
 	const float g = 0.9892f * wc - 0.4342f * wc2 + 0.1381f * wc3 - 0.0202f * wc2 * wc2;
-	const float drive = 0.9f + velocity * 0.19f;
+	const float drive = 0.9f + velocity * 0.19f * sqrt3(numberOfVoiceInverse);
 	const float gComp = 1;
 	const float resonance = fxParam2 * 0.72f - fxParam1 * 0.05f;
 	const float gRes = 4 * resonance * (1.0029f + 0.0526f * wc - 0.926f * wc2 + 0.0218f * wc3);
@@ -4091,6 +4091,17 @@ case FILTER_TEEBEE:
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
 	float velocity = voices[this->lastPlayedNote]->getVelocity();
+	
+	bool isReleased = voices[this->lastPlayedNote]->isReleased();
+	bool accent = velocity > 0.8f;
+	float vcf_envmod = 0;
+	
+	if((accent && !isReleased)) {
+		vcf_envmod = 0.7f;
+	}
+
+	//accent cv :
+	fxParamA2 = clamp((999999.0f * fxParamA2 + vcf_envmod) * .000001f, 0, 1);
 
 	float *sp = this->sampleBlock;
 	float state0L = v0L, state1L = v1L, state2L = v2L, state3L = v3L, state4L = v4L;
@@ -4100,8 +4111,9 @@ case FILTER_TEEBEE:
 	float vcf_reso = fxParam2 * 1.065f;
 	float vcf_cutoff = fxParam1 * 1.065f;
 
-	float vcf_e0 = expf_fast(5.22617147f + 1.12f * vcf_cutoff) + 103;
-	float vcf_e1 = expf_fast(5.55921003f + 3.2f * vcf_cutoff) + 103;
+
+	float vcf_e1 = expf_fast(5.55921003f + 2.17f * vcf_cutoff + 2.5f * fxParamA2) + 103;
+	float vcf_e0 = expf_fast(5.22617147 + 1.70418937f * vcf_cutoff - 0.68382928f * fxParamA2) + 103;
 
 	vcf_e0 *= 2 * 3.14159265358979f / PREENFM_FREQUENCY;
 	vcf_e1 *= 2 * 3.14159265358979f / PREENFM_FREQUENCY;
@@ -4166,8 +4178,9 @@ case FILTER_TEEBEE:
 	f2b = (f2a0 + f2a1 + f2a2);
 
 	float in, y;
-	float drive = 1 + (1 - fxParam1 * 0.65f) * 0.37f + velocity;
-	float drive2 = 1 - fxParam1 * fxParam1 * 0.05f + velocity * velocity * 0.7f;
+	float invAttn = sqrt3(numberOfVoiceInverse);
+	float drive = 1 + ((1 - fxParam1 * 0.65f) * 0.37f + fxParamA2) * invAttn;
+	float drive2 = 1.25f - fxParam1 * fxParam1 * 0.05f + fxParamA2 * fxParamA2 * 0.5f * invAttn;
 
 	for (int k = BLOCK_SIZE; k--;)
 	{
@@ -4217,6 +4230,7 @@ case FILTER_TEEBEE:
 	v2R = state2R;
 	v3R = state3R;
 	v4R = state4R;
+
 }
 break;
 case FILTER_OFF:
