@@ -3994,7 +3994,7 @@ case FILTER_KRMG:
 	const float wc3 = wc2 * wc;
 
 	const float g = 0.9892f * wc - 0.4342f * wc2 + 0.1381f * wc3 - 0.0202f * wc2 * wc2;
-	const float drive = 0.9f + velocity * 0.19f * sqrt3(numberOfVoiceInverse);
+	const float drive = 0.85f + velocity * 0.19f * sqrt3(numberOfVoiceInverse);
 	const float gComp = 1;
 	const float resonance = fxParam2 * 0.72f - fxParam1 * 0.05f;
 	const float gRes = 4 * resonance * (1.0029f + 0.0526f * wc - 0.926f * wc2 + 0.0218f * wc3);
@@ -4093,15 +4093,23 @@ case FILTER_TEEBEE:
 	float velocity = voices[this->lastPlayedNote]->getVelocity();
 	
 	bool isReleased = voices[this->lastPlayedNote]->isReleased();
-	bool accent = velocity > 0.8f;
-	float vcf_envmod = 0;
-	
-	if((accent && !isReleased)) {
-		vcf_envmod = 0.7f;
-	}
+	bool accent = velocity > 0.75f;
+
+	const float ga = 0.9764716867f; //= exp(-1/(PREENFM_FREQUENCY * attack / BLOCK_SIZE))
+	const float gr = 0.9979969962f; //= exp(-1/(PREENFM_FREQUENCY * release / BLOCK_SIZE))
 
 	//accent cv :
-	fxParamA2 = clamp((999999.0f * fxParamA2 + vcf_envmod) * .000001f, 0, 1);
+	if ((accent))
+	{
+		fxParamA2 *= ga;
+		fxParamA2 += (1 - ga);
+	}
+	else
+	{
+		fxParamA2 *= gr;
+	}
+
+	fxParamA2 = clamp(fxParamA2, 0, 1.5f);
 
 	float *sp = this->sampleBlock;
 	float state0L = v0L, state1L = v1L, state2L = v2L, state3L = v3L, state4L = v4L;
@@ -4109,11 +4117,13 @@ case FILTER_TEEBEE:
 
 	//var pos = 28*4 - 96*initialpos;
 	float vcf_reso = fxParam2 * 1.065f;
-	float vcf_cutoff = fxParam1 * 1.065f;
+	float vcf_cutoff = fxParam1 * 0.8465f + 0.12f * fxParamA2;
 
+	//float vcf_e1 = expf_fast(6.109f + 1.5876f*fxParamA2 + 2.1553f*vcf_cutoff);
+	//float vcf_e0 = expf_fast(5.613f - 0.8f*fxParamA2 + 2.1553f*vcf_cutoff);
 
-	float vcf_e1 = expf_fast(5.55921003f + 2.17f * vcf_cutoff + 2.5f * fxParamA2) + 103;
-	float vcf_e0 = expf_fast(5.22617147 + 1.70418937f * vcf_cutoff - 0.68382928f * fxParamA2) + 103;
+	float vcf_e1 = expf_fast(5.55921003f + 2.17788267f * vcf_cutoff + 0.47f * fxParamA2) + 103;
+	float vcf_e0 = expf_fast(5.22617147 + 1.70418937f * vcf_cutoff - 0.298f * fxParamA2) + 103;
 
 	vcf_e0 *= 2 * 3.14159265358979f / PREENFM_FREQUENCY;
 	vcf_e1 *= 2 * 3.14159265358979f / PREENFM_FREQUENCY;
@@ -4179,13 +4189,13 @@ case FILTER_TEEBEE:
 
 	float in, y;
 	float invAttn = sqrt3(numberOfVoiceInverse);
-	float drive = 1 + ((1 - fxParam1 * 0.65f) * 0.37f + fxParamA2) * invAttn;
-	float drive2 = 1.25f - fxParam1 * fxParam1 * 0.05f + fxParamA2 * fxParamA2 * 0.5f * invAttn;
+	float drive = 0.7f + ((1 - fxParam1 * 0.85f) * 0.37f + fxParamA2) * invAttn;
+	float drive2 = 1.05f - fxParam1 * fxParam1 * 0.05f + fxParamA2 * fxParamA2 * 0.37f * invAttn;
 
 	for (int k = BLOCK_SIZE; k--;)
 	{
 		// -------- -------- -------- Left
-		in = tanh4(*sp * drive);
+		in = (*sp);
 		y = (f0b0 * in + state0L);
 		state0L = f0b1 * in - f0a1 * y;
 
@@ -4199,10 +4209,11 @@ case FILTER_TEEBEE:
 		state3L = state4L - f2a1 * y;
 		state4L = -f2a2 * y;
 
-		*sp++ = clamp(sat33(y * drive2) * mixerGain, -ratioTimbres, ratioTimbres);
+		//*sp++ = clamp(y * mixerGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sat33(tanh4(y  * drive) * drive2) * mixerGain, -ratioTimbres, ratioTimbres);
 
 		// -------- -------- -------- Right
-		in = tanh4(*sp * drive);
+		in = (*sp);
 		y = (f0b0 * in + state0R);
 		state0R = f0b1 * in - f0a1 * y;
 
@@ -4216,7 +4227,8 @@ case FILTER_TEEBEE:
 		state3R = state4R - f2a1 * y;
 		state4R = -f2a2 * y;
 
-		*sp++ = clamp(sat33(y * drive2) * mixerGain, -ratioTimbres, ratioTimbres);
+		//*sp++ = clamp(y * mixerGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sat33(tanh4(y  * drive) * drive2) * mixerGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = state0L;
