@@ -4099,14 +4099,20 @@ case FILTER_TEEBEE:
 	const float gr = 0.9979969962f; //= exp(-1/(PREENFM_FREQUENCY * release / BLOCK_SIZE))
 
 	//accent cv :
-	if ((accent))
+	if ((accent && (fxParamB2-- > 0 )))
 	{
 		fxParamA2 *= ga;
 		fxParamA2 += (1 - ga);
-	}
-	else
-	{
+		fxParamA1 = -0.4f;// = post accent neg
+	}	else	{
 		fxParamA2 *= gr;
+		fxParamB2 = 720; // = accent dur
+	}
+
+	if (fxParamA1 < 0)	{
+		fxParamA1 += 0.0001f;
+	}	else	{
+		fxParamA1 = 0;
 	}
 
 	fxParamA2 = clamp(fxParamA2, 0, 1.5f);
@@ -4117,7 +4123,7 @@ case FILTER_TEEBEE:
 
 	//var pos = 28*4 - 96*initialpos;
 	float vcf_reso = fxParam2 * 1.065f;
-	float vcf_cutoff = fxParam1 * 0.8465f + 0.12f * fxParamA2;
+	float vcf_cutoff = clamp(fxParam1 * 0.8465f + 0.22f * fxParamA2 + fxParamA1 * (1-fxParamA2), 0, 2);
 
 	//float vcf_e1 = expf_fast(6.109f + 1.5876f*fxParamA2 + 2.1553f*vcf_cutoff);
 	//float vcf_e0 = expf_fast(5.613f - 0.8f*fxParamA2 + 2.1553f*vcf_cutoff);
@@ -4186,6 +4192,7 @@ case FILTER_TEEBEE:
 	f2a1 = -2 * exp_p2r * cosf(p2i);
 	f2a2 = exp_p2r * exp_p2r;
 	f2b = (f2a0 + f2a1 + f2a2);
+	float fdbck = (1 - fxParam1 * fxParam1 * 0.44f) * fxParam2 * 0.47f + fxParamA2 * 0.25f;
 
 	float in, y;
 	float invAttn = sqrt3(numberOfVoiceInverse);
@@ -4195,7 +4202,7 @@ case FILTER_TEEBEE:
 	for (int k = BLOCK_SIZE; k--;)
 	{
 		// -------- -------- -------- Left
-		in = (*sp);
+		in = tanh3((*sp + fdbck * state4L) * drive);
 		y = (f0b0 * in + state0L);
 		state0L = f0b1 * in - f0a1 * y;
 
@@ -4210,10 +4217,10 @@ case FILTER_TEEBEE:
 		state4L = -f2a2 * y;
 
 		//*sp++ = clamp(y * mixerGain, -ratioTimbres, ratioTimbres);
-		*sp++ = clamp(sat33(tanh4(y  * drive) * drive2) * mixerGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sat33(y * drive2) * mixerGain, -ratioTimbres, ratioTimbres);
 
 		// -------- -------- -------- Right
-		in = (*sp);
+		in = tanh3((*sp + fdbck * state4R) * drive);
 		y = (f0b0 * in + state0R);
 		state0R = f0b1 * in - f0a1 * y;
 
@@ -4228,7 +4235,7 @@ case FILTER_TEEBEE:
 		state4R = -f2a2 * y;
 
 		//*sp++ = clamp(y * mixerGain, -ratioTimbres, ratioTimbres);
-		*sp++ = clamp(sat33(tanh4(y  * drive) * drive2) * mixerGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(sat33(y * drive2) * mixerGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = state0L;
