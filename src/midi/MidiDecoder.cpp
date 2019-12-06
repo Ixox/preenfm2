@@ -573,7 +573,9 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
             this->synth->setNewValueFromMidi(timbre, ROW_ARPEGGIATOR2, ENCODER_ARPEGGIATOR_DURATION,
                     (float)midiEvent.value[1]);
             break;
-
+        case CC_MPE_SLIDE_CC74:
+            this->synth->getTimbre(timbre)->setMatrixSource(MATRIX_SOURCE_MPESLIDE, INV127 * midiEvent.value[1]);
+            break;
         }
     }
 

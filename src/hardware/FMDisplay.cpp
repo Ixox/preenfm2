@@ -1041,11 +1041,14 @@ void FMDisplay::newMenuSelect(FullState* fullState) {
         eraseRow(menuRow);
         lcd->setCursor(1, menuRow);
         lcd->print(midiConfig[fullState->menuSelect].title);
-        if (midiConfig[fullState->menuSelect].valueName != NULL) {
-            lcd->print(midiConfig[fullState->menuSelect].valueName[fullState->midiConfigValue[fullState->menuSelect]]);
-        } else {
+        if (midiConfig[fullState->menuSelect].valueName == NULL) {
             lcd->print((int)fullState->midiConfigValue[fullState->menuSelect]);
             lcd->print(' ');
+        } else if (midiConfig[fullState->menuSelect].valueName[0][0] == 'G') {
+            // Global tuning has been updated in Synth class just before
+            lcd->print(fullState->globalTuning + .01f);
+        } else if (midiConfig[fullState->menuSelect].valueName != NULL) {
+            lcd->print(midiConfig[fullState->menuSelect].valueName[fullState->midiConfigValue[fullState->menuSelect]]);
         }
         break;
     case MENU_LOAD_RANDOMIZER:

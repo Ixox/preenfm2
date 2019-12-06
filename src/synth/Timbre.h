@@ -49,7 +49,7 @@ class Timbre {
 public:
     Timbre();
     virtual ~Timbre();
-    void init(int timbreNumber);
+    void init(int timbreNumber, SynthState* sState);
     void setVoiceNumber(int v, int n);
     void initVoicePointer(int n, Voice* voice);
     void prepareForNextBlock();

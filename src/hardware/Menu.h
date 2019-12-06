@@ -33,6 +33,7 @@ enum {
     MIDICONFIG_THROUGH,
     MIDICONFIG_RECEIVES,
     MIDICONFIG_SENDS,
+    MIDICONFIG_GLOBAL_TUNING,
     MIDICONFIG_PROGRAM_CHANGE,
     MIDICONFIG_BOOT_START,
     MIDICONFIG_OP_OPTION,
@@ -140,6 +141,7 @@ struct FullState {
     unsigned char scalaWhat;
     unsigned char  menuPosition[5];
     char  midiConfigValue[MIDICONFIG_SIZE + 1];
+    float globalTuning;
 
     unsigned char preenFMBankNumber;
     unsigned char preenFMPresetNumber;

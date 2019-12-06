@@ -29,7 +29,7 @@
 
 #define UINT_MAX  4294967295
 
-class Synth : public SynthParamListener, public SynthStateAware, public SynthParamChecker
+class Synth : public SynthParamListener, public SynthStateAware, public SynthParamChecker, public SynthMenuListener
 {
 public:
     Synth(void);
@@ -37,7 +37,7 @@ public:
 
     void setSynthState(SynthState* sState) {
         SynthStateAware::setSynthState(sState);
-        init();
+        init(sState);
     }
 
     void noteOn(int timbre, char note, char velocity);
@@ -157,6 +157,15 @@ public:
 
     void setCurrentInstrument(int value);
 
+    // SynthMenuListener
+    void newSynthMode(FullState* fullState) {};
+    void menuBack(enum MenuState  oldMenuState, FullState* fullState) {};
+    void newMenuState(FullState* fullState) {};
+    void newMenuSelect(FullState* fullState);
+
+    void updateGlobalTuningFromConfig();
+
+
 #ifdef DEBUG
     void debugVoice();
     void showCycles();
@@ -165,7 +174,7 @@ public:
 
 private:
     // Called by setSynthState
-    void init();
+    void init(SynthState* sState);
 
     float ratioTimbre;
     float ratioTimbreLP;

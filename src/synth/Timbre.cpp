@@ -198,7 +198,7 @@ Timbre::Timbre() {
 Timbre::~Timbre() {
 }
 
-void Timbre::init(int timbreNumber) {
+void Timbre::init(int timbreNumber, SynthState* sState) {
 
 
 	env1.init(&params.env1a,  &params.env1b, 0, &params.engine1.algo);
@@ -208,12 +208,12 @@ void Timbre::init(int timbreNumber) {
 	env5.init(&params.env5a,  &params.env5b, 4, &params.engine1.algo);
 	env6.init(&params.env6a,  &params.env6b, 5, &params.engine1.algo);
 
-	osc1.init(&params.osc1, OSC1_FREQ);
-	osc2.init(&params.osc2, OSC2_FREQ);
-	osc3.init(&params.osc3, OSC3_FREQ);
-	osc4.init(&params.osc4, OSC4_FREQ);
-	osc5.init(&params.osc5, OSC5_FREQ);
-	osc6.init(&params.osc6, OSC6_FREQ);
+	osc1.init(sState, &params.osc1, OSC1_FREQ);
+	osc2.init(sState, &params.osc2, OSC2_FREQ);
+	osc3.init(sState, &params.osc3, OSC3_FREQ);
+	osc4.init(sState, &params.osc4, OSC4_FREQ);
+	osc5.init(sState, &params.osc5, OSC5_FREQ);
+	osc6.init(sState, &params.osc6, OSC6_FREQ);
 
     this->timbreNumber = timbreNumber;
 

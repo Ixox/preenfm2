@@ -36,6 +36,7 @@ const char* usbMidi[] = { "Off", "In", "In/Out" };
 const char* operatorButton[] = { "New", "Old" };
 const char* version[] = { PFM2_VERSION" "OVERCLOCK_STRING };
 const char* oledSaver[] = { "Off", "2m", "5m", "10m", "1h" };
+const char* globalTuning[] = { "G" };
 
 const struct MidiConfig midiConfig[]  = {
         {
@@ -97,6 +98,12 @@ const struct MidiConfig midiConfig[]  = {
                 "midisend",
                 3,
                 midiSends
+        },
+        {
+                "Tuning: ",
+                "tuning",
+                101,
+                globalTuning
         },
         {
                 "Program ch: ",

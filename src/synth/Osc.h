@@ -45,7 +45,7 @@ public:
     Osc() {};
     virtual ~Osc() {};
 
-    void init(struct OscillatorParams *oscParams, DestinationEnum df);
+    void init(SynthState* sState, struct OscillatorParams *oscParams, DestinationEnum df);
 
     void newNote(struct OscState* oscState, int note);
     void glideToNote(struct OscState* oscState, int note);

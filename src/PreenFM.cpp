@@ -123,7 +123,11 @@ void setup() {
     synthState.insertParamListener(&fmDisplay);
     synthState.insertParamListener(&midiDecoder);
     synthState.insertParamListener(&synth);
+
+    // Synth must be second to ba called first (to update global tuning before it's displayed)
     synthState.insertMenuListener(&fmDisplay);
+    synthState.insertMenuListener(&synth);
+
     // Synth can check and modify param new value
     synthState.insertParamChecker(&synth);
 
@@ -136,6 +140,10 @@ void setup() {
     usbKey.getPatchBank()->setArpeggiatorPartOfThePreset(&synthState.fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET]);
     hexter.setArpeggiatorPartOfThePreset(&synthState.fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET]);
     usbKey.getConfigurationFile()->loadConfig(synthState.fullState.midiConfigValue);
+
+    // initialize global tuning
+    synth.updateGlobalTuningFromConfig();
+
     usbKey.getConfigurationFile()->loadScalaConfig(&synthState.fullState.scalaScaleConfig);
 
     // Load scala scales if enabled
