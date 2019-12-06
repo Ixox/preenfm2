@@ -165,7 +165,7 @@ struct ParameterRowDisplay engineMix3ParameterRow = {
 };
 
 
-const char* fxName []=  { "Off ", "Mix ", "LP  ", "HP  ", "Bass", "BP  ", "Crsh" } ;
+const char* fxName []=  { "Off ", "Mix ", "LP  ", "HP  ", "Bass", "BP  ", "Crsh" , "LP2 ", "HP2 ", "BP2 ", "Lp3 ", "Hp3 ", "Bp3 ", "Peak", "Notc", "Bell", "LowS", "HigS", "LpHp", "BpDs", "LPws", "Tilt", "Pann", "Sat ", "Sigm", "Fold", "Wrap", "Xor ", "Txr1", "Txr2", "LPx1", "LPx2", "LpSn", "HpSn", "Not4", "Ap4 ", "Ap4b", "Ap4D", "Oryx", "Orx2", "Orx3", "18db", "La+d", "Lad+", "Diod", "L+d+", "h3o+", "h3o*", "Bits"};
 
 struct ParameterRowDisplay effectParameterRow = {
         "Filter" ,
@@ -186,6 +186,48 @@ struct FilterRowDisplay filterRowDisplay[FILTER_LAST] = {
         { "LoFr", "Boos", "Gain" },
         { "Freq", "Q   ", "Gain" },
         { "Samp", "Bits", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Q   ", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Amp ", "Gain" },
+        { "Freq", "Amp ", "Gain" },
+        { "Freq", "Amp ", "Gain" },
+        { "Freq", "Res ", "Gain" },        
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Mix ", "Gain" },
+        { "Freq", "Mod ", "Gain" },
+        { "Pos ", "Sprd", "Gain" },
+        { "Thrs", "Tone", "Gain" },
+        { "Driv", "Tone", "Gain" },
+        { "Driv", "Tone", "Gain" },
+        { "Driv", "Tone", "Gain" },
+        { "Thrs", "Tone", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Fold", "Gain" },
+        { "Freq", "Fold", "Gain" },
+        { "Pos ", "Freq", "Gain" },
+        { "Pos ", "Freq", "Gain" },
+        { "Freq", "Sprd", "Gain" },
+        { "Freq", "Sprd", "Gain" },
+        { "Freq", "Sprd", "Gain" },
+        { "Freq", "Sprd", "Gain" },
+        { "Vowl", "Tone", "Gain" },
+        { "Vowl", "Tone", "Gain" },
+        { "Vowl", "Tone", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Freq", "Res ", "Gain" },
+        { "Smp1", "Smp2", "Gain" }
 };
 
 
@@ -1156,7 +1198,7 @@ void SynthState::setScalaEnable(bool enable) {
 
 void SynthState::setScalaScale(int scaleNumber) {
     fullState.scalaScaleConfig.scalaFile = storage->getScalaFile()->getFile(scaleNumber);
-    
+
     if (fullState.scalaScaleConfig.scalaFile->fileType != FILE_EMPTY && fullState.scalaScaleConfig.scalaEnabled) {
         storage->getScalaFile()->loadScalaScale(&fullState.scalaScaleConfig);
     }
