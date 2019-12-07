@@ -4097,7 +4097,7 @@ case FILTER_TEEBEE:
 	float velocity = this->lastVelocity;
 	
 	bool isReleased = voices[this->lastPlayedNote]->isReleased();
-	bool accent = velocity > 0.78f;
+	bool accent = velocity > 0.629f;
 
 	const float ga = 0.9764716867f; //= exp(-1/(PREENFM_FREQUENCY * attack / BLOCK_SIZE))
 	const float gr = 0.9979969962f; //= exp(-1/(PREENFM_FREQUENCY * release / BLOCK_SIZE))
@@ -4196,7 +4196,7 @@ case FILTER_TEEBEE:
 	f2a1 = -2 * exp_p2r * cosf(p2i);
 	f2a2 = exp_p2r * exp_p2r;
 	f2b = (f2a0 + f2a1 + f2a2);
-	float fdbck = (1 - fxParam1 * fxParam1 * 0.66f + fxParamA2 * 0.25f) * fxParam2 * 0.47f ;
+	float fdbck = (1 - fxParam1 * fxParam1 * 0.76f + fxParamA2 * 0.25f) * fxParam2 * 0.47f ;
 
 	float in, y;
 	float invAttn = sqrt3(numberOfVoiceInverse);
@@ -4281,7 +4281,7 @@ case FILTER_TEEBEE2:
 	
 	float velocity = this->lastVelocity;
 	bool isReleased = voices[this->lastPlayedNote]->isReleased();
-	bool accent = velocity > 0.78f;
+	bool accent = velocity > 0.629f;
 
 	const float ga = 0.9764716867f; //= exp(-1/(PREENFM_FREQUENCY * attack / BLOCK_SIZE))
 	const float gr = 0.9979969962f; //= exp(-1/(PREENFM_FREQUENCY * release / BLOCK_SIZE))
@@ -4387,13 +4387,13 @@ case FILTER_CRUSH2:
 	const float f1 = clamp(0.33f + fxParam1 * fxParam1 * 0.43f, filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - f1) / (1.0f + f1);
 
-	int thrs1 = fxParam1 * 50;
+	int thrs1 = fxParam1 * 57;
 
 	float bipolarf = sigmoid(fxParam2 - 0.5f);
 	float folded = fold(0.125f + sigmoid(bipolarf * 21 * fxParam1) ) + 0.25f;
-	int thrs2 = 1 + fabsf(folded) + fxParam2 * 15;
+	int thrs2 = 1 + fabsf(folded) + fxParam2 * 19;
 
-	float inL = v0L, inR = v0R;
+	float inL = v5L, inR = v5R, destL = v6L, destR = v6R;
 
     const float pattern = (1 - 0.39f * f * 0.997f);
 
@@ -4406,13 +4406,13 @@ case FILTER_CRUSH2:
 
 		if (bits1 > thrs1)
 		{
-			inL = *sp;
-		}
-
-		if (bits2 > thrs2)
+			destL = *sp;
+		} 
+		 else if (bits2 > thrs2)
 		{
-			inL = *sp;
+			destL = *sp;
 		}
+		inL = (inL * 7 +  destL) * 0.125f;//smoothing
 
 		localv0L = pattern * localv0L - f * sat25(localv1L + inL);
 		localv1L = pattern * localv1L + f * localv0L;
@@ -4427,14 +4427,14 @@ case FILTER_CRUSH2:
 		if (bits1 > thrs1)
 		{
 			bits1 = 0;
-			inR = *sp;
+			destR = *sp;
 		}
-		
-		if (bits2 > thrs2)
+		 else if (bits2 > thrs2)
 		{
 			bits2 = 0;
-			inR = *sp;
+			destR = *sp;
 		}
+		inR = (inR * 7 +  destR) * 0.125f;
 
 		localv0R = pattern * localv0R - f * sat25(localv1R + inR);
 		localv1R = pattern * localv1R + f * localv0R;
@@ -4457,6 +4457,12 @@ case FILTER_CRUSH2:
 	v2R = _ly1R;
 	v3L = _lx1L;
 	v3R = _lx1R;
+
+	v5L = inL;
+	v5R = inR;
+	v6L = destL;
+	v6R = destR;
+	
 }
 break;
 case FILTER_OFF:
