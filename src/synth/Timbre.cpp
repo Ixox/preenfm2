@@ -529,6 +529,7 @@ Timbre::Timbre() {
 
     // Init FX variables
 	v0L = v1L = v2L = v3L = v4L = v5L = v6L = v7L = v8L = v0R = v1R = v2R = v3R = v4R = v5R = v6R = v7R = v8R = v8R = 0.0f;
+	fxParamA1 = fxParamA2 = fxParamB2 = 0;
     fxParam1PlusMatrix = -1.0;
 }
 
@@ -4390,6 +4391,10 @@ case FILTER_CRUSH2:
 	float localv0R = v0R;
 	float localv1R = v1R;
 
+	float drift = fxParamB2;
+	float nexDrift = *sp * 0.015f;
+	float deltaD = (nexDrift - drift) * 0.000625f;
+
 	const float f1 = clamp(0.33f + fxParam2 * fxParam2 * 0.43f, filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - f1) / (1.0f + f1);
 
@@ -4400,41 +4405,46 @@ case FILTER_CRUSH2:
 
 	float bipolarf = sigmoid(fxParam1 - 0.5f);
 	float folded = fold(0.125f + sigmoid(bipolarf * 21 * fxParam2)) + 0.25f;
-	float stime2 = 1 + (1 - fxParam2) * 79 + folded * 16;
+	float stime1delta = stime1 - roundf(stime1 * 32) * 0.03125f;
+	float stime2 = 1 + (1 - fxParam2 ) * 84 + stime1delta;//+ fxParam1 * folded * 16;
 
 	float inL = v6L, inR = v6R, destL = v7L, destR = v7R;
+	float filterF;
 
 	for (int k = BLOCK_SIZE; k--;)
 	{
 		// Left voice
 
-		_ly1L = coef1 * (_ly1L + localv1L) - _lx1L; // allpass
+		_ly1L = (coef1 + drift) * (_ly1L + localv1L) - _lx1L; // allpass
 		_lx1L = localv1L;
 
-		_ly2L = coef2 * (_ly2L + _ly1L) - _lx2L; // allpass
+		_ly2L = (coef2 - drift) * (_ly2L + _ly1L) - _lx2L; // allpass
 		_lx2L = _ly1L;
 
 		if (bits1 > stime1)
 		{
+			drift += deltaD;
 			destL = (*sp);
 		}
 		else if (bits2 > stime2)
 		{
+			drift -= deltaD;
 			destL = sigmoid(*sp);
 		}
 		inL = (inL * 7 + destL) * 0.125f; //smoothing
 
-		localv0L = pattern * localv0L - f * tanh4(localv1L + inL);
-		localv1L = pattern * localv1L + f * localv0L;
+		filterF = f;
+		localv0L = pattern * localv0L - filterF * tanh4(localv1L + inL);
+		localv1L = pattern * localv1L + filterF * localv0L;
 
 		*sp++ = clamp(_ly2L * mixerGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 
-		_ly1R = coef1 * (_ly1R + localv1R) - _lx1R; // allpass
+		_ly1R = (coef1 - drift)  * (_ly1R + localv1R) - _lx1R; // allpass
 		_lx1R = localv1R;
 
-		_ly2R = coef2 * (_ly2R + _ly1R) - _lx2R; // allpass
+		_ly2R = (coef2 + drift) * (_ly2R + _ly1R) - _lx2R; // allpass
 		_lx2R = _ly1R;
 
 		if (bits1 > stime1)
@@ -4449,8 +4459,8 @@ case FILTER_CRUSH2:
 		}
 		inR = (inR * 7 + destR) * 0.125f;
 
-		localv0R = pattern * localv0R - f * tanh4(localv1R + inR);
-		localv1R = pattern * localv1R + f * localv0R;
+		localv0R = pattern * localv0R - filterF * tanh4(localv1R + inR);
+		localv1R = pattern * localv1R + filterF * localv0R;
 
 		*sp++ = clamp(_ly2R * mixerGain, -ratioTimbres, ratioTimbres);
 
@@ -4480,6 +4490,8 @@ case FILTER_CRUSH2:
 	v6R = inR;
 	v7L = destL;
 	v7R = destR;
+
+	fxParamB2 = nexDrift;
 }
 break;
 case FILTER_OFF:
@@ -4624,6 +4636,7 @@ void Timbre::recomputeBPValues(float q, float fSquare ) {
 void Timbre::setNewEffecParam(int encoder) {
 	if (encoder == 0) {
    		v0L = v1L = v2L = v3L = v4L = v5L = v6L = v7L = v8L = v0R = v1R = v2R = v3R = v4R = v5R = v6R = v7R = v8R = v8R = 0.0f;
+		fxParamA1 = fxParamA2 = fxParamB2 = 0;
 
 	    for (int k=1; k<NUMBER_OF_ENCODERS; k++) {
 	        setNewEffecParam(k);
