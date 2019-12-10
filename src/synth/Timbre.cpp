@@ -3665,7 +3665,7 @@ case FILTER_18DB:
 	float OffsetTmp = fabsf(params.effect.param2);
 	fxParam2 = ((OffsetTmp + 9.0f * fxParam2) * .1f);
 	float res = fxParam2 * 6 + cut2 * 0.68f;
- 	float fb = res * (1 - 0.178f * cut2);
+ 	float fb = res * (1 - 0.178f * (cut2 + fxParam1 * fxParam1 * fxParam2 * 0.5f));
 	float invCut = 1 - cut;
 
 	//const float r = 0.985f;
@@ -3674,13 +3674,19 @@ case FILTER_18DB:
 	float dc  = cut2 * 0.1f;
 	float *sp = this->sampleBlock;
 
-	float buf1L = v0L, buf2L = v1L, buf3L = v2L, buf4L = v3L;
-	float buf1R = v0R, buf2R = v1R, buf3R = v2R, buf4R = v3R;
+	float buf1L = v0L, buf2L = v1L, buf3L = v2L;
+	float buf1R = v0R, buf2R = v1R, buf3R = v2R;
 
-	float buf1inL = v4L, buf2inL = v5L, buf3inL = v6L, buf4inL = v7L;
-	float buf1inR = v4R, buf2inR = v5R, buf3inR = v6R, buf4inR = v7R;
+	float buf1inL = v4L, buf2inL = v5L, buf3inL = v6L;
+	float buf1inR = v4R, buf2inR = v5R, buf3inR = v6R;
 
-	float finalGain = mixerGain * (1 + fxParam2 * 0.75f) * 2;
+	float _ly1L = v3L, _ly1R = v3R;
+	float _lx1L = v7L, _lx1R = v7R;
+
+	const float f1 = clamp(0.3f + cut * cut * 0.47f, filterWindowMin, filterWindowMax);
+	float coef1 = (1.0f - f1) / (1.0f + f1);
+
+	float finalGain = mixerGain * (1 + fxParam2 * 0.75f) * 2.27f;
 
 	const float r = 0.987f;
 
@@ -3689,7 +3695,7 @@ case FILTER_18DB:
 		// Left voice
 		*sp = buf3L + ((-buf3L + *sp) * r);
 
-		*sp = tanh3(*sp - (buf3L) * (fb));
+		*sp = tanh4(*sp - (buf3L) * (fb));
 		*sp *= attn;
 		buf1L = (*sp) + inAtn * buf1inL + invCut * buf1L; // Pole 1
 		buf1inL = (*sp);
@@ -3698,12 +3704,15 @@ case FILTER_18DB:
 		buf3L = (buf2L) + inAtn * buf3inL + invCut * buf3L; // Pole 3
 		buf3inL = buf2L;
 
-		*sp++ = clamp(buf3L * finalGain, -ratioTimbres, ratioTimbres);
+		_ly1L = (coef1) * (_ly1L + buf3L) - _lx1L; // allpass
+		_lx1L = buf3L;
+
+		*sp++ = clamp(_ly1L * finalGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
 		*sp = buf3R + ((-buf3R + *sp) * r);
 
-		*sp = tanh3(*sp - (buf3R) * (fb));
+		*sp = tanh4(*sp - (buf3R) * (fb));
 		*sp *= attn;
 		buf1R = (*sp) + inAtn * buf1inR + invCut * buf1R; // Pole 1
 		buf1inR = (*sp);
@@ -3712,28 +3721,32 @@ case FILTER_18DB:
 		buf3R = (buf2R) + inAtn * buf3inR + invCut * buf3R; // Pole 3
 		buf3inR = buf2R;
 
-		*sp++ = clamp(buf3R * finalGain, -ratioTimbres, ratioTimbres);
+		_ly1R = (coef1)  * (_ly1R + buf3R) - _lx1R; // allpass
+		_lx1R = buf3R;
+
+		*sp++ = clamp(_ly1R * finalGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = buf1L;
 	v1L = buf2L;
 	v2L = buf3L;
-	v3L = buf4L;
 
 	v0R = buf1R;
 	v1R = buf2R;
 	v2R = buf3R;
-	v3R = buf4R;
 
 	v4L = buf1inL;
 	v5L = buf2inL;
 	v6L = buf3inL;
-	v7L = buf4inL;
 
 	v4R = buf1inR;
 	v5R = buf2inR;
 	v6R = buf3inR;
-	v7R = buf4inR;
+
+	v3L = _ly1L;
+	v3R = _ly1R;
+	v7L = _lx1L;
+	v7R = _lx1R;
 
 	break;
 }
