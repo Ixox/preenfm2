@@ -122,7 +122,14 @@ in this version, some more filters & fx :
 - ladder version 4
 
 ###### H3O+ :
-- tb303 filter like
+- tb303 filter wanabee, built in accent for notes over velocity 80
+
+###### Svh3 :
+- svf filter with hp in feedback loop, built in accent
+
+###### Alkx :
+- double sample rate reduction
+
 
 Credits : 
 

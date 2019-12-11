@@ -4316,7 +4316,7 @@ case FILTER_TEEBEE2:
 	for (int k = BLOCK_SIZE; k--;)
 	{
 		// Left voice
-		*sp = lowL3 + ((-lowL3 + *sp) * r);
+		*sp = sat25((lowL3 + ((-lowL3 + *sp) * r)) * sat);
 
 		_ly1L = coef1 * (_ly1L + *sp) - _lx1L; // allpass
 		_lx1L = *sp;
@@ -4333,10 +4333,10 @@ case FILTER_TEEBEE2:
 		_ly2L = coef2 * (_ly2L + lowL3) - _lx2L; // allpass
 		_lx2L = lowL3;
 
-		*sp++ = clamp(sat25(lowL3 * sat) * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(_ly2L * svfGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
-		*sp = lowR3 + ((-lowR3 + *sp) * r);
+		*sp = sat25((lowR3 + ((-lowR3 + *sp) * r)) * sat);
 
 		_ly1R = coef1 * (_ly1R + *sp) - _lx1R; // allpass
 		_lx1R = *sp;
@@ -4350,10 +4350,10 @@ case FILTER_TEEBEE2:
 		lowR3 = hpCoef1 * lowR2 - hpCoef2 * lowR;
 		lowR2 = lowR;
 
-		_ly2R = coef2 * (_ly2R + lowL3) - _lx2R; // allpass
-		_lx2R = lowL3;
+		_ly2R = coef2 * (_ly2R + lowR3) - _lx2R; // allpass
+		_lx2R = lowR3;
 
-		*sp++ = clamp(sat25(lowR3 * sat) * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(_ly2R * svfGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = lowL;
@@ -4384,14 +4384,18 @@ case FILTER_CRUSH2:
 	// Low pass... on the Frequency
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-	const float f = 0.05f + clamp(sigmoid(fxParam1 + fxParam2) * 0.67f, 0, 0.85f);
-	const float reso = 0.58f;
+	//const float f = 0.05f + clamp(sigmoid(fxParam1 + fxParam2) * 0.67f, 0, 0.85f);
+	const float f = 0.55f + clamp(sigmoid(fxParam1) * 0.45f, 0, 0.45f);
+	const float reso = 0.28f;
 	const float pattern = (1 - reso * f);
 
 	float *sp = this->sampleBlock;
 
 	float bits1 = v8L;
 	float bits2 = v8R;
+
+	float b1inc = fxParam1 * fxParam1 * fxParam1 * 0.5f;
+	float b2inc = clamp(fxParam2 * fxParam2 * fxParam2 * 0.4f + b1inc * 0.05f, 0, 1);
 
 	float _ly1L = v2L, _ly1R = v2R;
 	float _lx1L = v3L, _lx1R = v3R;
@@ -4408,25 +4412,32 @@ case FILTER_CRUSH2:
 	float nexDrift = *sp * 0.015f;
 	float deltaD = (nexDrift - drift) * 0.000625f;
 
-	const float f1 = clamp(0.33f + fxParam2 * fxParam2 * 0.43f, filterWindowMin, filterWindowMax);
+	const float f1 = clamp(0.23f + fxParam2 * fxParam2 * 0.33f, filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - f1) / (1.0f + f1);
 
 	const float f2 = clamp(0.33f + fxParam1 * fxParam1 * 0.43f, filterWindowMin, filterWindowMax);
 	float coef2 = (1.0f - f2) / (1.0f + f2);
 
-	float stime1 = (1 - fxParam1) * 28;
-
-	float bipolarf = sigmoid(fxParam1 - 0.5f);
-	float folded = fold(0.125f + sigmoid(bipolarf * 21 * fxParam2)) + 0.25f;
-	float stime1delta = stime1 - roundf(stime1 * 32) * 0.03125f;
-	float stime2 = 1 + (1 - fxParam2 ) * 84 + stime1delta;//+ fxParam1 * folded * 16;
-
 	float inL = v6L, inR = v6R, destL = v7L, destR = v7R;
-	float filterF;
 
 	for (int k = BLOCK_SIZE; k--;)
 	{
 		// Left voice
+
+		if (bits1 >= 1)
+		{
+			drift += deltaD;
+			destL = (*sp);
+		}
+		if (bits2 >= 1)
+		{
+			drift -= deltaD;
+			destL = (*sp);
+		}
+		inL = (inL * 7 + destL) * 0.125f; //smoothing
+
+		localv0L = pattern * localv0L - f * tanh4(localv1L + inL);
+		localv1L = pattern * localv1L + f * localv0L;
 
 		_ly1L = (coef1 + drift) * (_ly1L + localv1L) - _lx1L; // allpass
 		_lx1L = localv1L;
@@ -4434,25 +4445,24 @@ case FILTER_CRUSH2:
 		_ly2L = (coef2 - drift) * (_ly2L + _ly1L) - _lx2L; // allpass
 		_lx2L = _ly1L;
 
-		if (bits1 > stime1)
-		{
-			drift += deltaD;
-			destL = (*sp);
-		}
-		else if (bits2 > stime2)
-		{
-			drift -= deltaD;
-			destL = sigmoid(*sp);
-		}
-		inL = (inL * 7 + destL) * 0.125f; //smoothing
-
-		filterF = f;
-		localv0L = pattern * localv0L - filterF * tanh4(localv1L + inL);
-		localv1L = pattern * localv1L + filterF * localv0L;
-
 		*sp++ = clamp(_ly2L * mixerGain, -ratioTimbres, ratioTimbres);
 
 		// Right voice
+
+		if (bits1 >= 1)
+		{
+			bits1 -= 1;
+			destR = (*sp);
+		}
+		if (bits2 >= 1)
+		{
+			bits2 -= 1;
+			destR = (*sp);
+		}
+		inR = (inR * 7 + destR) * 0.125f;
+
+		localv0R = pattern * localv0R - f * tanh4(localv1R + inR);
+		localv1R = pattern * localv1R + f * localv0R;
 
 		_ly1R = (coef1 - drift)  * (_ly1R + localv1R) - _lx1R; // allpass
 		_lx1R = localv1R;
@@ -4460,25 +4470,10 @@ case FILTER_CRUSH2:
 		_ly2R = (coef2 + drift) * (_ly2R + _ly1R) - _lx2R; // allpass
 		_lx2R = _ly1R;
 
-		if (bits1 > stime1)
-		{
-			bits1 = 0;
-			destR = (*sp);
-		}
-		else if (bits2 > stime2)
-		{
-			bits2 = 0;
-			destR = sigmoid(*sp);
-		}
-		inR = (inR * 7 + destR) * 0.125f;
-
-		localv0R = pattern * localv0R - filterF * tanh4(localv1R + inR);
-		localv1R = pattern * localv1R + filterF * localv0R;
-
 		*sp++ = clamp(_ly2R * mixerGain, -ratioTimbres, ratioTimbres);
 
-		bits1 += 1.000003f;
-		bits2 += 1.000007f;
+		bits1 += b1inc;
+		bits2 += b2inc;
 	}
 
 	v8L = bits1;
