@@ -4386,7 +4386,7 @@ case FILTER_CRUSH2:
 
 	//const float f = 0.05f + clamp(sigmoid(fxParam1 + fxParam2) * 0.67f, 0, 0.85f);
 	const float f = 0.55f + clamp(sigmoid(fxParam1) * 0.45f, 0, 0.45f);
-	const float reso = 0.28f;
+	const float reso = 0.28f + (1 - fxParam1) * 0.55f;
 	const float pattern = (1 - reso * f);
 
 	float *sp = this->sampleBlock;
@@ -4420,6 +4420,8 @@ case FILTER_CRUSH2:
 
 	float inL = v6L, inR = v6R, destL = v7L, destR = v7R;
 
+	float sat = 1.25f + fxParam1 * 0.5f;
+
 	for (int k = BLOCK_SIZE; k--;)
 	{
 		// Left voice
@@ -4432,11 +4434,11 @@ case FILTER_CRUSH2:
 		if (bits2 >= 1)
 		{
 			drift -= deltaD;
-			destL = (*sp);
+			destL = sat25(*sp * sat);
 		}
 		inL = (inL * 7 + destL) * 0.125f; //smoothing
 
-		localv0L = pattern * localv0L - f * tanh4(localv1L + inL);
+		localv0L = pattern * localv0L - f * sat25(localv1L + inL);
 		localv1L = pattern * localv1L + f * localv0L;
 
 		_ly1L = (coef1 + drift) * (_ly1L + localv1L) - _lx1L; // allpass
@@ -4457,11 +4459,11 @@ case FILTER_CRUSH2:
 		if (bits2 >= 1)
 		{
 			bits2 -= 1;
-			destR = (*sp);
+			destR = sat25(*sp * sat);
 		}
 		inR = (inR * 7 + destR) * 0.125f;
 
-		localv0R = pattern * localv0R - f * tanh4(localv1R + inR);
+		localv0R = pattern * localv0R - f * sat25(localv1R + inR);
 		localv1R = pattern * localv1R + f * localv0R;
 
 		_ly1R = (coef1 - drift)  * (_ly1R + localv1R) - _lx1R; // allpass
