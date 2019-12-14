@@ -4086,41 +4086,18 @@ case FILTER_TEEBEE:
 	// Low pass... on the Frequency
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-	float velocity = this->lastVelocity;
-	
-	bool accent = velocity > 0.629f;
-
 	const float ga = 0.9764716867f; //= exp(-1/(PREENFM_FREQUENCY * attack / BLOCK_SIZE))
 	const float gr = 0.9979969962f; //= exp(-1/(PREENFM_FREQUENCY * release / BLOCK_SIZE))
-
-	//accent cv :
-	if ((accent && (fxParamB2-- > 0 )))
-	{
-		fxParamA2 *= ga;
-		fxParamA2 += (1 - ga);
-		fxParamA1 = -0.4f;// = post accent neg
-	}	else	{
-		fxParamA2 *= gr;
-		fxParamB2 = 720; // = accent dur
-	}
-
-	if (fxParamA1 < 0)	{
-		fxParamA1 += 0.0001f;
-	}	else	{
-		fxParamA1 = 0;
-	}
-
-	fxParamA2 = clamp(fxParamA2, 0, 1.5f);
 
 	float *sp = this->sampleBlock;
 	float state0L = v0L, state1L = v1L, state2L = v2L, state3L = v3L, state4L = v4L;
 	float state0R = v0R, state1R = v1R, state2R = v2R, state3R = v3R, state4R = v4R;
 
 	float vcf_reso = fxParam2 * 1.065f;
-	float vcf_cutoff = clamp(fxParam1 * 0.8465f + 0.22f * fxParamA2 + fxParamA1 * (1-fxParamA2), 0, 2);
+	float vcf_cutoff = clamp(fxParam1 * 0.8465f, 0, 2);
 
-	float vcf_e1 = expf_fast(5.55921003f + 2.17788267f * vcf_cutoff + 0.47f * fxParamA2) + 103;
-	float vcf_e0 = expf_fast(5.22617147 + 1.70418937f * vcf_cutoff - 0.298f * fxParamA2) + 103;
+	float vcf_e1 = expf_fast(5.55921003f + 2.17788267f * vcf_cutoff) + 103;
+	float vcf_e0 = expf_fast(5.22617147 + 1.70418937f * vcf_cutoff) + 103;
 
 	vcf_e0 *= 2 * 3.14159265358979f / PREENFM_FREQUENCY;
 	vcf_e1 *= 2 * 3.14159265358979f / PREENFM_FREQUENCY;
@@ -4183,12 +4160,12 @@ case FILTER_TEEBEE:
 	f2a1 = -2 * exp_p2r * cosf(p2i);
 	f2a2 = exp_p2r * exp_p2r;
 	f2b = (f2a0 + f2a1 + f2a2);
-	float fdbck = (1 - fxParam1 * fxParam1 * 0.81f + fxParamA2 * 0.25f) * fxParam2 * 0.33f ;
+	float fdbck = (1 - fxParam1 * fxParam1 * 0.81f) * fxParam2 * 0.33f ;
 
 	float in, y;
 	float invAttn = sqrt3(numberOfVoiceInverse);
-	float drive = 0.7f + ((1 - fxParam1 * 0.85f) * 0.37f + fxParamA2 + fxParam2 * 0.27f) * invAttn;
-	float drive2 = 1.05f - fxParam1 * fxParam1 * 0.05f + (fxParam2 * 0.17f + fxParamA2 * fxParamA2 * 0.37f) * invAttn;
+	float drive = 0.7f + ((1 - fxParam1 * 0.85f) * 0.37f + fxParam2 * 0.27f) * invAttn;
+	float drive2 = 1.05f - fxParam1 * fxParam1 * 0.05f + (fxParam2 * 0.17f) * invAttn;
 
 	for (int k = BLOCK_SIZE; k--;)
 	{
