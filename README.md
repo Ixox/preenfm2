@@ -1,134 +1,48 @@
-## preenfm2
+# preenfm2 firmware
 
-forked from Ixox/preenfm2
+Ixox/preenfm2 is the official repository of the preenfm2 firmware.
 
-in this version, some more filters & fx :
+You can find here the sources of the firmware as well as the hardware files for the PCB, MCU board and cases.
 
-###### LP2  :
-- different flavour of the original LP
+If you think something is missing or not clear, please contact me.
 
-###### HP2  :
-- same for HP
+If you don't have the preenfm2 bootlader installed, you need to flash it first, [read this](http://ixox.fr/preenfm2/build-it/burn-firmware/)
 
-###### BP2  :
-- same for BP
 
-###### Lp3  :
-- state variable filter, low pass mode
+To compile the firmware, you'll need [arm-gcc version 4.7](https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2014-q2-update)
 
-###### Hp3  :
-- state variable filter, high pass mode
+Add the bin directory to your PATH, and run **'make'**, you'll get the list of the available targets.
 
-###### Bp3  :
-- state variable filter, band pass mode
 
-###### Peak  :
-- state variable filter, peak mode
+```bash
+$ make
+You must chose a target
+   clean : remove build directory
+   pfm : build pfm2 firmware
+   pfmo : build pfm2 overclocked firmware
+   boot : build pfm2 bootloader
+   install : flash firmware through the programming interface
+   installo : flash overclocked firmware through the programming interface
+   installdfu : flash firmware through DFU
+   installdfuo : flash overclocked firmware through DFU
+   installboot : flash bootloader
+   installbootdfu : flash bootloader through DFU
+   zip : create zip with all inside
+```
+Since some refactoring, the bootloader does not compile anymore. But it's available in its binary format.
 
-###### Notc  :
-- state variable filter, notch mode
+Then put your preenfm2 in [bootloader mode](http://ixox.fr/preenfm2/manual/upgrade-firmware/). Look at DFU part 4.
 
-###### Bell  :
-- state variable filter, boost if param amp > 0.5, else cut
+To flash the firmware on the preenfm2 using the DFU protocol :
 
-###### LowS :
-- state variable Low Shelf filter, boost if param amp > 0.5, else cut
+```bash
+make installdfu
+```
 
-###### HigS :
-- state variable High Shelf filter, boost if param amp > 0.5, else cut
+Once it's done, unplug the power cable and plug it back.
 
-###### LpHp :
-- distortion filter, morph from lowpass at freq=0 to highpass at freq=1
+## New Filters in 2.11
 
-###### BpDs
-- saturated bandpass filter
+Many effects have been added in the firmware 2.11. They were coded by [Toltekradiation](http://ixox.fr/forum/index.php?topic=69544.0).
 
-###### LPws :
-- distorted low pass mixed with source signal, bottom presence enhancer
-
-###### Tilt :
-- emphasis on low (mod < 0.5) or high frequency (mod > 0.5), Freq = breakpoint
-
-###### Pann :
-- stereo placement tool : pos = panning, sprd = 3 x pole spread
-
-###### Sat  :
-- kind of guitar saturation ; signal over threshold is distorded
-
-###### Sigm :
-- tanh waveshaper saturation
-
-###### Fold :
-- signal is amplified by "driv", signal over 1 is folded, as many time as needed
-
-###### Wrap :
-- signal is amplified by "driv", signal over 1 is wraped ; it is mirrored at -1
-
-###### Xor  :
-- signal over threshold is xor-ed with an allpass version of itself
-
-###### Txr1 :
-- bitmangling filtered texture 1 
-
-###### Txr2 :
-- bitmangling filtered texture 2, different kind
-
-###### LPx1 :
-- xor low pass filter + fold 
-
-###### LPx2 :
-- xor low pass filter + fold, different kind
-
-###### LpSn :
-- saturated low pass filter, for polyphonic context 
-
-###### HpSn :
-- saturated high pass filter, for polyphonic context 
-
-###### Not4 :
-- quad notch filter, Sprd the 4 poles around the center frequency
-
-###### Ap4 :
-- all pass quad filter, Sprd the 4 poles around the center frequency
-
-###### Ap4b :
-- all pass quad filter, resonant version, Sprd the 4 poles around the center frequency
-
-###### Ap4D :
-- all pass quad filter, diffusion version, Sprd the 4 poles around the center frequency
-
-###### Oryx :
-- 2 peaks formant filter with some distortion
-
-###### Orx2 :
-- 3 peaks formant filter
-
-###### Orx3 :
-- 3 peaks formant filter + more distortion
-
-###### 18db :
-- 3 pole soft LP
-
-###### La+d :
-- ladder version 1
-
-###### Lad+ :
-- ladder version 2
-
-###### Diod :
-- ladder version 3
-
-###### L+d+ :
-- ladder version 4
-
-###### H3O+ :
-- tb303 filter like
-
-Credits : 
-
-	many thanks to :
-	- musicdsp.org for the good filters algo ( and more).
-	- Andrew Simper for the bell, low shelf and high shelf algo.
-	- Dennis Cronin for the allpass algo.
-	- Karlsen, Stilson et al. for the ladder algo
-	- Andy Sloane for the 303 filter algo
+His github repo is [here](https://github.com/pvig/preenfm2). You'll find there some description of the different effects.
