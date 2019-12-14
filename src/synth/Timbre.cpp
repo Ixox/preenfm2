@@ -598,7 +598,7 @@ int cptHighNote = 0;
 
 void Timbre::preenNoteOn(char note, char velocity) {
 
-	this->lastVelocity = velocity;
+	this->lastVelocity = velocity * INV127;
 
 	int iNov = (int) params.engine1.numberOfVoice;
 	if (unlikely(iNov == 0)) {
@@ -2333,8 +2333,6 @@ case FILTER_FOLD:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-		float velocity = this->lastVelocity;
-
 		float *sp = this->sampleBlock;
 		float localv0L = v0L;
 		float localv1L = v1L;
@@ -2351,7 +2349,7 @@ case FILTER_FOLD:
 	
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(0.57f - fxParam1 * 0.43f + velocity * 0.3f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.57f - fxParam1 * 0.43f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		for (int k=BLOCK_SIZE ; k--; ) {
@@ -2391,8 +2389,6 @@ case FILTER_WRAP:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-		float velocity = this->lastVelocity;
-
 		float *sp = this->sampleBlock;
 		float localv0L = v0L;
 		float localv1L = v1L;
@@ -2408,7 +2404,7 @@ case FILTER_WRAP:
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(0.58f - fxParam1 * 0.43f + velocity * 0.3f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.58f - fxParam1 * 0.43f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		for (int k=BLOCK_SIZE ; k--; ) {
@@ -2716,8 +2712,6 @@ case FILTER_LPXOR:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-		float velocity = this->lastVelocity;
-
 		const float a = 1.f - fxParam1;
 		const float a2f = a * SHORT2FLOAT;
 		const float b = 1.f - a;
@@ -2737,7 +2731,7 @@ case FILTER_LPXOR:
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(0.27f + fxParam1 * 0.2f + velocity * 0.4f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.27f + fxParam1 * 0.2f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		const float r = 0.9940f;
@@ -2789,8 +2783,6 @@ case FILTER_LPXOR2:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-		float velocity = this->lastVelocity;
-
 		const float a = 1.f - fxParam1;
 		const float a2f = a * SHORT2FLOAT;
 		const float b = 1.f - a;
@@ -2810,7 +2802,7 @@ case FILTER_LPXOR2:
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(0.27f + fxParam1 * 0.2f + velocity * 0.4f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.27f + fxParam1 * 0.2f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		const float r = 0.9940f;
@@ -3847,8 +3839,6 @@ case FILTER_LADDER2:
 	fxParam1 = ((fxParamTmp + 9.0f * fxParam1) * .1f);
 	float cut = clamp(sqrt3(fxParam1), filterWindowMin, filterWindowMax);
 
-	float velocity = this->lastVelocity;
-
 	float OffsetTmp = fabsf(params.effect.param2);
 	fxParam2 = ((OffsetTmp + 9.0f * fxParam2) * .1f);
 	float res = fxParam2;
@@ -3868,7 +3858,7 @@ case FILTER_LADDER2:
 
 	const float bipolarf = fxParam1 - 0.5f;
 	const float fold3 = (fold(13 * bipolarf) + 0.125f) * 0.25f;
-	const float f1 = clamp(0.33f + fold3 * (1 - cut * 0.5f) + velocity * 0.33f, filterWindowMin, filterWindowMax);
+	const float f1 = clamp(0.33f + fold3 * (1 - cut * 0.5f), filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - f1) / (1.0f + f1);
 	const float f2 = clamp(f1 * f1, filterWindowMin, filterWindowMax);
 	float coef2 = (1.0f - f2) / (1.0f + f2);
@@ -3993,14 +3983,12 @@ case FILTER_KRMG:
 	// Low pass... on the Frequency
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-	float velocity = this->lastVelocity;
-
 	const float wc = fxParam1 * fxParam1;
 	const float wc2 = wc * wc;
 	const float wc3 = wc2 * wc;
 
 	const float g = 0.9892f * wc - 0.4342f * wc2 + 0.1381f * wc3 - 0.0202f * wc2 * wc2;
-	const float drive = 0.85f + velocity * 0.12f * sqrt3(numberOfVoiceInverse);
+	const float drive = 0.85f;
 	const float gComp = 1;
 	const float resonance = fxParam2 * 0.52f - fxParam1 * 0.05f;
 	const float gRes = 1.5f * resonance * (1.0029f + 0.0526f * wc - 0.926f * wc2 + 0.0218f * wc3);
@@ -4254,7 +4242,7 @@ case FILTER_TEEBEE:
 
 }
 break;
-case FILTER_TEEBEE2:
+case FILTER_SVFLH:
 {
 	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
 	fxParamTmp *= fxParamTmp;
