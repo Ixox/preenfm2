@@ -4088,7 +4088,6 @@ case FILTER_TEEBEE:
 
 	float velocity = this->lastVelocity;
 	
-	bool isReleased = voices[this->lastPlayedNote]->isReleased();
 	bool accent = velocity > 0.629f;
 
 	const float ga = 0.9764716867f; //= exp(-1/(PREENFM_FREQUENCY * attack / BLOCK_SIZE))
@@ -4249,7 +4248,7 @@ case FILTER_SVFLH:
 	// Low pass... on the Frequency
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-	const float f = 0.08f + fxParam1 * fxParam1 * 0.95f + fxParamA2 * 0.012f;
+	const float f = 0.08f + fxParam1 * fxParam1 * 0.95f;
 	const float fb = sqrtf(1 - fxParam2 * 0.999f) * (0.33f + fxParam1 * 0.66f);
 	const float scale = sqrtf(fb);
 
@@ -4257,7 +4256,7 @@ case FILTER_SVFLH:
 	float lowL = v0L, bandL = v1L, lowL2 = v2L, lowL3 = v3L;
 	float lowR = v0R, bandR = v1R, lowR2 = v2R, lowR3 = v3R;
 	
-	const float svfGain = (0.67f + fxParam2 * fxParam2 * 0.75f + fxParamA2 * 0.777f) * 0.66f * mixerGain;
+	const float svfGain = (0.87f + fxParam2 * fxParam2 * 0.75f) * 1.5f * mixerGain;
 
 	float _ly1L = v4L, _ly1R = v4R;
 	float _lx1L = v5L, _lx1R = v5R;
@@ -4271,24 +4270,7 @@ case FILTER_SVFLH:
 	const float f2 = clamp(0.33f + sqrt3(f) * 0.43f, filterWindowMin, filterWindowMax);
 	float coef2 = (1.0f - f2) / (1.0f + f2);
 
-	float velocity = this->lastVelocity;
-	bool isReleased = voices[this->lastPlayedNote]->isReleased();
-	bool accent = velocity > 0.629f;
-
-	const float ga = 0.9764716867f; //= exp(-1/(PREENFM_FREQUENCY * attack / BLOCK_SIZE))
-	const float gr = 0.9979969962f; //= exp(-1/(PREENFM_FREQUENCY * release / BLOCK_SIZE))
-
-	//accent cv :
-	if ((accent && (fxParamB2-- > 0))) {
-		fxParamA2 *= ga;
-		fxParamA2 += (1 - ga);
-	}	else	{
-		fxParamA2 *= gr;
-		fxParamB2 = 720; // = accent dur
-	}
-
-	fxParamA2 = clamp(fxParamA2, 0, 1.5f);
-	float sat = 1 + fxParam2 * 0.33f + fxParamA2 * 0.66f;
+	float sat = 1 + fxParam2 * 0.33f;
 
 	float theta = 1 - fxParam1 * fxParam2 * 0.3f;
 	float arghp = (1 + 2 * cosf(theta));
