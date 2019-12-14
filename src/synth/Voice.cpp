@@ -3245,10 +3245,11 @@ void Voice::setCurrentTimbre(Timbre *timbre) {
     struct StepSequencerParams* stepseqparams[] = { &timbre->getParamRaw()->lfoSeq1, &timbre->getParamRaw()->lfoSeq2};
     struct StepSequencerSteps* stepseqs[] = { &timbre->getParamRaw()->lfoSteps1, &timbre->getParamRaw()->lfoSteps2};
 
-
     this->currentTimbre = timbre;
 
     matrix.init(&timbre->getParamRaw()->matrixRowState1);
+    matrix.resetSources();
+    matrix.resetAllDestination();
 
     // OSC
     for (int k = 0; k < NUMBER_OF_LFO_OSC; k++) {

@@ -31,7 +31,9 @@ void LfoOsc::init(struct LfoParams *lfoParams, float* phase, Matrix *matrix, Sou
     this->rampInv = 10000000 ;
     this->currentRamp = 0;
     this->lfo = lfoParams;
-    valueChanged(3);
+    for (int j = 0; j < NUMBER_OF_ENCODERS; j++) {
+        valueChanged(j);
+    }
     this->destination = dest;
     this->currentRandomValue = 0.0f;
 
