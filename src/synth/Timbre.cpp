@@ -4394,8 +4394,8 @@ case FILTER_CRUSH2:
 	float bits1 = v8L;
 	float bits2 = v8R;
 
-	float b1inc = fxParam1 * fxParam1 * fxParam1 * 0.5f;
-	float b2inc = clamp(fxParam2 * fxParam2 * fxParam2 * 0.4f + b1inc * 0.05f, 0, 1);
+	float b1inc = fxParam1 * fxParam1 * fxParam1;
+	float b2inc = clamp(fxParam2 * fxParam2 * fxParam2 * 0.95f + b1inc * 0.05f, 0, 1);
 
 	float _ly1L = v2L, _ly1R = v2R;
 	float _lx1L = v3L, _lx1R = v3R;
@@ -4420,7 +4420,7 @@ case FILTER_CRUSH2:
 
 	float inL = v6L, inR = v6R, destL = v7L, destR = v7R;
 
-	float sat = 1.25f + fxParam1 * 0.5f;
+	float sat = 1.25f + fxParam1 * 0.25f;
 
 	for (int k = BLOCK_SIZE; k--;)
 	{
