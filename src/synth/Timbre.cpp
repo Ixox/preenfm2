@@ -4094,34 +4094,29 @@ case FILTER_TEEBEE:
 	const float ga = 0.9764716867f; //= exp(-1/(PREENFM_FREQUENCY * attack / BLOCK_SIZE))
 	const float gr = 0.9979969962f; //= exp(-1/(PREENFM_FREQUENCY * release / BLOCK_SIZE))
 
-	//accent cv :
+	//accent cv (fxParamA1) :
 	if ((accent && (fxParamB2-- > 0 )))
 	{
 		fxParamA2 *= ga;
 		fxParamA2 += (1 - ga);
-		fxParamA1 = -0.4f;// = post accent neg
+		fxParamA1 = (fxParamA1 * 24.1f + fxParamA2) * 0.04f;//faster build up
 	}	else	{
 		fxParamA2 *= gr;
 		fxParamB2 = 720; // = accent dur
-	}
-
-	if (fxParamA1 < 0)	{
-		fxParamA1 += 0.0001f;
-	}	else	{
-		fxParamA1 = 0;
+		fxParamA1 = (fxParamA1 * 49 + fxParamA2) * 0.02f;//smooth release
 	}
 
 	fxParamA2 = clamp(fxParamA2, 0, 1.5f);
-
+	
 	float *sp = this->sampleBlock;
 	float state0L = v0L, state1L = v1L, state2L = v2L, state3L = v3L, state4L = v4L;
 	float state0R = v0R, state1R = v1R, state2R = v2R, state3R = v3R, state4R = v4R;
 
 	float vcf_reso = fxParam2 * 1.065f;
-	float vcf_cutoff = clamp(fxParam1 * 1.2f , 0, 2);// * 0.8465f + 0.22f * fxParamA2 + fxParamA1 * (1-fxParamA2)
+	float vcf_cutoff = clamp(fxParam1 * 1.2f + 0.2f * fxParamA1, 0, 2);
 
-	float vcf_e1 = expf_fast(5.55921003f + 2.17788267f * vcf_cutoff + 0.47f * fxParamA2) + 103;
-	float vcf_e0 = expf_fast(5.22617147 + 1.70418937f * vcf_cutoff - 0.298f * fxParamA2) + 103;
+	float vcf_e1 = expf_fast(5.55921003f + 2.17788267f * vcf_cutoff + 0.47f * fxParamA1) + 103;
+	float vcf_e0 = expf_fast(5.22617147 + 1.70418937f * vcf_cutoff - 0.298f * fxParamA1) + 103;
 
 	vcf_e0 *= 2 * 3.14159265358979f / PREENFM_FREQUENCY;
 	vcf_e1 *= 2 * 3.14159265358979f / PREENFM_FREQUENCY;
@@ -4160,7 +4155,7 @@ case FILTER_TEEBEE:
 	float p0f = expf_fast(p0);
 	// gain @inf -> 1/(1+k); boost volume by 2, and also compensate for
 	// resonance (R72)
-	float targetgain = 2 / (1 + reso_k) + 0.5f * vcf_reso;
+	float targetgain = 2 / (1 + reso_k) + 0.5f * vcf_reso + 0.2f * fxParamA1;
 	f0b0 = 1; // (z - z0) * z^-1
 	f0b1 = -1;
 	f0a0 = 1; // (z - p0) * z^-1
@@ -4177,24 +4172,28 @@ case FILTER_TEEBEE:
 	f1a0 = 1;
 	f1a1 = -2 * exp_p1r * cosf(p1i);
 	f1a2 = exp_p1r * exp_p1r;
-	f1b = (f1a0 + f1a1 + f1a2);
+	f1b = (f1a0 + f1a1 + f1a2) + fxParamA1 * fxParam1 * fxParam1 * 0.5f;
 
 	const float exp_p2r = expf_fast(p2r);
 	f2a0 = 1;
 	f2a1 = -2 * exp_p2r * cosf(p2i);
 	f2a2 = exp_p2r * exp_p2r;
 	f2b = (f2a0 + f2a1 + f2a2);
-	float fdbck = ((1 - fxParam1 * fxParam1) * (0.81f + fxParamA2 * 0.18f) ) * fxParam2 * 0.45f ;
+	float fdbck = ((1 - fxParam1 * fxParam1) * (0.8f - fxParamA1 * 0.05f) ) * fxParam2 * 0.45f ;
 
 	float in, y;
 	float invAttn = sqrt3(numberOfVoiceInverse);
-	float drive = 0.7f + ((1 - fxParam1 * 0.85f) * 0.37f + fxParamA2 + fxParam2 * 0.27f) * invAttn;
-	float drive2 = 1.05f - fxParam1 * fxParam1 * 0.05f + (fxParam2 * 0.17f + fxParamA2 * fxParamA2 * 0.57f) * invAttn;
+	float drive2 = 1.05f - fxParam1 * fxParam1 * 0.05f + (fxParam2 * 0.17f - fxParamA1 * fxParamA1 * 0.051f) * invAttn;
+	float finalGain = (mixerGain * (1 - fxParam1 * 0.2f) + fxParamA1) * 0.75f;
+
+	float r = 0.989f;
 
 	for (int k = BLOCK_SIZE; k--;)
 	{
 		// -------- -------- -------- Left
-		in = tanh3((*sp + fdbck * state4L) * drive);
+		*sp = (state4L + ((-state4L + *sp) * r));
+
+		in = (*sp + fdbck * state4L);
 		y = (f0b0 * in + state0L);
 		state0L = f0b1 * in - f0a1 * y;
 
@@ -4208,10 +4207,12 @@ case FILTER_TEEBEE:
 		state3L = state4L - f2a1 * y;
 		state4L = -f2a2 * y;
 
-		*sp++ = clamp(sat33(y * drive2) * mixerGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(tanh4(y * drive2) * finalGain, -ratioTimbres, ratioTimbres);
 
 		// -------- -------- -------- Right
-		in = tanh3((*sp + fdbck * state4R) * drive);
+		*sp = (state4R + ((-state4R + *sp) * r));
+
+		in = (*sp + fdbck * state4R);
 		y = (f0b0 * in + state0R);
 		state0R = f0b1 * in - f0a1 * y;
 
@@ -4225,7 +4226,7 @@ case FILTER_TEEBEE:
 		state3R = state4R - f2a1 * y;
 		state4R = -f2a2 * y;
 
-		*sp++ = clamp(sat33(y * drive2) * mixerGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(tanh4(y * drive2) * finalGain, -ratioTimbres, ratioTimbres);
 	}
 
 	v0L = state0L;
