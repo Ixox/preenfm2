@@ -598,7 +598,7 @@ int cptHighNote = 0;
 
 void Timbre::preenNoteOn(char note, char velocity) {
 
-	this->lastVelocity = velocity;
+	this->lastVelocity = velocity * INV127;
 
 	int iNov = (int) params.engine1.numberOfVoice;
 	if (unlikely(iNov == 0)) {
@@ -2333,8 +2333,6 @@ case FILTER_FOLD:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-		float velocity = this->lastVelocity;
-
 		float *sp = this->sampleBlock;
 		float localv0L = v0L;
 		float localv1L = v1L;
@@ -2351,7 +2349,7 @@ case FILTER_FOLD:
 	
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(0.57f - fxParam1 * 0.43f + velocity * 0.3f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.57f - fxParam1 * 0.43f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		for (int k=BLOCK_SIZE ; k--; ) {
@@ -2391,8 +2389,6 @@ case FILTER_WRAP:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-		float velocity = this->lastVelocity;
-
 		float *sp = this->sampleBlock;
 		float localv0L = v0L;
 		float localv1L = v1L;
@@ -2408,7 +2404,7 @@ case FILTER_WRAP:
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(0.58f - fxParam1 * 0.43f + velocity * 0.3f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.58f - fxParam1 * 0.43f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		for (int k=BLOCK_SIZE ; k--; ) {
@@ -2716,8 +2712,6 @@ case FILTER_LPXOR:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-		float velocity = this->lastVelocity;
-
 		const float a = 1.f - fxParam1;
 		const float a2f = a * SHORT2FLOAT;
 		const float b = 1.f - a;
@@ -2737,7 +2731,7 @@ case FILTER_LPXOR:
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(0.27f + fxParam1 * 0.2f + velocity * 0.4f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.27f + fxParam1 * 0.2f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		const float r = 0.9940f;
@@ -2789,8 +2783,6 @@ case FILTER_LPXOR2:
 		// Low pass... on the Frequency
 		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-		float velocity = this->lastVelocity;
-
 		const float a = 1.f - fxParam1;
 		const float a2f = a * SHORT2FLOAT;
 		const float b = 1.f - a;
@@ -2810,7 +2802,7 @@ case FILTER_LPXOR2:
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(0.27f + fxParam1 * 0.2f + velocity * 0.4f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.27f + fxParam1 * 0.2f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		const float r = 0.9940f;
@@ -3847,8 +3839,6 @@ case FILTER_LADDER2:
 	fxParam1 = ((fxParamTmp + 9.0f * fxParam1) * .1f);
 	float cut = clamp(sqrt3(fxParam1), filterWindowMin, filterWindowMax);
 
-	float velocity = this->lastVelocity;
-
 	float OffsetTmp = fabsf(params.effect.param2);
 	fxParam2 = ((OffsetTmp + 9.0f * fxParam2) * .1f);
 	float res = fxParam2;
@@ -3868,7 +3858,7 @@ case FILTER_LADDER2:
 
 	const float bipolarf = fxParam1 - 0.5f;
 	const float fold3 = (fold(13 * bipolarf) + 0.125f) * 0.25f;
-	const float f1 = clamp(0.33f + fold3 * (1 - cut * 0.5f) + velocity * 0.33f, filterWindowMin, filterWindowMax);
+	const float f1 = clamp(0.33f + fold3 * (1 - cut * 0.5f), filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - f1) / (1.0f + f1);
 	const float f2 = clamp(f1 * f1, filterWindowMin, filterWindowMax);
 	float coef2 = (1.0f - f2) / (1.0f + f2);
@@ -3993,14 +3983,12 @@ case FILTER_KRMG:
 	// Low pass... on the Frequency
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-	float velocity = this->lastVelocity;
-
 	const float wc = fxParam1 * fxParam1;
 	const float wc2 = wc * wc;
 	const float wc3 = wc2 * wc;
 
 	const float g = 0.9892f * wc - 0.4342f * wc2 + 0.1381f * wc3 - 0.0202f * wc2 * wc2;
-	const float drive = 0.85f + velocity * 0.12f * sqrt3(numberOfVoiceInverse);
+	const float drive = 0.85f;
 	const float gComp = 1;
 	const float resonance = fxParam2 * 0.52f - fxParam1 * 0.05f;
 	const float gRes = 1.5f * resonance * (1.0029f + 0.0526f * wc - 0.926f * wc2 + 0.0218f * wc3);
@@ -4100,8 +4088,8 @@ case FILTER_TEEBEE:
 
 	float velocity = this->lastVelocity;
 	
-	bool isReleased = voices[this->lastPlayedNote]->isReleased();
-	bool accent = velocity > 0.629f;
+	bool isReleased = voices[this->lastPlayedNote]->isReleased();	
+	bool accent = velocity > 0.629f && !isReleased;
 
 	const float ga = 0.9764716867f; //= exp(-1/(PREENFM_FREQUENCY * attack / BLOCK_SIZE))
 	const float gr = 0.9979969962f; //= exp(-1/(PREENFM_FREQUENCY * release / BLOCK_SIZE))
@@ -4130,7 +4118,7 @@ case FILTER_TEEBEE:
 	float state0R = v0R, state1R = v1R, state2R = v2R, state3R = v3R, state4R = v4R;
 
 	float vcf_reso = fxParam2 * 1.065f;
-	float vcf_cutoff = clamp(fxParam1 * 0.8465f + 0.22f * fxParamA2 + fxParamA1 * (1-fxParamA2), 0, 2);
+	float vcf_cutoff = clamp(fxParam1 * 1.2f , 0, 2);// * 0.8465f + 0.22f * fxParamA2 + fxParamA1 * (1-fxParamA2)
 
 	float vcf_e1 = expf_fast(5.55921003f + 2.17788267f * vcf_cutoff + 0.47f * fxParamA2) + 103;
 	float vcf_e0 = expf_fast(5.22617147 + 1.70418937f * vcf_cutoff - 0.298f * fxParamA2) + 103;
@@ -4196,12 +4184,12 @@ case FILTER_TEEBEE:
 	f2a1 = -2 * exp_p2r * cosf(p2i);
 	f2a2 = exp_p2r * exp_p2r;
 	f2b = (f2a0 + f2a1 + f2a2);
-	float fdbck = (1 - fxParam1 * fxParam1 * 0.81f + fxParamA2 * 0.25f) * fxParam2 * 0.33f ;
+	float fdbck = ((1 - fxParam1 * fxParam1) * (0.81f + fxParamA2 * 0.18f) ) * fxParam2 * 0.45f ;
 
 	float in, y;
 	float invAttn = sqrt3(numberOfVoiceInverse);
 	float drive = 0.7f + ((1 - fxParam1 * 0.85f) * 0.37f + fxParamA2 + fxParam2 * 0.27f) * invAttn;
-	float drive2 = 1.05f - fxParam1 * fxParam1 * 0.05f + (fxParam2 * 0.17f + fxParamA2 * fxParamA2 * 0.37f) * invAttn;
+	float drive2 = 1.05f - fxParam1 * fxParam1 * 0.05f + (fxParam2 * 0.17f + fxParamA2 * fxParamA2 * 0.57f) * invAttn;
 
 	for (int k = BLOCK_SIZE; k--;)
 	{
@@ -4254,14 +4242,14 @@ case FILTER_TEEBEE:
 
 }
 break;
-case FILTER_TEEBEE2:
+case FILTER_SVFLH:
 {
 	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
 	fxParamTmp *= fxParamTmp;
 	// Low pass... on the Frequency
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-	const float f = 0.08f + fxParam1 * fxParam1 * 0.95f + fxParamA2 * 0.012f;
+	const float f = 0.08f + fxParam1 * fxParam1 * 0.95f;
 	const float fb = sqrtf(1 - fxParam2 * 0.999f) * (0.33f + fxParam1 * 0.66f);
 	const float scale = sqrtf(fb);
 
@@ -4269,7 +4257,7 @@ case FILTER_TEEBEE2:
 	float lowL = v0L, bandL = v1L, lowL2 = v2L, lowL3 = v3L;
 	float lowR = v0R, bandR = v1R, lowR2 = v2R, lowR3 = v3R;
 	
-	const float svfGain = (0.67f + fxParam2 * fxParam2 * 0.75f + fxParamA2 * 0.777f) * 0.66f * mixerGain;
+	const float svfGain = (0.87f + fxParam2 * fxParam2 * 0.75f) * 1.5f * mixerGain;
 
 	float _ly1L = v4L, _ly1R = v4R;
 	float _lx1L = v5L, _lx1R = v5R;
@@ -4283,24 +4271,7 @@ case FILTER_TEEBEE2:
 	const float f2 = clamp(0.33f + sqrt3(f) * 0.43f, filterWindowMin, filterWindowMax);
 	float coef2 = (1.0f - f2) / (1.0f + f2);
 
-	float velocity = this->lastVelocity;
-	bool isReleased = voices[this->lastPlayedNote]->isReleased();
-	bool accent = velocity > 0.629f;
-
-	const float ga = 0.9764716867f; //= exp(-1/(PREENFM_FREQUENCY * attack / BLOCK_SIZE))
-	const float gr = 0.9979969962f; //= exp(-1/(PREENFM_FREQUENCY * release / BLOCK_SIZE))
-
-	//accent cv :
-	if ((accent && (fxParamB2-- > 0))) {
-		fxParamA2 *= ga;
-		fxParamA2 += (1 - ga);
-	}	else	{
-		fxParamA2 *= gr;
-		fxParamB2 = 720; // = accent dur
-	}
-
-	fxParamA2 = clamp(fxParamA2, 0, 1.5f);
-	float sat = 1 + fxParam2 * 0.33f + fxParamA2 * 0.66f;
+	float sat = 1 + fxParam2 * 0.33f;
 
 	float theta = 1 - fxParam1 * fxParam2 * 0.3f;
 	float arghp = (1 + 2 * cosf(theta));
@@ -4394,8 +4365,8 @@ case FILTER_CRUSH2:
 	float bits1 = v8L;
 	float bits2 = v8R;
 
-	float b1inc = fxParam1 * fxParam1 * fxParam1 * 0.5f;
-	float b2inc = clamp(fxParam2 * fxParam2 * fxParam2 * 0.4f + b1inc * 0.05f, 0, 1);
+	float b1inc = fxParam1 * fxParam1 * fxParam1;
+	float b2inc = clamp(fxParam2 * fxParam2 * fxParam2 * 0.95f + b1inc * 0.05f, 0, 1);
 
 	float _ly1L = v2L, _ly1R = v2R;
 	float _lx1L = v3L, _lx1R = v3R;
@@ -4420,7 +4391,7 @@ case FILTER_CRUSH2:
 
 	float inL = v6L, inR = v6R, destL = v7L, destR = v7R;
 
-	float sat = 1.25f + fxParam1 * 0.5f;
+	float sat = 1.25f + fxParam1 * 0.25f;
 
 	for (int k = BLOCK_SIZE; k--;)
 	{

@@ -52,10 +52,9 @@ public:
     bool isPlaying() { return this->playing; }
     bool isNewNotePending() { return this->newNotePending; }
     unsigned int getIndex() { return this->index; }
-    float getVelocity() { return this->velocity; }
-    char getNote() { return this->note; }
-    char getNextPendingNote() { return this->nextPendingNote; }
-    char getNextGlidingNote() { return this->nextGlidingNote; }
+    uint8_t getNote() { return this->note; }
+    uint8_t getNextPendingNote() { return this->nextPendingNote; }
+    uint8_t getNextGlidingNote() { return this->nextGlidingNote; }
     bool isHoldedByPedal() { return this->holdedByPedal; }
     void setHoldedByPedal(bool holded) { this->holdedByPedal = holded; }
     void setCurrentTimbre(Timbre *timbre);    bool isGliding() { return gliding; }
@@ -354,7 +353,7 @@ private:
     bool released;
     bool playing;
     unsigned int index;
-    char note;
+    uint8_t note;
     float velocity;
     float velIm1, velIm2, velIm3, velIm4, velIm5;
     bool newNotePlayed;
@@ -381,14 +380,14 @@ private:
     bool holdedByPedal;
     // Fixing the "plop" when all notes are buisy...
     bool newNotePending;
-    char nextPendingNote;
-    char nextVelocity;
+    uint8_t nextPendingNote;
+    uint8_t nextVelocity;
     unsigned int nextIndex;
 
     // Gliding ?
     bool gliding;
     float glidePhase;
-    char nextGlidingNote;
+    uint8_t nextGlidingNote;
 
     // env Value
     float env1ValueMem;
