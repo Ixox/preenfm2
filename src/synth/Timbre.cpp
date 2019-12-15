@@ -3657,7 +3657,7 @@ case FILTER_18DB:
 	float OffsetTmp = fabsf(params.effect.param2);
 	fxParam2 = ((OffsetTmp + 9.0f * fxParam2) * .1f);
 	float res = fxParam2 * 6 + cut2 * 0.68f;
- 	float fb = res * (1 - 0.178f * (cut2 + fxParam1 * fxParam1 * fxParam2 * 0.5f));
+ 	float fb = res * (1 - 0.178f * (cut2 + (1 + fxParam1 * fxParam1 * 0.5f) * fxParam2 * 0.333333f));
 	float invCut = 1 - cut;
 
 	//const float r = 0.985f;
