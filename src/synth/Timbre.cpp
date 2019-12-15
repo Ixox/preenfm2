@@ -1578,7 +1578,7 @@ case FILTER_PEAK:
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
 	const float f = fxParam1 * fxParam1 * SVFRANGE;
-	const float fb = sqrt3(1 - fxParam2 * 0.999f);
+	const float fb = sqrt3(sqrt3(1 - fxParam2 * 0.999f));
 	const float scale = sqrt3(fb);
 
 	float *sp = this->sampleBlock;
