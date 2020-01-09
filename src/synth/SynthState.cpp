@@ -165,13 +165,132 @@ struct ParameterRowDisplay engineMix3ParameterRow = {
 };
 
 
-const char* fxName []=  { "Off ", "Mix ", "LP  ", "HP  ", "Bass", "BP  ", "Crsh" , "LP2 ", "HP2 ", "BP2 ", "Lp3 ", "Hp3 ", "Bp3 ", "Peak", "Notc", "Bell", "LowS", "HigS", "LpHp", "BpDs", "LPws", "Tilt", "Pann", "Sat ", "Sigm", "Fold", "Wrap", "Xor ", "Txr1", "Txr2", "LPx1", "LPx2", "LpSn", "HpSn", "Not4", "Ap4 ", "Ap4b", "Ap4D", "Oryx", "Orx2", "Orx3", "18db", "La+d", "Lad+", "Diod", "L+d+", "h3o+", "Svh3", "Alkx"};
+/* FILTER ORDER
+
+0	Off , -0-
+1	Mix , -1-
+2	LP  , -2-
+3	HP  , -3-
+4	Bass, -4-
+5	BP  , -5-
+6	Crsh, -6-
+7	Oryx, -38-
+8	Orx2, -39-
+9	Orx3, -40-
+10	h3o+, -46-
+11	Svh3, -47-
+12	Pann, -22-
+13	LP2 , -7-
+14	HP2 , -8-
+15	Lp3 , -10-
+16	Hp3 , -11-
+17	Bp3 , -12-
+18	Peak, -13-
+19	Notc, -14-
+20	Bell, -15-
+21	LowS, -16-
+22	HigS, -17-
+23	LpHp, -18-
+24	BpDs, -19-
+25	LPws, -20-
+26	Tilt, -21-
+27	Sat , -23-
+28	Sigm, -24-
+29	Fold, -25-
+30	Wrap, -26-
+31	LpSn, -32-
+32	HpSn, -33-
+33	Not4, -34-
+34	Ap4 , -35-
+35	Ap4b, -36-
+36	Ap4D, -37-
+37	18db, -41-
+38	La+d, -42-
+39	BP2 , -9-
+40	Lad+, -43-
+41	Diod, -44-
+42	L+d+, -45-
+43	Xor , -27-
+44	Txr1, -28-
+45	Txr2, -29-
+46	LPx1, -30-
+47	LPx2, -31-
+48	Alkx, -48-
+*/
+
+const unsigned char  filtersOrder[] = { 
+    0,1,2,3,4,5,6,38,39,40,
+    46,47,22,7,8,10,11,12,13,14,
+    15,16,17,18,19,20,21,23,24,25,
+    26,32,33,34,35,36,37,41,42,9,
+    43,44,45,27,28,29,30,31,48 
+};
+
+const unsigned char  filtersPosition[] =  {
+    0,1,2,3,4,5,6,13,14,39,
+    15,16,17,18,19,20,21,22,23,24,
+    25,26,12,27,28,29,30,43,44,45,
+    46,47,31,32,33,34,35,36,7,8,
+    9,37,38,40,41,42,10,11,48
+};
+
+const char *fxName[] = {
+    "Off ", /*	0	*/
+    "Mix ", /*	1	*/
+    "LP  ", /*	2	*/
+    "HP  ", /*	3	*/
+    "Bass", /*	4	*/
+    "BP  ", /*	5	*/
+    "Crsh", /*	6	*/
+    "LP2 ", /*	7	*/
+    "HP2 ", /*	8	*/
+    "BP2 ", /*	9	*/
+    "Lp3 ", /*	10	*/
+    "Hp3 ", /*	11	*/
+    "Bp3 ", /*	12	*/
+    "Peak", /*	13	*/
+    "Notc", /*	14	*/
+    "Bell", /*	15	*/
+    "LowS", /*	16	*/
+    "HigS", /*	17	*/
+    "LpHp", /*	18	*/
+    "BpDs", /*	19	*/
+    "LPws", /*	20	*/
+    "Tilt", /*	21	*/
+    "Pann", /*	22	*/
+    "Sat ", /*	23	*/
+    "Sigm", /*	24	*/
+    "Fold", /*	25	*/
+    "Wrap", /*	26	*/
+    "Xor ", /*	27	*/
+    "Txr1", /*	28	*/
+    "Txr2", /*	29	*/
+    "LPx1", /*	30	*/
+    "LPx2", /*	31	*/
+    "LpSn", /*	32	*/
+    "HpSn", /*	33	*/
+    "Not4", /*	34	*/
+    "Ap4 ", /*	35	*/
+    "Ap4b", /*	36	*/
+    "Ap4D", /*	37	*/
+    "Oryx", /*	38	*/
+    "Orx2", /*	39	*/
+    "Orx3", /*	40	*/
+    "18db", /*	41	*/
+    "La+d", /*	42	*/
+    "Lad+", /*	43	*/
+    "Diod", /*	44	*/
+    "L+d+", /*	45	*/
+    "h3o+", /*	46	*/
+    "Svh3", /*	47	*/
+    "Alkx", /*	48	*/
+};                        
 
 struct ParameterRowDisplay effectParameterRow = {
         "Filter" ,
         { "Type", "    ", "    ", "Gain" },
         {
-                {0, FILTER_LAST - 1, FILTER_LAST, DISPLAY_TYPE_STRINGS, fxName, nullNamesOrder, nullNamesOrder },
+                {0, FILTER_LAST - 1, FILTER_LAST, DISPLAY_TYPE_STRINGS, fxName, filtersOrder, filtersPosition },
                 {0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 {0, 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 {0, 2, 201, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder }
@@ -974,13 +1093,23 @@ void SynthState::encoderTurned(int encoder, int ticks) {
             // Must use newValue (int) so that the minValue comparaison works
             // Is there any other order than the default one
             int pos = param->valueNameOrderReversed[(int)(*value)];
-            if (ticks>0 && pos < param->maxValue) {
-                newValue = param->valueNameOrder[pos+1];
-            }
-            if (ticks<0 && pos>param->minValue) {
-                newValue = param->valueNameOrder[pos-1];
-            }
 
+            // Special Case for filter
+            if (unlikely(param->valueNameOrderReversed == filtersPosition)) {
+                if (ticks>0 && oldValue != FILTER_LADDER) {
+                    newValue = param->valueNameOrder[pos+1];
+                }
+                if (ticks<0 && pos>param->minValue) {
+                    newValue = param->valueNameOrder[pos-1];
+                }
+            } else {
+                if (ticks>0 && pos < param->maxValue) {
+                    newValue = param->valueNameOrder[pos+1];
+                }
+                if (ticks<0 && pos>param->minValue) {
+                    newValue = param->valueNameOrder[pos-1];
+                }
+            }
             (*value) = (float)newValue;
         }
         if (newValue != oldValue) {
