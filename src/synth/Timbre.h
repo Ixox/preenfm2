@@ -220,6 +220,7 @@ private:
     // save float fxParam1 to detect modification
     float fxParam1PlusMatrix;
     float lastVelocity;
+    float noteTimer1, noteTimer2;
     // lfoUsed
     uint8_t lfoUSed[NUMBER_OF_LFO];
 };

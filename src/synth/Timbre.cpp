@@ -598,8 +598,6 @@ int cptHighNote = 0;
 
 void Timbre::preenNoteOn(char note, char velocity) {
 
-	this->lastVelocity = velocity * INV127;
-
 	int iNov = (int) params.engine1.numberOfVoice;
 	if (unlikely(iNov == 0)) {
 		return;
@@ -706,9 +704,50 @@ void Timbre::preenNoteOn(char note, char velocity) {
 
 void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
     // Update voice matrix with midi note and velocity
+	float newVelo = INV127 * velocity;
     voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE1, midiNoteScale[0][timbreNumber][note]);
     voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE2, midiNoteScale[1][timbreNumber][note]);
-    voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY, INV127*velocity);
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY, newVelo);
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_INTERVAL, INV127 * 2 * (note - voices[this->lastPlayedNote]->getNote()));
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY_INTERVAL, 2 * (lastVelocity - newVelo));
+	lastVelocity = newVelo;
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_RANDOM, noise[voiceToUse] - 0.5f );
+
+	// MATRIX_SOURCE_VOICES_PLAYING
+	int numberOfVoices = params.engine1.numberOfVoice;
+	float voicePlayingCount = 0;
+	for (int k = 0; k < numberOfVoices; k++) {
+		int n = voiceNumber[k];
+		if (voices[n]->isPlaying()) {
+			voicePlayingCount++;
+		}
+	}
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VOICES_PLAYING, numberOfVoiceInverse * voicePlayingCount);
+
+	// MATRIX_SOURCE_NOTE_REPEAT
+	float prevRepeatVal = voices[voiceToUse]->matrix.getSource(MATRIX_SOURCE_NOTE_REPEAT);
+	if(voices[voiceToUse]->note == note) {
+		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_REPEAT, clamp(prevRepeatVal + INV16, 0, 1));
+	} else {
+		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_REPEAT, clamp(prevRepeatVal - INV16, 0, 1));
+	}
+
+	// MATRIX_SOURCE_NOTE_DIVERGENCE
+	float prevDivergenceVal = voices[voiceToUse]->matrix.getSource(MATRIX_SOURCE_NOTE_DIVERGENCE);
+	if(voices[voiceToUse]->note != note) {
+		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DIVERGENCE, clamp(prevDivergenceVal + INV16, 0, 1));
+	} else {
+		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DIVERGENCE, clamp(prevDivergenceVal - INV16, 0, 1) );
+	}
+
+	//MATRIX_SOURCE_NOTE_SPEED
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_SPEED, sigmoidPos(clamp(noteTimer1, 0, 1)));
+	noteTimer1 = 1 - clamp(noteTimer2, 0, 1) * 0.5f;
+
+	//MATRIX_SOURCE_NOTE_DURATION
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DURATION, sqrtf(clamp(noteTimer2, 0, 1)));
+	noteTimer2 = 0.1f;
+
 }
 
 void Timbre::preenNoteOff(char note) {
@@ -820,7 +859,12 @@ void Timbre::cleanNextBlock() {
 
 
 void Timbre::prepareMatrixForNewBlock() {
+	noteTimer1 -= 0.00033f;
+
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+		if(voices[voiceNumber[k]]->isPlaying()) {
+			noteTimer2 += 0.000088f;
+		}
         voices[voiceNumber[k]]->prepareMatrixForNewBlock();
     }
 }
