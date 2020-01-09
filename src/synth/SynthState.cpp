@@ -427,7 +427,7 @@ const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "en
 
 #ifdef CVIN
 const unsigned char  matrixSourceOrder[] =        { 0, 19, 20, 21, 22, 1, 2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18, 23, 24, 25, 26, 27, 28, 29, 30, 13, 14, 15, 16, 31};
-const unsigned char  matrixSourcePosition[] =     { 0,  5,  6,  7,  8, 9, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 17, 18, 23, 24, 25, 26, 27, 28, 29, 30, 1,  2,  3,  4, 23};
+const unsigned char  matrixSourcePosition[] =     { 0,  5,  6,  7,  8, 9, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 17, 18, 23, 24, 25, 26, 27, 28, 29, 30, 1,  2,  3,  4, 31};
 #else
 const unsigned char  matrixSourceOrder[] =        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17, 18, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 26, 27};
 const unsigned char  matrixSourcePosition[] =     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 13, 14, 19, 20, 21, 22, 23, 24, 25, 26, 27};
