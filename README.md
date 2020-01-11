@@ -8,7 +8,6 @@ If you think something is missing or not clear, please contact me.
 
 If you don't have the preenfm2 bootlader installed, you need to flash it first, [read this](http://ixox.fr/preenfm2/build-it/burn-firmware/)
 
-
 To compile the firmware, you'll need [arm-gcc version 4.7](https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2014-q2-update)
 
 Add the bin directory to your PATH, and run **'make'**, you'll get the list of the available targets.
@@ -16,17 +15,14 @@ Add the bin directory to your PATH, and run **'make'**, you'll get the list of t
 
 ```bash
 $ make
-You must chose a target
-   clean : remove build directory
+You must chose a target 
+Don't forget to clean between different build targets
+   clean : clean build directory
    pfm : build pfm2 firmware
    pfmo : build pfm2 overclocked firmware
-   boot : build pfm2 bootloader
-   install : flash firmware through the programming interface
-   installo : flash overclocked firmware through the programming interface
-   installdfu : flash firmware through DFU
-   installdfuo : flash overclocked firmware through DFU
-   installboot : flash bootloader
-   installbootdfu : flash bootloader through DFU
+   pfmcv : build pfm2 firmware for Eurorack 
+   pfmcvo : build pfm2 overclocked firmware for Eurorack
+   installdfu : flash last compiled firmware through DFU
    zip : create zip with all inside
 ```
 Since some refactoring, the bootloader does not compile anymore. But it's available in its binary format.
