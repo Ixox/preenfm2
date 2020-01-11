@@ -121,6 +121,10 @@ public:
         this->sources[source] = value;
     }
 
+    float getSource(SourceEnum source) __attribute__((always_inline)) {
+        return this->sources[source];
+    }
+
     float getDestination(DestinationEnum destination)   __attribute__((always_inline))  {
         return this->destinations[destination];
     }

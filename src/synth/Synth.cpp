@@ -657,12 +657,18 @@ void Synth::setCurrentInstrument(int value) {
 }
 
 void Synth::newMenuSelect(FullState* fullState) {
-       
-     if (fullState->currentMenuItem->menuState == MENU_CONFIG_SETTINGS 
+    if (fullState->currentMenuItem->menuState == MENU_CONFIG_SETTINGS 
          && midiConfig[fullState->menuSelect].valueName != NULL
          && midiConfig[fullState->menuSelect].valueName[0][0] == 'G') {
             updateGlobalTuningFromConfig();
-         }
+    }
+#ifdef CVIN      
+    if (fullState->currentMenuItem->menuState == MENU_CONFIG_SETTINGS) {
+        if (fullState->menuSelect == MIDICONFIG_CVIN_A2 || fullState->menuSelect == MIDICONFIG_CVIN_A6) {
+            cvin->updateFormula(synthState->fullState.midiConfigValue[MIDICONFIG_CVIN_A2], synthState->fullState.midiConfigValue[MIDICONFIG_CVIN_A6]);
+        }
+    }
+#endif
 }
 
 void Synth::updateGlobalTuningFromConfig() {

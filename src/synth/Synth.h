@@ -24,6 +24,11 @@
 #include "LfoEnv.h"
 #include "LfoStepSeq.h"
 
+#ifdef CVIN
+#include "CVIn.h"
+#include "VisualInfo.h"
+#endif
+
 #include "SynthParamListener.h"
 #include "SynthStateAware.h"
 
@@ -39,6 +44,17 @@ public:
         SynthStateAware::setSynthState(sState);
         init(sState);
     }
+
+
+#ifdef CVIN
+    void setCVIn(CVIn * cvin) {
+        this->cvin = cvin;
+    }
+
+    void setVisualInfo(VisualInfo *visualInfo) {
+        this->visualInfo = visualInfo;
+    }
+#endif
 
     void noteOn(int timbre, char note, char velocity);
     void noteOff(int timbre, char note);
@@ -191,6 +207,13 @@ private:
     // gate
     float currentGate;
 
+
+#ifdef CVIN
+    bool cvin12Ready ;
+    bool cvin34Ready ;
+    VisualInfo *visualInfo;
+    CVIn* cvin;
+#endif
 };
 
 

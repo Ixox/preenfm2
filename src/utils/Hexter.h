@@ -44,7 +44,7 @@ extern const dx7_patch_t friendly_patches[FRIENDLY_PATCH_COUNT];
 class Hexter {
 public:
 	Hexter();
-    void setArpeggiatorPartOfThePreset(char *pointer) { arpeggiatorPartOfThePreset = pointer; }
+    void setArpeggiatorPartOfThePreset(short *pointer) { arpeggiatorPartOfThePreset = pointer; }
 	virtual ~Hexter() {}
 	void loadHexterPatch(uint8_t* packedPatch, struct OneSynthParams *params);
 
@@ -68,7 +68,7 @@ protected:
 
 	char patchName[11];
     uint8_t unpackedData[DX7_VOICE_SIZE_UNPACKED];
-    char *arpeggiatorPartOfThePreset;
+    short *arpeggiatorPartOfThePreset;
 };
 
 

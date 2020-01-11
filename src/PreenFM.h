@@ -29,8 +29,21 @@
 #ifndef OVERCLOCK
 #define OVERCLOCK_STRING
 #else
-#define OVERCLOCK_STRING "o"
+#define OVERCLOCK_STRING " o"
 #endif
+
+#ifndef CVIN
+
+#define CVIN_STRING ""
+
+#else
+
+#define CVIN_STRING "_cv"
+extern int TIM2PerSeq;
+void ADC_Config(uint32_t adcBufferAdress);
+
+#endif
+
 
 #define LEDPIN GPIO_Pin_6
 

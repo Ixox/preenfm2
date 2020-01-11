@@ -21,6 +21,8 @@
 #include <stdint.h>
 
 // #define DEBUG 1
+// #define CVINDEBUG 1
+
 
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)

@@ -889,7 +889,7 @@ void FMDisplay::newMenuState(FullState* fullState) {
         break;
     case MENU_CONFIG_SETTINGS_SAVE:
         lcd->setCursor(1, menuRow);
-        lcd->print("Save Config ?");
+        lcd->print("Save Config ?      ");
         break;
     case MENU_SAVE_SYSEX_PATCH:
         lcd->setCursor(1, menuRow);

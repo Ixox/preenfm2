@@ -48,6 +48,11 @@ public:
     void glideFirstNoteOff();
     void glide();
 
+#ifdef CVIN
+    void propagateCvFreq(short newNote);
+#endif
+
+
     bool isReleased() { return this->released; }
     bool isPlaying() { return this->playing; }
     bool isNewNotePending() { return this->newNotePending; }
