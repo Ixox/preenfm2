@@ -3444,10 +3444,7 @@ case FILTER_ORYX:
 
 		out = bandL + bandL2;
 
-		lowL3 = hpCoef1 * lowL3b - hpCoef2 * out;
-		lowL3b = out;
-
-		*sp++ = clamp(lowL3 * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(out * svfGain, -ratioTimbres, ratioTimbres);
 
 		// ----------- Right voice
 		*sp = ((lowR + ((-lowR + *sp) * (r - nz)))) ;
@@ -3460,11 +3457,8 @@ case FILTER_ORYX:
 		bandR2 += f2 * (scale2 * *sp - lowR2 - fb2 * bandR2);
 
 		out = bandR + bandR2;
-		
-		lowR3 = hpCoef1 * lowR3b - hpCoef2 * out;
-		lowR3b = out;
 
-		*sp++ = clamp(lowR3 * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(out * svfGain, -ratioTimbres, ratioTimbres);
 
 		drift += deltaD;
 	}

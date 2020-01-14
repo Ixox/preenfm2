@@ -418,7 +418,7 @@ struct ParameterRowDisplay lfoEnv2ParameterRow = {
 };
 
 const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "env2", "seq1", "seq2",
-        "ModW", "PitB", "AftT",  "Velo", "Not1", "p1  ", "p2  ", "p3  ", "p4  ", "Not2", "Brth", "rndK", "notD", "velD", "actv", "rpt ", "dvrg", "spee", "dura", "nD L", "nD R"
+        "ModW", "PitB", "AftT",  "Velo", "Not1", "p1  ", "p2  ", "p3  ", "p4  ", "Not2", "Brth", "rndK", "notD", "velD", "actv", "rpt ", "dvrg", "spee", "dura", "nD-1", "nD+1"
 #ifdef CVIN
         , "CV1 ", "CV2 ", "CV3 ", "CV4 "
 #endif
