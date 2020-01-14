@@ -45,7 +45,7 @@ void Synth::init(SynthState* sState) {
             ((float*)&timbres[t].params)[k] = ((float*)&preenMainPreset)[k];
         }
         timbres[t].params.engine1.numberOfVoice = numberOfVoices[t];
-        timbres[t].init(t, sState);
+        timbres[t].init(t, sState, this);
         for (int v=0; v<MAX_NUMBER_OF_VOICES; v++) {
             timbres[t].initVoicePointer(v, &voices[v]);
         }

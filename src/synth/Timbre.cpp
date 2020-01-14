@@ -17,6 +17,7 @@
 
 
 #include <math.h>
+#include "Synth.h"
 #include "Timbre.h"
 #include "Voice.h"
 
@@ -536,7 +537,7 @@ Timbre::Timbre() {
 Timbre::~Timbre() {
 }
 
-void Timbre::init(int timbreNumber, SynthState* sState) {
+void Timbre::init(int timbreNumber, SynthState* sState, Synth* synth) {
 
 
 	env1.init(&params.env1a,  &params.env1b, 0, &params.engine1.algo);
@@ -554,6 +555,7 @@ void Timbre::init(int timbreNumber, SynthState* sState) {
 	osc6.init(sState, &params.osc6, OSC6_FREQ);
 
     this->timbreNumber = timbreNumber;
+	this->synth = synth;
 
     for (int s=0; s<2; s++) {
         for (int n=0; n<128; n++) {
@@ -703,6 +705,7 @@ void Timbre::preenNoteOn(char note, char velocity) {
 }
 
 void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
+	lastPlayedVoiceNum = voiceToUse;
     // Update voice matrix with midi note and velocity
 	float newVelo = INV127 * velocity;
     voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE1, midiNoteScale[0][timbreNumber][note]);
@@ -741,12 +744,24 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 	}
 
 	//MATRIX_SOURCE_NOTE_SPEED
-	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_SPEED, sigmoidPos(clamp(noteTimer1, 0, 1)));
-	noteTimer1 = 1 - clamp(noteTimer2, 0, 1) * 0.5f;
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_SPEED, sigmoidPos(sqrt3(clamp(noteTimer1, 0, 1))));
+	noteTimer1 = 1;// - clamp(noteTimer2, 0, 1) * 0.5f;
 
 	//MATRIX_SOURCE_NOTE_DURATION
-	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DURATION, sqrtf(clamp(noteTimer2, 0, 1)));
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DURATION, sigmoidPos(sqrt3(clamp(noteTimer2, 0, 1))));
 	noteTimer2 = 0.1f;
+
+	float noteDifference = voices[voiceToUse]->matrix.getSource(MATRIX_SOURCE_NOTE_INTERVAL);
+
+	//MATRIX_SOURCE_NOTE_INTERVAL_READ_RIGHT_TIMBRE
+	int8_t timbreNum = (this->timbreNumber + 1) % NUMBER_OF_TIMBRES;
+	uint8_t voiceToRead = this->synth->getTimbre(timbreNum)->getLastPlayedVoiceNum();
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_INTERVAL_READ_RIGHT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_INTERVAL));
+
+	//MATRIX_SOURCE_NOTE_INTERVAL_READ_LEFT_TIMBRE
+ 	timbreNum = (this->timbreNumber + 3) % NUMBER_OF_TIMBRES;
+ 	voiceToRead = this->synth->getTimbre(timbreNum)->getLastPlayedVoiceNum();
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_INTERVAL_READ_LEFT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_INTERVAL));
 
 }
 
@@ -859,7 +874,8 @@ void Timbre::cleanNextBlock() {
 
 
 void Timbre::prepareMatrixForNewBlock() {
-	noteTimer1 -= 0.00033f;
+	//noteTimer1 -= 0.00095f;
+	noteTimer1 *= 0.99925f;
 
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
 		if(voices[voiceNumber[k]]->isPlaying()) {
@@ -3389,8 +3405,8 @@ case FILTER_ORYX:
 	float lowL2 = v2L, bandL2 = v3L;
 	float lowR2 = v2R, bandR2 = v3R;
 
-	float lowL3 = v4L, bandL3 = v5L;
-	float lowR3 = v4R, bandR3 = v5R;
+	float lowL3 = v4L, lowL3b = v5L;
+	float lowR3 = v4R, lowR3b = v5R;
 
 	const float svfGain = (1 + SVFGAINOFFSET) * mixerGain;
 	
@@ -3405,6 +3421,13 @@ case FILTER_ORYX:
 	float deltaD = (nexDrift - drift) * 0.000625f;
 
 	const float sat = 1.25f;
+
+	//0 < theta < Pi/2
+	float theta = 0.6f;
+	float arghp = (1 + 2 * cosf(theta));
+	float p = (1 + 2 * cosf(theta)) - sqrtf(arghp * arghp - 1);
+	float hpCoef1 = 1 / (1 + p);
+	float hpCoef2 = p * hpCoef1;
 
 	for (int k=BLOCK_SIZE ; k--; ) {
 		nz = noise[k] * 0.005f;
@@ -3421,7 +3444,10 @@ case FILTER_ORYX:
 
 		out = bandL + bandL2;
 
-		*sp++ = clamp(out * svfGain, -ratioTimbres, ratioTimbres);
+		lowL3 = hpCoef1 * lowL3b - hpCoef2 * out;
+		lowL3b = out;
+
+		*sp++ = clamp(lowL3 * svfGain, -ratioTimbres, ratioTimbres);
 
 		// ----------- Right voice
 		*sp = ((lowR + ((-lowR + *sp) * (r - nz)))) ;
@@ -3434,8 +3460,11 @@ case FILTER_ORYX:
 		bandR2 += f2 * (scale2 * *sp - lowR2 - fb2 * bandR2);
 
 		out = bandR + bandR2;
+		
+		lowR3 = hpCoef1 * lowR3b - hpCoef2 * out;
+		lowR3b = out;
 
-		*sp++ = clamp(out * svfGain, -ratioTimbres, ratioTimbres);
+		*sp++ = clamp(lowR3 * svfGain, -ratioTimbres, ratioTimbres);
 
 		drift += deltaD;
 	}
@@ -3451,9 +3480,9 @@ case FILTER_ORYX:
 	v3R = bandR2;
 
 	v4L = lowL3;
-	v5L = bandL3;
+	v5L = lowL3b;
 	v4R = lowR3;
-	v5R = bandR3;
+	v5R = lowR3b;
 
 	v6L = nexDrift;
 }

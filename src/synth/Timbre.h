@@ -34,8 +34,8 @@
 #include "note_stack.h"
 #include "event_scheduler.h"
 
-
 extern float panTable[];
+class Synth;
 class Voice;
 
 enum {  CLOCK_OFF,
@@ -49,7 +49,7 @@ class Timbre {
 public:
     Timbre();
     virtual ~Timbre();
-    void init(int timbreNumber, SynthState* sState);
+    void init(int timbreNumber, SynthState* sState, Synth* synth);
     void setVoiceNumber(int v, int n);
     void initVoicePointer(int n, Voice* voice);
     void prepareForNextBlock();
@@ -62,6 +62,9 @@ public:
     void recomputeBPValues(float q, float param1Square);
     int getSeqStepValue(int whichStepSeq, int step);
     void setSeqStepValue(int whichStepSeq, int step, int value);
+    uint8_t getLastPlayedVoiceNum() {
+        return this->lastPlayedVoiceNum;
+    }
     // Arpegiator
     void arpeggiatorNoteOn(char note, char velocity);
     void arpeggiatorNoteOff(char note);
@@ -154,8 +157,10 @@ private:
     float numberOfVoiceInverse;
     float mixerGain;
     Voice *voices[MAX_NUMBER_OF_VOICES];
+    Synth *synth;
     bool holdPedal;
     int8_t lastPlayedNote;
+    uint8_t lastPlayedVoiceNum;
 
 
     // 6 oscillators Max
@@ -199,7 +204,6 @@ private:
     //    uint8_t channel_;
     //    uint8_t pattern_;
     //
-
 
     uint8_t running_;
     uint8_t latch_;
