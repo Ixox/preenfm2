@@ -751,17 +751,41 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DURATION, sigmoidPos(sqrt3(clamp(noteTimer2, 0, 1))));
 	noteTimer2 = 0.1f;
 
-	float noteDifference = voices[voiceToUse]->matrix.getSource(MATRIX_SOURCE_NOTE_INTERVAL);
 
-	//MATRIX_SOURCE_NOTE_INTERVAL_READ_RIGHT_TIMBRE
 	int8_t timbreNum = (this->timbreNumber + 1) % NUMBER_OF_TIMBRES;
 	uint8_t voiceToRead = this->synth->getTimbre(timbreNum)->getLastPlayedVoiceNum();
+	//MATRIX_SOURCE_NOTE_INTERVAL_READ_RIGHT_TIMBRE
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_INTERVAL_READ_RIGHT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_INTERVAL));
+	//MATRIX_SOURCE_VELOCITY_INTERVAL_READ_RIGHT_TIMBRE
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY_INTERVAL_READ_RIGHT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_VELOCITY_INTERVAL));
+	//MATRIX_SOURCE_VOICES_PLAYING_READ_LEFT_TIMBRE
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VOICES_PLAYING_READ_RIGHT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_VOICES_PLAYING));
+	//MATRIX_SOURCE_NOTE_REPEAT_READ_LEFT_TIMBRE
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_REPEAT_READ_RIGHT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_REPEAT));
+	//MATRIX_SOURCE_NOTE_DIVERGENCE_READ_LEFT_TIMBRE
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DIVERGENCE_READ_RIGHT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_DIVERGENCE));
+	//MATRIX_SOURCE_NOTE_SPEED_READ_LEFT_TIMBRE
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_SPEED_READ_RIGHT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_SPEED));
+	//MATRIX_SOURCE_NOTE_DURATION_READ_LEFT_TIMBRE
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DURATION_READ_RIGHT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_DURATION));
 
-	//MATRIX_SOURCE_NOTE_INTERVAL_READ_LEFT_TIMBRE
+
  	timbreNum = (this->timbreNumber + 3) % NUMBER_OF_TIMBRES;
  	voiceToRead = this->synth->getTimbre(timbreNum)->getLastPlayedVoiceNum();
+	//MATRIX_SOURCE_NOTE_INTERVAL_READ_LEFT_TIMBRE
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_INTERVAL_READ_LEFT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_INTERVAL));
+	//MATRIX_SOURCE_VELOCITY_INTERVAL_READ_LEFT_TIMBRE
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY_INTERVAL_READ_LEFT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_VELOCITY_INTERVAL));
+	//MATRIX_SOURCE_VOICES_PLAYING_READ_LEFT_TIMBRE
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VOICES_PLAYING_READ_LEFT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_VOICES_PLAYING));
+	//MATRIX_SOURCE_NOTE_REPEAT_READ_LEFT_TIMBRE
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_REPEAT_READ_LEFT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_REPEAT));
+	//MATRIX_SOURCE_NOTE_DIVERGENCE_READ_LEFT_TIMBRE
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DIVERGENCE_READ_LEFT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_DIVERGENCE));
+	//MATRIX_SOURCE_NOTE_SPEED_READ_LEFT_TIMBRE
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_SPEED_READ_LEFT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_SPEED));
+	//MATRIX_SOURCE_NOTE_DURATION_READ_LEFT_TIMBRE
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DURATION_READ_LEFT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_DURATION));
 
 }
 
