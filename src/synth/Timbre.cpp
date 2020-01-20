@@ -23,6 +23,7 @@
 
 #define INV127 .00787401574803149606f
 #define INV16 .0625f
+#define INV12  .08333333333333333333f
 #define filterWindowMin 0.01f
 #define filterWindowMax 0.99f
 // Regular memory
@@ -719,38 +720,39 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 	// MATRIX_SOURCE_VOICES_PLAYING
 	int numberOfVoices = params.engine1.numberOfVoice;
 	float voicePlayingCount = 0;
-	for (int k = 0; k < numberOfVoices; k++) {
+	for (int k = 0; k < numberOfVoices; k++)
+	{
 		int n = voiceNumber[k];
-		if (voices[n]->isPlaying()) {
-			voicePlayingCount++;
-		}
+		voicePlayingCount += voices[n]->isPlaying() ? 1 : 0;
 	}
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VOICES_PLAYING, numberOfVoiceInverse * voicePlayingCount);
 
 	// MATRIX_SOURCE_NOTE_REPEAT
 	float prevRepeatVal = voices[voiceToUse]->matrix.getSource(MATRIX_SOURCE_NOTE_REPEAT);
 	if(voices[voiceToUse]->note == note) {
-		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_REPEAT, clamp(prevRepeatVal + INV16, 0, 1));
+		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_REPEAT, clamp(prevRepeatVal + INV12, 0, 1));
 	} else {
-		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_REPEAT, clamp(prevRepeatVal - INV16, 0, 1));
+		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_REPEAT, clamp(prevRepeatVal - INV12, 0, 1));
 	}
 
 	// MATRIX_SOURCE_NOTE_DIVERGENCE
 	float prevDivergenceVal = voices[voiceToUse]->matrix.getSource(MATRIX_SOURCE_NOTE_DIVERGENCE);
 	if(voices[voiceToUse]->note != note) {
-		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DIVERGENCE, clamp(prevDivergenceVal + INV16, 0, 1));
+		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DIVERGENCE, wrap(prevDivergenceVal + INV12));
 	} else {
-		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DIVERGENCE, clamp(prevDivergenceVal - INV16, 0, 1) );
+		voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DIVERGENCE, wrap(1 + prevDivergenceVal - INV12) );
 	}
 
 	//MATRIX_SOURCE_NOTE_SPEED
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_SPEED, sigmoidPos(sqrt3(clamp(noteTimer1, 0, 1))));
-	noteTimer1 = 1;// - clamp(noteTimer2, 0, 1) * 0.5f;
+	noteTimer1 = 1;
 
 	//MATRIX_SOURCE_NOTE_DURATION
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DURATION, sigmoidPos(sqrt3(clamp(noteTimer2, 0, 1))));
 	noteTimer2 = 0.1f;
 
+
+	// inter timbre modulations :
 
 	int8_t timbreNum = (this->timbreNumber + 1) % NUMBER_OF_TIMBRES;
 	uint8_t voiceToRead = this->synth->getTimbre(timbreNum)->getLastPlayedVoiceNum();
@@ -758,15 +760,15 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_INTERVAL_READ_RIGHT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_INTERVAL));
 	//MATRIX_SOURCE_VELOCITY_INTERVAL_READ_RIGHT_TIMBRE
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY_INTERVAL_READ_RIGHT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_VELOCITY_INTERVAL));
-	//MATRIX_SOURCE_VOICES_PLAYING_READ_LEFT_TIMBRE
+	//MATRIX_SOURCE_VOICES_PLAYING_READ_RIGHT_TIMBRE
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VOICES_PLAYING_READ_RIGHT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_VOICES_PLAYING));
-	//MATRIX_SOURCE_NOTE_REPEAT_READ_LEFT_TIMBRE
+	//MATRIX_SOURCE_NOTE_REPEAT_READ_RIGHT_TIMBRE
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_REPEAT_READ_RIGHT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_REPEAT));
-	//MATRIX_SOURCE_NOTE_DIVERGENCE_READ_LEFT_TIMBRE
+	//MATRIX_SOURCE_NOTE_DIVERGENCE_READ_RIGHT_TIMBRE
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DIVERGENCE_READ_RIGHT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_DIVERGENCE));
-	//MATRIX_SOURCE_NOTE_SPEED_READ_LEFT_TIMBRE
+	//MATRIX_SOURCE_NOTE_SPEED_READ_RIGHT_TIMBRE
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_SPEED_READ_RIGHT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_SPEED));
-	//MATRIX_SOURCE_NOTE_DURATION_READ_LEFT_TIMBRE
+	//MATRIX_SOURCE_NOTE_DURATION_READ_RIGHT_TIMBRE
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DURATION_READ_RIGHT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_DURATION));
 
 
@@ -899,7 +901,7 @@ void Timbre::cleanNextBlock() {
 
 void Timbre::prepareMatrixForNewBlock() {
 	//noteTimer1 -= 0.00095f;
-	noteTimer1 *= 0.99925f;
+	noteTimer1 *= 0.9992f;
 
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
 		if(voices[voiceNumber[k]]->isPlaying()) {
@@ -3620,7 +3622,7 @@ case FILTER_ORYX2:
 break;
 case FILTER_ORYX3:
 {
-	//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
+//https://www.musicdsp.org/en/latest/Filters/23-state-variable.html
 	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
 	fxParamTmp *= fxParamTmp;
 	// Low pass... on the Frequency
@@ -3633,105 +3635,104 @@ case FILTER_ORYX3:
 	const float frange = 0.14f;
 	const float bipolarf = (fxParam1 - 0.5f);
 
-	const float f1 = rootf + sigmoidPos((fxParam1 > 0.5f) ? (1 - fxParam1) : fxParam1) * frange;
-	const float fb = 0.082f + fxParam1 * 0.01f + noise[0] * 0.002f;
+	float f1 = rootf + sigmoidPos((fxParam1 > 0.4f) ? (0.5f - fxParam1 * 0.25f) : fxParam1) * frange;
+	const float fb = 0.08f + fxParam1 * 0.01f + noise[0] * 0.002f;
 	const float scale = sqrt3(fb);
 
 	const float spread = 1 + (fxParam2 * 0.13f);
 
 	const float fold2 = fold(0.125f + sigmoid(bipolarf * 21 * fxParam2) * frange ) + 0.25f;
-	const float f2 = rootf + frange * 1.15f + sigmoidPos(1 - fxParam1 + fold2 * 0.25f) * spread * frange * 1.25f;
-	const float fb2 = 0.11f - fold2 * 0.04f - noise[1] * 0.0015f;
+	const float f2 = rootf + frange * 1.15f + sigmoidPos(0.25f + 0.5f * fxParam1 + fold2 * 0.25f) * spread * frange * 1.25f;
+	const float fb2 = 0.21f - fold2 * 0.08f - noise[1] * 0.0015f;
 	const float scale2 = sqrt3(fb2);
 
-	const float fold3 = fold(sigmoid(bipolarf * 17 * fxParam2) * frange);
-	const float f3 = rootf + frange * 2.25f + tanh3(1 - (fxParam1 * 2 - fold3 * 0.2f)) * spread * frange * 0.5f;
-	const float fb3 = 0.13f - fold3 * 0.05f - noise[2] * 0.001f;
-	const float scale3 = sqrt3(fb3);
-
 	float *sp = this->sampleBlock;
-	float low = v0L, band = v1L;
-	float low2 = v2L, band2 = v3L;
-	float low3 = v4L, band3 = v5L;
-	float drift = v6L;
+	float lowL = v0L, bandL = v1L;
+	float lowR = v0R, bandR = v1R;
 
-	float _ly1L = v0R, _lx1L = v1R;
-	float _ly1R = v2R, _lx1R = v3R;
+	float lowL2 = v2L, bandL2 = v3L;
+	float lowR2 = v2R, bandR2 = v3R;
 
-	float _ly2L = v4R, _lx2L = v5R;
-	float _ly2R = v6R, _lx2R = v7R;
+	float lowL3 = v4L, lowL3b = v5L;
+	float lowR3 = v4R, lowR3b = v5R;
 
 	const float svfGain = (1 + SVFGAINOFFSET) * mixerGain;
+	
+	const float fap1 = clamp(f1, filterWindowMin, filterWindowMax);
+	float coef1 = (1.0f - fap1) / (1.0f + fap1);
 
-	float in, out;
+	float out;
 	const float r = 0.985f;
 	float nz;
+	float drift = v6L;
 	float nexDrift = noise[7] * 0.02f;
 	float deltaD = (nexDrift - drift) * 0.000625f;
 
-	const float apf1 = clamp(0.33f + fxParam2 * fxParam2 * 0.36f , filterWindowMin, filterWindowMax);
-	float coef1 = (1.0f - apf1) / (1.0f + apf1);
-	const float apf2 = clamp(0.3f + fxParam2 * fxParam2 * 0.4f , filterWindowMin, filterWindowMax);
-	float coef2 = (1.0f - apf2) / (1.0f + apf2);
+	//const float sat = 1.25f;
+	const int pos = (int)(0.375f * 2060);
+	float drive = 0.2f;// - fxParam1 * fxParam1 * 0.25f;
 
-	float sat = 1.45f;
-	float sat2 = 1.65f;
+	//0 < theta < Pi/2
+	float theta = 0.6f;
+	float arghp = (1 + 2 * cosf(theta));
+	float p = (1 + 2 * cosf(theta)) - sqrtf(arghp * arghp - 1);
+	float hpCoef1 = 1 / (1 + p);
+	float hpCoef2 = p * hpCoef1;
 
 	for (int k=BLOCK_SIZE ; k--; ) {
-		nz = noise[k] * 0.013f;
-
-		in = (*sp + *(sp + 1)) * 0.5f;
-
-		in = low + ((-low + in) * (r + nz));
-		// bandpass 1
-		low += f1 * band;
-		band += f1 * (scale * in - low - (fb + nz - drift) * band);
-
-		// bandpass 2
-		low2 += f2 * band2;
-		band2 += f2 * (scale2 * in - low2 - fb2 * band2);
-
-		// bandpass 3
-		low3 += f3 * band3;
-		band3 += f3 * (scale3 * in - low3 - fb3 * band3);
-
-		out = sat25(band * sat) + tanh4((band2 * sat2) + band3  * 0.75f) * 0.5f;
+		nz = noise[k] * 0.005f;
 
 		// ----------- Left voice
-		_ly1L = coef1 * (_ly1L + out) - _lx1L; // allpass
-		_lx1L = out;
+		*sp = ((lowL + ((-lowL + *sp) * (r + nz))));
+		*sp = satSin(*sp, drive, pos);
+		// bandpass 1
+		lowL += f1 * bandL;
+		bandL += f1 * (scale * *sp - lowL - (fb + nz - drift) * bandL);
 
-		*sp++ = clamp(_ly1L * svfGain, -ratioTimbres, ratioTimbres);
+		// bandpass 2
+		lowL2 += f2 * bandL2;
+		bandL2 += f2 * (scale2 * *sp - lowL2 - fb2 * bandL2);
+
+		out = bandL + bandL2;
+
+		*sp++ = clamp(out * svfGain, -ratioTimbres, ratioTimbres);
 
 		// ----------- Right voice
-		_ly2L = coef2 * (_ly2L + out) - _lx2L; // allpass
-		_lx2L = out;
+		*sp = ((lowR + ((-lowR + *sp) * (r - nz)))) ;
+		*sp = satSin(*sp, drive, pos);
+		// bandpass 1
+		lowR += f1 * bandR;
+		bandR += f1 * (scale * *sp - lowR - (fb - nz + drift) * bandR);
 
-		*sp++ = clamp(_ly2L * svfGain, -ratioTimbres, ratioTimbres);
+		// bandpass 2
+		lowR2 += f2 * bandR2;
+		bandR2 += f2 * (scale2 * *sp - lowR2 - fb2 * bandR2);
+
+		out = bandR + bandR2;
+
+		*sp++ = clamp(out * svfGain, -ratioTimbres, ratioTimbres);
 
 		drift += deltaD;
 	}
 
-	v0L = low;
-	v1L = band;
-	v2L = low2;
-	v3L = band2;
-	v4L = low3;
-	v5L = band3;
-	v6L = nexDrift;
-
-	v0R = _ly1L;
-	v1R = _lx1L;
-	v2R = _ly1R;
-	v3R = _lx1R;
+	v0L = lowL;
+	v1L = bandL;
+	v0R = lowR;
+	v1R = bandR;
 	
-	v4R = _ly2L;
-	v5R = _lx2L;
-	v6R = _ly2R;
-	v7R = _lx2R;
+	v2L = lowL2;
+	v3L = bandL2;
+	v2R = lowR2;
+	v3R = bandR2;
 
-	break;
+	v4L = lowL3;
+	v5L = lowL3b;
+	v4R = lowR3;
+	v5R = lowR3b;
+
+	v6L = nexDrift;
 }
+break;
 case FILTER_18DB:
 {
 	//https://www.musicdsp.org/en/latest/Filters/26-moog-vcf-variation-2.html
