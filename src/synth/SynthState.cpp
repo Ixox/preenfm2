@@ -206,32 +206,32 @@ struct ParameterRowDisplay engineMix3ParameterRow = {
 36	Ap4D, -37-
 37	18db, -41-
 38	La+d, -42-
-39	BP2 , -9-
-40	Lad+, -43-
-41	Diod, -44-
-42	L+d+, -45-
-43	Xor , -27-
-44	Txr1, -28-
-45	Txr2, -29-
-46	LPx1, -30-
-47	LPx2, -31-
-48	Alkx, -48-
+39	Diod, -44-
+40	L+d+, -45-
+41	Xor , -27-
+42	Txr1, -28-
+43	Txr2, -29-
+44	LPx1, -30-
+45	LPx2, -31-
+46	Alkx, -48-
+47	BP2 , -9-
+48	Lad+, -43-
 */
 
 const unsigned char  filtersOrder[] = { 
     0,1,2,3,4,5,6,38,39,40,
     46,47,22,7,8,10,11,12,13,14,
     15,16,17,18,19,20,21,23,24,25,
-    26,32,33,34,35,36,37,41,42,9,
-    43,44,45,27,28,29,30,31,48 
+    26,32,33,34,35,36,37,41,42,44,
+    45,28,29,27,30,31,48,9,43
 };
-
+//https://js.do/code/array-de-index
 const unsigned char  filtersPosition[] =  {
-    0,1,2,3,4,5,6,13,14,39,
+    0,1,2,3,4,5,6,13,14,47,
     15,16,17,18,19,20,21,22,23,24,
-    25,26,12,27,28,29,30,43,44,45,
-    46,47,31,32,33,34,35,36,7,8,
-    9,37,38,40,41,42,10,11,48
+    25,26,12,27,28,29,30,43,41,42,
+    44,45,31,32,33,34,35,36,7,8,9,
+    37,38,48,39,40,10,11,46
 };
 
 const char *fxName[] = {
@@ -327,7 +327,7 @@ struct FilterRowDisplay filterRowDisplay[FILTER_LAST] = {
         { "Driv", "Tone", "Gain" },
         { "Thrs", "Tone", "Gain" },
         { "Freq", "Res ", "Gain" },
-        { "Freq", "Res ", "Gain" },
+        { "Smp1", "Smp2", "Gain" },
         { "Freq", "Fold", "Gain" },
         { "Freq", "Fold", "Gain" },
         { "Pos ", "Freq", "Gain" },
@@ -1096,7 +1096,7 @@ void SynthState::encoderTurned(int encoder, int ticks) {
 
             // Special Case for filter
             if (unlikely(param->valueNameOrderReversed == filtersPosition)) {
-                if (ticks>0 && oldValue != FILTER_LADDER) {
+                if (ticks>0 && oldValue != FILTER_CRUSH2) {
                     newValue = param->valueNameOrder[pos+1];
                 }
                 if (ticks<0 && pos>param->minValue) {

@@ -200,6 +200,11 @@ inline
 float wrap(float x) {
 	return x - floorf(x);
 }
+inline
+float wrapBipolar(float x) {
+	const float a = fabsf(x);
+	return copysignf(a - floorf(a), x);
+}
 inline 
 float window(float x) {
 	if (x < 0 || x > 1) {
@@ -2611,10 +2616,13 @@ case FILTER_TEXTURE1:
 		float *sp = this->sampleBlock;
 		float lowL = v0L, highL = 0, bandL = v1L;
 		float lowR = v0R, highR = 0, bandR = v1R;
+		float destL = v7L, destR = v7R;
 		float notch;
+		float bits1 = v8L;
+		float b1inc = 0.025f + sqrt3(fxParam1 < 0.5f ? 1 - fxParam1 : fxParam1);
 
 		const float f = (fxParam1 * fxParam1 * fxParam1) * 0.5f;
-		const float fb = fxParam2;
+		const float fb = clamp(fxParam2 - fxParam1 * 0.1f, 0, 1);
 		const float scale = sqrt3(fb);
 
 		const int highBits = 0xFFFFFD4F;
@@ -2634,9 +2642,13 @@ case FILTER_TEXTURE1:
 		for (int k=BLOCK_SIZE ; k--; ) {
 			//LEFT
 			//*sp = _ly1L + ((-_ly1L + *sp) * r);
+			if (bits1 >= 1)
+			{
+				destL = (*sp);
+			}
 
 			lowL = lowL + f * bandL;
-			highL = scale * (*sp) - lowL - fb * bandL;
+			highL = scale * destL - lowL - fb * bandL;
 			bandL = f * highL + bandL;
 			notch = lowL + highL;
 
@@ -2655,9 +2667,13 @@ case FILTER_TEXTURE1:
 
 			//RIGHT
 			//*sp = _ly1R + ((-_ly1R + *sp) * r);
-
+			if (bits1 >= 1)
+			{
+				bits1 -= 1;
+				destR = (*sp);
+			}
 			lowR = lowR + f * bandR;
-			highR = scale * (*sp) - lowR - fb * bandR;
+			highR = scale * destR - lowR - fb * bandR;
 			bandR = f * highR + bandR;
 			notch = lowR + highR;
 
@@ -2673,7 +2689,14 @@ case FILTER_TEXTURE1:
 			_lx1R = notch;
 
 			*sp++ = clamp(_ly1R * mixerGain, -ratioTimbres, ratioTimbres);
+
+			bits1 += b1inc;
+
 		}
+
+		v8L = bits1;
+		v7L = destL;
+		v7R = destR;
 
 		v0L = lowL;
 		v1L = bandL;
@@ -2700,18 +2723,24 @@ case FILTER_TEXTURE2:
 		float *sp = this->sampleBlock;
 		float lowL = v0L, highL = 0, bandL = v1L;
 		float lowR = v0R, highR = 0, bandR = v1R;
+		float destL = v7L, destR = v7R;
 		float notch;
 
+		float localInR = *sp, localInL = *sp;
+		float localLowR = v1L, localLowL = v1R;
+
+		float bits1 = v8L;
+		float b1inc = 0.125f + fxParam1 * fxParam1 * fxParam1;
+		float b1S;
+
+		float bits2 = v8R;
+		float b2inc = clamp(fxParam2 * fxParam2 * fxParam2 * 0.55f + b1inc * 0.05f, 0, 1);
+		float b2S;
+		float targetLowL = v6L, targetLowR = v6R;
+
 		const float f = (fxParam1 * fxParam1 * fxParam1) * 0.5f;
-		const float fb = fxParam2;
+		const float fb = 0.97f - fxParam1 * 0.05f;
 		const float scale = sqrt3(fb);
-
-		const int highBits = 0xFFFFFFAF;
-		const int lowBits = ~(highBits);
-
-		const int ll = fxParam1 * lowBits;
-		int digitsL, digitsR;
-		int lowDigitsL, lowDigitsR;
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
@@ -2725,24 +2754,29 @@ case FILTER_TEXTURE2:
 		const float r = 0.9940f;
 
 		for (int k=BLOCK_SIZE ; k--; ) {
+			b1S = sigmoid(bits1);
+			b2S = sigmoid(bits2);
 			//LEFT
 			*sp = _ly2L + ((-_ly2L + *sp) * r);
+			if (bits1 >= 1) {
+				localInL = destL = *sp;
+			} else {
+				localInL = destL * (1 - b1S) + *sp * b1S;
+			}
 
-			lowL = lowL + f * bandL;
-			highL = scale * (*sp) - lowL - fb * bandL;
+			if (bits2 >= 1) {
+				localLowL = targetLowL = sat66(lowL);
+			} else {
+				localLowL = targetLowL * (1 - b2S) + lowL * b2S;
+			}
+
+			lowL = localLowL + f * bandL;
+			highL = scale * localInL - localLowL - fb * bandL;
 			bandL = f * highL + bandL;
-			notch = lowL + highL;
-
-			digitsL = FLOAT2SHORT * (bandL);
-			lowDigitsL = (digitsL & lowBits);
-			bandL = SHORT2FLOAT * (float)((digitsL & highBits) ^ ((lowDigitsL * ll) & 0x1FFF));
+			notch = localLowL + highL;
 
 			_ly1L = coef1 * (_ly1L + notch) - _lx1L; // allpass
 			_lx1L = notch;
-			
-			/*lowL = lowL + f * bandL;
-			highL = scale * (_ly1L) - lowL - fb * bandL;
-			bandL = f * highL + bandL;*/
 
 			_ly2L = coef2 * (_ly2L + _ly1L) - _lx2L; // allpass 2
 			_lx2L = _ly1L;
@@ -2752,26 +2786,35 @@ case FILTER_TEXTURE2:
 			//RIGHT
 			*sp = _ly2R + ((-_ly2R + *sp) * r);
 
-			lowR = lowR + f * bandR;
-			highR = scale * (*sp) - lowR - fb * bandR;
-			bandR = f * highR + bandR;
-			notch = lowR + highR;
+			if (bits1 >= 1)	{
+				bits1 -= 1;
+				localInR = destR = *sp;
+			} else {
+				localInR = destR * (1 - b1S) + *sp * b1S;
+			}
 
-			digitsR = FLOAT2SHORT * (bandR);
-			lowDigitsR = (digitsR & lowBits);
-			bandR = SHORT2FLOAT * (float)((digitsR & highBits) ^ ((lowDigitsR * ll) & 0x1FFF));
+			if (bits2 >= 1) {
+				bits2 -= 1;
+				localLowR = targetLowR = sat66(lowR);
+			} else {
+				localLowR = targetLowR * (1 - b2S) + lowR * b2S;
+			}
+
+			lowR = localLowR + f * bandR;
+			highR = scale * localInR - localLowR - fb * bandR;
+			bandR = f * highR + bandR;
+			notch = localLowR + highR;
 
 			_ly1R = coef1 * (_ly1R + notch) - _lx1R; // allpass
 			_lx1R = notch;
-
-			/*lowR = lowR + f * bandR;
-			highR = scale * (notch) - lowR - fb * bandR;
-			bandR = f * highR + bandR;*/
 
 			_ly2R = coef2 * (_ly2R + _ly1R) - _lx2R; // allpass 2
 			_lx2R = _ly1R;
 
 			*sp++ = clamp(_ly2R * mixerGain, -ratioTimbres, ratioTimbres);
+
+			bits1 += b1inc;
+			bits2 += b2inc;
 		}
 
 		v0L = lowL;
@@ -2783,6 +2826,14 @@ case FILTER_TEXTURE2:
 		v3L = _lx1L; v3R = _lx1R;
 		v4L = _ly2L; v4R = _ly2R;
 		v5L = _lx2L; v5R = _lx2R;
+
+		v6L = targetLowL;
+		v6R = targetLowR;
+
+		v8L = bits1;
+		v8R = bits2;
+		v7L = destL;
+		v7R = destR;
     }
     break;
 case FILTER_LPXOR:
@@ -3443,17 +3494,10 @@ case FILTER_ORYX:
 	const float r = 0.985f;
 	float nz;
 	float drift = v6L;
-	float nexDrift = noise[7] * 0.02f;
-	float deltaD = (nexDrift - drift) * 0.000625f;
+	float nexDrift = noise[7] * 0.0005f;
+	float deltaD = (nexDrift - drift) * 0.03125f;
 
 	const float sat = 1.25f;
-
-	//0 < theta < Pi/2
-	float theta = 0.6f;
-	float arghp = (1 + 2 * cosf(theta));
-	float p = (1 + 2 * cosf(theta)) - sqrtf(arghp * arghp - 1);
-	float hpCoef1 = 1 / (1 + p);
-	float hpCoef2 = p * hpCoef1;
 
 	for (int k=BLOCK_SIZE ; k--; ) {
 		nz = noise[k] * 0.005f;
@@ -3557,8 +3601,8 @@ case FILTER_ORYX2:
 	const float r = 0.985f;
 	float nz;
 	float drift = v6L;
-	float nexDrift = noise[7] * 0.02f;
-	float deltaD = (nexDrift - drift) * 0.000625f;
+	float nexDrift = noise[7] * 0.004f;
+	float deltaD = (nexDrift - drift) * 0.03125f;
 
 	for (int k=BLOCK_SIZE ; k--; ) {
 		nz = noise[k] * 0.016f;
@@ -3665,19 +3709,12 @@ case FILTER_ORYX3:
 	const float r = 0.985f;
 	float nz;
 	float drift = v6L;
-	float nexDrift = noise[7] * 0.02f;
-	float deltaD = (nexDrift - drift) * 0.000625f;
+	float nexDrift = noise[7] * 0.0006f;
+	float deltaD = (nexDrift - drift) * 0.03125f;
 
 	//const float sat = 1.25f;
 	const int pos = (int)(0.375f * 2060);
 	float drive = 0.2f;// - fxParam1 * fxParam1 * 0.25f;
-
-	//0 < theta < Pi/2
-	float theta = 0.6f;
-	float arghp = (1 + 2 * cosf(theta));
-	float p = (1 + 2 * cosf(theta)) - sqrtf(arghp * arghp - 1);
-	float hpCoef1 = 1 / (1 + p);
-	float hpCoef2 = p * hpCoef1;
 
 	for (int k=BLOCK_SIZE ; k--; ) {
 		nz = noise[k] * 0.005f;
@@ -4101,7 +4138,7 @@ case FILTER_KRMG:
 	float nexDrift = noise[7] * 0.015f;
 	float deltaD = (nexDrift - drift) * 0.000625f;
 
-	float finalGain = mixerGain * 0.77f;
+	float finalGain = mixerGain * 0.87f;
 
 	for (int k = BLOCK_SIZE; k--;)
 	{
@@ -4779,7 +4816,6 @@ void Timbre::setNewEffecParam(int encoder) {
     		}
 			break;
 		case FILTER_TEXTURE1:
-		case FILTER_TEXTURE2:
 		  	switch (encoder) {
     		case ENCODER_EFFECT_PARAM2:
 				fxParam2 = sqrt3(1 - params.effect.param2 * 0.99f);
