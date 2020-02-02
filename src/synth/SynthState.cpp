@@ -208,7 +208,7 @@ struct ParameterRowDisplay engineMix3ParameterRow = {
 38	La+d, -42-
 39	Diod, -44-
 40	L+d+, -45-
-41	Xor , -27-
+41	Rot , -27-
 42	Txr1, -28-
 43	Txr2, -29-
 44	LPx1, -30-
@@ -262,7 +262,7 @@ const char *fxName[] = {
     "Sigm", /*	24	*/
     "Fold", /*	25	*/
     "Wrap", /*	26	*/
-    "Xor ", /*	27	*/
+    "Rot ", /*	27	*/
     "Txr1", /*	28	*/
     "Txr2", /*	29	*/
     "LPx1", /*	30	*/
@@ -325,8 +325,8 @@ struct FilterRowDisplay filterRowDisplay[FILTER_LAST] = {
         { "Driv", "Tone", "Gain" },
         { "Driv", "Tone", "Gain" },
         { "Driv", "Tone", "Gain" },
-        { "Thrs", "Tone", "Gain" },
-        { "Freq", "Res ", "Gain" },
+        { "angl", "smpr", "Gain" },
+        { "Smp1", "Smp2", "Gain" },
         { "Smp1", "Smp2", "Gain" },
         { "Freq", "Fold", "Gain" },
         { "Freq", "Fold", "Gain" },
