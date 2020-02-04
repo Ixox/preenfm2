@@ -116,6 +116,7 @@ inline static int __canTranspose( int _direction ) {
 
 #define LP2OFFSET -0.045f
 #define min(a,b)                ((a)<(b)?(a):(b))
+#define PIINV 0.318309886183791f
 
 extern float noise[32];
 
@@ -179,6 +180,10 @@ float satSin(float x, float drive, uint_fast16_t pos) {
 	//https://www.desmos.com/calculator/pdsqpi5lp6
 	return x + clamp(x, -0.5f * drive, drive) * sinTable[((uint_fast16_t)(fabsf(x) * 360) + pos) & 0x3FF];
 }
+inline 
+float fastSin(float x) {
+	return sinTable[(int)(fabsf(x * PIINV) * 2048)  & 0x7FF] * 0.5f;
+}
 //https://www.musicdsp.org/en/latest/Other/120-saturation.html
 inline
 float sigmoid(float x)
@@ -191,10 +196,15 @@ float sigmoidPos(float x)
 	//x : 0 -> 1
 	return (sigmoid((x * 2) - 1) + 1) * 0.5f;
 }
+inline
 float fold(float x4) {
 	// https://www.desmos.com/calculator/ge2wvg2wgj
 	// x4 = x / 4
 	return (fabsf(x4 + 0.25f - roundf(x4 + 0.25f)) - 0.25f);
+}
+inline
+float foldPos(float x) {
+	return fold(((x * 2) - 1) * 0.25f) * 2 + 0.5f;
 }
 inline
 float wrap(float x) {
@@ -1329,9 +1339,10 @@ case FILTER_LP2:
 		fxParamTmp *= fxParamTmp;
 
 		// Low pass... on the Frequency
-		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
+		fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
 
-		const float f = (fxParam1);
+		const float fff = fastSin(fxParam1 * fxParam1 * 1.5f);
+		const float f = sqrt3(fff * fff);
     	const float pattern = (1 - fxParam2 * f * 0.997f);
 
     	float *sp = this->sampleBlock;
@@ -1386,9 +1397,10 @@ case FILTER_HP2:
 		fxParamTmp *= fxParamTmp;
 
 		// Low pass... on the Frequency
-		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
+		fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
 
-		const float f = (fxParam1);
+		const float fff = fastSin(fxParam1 * fxParam1 * 1.5f);
+		const float f = sqrt3(fff * fff);
         const float pattern = (1 - fxParam2 * f);
 
         float *sp = this->sampleBlock;
@@ -2538,26 +2550,26 @@ case FILTER_ROT:
 		float destL = v6L, destR = v6R;
 		float ramp1 = v0L;
 		float b1S;
-		float b1inc = fxParam2 * fxParam2 * fxParam2 * 0.55f;
+		float b1inc = 0.0125f + fxParam2 * fxParam2 * fxParam2 * 0.55f;
 
-		const float fold1 = fold(fxParam1);
+		const float fold1 = foldPos(fxParam1);
 		const float f1 = clamp((0.58f - fold1 * 0.43f), filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
 
-		const float fold2 = fold(fxParam1 * 1.2f);
+		const float fold2 = foldPos(fxParam1 * 1.2f);
 		const float f2 = clamp((0.33f + fold2 * 0.5f), filterWindowMin, filterWindowMax);
 		float coef2 = (1.0f - f2) / (1.0f + f2);
 
 		float _ly2L = v1L, _ly2R = v1R;
 		float _lx2L = v4L, _lx2R = v4R;
 
-		float angle = fxParam1 * 2 * M_PI;
+		float angle = foldPos(fxParam1) * 2 * M_PI;
 		// https://www.musicdsp.org/en/latest/Effects/255-stereo-field-rotation-via-transformation-matrix.html
-		float cos_coef = cosf(angle);
-		float sin_coef = sinf(angle);
+		float cos_coef = fastSin(angle + M_PI_4);
+		float sin_coef = fastSin(angle);
 
 		float outL, outR;
 
@@ -2614,14 +2626,15 @@ case FILTER_TEXTURE1:
 	{
 		float fxParamTmp = (params.effect.param1 + matrixFilterFrequency);
 		fxParamTmp *= fxParamTmp;
-		const float fxParam1Nolimit = fxParamTmp;
+
 		const uint_fast8_t random = (*(uint_fast8_t *)noise) & 0xff;
 		if (random > 252) {
 			fxParam1 += ((random & 1) * 0.007874015748031f);
 		}
 
 		// Low pass... on the Frequency
-		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
+		fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+		float p1Sin = fabsf(fastSin(fxParam1 * 1.57079f));
 
 		float *sp = this->sampleBlock;
 		float lowL = v0L, highL = 0, bandL = v1L;
@@ -2633,23 +2646,23 @@ case FILTER_TEXTURE1:
 		float localLowR = v1L, localLowL = v1R;
 
 		float ramp1 = v8L;
-		float b1inc = 0.125f + fxParam1 * fxParam1 * fxParam1;
+		float b1inc = 0.125f + p1Sin * p1Sin * p1Sin;
 		float b1S;
 
 		float ramp2 = v8R;
-		float b2inc = clamp(fxParam2 * fxParam2 * fxParam2 * 0.55f + b1inc * 0.05f, 0, 1);
+		float b2inc = clamp(0.0125f + fxParam2 * fxParam2 * fxParam2 * 0.55f + b1inc * 0.05f, 0, 1);
 		float b2S;
 		float targetLowL = v6L, targetLowR = v6R;
 
-		const float f = (fxParam1 * fxParam1 * fxParam1) * 0.55f;
-		const float fb = 0.97f - fxParam1 * 0.05f;
+		const float f = (p1Sin * p1Sin * p1Sin) * 0.55f;
+		const float fb = 0.97f - p1Sin * 0.05f;
 		const float scale = sqrt3(fb);
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
 		float _ly2L = v4L, _ly2R = v4R;
 		float _lx2L = v5L, _lx2R = v5R;
-		const float fold1 = fold(fxParam1Nolimit);
+		const float fold1 = foldPos(fxParam1);
 		const float f1 = clamp(0.57f - fold1 * 0.33f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 		const float f2 = clamp(0.50f - fold1 * 0.39f , filterWindowMin, filterWindowMax);
@@ -2669,7 +2682,7 @@ case FILTER_TEXTURE1:
 			}
 
 			if (ramp2 >= 1) {
-				localLowL = targetLowL = tanh4(lowL);
+				localLowL = targetLowL = sat33(localInL);
 			} else {
 				localLowL = targetLowL * (1 - b2S) + lowL * b2S;
 			}
@@ -2699,7 +2712,7 @@ case FILTER_TEXTURE1:
 
 			if (ramp2 >= 1) {
 				ramp2 -= 1;
-				localLowR = targetLowR = tanh4(lowR);
+				localLowR = targetLowR = sat33(localInR);
 			} else {
 				localLowR = targetLowR * (1 - b2S) + lowR * b2S;
 			}
@@ -2751,7 +2764,8 @@ case FILTER_TEXTURE2:
 		}
 
 		// Low pass... on the Frequency
-		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
+		fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+		float p1Sin = fabsf(fastSin(fxParam1 * 1.57079f));
 
 		float *sp = this->sampleBlock;
 		float lowL = v0L, highL = 0, bandL = v1L;
@@ -2763,25 +2777,25 @@ case FILTER_TEXTURE2:
 		float localLowR = v1L, localLowL = v1R;
 
 		float ramp1 = v8L;
-		float b1inc = 0.125f + fxParam1 * fxParam1 * fxParam1;
+		float b1inc = 0.125f + p1Sin * p1Sin * p1Sin;
 		float b1S;
 
 		float ramp2 = v8R;
-		float b2inc = clamp(fxParam2 * fxParam2 * fxParam2 * 0.55f + b1inc * 0.05f, 0, 1);
+		float b2inc = clamp(0.0125f + fxParam2 * fxParam2 * fxParam2 * 0.55f + b1inc * 0.05f, 0, 1);
 		float b2S;
 		float targetLowL = v6L, targetLowR = v6R;
 
-		const float f = (fxParam1 * fxParam1 * fxParam1) * 0.5f;
-		const float fb = 0.97f - fxParam1 * 0.05f;
+		const float f = (p1Sin * p1Sin * p1Sin) * 0.5f;
+		const float fb = 0.97f - p1Sin * 0.05f;
 		const float scale = sqrt3(fb);
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
 		float _ly2L = v4L, _ly2R = v4R;
 		float _lx2L = v5L, _lx2R = v5R;
-		const float f1 = clamp(0.57f - fxParam1 * 0.33f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.57f - p1Sin * 0.33f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
-		const float f2 = clamp(0.50f - fxParam1 * 0.39f , filterWindowMin, filterWindowMax);
+		const float f2 = clamp(0.50f - p1Sin * 0.39f , filterWindowMin, filterWindowMax);
 		float coef2 = (1.0f - f1) / (1.0f + f1);
 
 		const float r = 0.9940f;
@@ -2880,9 +2894,10 @@ case FILTER_LPXOR:
 		}
 
 		// Low pass... on the Frequency
-		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
+		fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+		float p1Sin = fabsf(fastSin(fxParam1 * 1.57079f));
 
-		const float a = 1.f - fxParam1;
+		const float a = 1.f - p1Sin;
 		const float a2f = a * SHORT2FLOAT;
 		const float b = 1.f - a;
 
@@ -2892,7 +2907,7 @@ case FILTER_LPXOR:
 		float digitized;
 
 		float ramp1 = v8L;
-		float b1inc = 0.125f + ((fxParam1 > 0.5f) ? (fxParam1 * fxParam1 * fxParam1 ) : (1 - fxParam1) ) * 0.75f;
+		float b1inc = 0.125f + ((p1Sin > 0.5f) ? (p1Sin * p1Sin * p1Sin ) : (1 - p1Sin) ) * 0.75f;
 		float b1S;
 
 		float localInR = *sp, localInL = *sp;
@@ -2909,7 +2924,7 @@ case FILTER_LPXOR:
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(0.27f + fxParam1 * 0.2f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.27f + p1Sin * 0.2f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		const float r = 0.9940f;
@@ -2919,13 +2934,13 @@ case FILTER_LPXOR:
 			*sp = _ly1L + ((-_ly1L + *sp) * r);
 
 			if (ramp1 >= 1) {
-				localInL = destL = *sp;
+				localInL = destL = localv0L;
 			} else {
-				localInL = destL * (1 - b1S) + *sp * b1S;
+				localInL = destL * (1 - b1S) + localv0L * b1S;
 			}
 
-			digitsAL = FLOAT2SHORT * fold(localv0L * gain);
-			digitsBL = FLOAT2SHORT * (*sp);
+			digitsAL = FLOAT2SHORT * fold(localInL * gain);
+			digitsBL = FLOAT2SHORT * *sp;
 			digitized = (float)(digitsAL ^ (digitsBL & bitmask));
 			localv0L = (*sp * b) + (digitized * a2f);
 
@@ -2939,13 +2954,13 @@ case FILTER_LPXOR:
 
 			if (ramp1 >= 1)	{
 				ramp1 -= 1;
-				localInR = destR = *sp;
+				localInR = destR = localv0R;
 			} else {
-				localInR = destR * (1 - b1S) + *sp * b1S;
+				localInR = destR * (1 - b1S) + localv0R * b1S;
 			}
 
-			digitsAR = FLOAT2SHORT * fold(localv0R * gain);
-			digitsBR = FLOAT2SHORT * (*sp);
+			digitsAR = FLOAT2SHORT * fold(localInR * gain);
+			digitsBR = FLOAT2SHORT * *sp;
 			digitized = (float)(digitsAR ^ (digitsBR & bitmask));
 			localv0R = (*sp * b) + (digitized * a2f);
 
@@ -2978,9 +2993,10 @@ case FILTER_LPXOR2:
 		}
 
 		// Low pass... on the Frequency
-		fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
+		fxParam1 = ((fxParamTmp + 9.0f * fxParam1) * .1f);
+		float p1Sin = fabsf(fastSin(fxParam1 * 1.57079f));
 
-		const float a = 1.f - fxParam1;
+		const float a = 1.f - p1Sin;
 		const float a2f = a * SHORT2FLOAT;
 		const float b = 1.f - a;
 
@@ -3007,7 +3023,7 @@ case FILTER_LPXOR2:
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(0.27f + fxParam1 * 0.2f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.27f + p1Sin * 0.2f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
 		const float r = 0.9940f;
@@ -3163,6 +3179,7 @@ case FILTER_QUADNOTCH:
 
 	const float bipolarf = (fxParam1 - 0.5f);
 	const float folded = fold(sigmoid(bipolarf * 13 * fxParam2)) * 4; // - < folded < 1
+	const float folded2 = fold(fxParam1);
 
 	fxParam1 = ((fxParamTmp + 9.0f * fxParam1) * .1f);
 	
@@ -3173,17 +3190,18 @@ case FILTER_QUADNOTCH:
 	const float spread = 0.8f + fxParam2 * 0.8f;
 	const float lrDelta = 0.0025f * folded;
 	const float range = 0.47f;
+	const float range2 = 0.51f;
 
 	const float windowMin = 0.005f, windowMax = 0.99f;
 
-	const float f1L = clamp(fold((fxParam1 - offset - lrDelta) * range) * 2, windowMin, windowMax);
-	const float f2L = clamp(fold((fxParam1 + offset + lrDelta) * range) * 2, windowMin, windowMax);
-	const float f3L = clamp(fold((fxParam1 - (offset * 2) - lrDelta) * range) * 2, windowMin, 1);
-	const float f4L = clamp(fold((fxParam1 + (offset * 2) + lrDelta) * range) * 2, windowMin, 1);	
-	const float f1R = clamp(fold((f1L - lrDelta) * range) * 2, windowMin, windowMax);
-	const float f2R = clamp(fold((f2L + lrDelta) * range) * 2, windowMin, windowMax);
-	const float f3R = clamp(fold((f3L - lrDelta) * range) * 2, windowMin, windowMax);
-	const float f4R = clamp(fold((f3L + lrDelta) * range) * 2, windowMin, windowMax);
+	const float f1L = clamp(((folded2 - offset - lrDelta) * range) * 2, windowMin, windowMax);
+	const float f2L = clamp(((folded2 + offset + lrDelta) * range2) * 2, windowMin, windowMax);
+	const float f3L = clamp(((folded2 - (offset * 2) - lrDelta) * range2) * 2, windowMin, 1);
+	const float f4L = clamp(((folded2 + (offset * 2) + lrDelta) * range) * 2, windowMin, 1);	
+	const float f1R = clamp(((f1L - lrDelta) * range) * 2, windowMin, windowMax);
+	const float f2R = clamp(((f2L + lrDelta) * range2) * 2, windowMin, windowMax);
+	const float f3R = clamp(((f3L - lrDelta) * range2) * 2, windowMin, windowMax);
+	const float f4R = clamp(((f3L + lrDelta) * range) * 2, windowMin, windowMax);
 
 	float *sp = this->sampleBlock;
 	float lowL = v0L, highL = 0, bandL = v1L;
@@ -4199,7 +4217,7 @@ case FILTER_KRMG:
 	// Low pass... on the Frequency
 	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
 
-	const float wc = fxParam1 * fxParam1;
+	const float wc = 0.1f + fxParam1 * fxParam1;
 	const float wc2 = wc * wc;
 	const float wc3 = wc2 * wc;
 
@@ -4570,11 +4588,12 @@ case FILTER_CRUSH2:
 	float fxParamTmp = params.effect.param1 + matrixFilterFrequency;
 	fxParamTmp *= fxParamTmp;
 	// Low pass... on the Frequency
-	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
+	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+	float p1Sin = fabsf(fastSin(fxParam1 * 1.57079f));
 
 	//const float f = 0.05f + clamp(sigmoid(fxParam1 + fxParam2) * 0.67f, 0, 0.85f);
-	const float f = 0.55f + clamp(sigmoid(fxParam1) * 0.45f, 0, 0.45f);
-	const float reso = 0.28f + (1 - fxParam1) * 0.55f;
+	const float f = 0.55f + clamp(sigmoid(p1Sin) * 0.45f, 0, 0.45f);
+	const float reso = 0.28f + (1 - p1Sin) * 0.55f;
 	const float pattern = (1 - reso * f);
 
 	float *sp = this->sampleBlock;
@@ -4582,7 +4601,7 @@ case FILTER_CRUSH2:
 	float ramp1 = v8L;
 	float ramp2 = v8R;
 
-	float b1inc = fxParam1 * fxParam1 * fxParam1;
+	float b1inc = p1Sin * p1Sin * p1Sin;
 	float b2inc = clamp(fxParam2 * fxParam2 * fxParam2 * 0.95f + b1inc * 0.05f, 0, 1);
 
 	float _ly1L = v2L, _ly1R = v2R;
@@ -4603,12 +4622,12 @@ case FILTER_CRUSH2:
 	const float f1 = clamp(0.23f + fxParam2 * fxParam2 * 0.33f, filterWindowMin, filterWindowMax);
 	float coef1 = (1.0f - f1) / (1.0f + f1);
 
-	const float f2 = clamp(0.33f + fxParam1 * fxParam1 * 0.43f, filterWindowMin, filterWindowMax);
+	const float f2 = clamp(0.33f + p1Sin * p1Sin * 0.43f, filterWindowMin, filterWindowMax);
 	float coef2 = (1.0f - f2) / (1.0f + f2);
 
 	float inL = v6L, inR = v6R, destL = v7L, destR = v7R;
 
-	float sat = 1.25f + fxParam1 * 0.25f;
+	float sat = 1.25f + p1Sin * 0.25f;
 
 	for (int k = BLOCK_SIZE; k--;)
 	{
