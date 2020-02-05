@@ -2543,7 +2543,7 @@ case FILTER_ROT:
 		fxParamTmp *= fxParamTmp;
 
 		// Low pass... on the Frequency
-		fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+		fxParam1 = (fxParamTmp + 199.0f * fxParam1) * .005f;
 
 		float *sp = this->sampleBlock;
 		float sahL = v5L, sahR = v5R;
@@ -2668,7 +2668,7 @@ case FILTER_TEXTURE1:
 		const float f2 = clamp(0.50f - fold1 * 0.39f , filterWindowMin, filterWindowMax);
 		float coef2 = (1.0f - f1) / (1.0f + f1);
 
-		const float r = 0.9940f;
+		const float r = 0.9850f;
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 			b1S = sigmoid(ramp1);
@@ -2798,7 +2798,7 @@ case FILTER_TEXTURE2:
 		const float f2 = clamp(0.50f - p1Sin * 0.39f , filterWindowMin, filterWindowMax);
 		float coef2 = (1.0f - f1) / (1.0f + f1);
 
-		const float r = 0.9940f;
+		const float r = 0.9850f;
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 			b1S = sigmoid(ramp1);
@@ -2927,7 +2927,7 @@ case FILTER_LPXOR:
 		const float f1 = clamp(0.27f + p1Sin * 0.2f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
-		const float r = 0.9940f;
+		const float r = 0.980f;
 
 		for (int k = BLOCK_SIZE; k--;) {
 			// Left voice
@@ -3026,7 +3026,7 @@ case FILTER_LPXOR2:
 		const float f1 = clamp(0.27f + p1Sin * 0.2f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 
-		const float r = 0.9940f;
+		const float r = 0.9830f;
 
 		for (int k=BLOCK_SIZE ; k--; ) {
 			// Left voice
