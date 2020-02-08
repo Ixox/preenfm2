@@ -1341,8 +1341,8 @@ case FILTER_LP2:
 		// Low pass... on the Frequency
 		fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
 
-		const float fff = fastSin(fxParam1 * fxParam1 * 1.5f);
-		const float f = sqrt3(fff * fff);
+		const float fff = fastSin( sqrt3(fxParam1 * fxParam1 * 1.45f) );
+		const float f = fabsf(fff);
     	const float pattern = (1 - fxParam2 * f * 0.997f);
 
     	float *sp = this->sampleBlock;
@@ -1353,13 +1353,20 @@ case FILTER_LP2:
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
-		const float f1 = clamp(0.27f + f * 0.33f, filterWindowMin, filterWindowMax);
+		const float f1 = clamp(0.517f - f * 0.151f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
+
+		float r = 0.993f;
 
     	for (int k=BLOCK_SIZE ; k--; ) {
 
 			// Left voice
+			*sp = _ly1L + ((-_ly1L + *sp) * r);
+
 			localv0L = pattern * localv0L - f * sat25(localv1L + *sp);
+			localv1L = pattern * localv1L + f * localv0L;
+
+			localv0L = pattern * localv0L - f * (localv1L + *sp);
 			localv1L = pattern * localv1L + f * localv0L;
 
 			localv0L = pattern * localv0L - f * (localv1L + *sp);
@@ -1371,7 +1378,12 @@ case FILTER_LP2:
 			*sp++ = clamp(_ly1L * mixerGain, -ratioTimbres, ratioTimbres);
 
 			// Right voice
+			*sp = _ly1R + ((-_ly1R + *sp) * r);
+
 			localv0R = pattern * localv0R - f * sat25(localv1R + *sp);
+			localv1R = pattern * localv1R + f * localv0R;
+
+			localv0R = pattern * localv0R - f * (localv1R + *sp);
 			localv1R = pattern * localv1R + f * localv0R;
 
 			localv0R = pattern * localv0R - f * (localv1R + *sp);
@@ -1399,8 +1411,8 @@ case FILTER_HP2:
 		// Low pass... on the Frequency
 		fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
 
-		const float fff = fastSin(fxParam1 * fxParam1 * 1.5f);
-		const float f = sqrt3(fff * fff);
+		const float fff = fastSin( sqrt3(fxParam1 * fxParam1 * 1.45f) );
+		const float f = fabsf(fff);
         const float pattern = (1 - fxParam2 * f);
 
         float *sp = this->sampleBlock;
@@ -1418,6 +1430,9 @@ case FILTER_HP2:
 			localv0L = pattern * localv0L + f * (-localv1L + *sp);
 			localv1L = pattern * localv1L + f * localv0L;
 
+			localv0L = pattern * localv0L + f * (-localv1L + *sp);
+			localv1L = pattern * localv1L + f * localv0L;
+
 			*sp++ = clamp((*sp - localv1L) * mixerGain, -ratioTimbres, ratioTimbres);
 
 			// Right voice
@@ -1427,6 +1442,9 @@ case FILTER_HP2:
 			localv0R = pattern * localv0R + f * (-localv1R + *sp);
 			localv1R = pattern * localv1R + f * localv0R;
 
+			localv0R = pattern * localv0R + f * (-localv1R + *sp);
+			localv1R = pattern * localv1R + f * localv0R;
+			
 			*sp++ = clamp((*sp - localv1R) * mixerGain, -ratioTimbres, ratioTimbres);
 		}
         v0L = localv0L;
@@ -1488,9 +1506,14 @@ case FILTER_LP3:
 	float fxParamTmp = SVFOFFSET + params.effect.param1 + matrixFilterFrequency;
 	fxParamTmp *= fxParamTmp;
 	// Low pass... on the Frequency
-	fxParam1 = clamp((fxParamTmp + 9.0f * fxParam1) * .1f, 0, 1);
+	fxParam1 = (fxParamTmp + 9.0f * fxParam1) * .1f;
+	float fxParam1Clamped = clamp(fxParam1, 0, 1);
 
-	const float f = fxParam1 * fxParam1 * SVFRANGE;
+	float ramp1 = v8L;
+	float b1inc = clamp(1.01f - (fastSin(fxParam1 * fxParam1 * 0.0001078f) * fxParam1 * 0.0192f), 0, 1);
+	float destL = v6L, destR = v6R;
+
+	const float f = fxParam1Clamped * fxParam1Clamped * SVFRANGE;
 	const float fb = sqrt3(1 - fxParam2 * 0.999f);
 	const float scale = sqrt3(fb);
 
@@ -1507,9 +1530,13 @@ case FILTER_LP3:
 
 	for (int k = BLOCK_SIZE; k--;)	{
 		// Left voice
+		if (ramp1 >= 1)
+		{
+			destL = (*sp);
+		}
 
-		_ly1L = coef1 * (_ly1L + *sp) - _lx1L; // allpass
-		_lx1L = *sp;
+		_ly1L = coef1 * (_ly1L + destL) - _lx1L; // allpass
+		_lx1L = destL;
 
 		lowL += f * bandL;
 		bandL += f * (scale * _ly1L - lowL - fb * sat25(bandL));
@@ -1521,8 +1548,14 @@ case FILTER_LP3:
 
 		// Right voice
 
-		_ly1R = coef1 * (_ly1R + *sp) - _lx1R; // allpass
-		_lx1R = *sp;
+		if (ramp1 >= 1)
+		{
+			ramp1 -= 1;
+			destR = (*sp);
+		}
+
+		_ly1R = coef1 * (_ly1R + destR) - _lx1R; // allpass
+		_lx1R = destR;
 
 		lowR += f * bandR;
 		bandR += f * (scale * _ly1R - lowR - fb * sat25(bandR));
@@ -1531,6 +1564,8 @@ case FILTER_LP3:
 		bandR += f * (scale * _ly1R - lowR - fb * (bandR));
 
 		*sp++ = clamp(lowR * svfGain, -ratioTimbres, ratioTimbres);
+
+		ramp1 = clamp(ramp1 + b1inc, 0, 1);
 	}
 
 	v0L = lowL;
@@ -1540,6 +1575,10 @@ case FILTER_LP3:
 
 	v2L = _ly1L; v2R = _ly1R;
 	v3L = _lx1L; v3R = _lx1R;
+
+	v6L = destL;
+	v6R = destR;
+	v8L = ramp1;
 }
 break;
 case FILTER_HP3: 
@@ -2566,9 +2605,9 @@ case FILTER_ROT:
 		float _ly2L = v1L, _ly2R = v1R;
 		float _lx2L = v4L, _lx2R = v4R;
 
-		float angle = foldPos(fxParam1) * 2 * M_PI;
+		float angle = foldPos(fxParam1);// * 2 * M_PI;
 		// https://www.musicdsp.org/en/latest/Effects/255-stereo-field-rotation-via-transformation-matrix.html
-		float cos_coef = fastSin(angle + M_PI_4);
+		float cos_coef = fastSin(angle + 0.25f);
 		float sin_coef = fastSin(angle);
 
 		float outL, outR;
@@ -2606,7 +2645,7 @@ case FILTER_ROT:
 			_ly2R = coef2 * (_ly2R + sahR) - _lx2R; // allpass
 			_lx2R = sahR;
 
-			outR  = _ly2R * cos_coef + _ly2L * sin_coef;
+			outR  = _ly2L * sin_coef + _ly2R * cos_coef;
 
 			*sp++ = clamp(outR * mixerGain, -ratioTimbres, ratioTimbres);
 
@@ -2646,11 +2685,11 @@ case FILTER_TEXTURE1:
 		float localLowR = v1L, localLowL = v1R;
 
 		float ramp1 = v8L;
-		float b1inc = 0.125f + p1Sin * p1Sin * p1Sin;
+		float b1inc = 0.025f + p1Sin * p1Sin;
 		float b1S;
 
 		float ramp2 = v8R;
-		float b2inc = clamp(0.0125f + fxParam2 * fxParam2 * fxParam2 * 0.55f + b1inc * 0.05f, 0, 1);
+		float b2inc = clamp(0.0125f + fxParam2 * fxParam2 * 0.55f + b1inc * 0.05f, 0, 1);
 		float b2S;
 		float targetLowL = v6L, targetLowR = v6R;
 
@@ -2662,7 +2701,7 @@ case FILTER_TEXTURE1:
 		float _lx1L = v3L, _lx1R = v3R;
 		float _ly2L = v4L, _ly2R = v4R;
 		float _lx2L = v5L, _lx2R = v5R;
-		const float fold1 = foldPos(fxParam1);
+		const float fold1 = foldPos(fxParam2);
 		const float f1 = clamp(0.57f - fold1 * 0.33f, filterWindowMin, filterWindowMax);
 		float coef1 = (1.0f - f1) / (1.0f + f1);
 		const float f2 = clamp(0.50f - fold1 * 0.39f , filterWindowMin, filterWindowMax);
@@ -2687,18 +2726,18 @@ case FILTER_TEXTURE1:
 				localLowL = targetLowL * (1 - b2S) + lowL * b2S;
 			}
 
-			_ly1L = coef1 * (_ly1L + localInL) - _lx1L; // allpass
+			_ly1L = coef1 * (_ly2L + localInL) - _lx1L; // allpass
 			_lx1L = localInL;
+
+			_ly2L = coef2 * (_ly2L + _ly1L) - _lx2L; // allpass 2
+			_lx2L = _ly1L;
 
 			lowL = localLowL + f * bandL;
 			highL = scale * _ly1L - localLowL - fb * bandL;
 			bandL = f * highL + bandL;
 			out = localLowL + bandL + highL;
 
-			_ly2L = coef2 * (_ly2L + out) - _lx2L; // allpass 2
-			_lx2L = out;
-
-			*sp++ = clamp(_ly2L * mixerGain, -ratioTimbres, ratioTimbres);
+			*sp++ = clamp(out * mixerGain, -ratioTimbres, ratioTimbres);
 
 			//RIGHT
 			*sp = _ly2R + ((-_ly2R + *sp) * r);
@@ -2717,18 +2756,18 @@ case FILTER_TEXTURE1:
 				localLowR = targetLowR * (1 - b2S) + lowR * b2S;
 			}
 
-			_ly1R = coef1 * (_ly1R + localInR) - _lx1R; // allpass
+			_ly1R = coef1 * (_ly2R + localInR) - _lx1R; // allpass
 			_lx1R = localInR;
+
+			_ly2R = coef2 * (_ly2R + _ly1R) - _lx2R; // allpass 2
+			_lx2R = _ly1R;
 
 			lowR = localLowR + f * bandR;
 			highR = scale * _ly1R - localLowR - fb * bandR;
 			bandR = f * highR + bandR;
 			out = localLowR + bandR + highR;
 
-			_ly2R = coef2 * (_ly2R + out) - _lx2R; // allpass 2
-			_lx2R = out;
-
-			*sp++ = clamp(_ly2R * mixerGain, -ratioTimbres, ratioTimbres);
+			*sp++ = clamp(out * mixerGain, -ratioTimbres, ratioTimbres);
 
 			ramp1 += b1inc;
 			ramp2 += b2inc;
