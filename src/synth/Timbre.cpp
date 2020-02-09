@@ -1510,7 +1510,7 @@ case FILTER_LP3:
 	float fxParam1Clamped = clamp(fxParam1, 0, 1);
 
 	float ramp1 = v8L;
-	float b1inc = clamp(1.01f - (fastSin(fxParam1 * fxParam1 * 0.0001078f) * fxParam1 * 0.0192f), 0, 1);
+	float b1inc = clamp(1.01f - sigmoidPos(foldPos(fxParam1 * fxParam1 * 0.01f) * fxParam1 * 0.0123f), 0.0001f, 1);
 	float destL = v6L, destR = v6R;
 
 	const float f = fxParam1Clamped * fxParam1Clamped * SVFRANGE;
@@ -2613,7 +2613,7 @@ case FILTER_ROT:
 		float outL, outR;
 
 		for (int k=BLOCK_SIZE ; k--; ) {
-			b1S = sigmoid(ramp1);
+			b1S = clamp(sigmoid(ramp1), 0, 1);
 			// Left
 			_ly1L = coef1 * (_ly1L + *sp) - _lx1L; // allpass
 			_lx1L = *sp;
