@@ -68,6 +68,7 @@ void Voice::glideToNote(short newNote) {
 	this->gliding = true;
 	this->glidePhase = 0.0f;
 	this->nextGlidingNote = newNote;
+	this->note = newNote;
 	if (this->holdedByPedal) {
 		glideFirstNoteOff();
 	}
@@ -84,7 +85,7 @@ void Voice::glideToNote(short newNote) {
 void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) {
 	// Update index : so that few chance to be chosen again during the quick dying
 	this->index = index;
-	if (!this->released && (int)currentTimbre->params.engine1.numberOfVoice == 1 && currentTimbre->params.engine1.glide > 0) {
+	if (!this->released && currentTimbre->params.engine1.glide > 0) {
 		glideToNote(newNote);
 		this->holdedByPedal = false;
 	} else {
@@ -112,12 +113,13 @@ void Voice::glide() {
 	this->glidePhase += glidePhaseInc[(int)(currentTimbre->params.engine1.glide - .95f)];
 	if (glidePhase < 1.0f) {
 
-		currentTimbre->osc1.glideStep(&oscState1, this->glidePhase);
-		currentTimbre->osc2.glideStep(&oscState2, this->glidePhase);
-		currentTimbre->osc3.glideStep(&oscState3, this->glidePhase);
-		currentTimbre->osc4.glideStep(&oscState4, this->glidePhase);
-		currentTimbre->osc5.glideStep(&oscState5, this->glidePhase);
-		currentTimbre->osc6.glideStep(&oscState6, this->glidePhase);
+		float glidePhase2 = glidePhase * glidePhase;
+		currentTimbre->osc1.glideStep(&oscState1, glidePhase2);
+		currentTimbre->osc2.glideStep(&oscState2, glidePhase2);
+		currentTimbre->osc3.glideStep(&oscState3, glidePhase2);
+		currentTimbre->osc4.glideStep(&oscState4, glidePhase2);
+		currentTimbre->osc5.glideStep(&oscState5, glidePhase2);
+		currentTimbre->osc6.glideStep(&oscState6, glidePhase2);
 
 	} else {
 		// last with phase set to 1 to have exact frequencry
@@ -141,11 +143,12 @@ void Voice::noteOn(short newNote, short velocity, unsigned int index) {
 	this->holdedByPedal = false;
 	this->index = index;
 
-	this->velIm1 = currentTimbre->params.engineIm1.modulationIndexVelo1 * (float)velocity * .0078125f;
-	this->velIm2 = currentTimbre->params.engineIm1.modulationIndexVelo2 * (float)velocity * .0078125f;
-	this->velIm3 = currentTimbre->params.engineIm2.modulationIndexVelo3 * (float)velocity * .0078125f;
-	this->velIm4 = currentTimbre->params.engineIm2.modulationIndexVelo4 * (float)velocity * .0078125f;
-	this->velIm5 = currentTimbre->params.engineIm3.modulationIndexVelo5 * (float)velocity * .0078125f;
+	float vv  =(float)velocity * .0078125f;
+	this->velIm1 = currentTimbre->params.engineIm1.modulationIndexVelo1 * vv;
+	this->velIm2 = currentTimbre->params.engineIm1.modulationIndexVelo2 * vv;
+	this->velIm3 = currentTimbre->params.engineIm2.modulationIndexVelo3 * vv;
+	this->velIm4 = currentTimbre->params.engineIm2.modulationIndexVelo4 * vv;
+	this->velIm5 = currentTimbre->params.engineIm3.modulationIndexVelo5 * vv;
 
 	int zeroVelo = (16 - currentTimbre->params.engine1.velocity) * 8;
 	int newVelocity = zeroVelo + ((velocity * (128 - zeroVelo)) >> 7);
@@ -201,8 +204,9 @@ void Voice::endNoteOrBeginNextOne() {
 
 void Voice::glideFirstNoteOff() {
 	// while gliding the first note was released
-	this->note = this->nextGlidingNote;
-	this->nextGlidingNote = 0;
+	if(this->nextGlidingNote > 0) {
+		this->note = this->nextGlidingNote;
+	}
 }
 
 
@@ -219,6 +223,7 @@ void Voice::noteOff() {
         }
 		this->released = true;
 		this->gliding = false;
+		this->nextGlidingNote = 0;
 		this->holdedByPedal = false;
 
 		currentTimbre->env1.noteOff(&envState1, &matrix);

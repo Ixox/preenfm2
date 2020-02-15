@@ -53,6 +53,7 @@ public:
     bool isNewNotePending() { return this->newNotePending; }
     unsigned int getIndex() { return this->index; }
     uint8_t getNote() { return this->note; }
+    void setNote(uint8_t note) { this->note = note; }
     uint8_t getNextPendingNote() { return this->nextPendingNote; }
     uint8_t getNextGlidingNote() { return this->nextGlidingNote; }
     bool isHoldedByPedal() { return this->holdedByPedal; }

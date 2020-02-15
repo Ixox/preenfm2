@@ -147,8 +147,10 @@ void Synth::buildNewSampleBlock() {
         if (likely(timbres[t].params.engine1.numberOfVoice > 0)) {
             timbres[t].prepareForNextBlock();
             // need to glide ?
-            if (timbres[t].voiceNumber[0] != -1 && this->voices[timbres[t].voiceNumber[0]].isGliding()) {
-                this->voices[timbres[t].voiceNumber[0]].glide();
+            for(int j = 0; j < timbres[t].params.engine1.numberOfVoice; j++) {
+                if (timbres[t].voiceNumber[j] != -1 && this->voices[timbres[t].voiceNumber[j]].isGliding()) {
+                    this->voices[timbres[t].voiceNumber[j]].glide();
+                }
             }
         }
 

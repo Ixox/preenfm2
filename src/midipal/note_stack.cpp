@@ -46,6 +46,7 @@ void NoteStack::NoteOn(uint8_t note, uint8_t velocity) {
 	for (uint8_t i = 1; i <= kNoteStackSize; ++i) {
 		if (pool_[i].note == kFreeSlot) {
 			free_slot = i;
+			break;
 		}
 	}
 	pool_[free_slot].next_ptr = root_ptr_;

@@ -213,7 +213,7 @@ void Osc::glideToNote(struct OscState* oscState, int note) {
     case OSC_FT_KEYHZ:
         oscState->nextFrequency = frequencyToUse[note] * oscillator->frequencyMul;
         oscState->nextFrequency *= (INV440 * synthState->fullState.globalTuning);
-        oscState->nextFrequency =+ oscillator->detune;
+        oscState->nextFrequency += oscillator->detune;
         break;
     }
     oscState->fromFrequency = oscState->mainFrequency;

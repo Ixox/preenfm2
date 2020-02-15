@@ -543,6 +543,8 @@ Timbre::Timbre() {
     // Arpeggiator start
     Start();
 
+    // note stack for stuff
+    pf_note_stack.Init();
 
     // Init FX variables
 	v0L = v1L = v2L = v3L = v4L = v5L = v6L = v7L = v8L = v0R = v1R = v2R = v3R = v4R = v5R = v6R = v7R = v8R = v8R = 0.0f;
@@ -620,6 +622,8 @@ void Timbre::preenNoteOn(char note, char velocity) {
 	if (unlikely(iNov == 0)) {
 		return;
 	}
+
+	pf_note_stack.NoteOn(note, velocity);
 
 	unsigned int indexMin = (unsigned int)2147483647;
 	int voiceToUse = -1;
@@ -808,36 +812,34 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 
 void Timbre::preenNoteOff(char note) {
 	int iNov = (int) params.engine1.numberOfVoice;
+	pf_note_stack.NoteOff(note);
 	for (int k = 0; k < iNov; k++) {
 		// voice number k of timbre
 		int n = voiceNumber[k];
 
 		// Not playing = free CPU
-		if (unlikely(!voices[n]->isPlaying())) {
+		/*if (unlikely(!voices[n]->isPlaying())) {
 			continue;
-		}
+		}*/
 
 		if (likely(voices[n]->getNextGlidingNote() == 0)) {
 			if (voices[n]->getNote() == note) {
 				if (unlikely(holdPedal)) {
 					voices[n]->setHoldedByPedal(true);
-					return;
 				} else {
 					voices[n]->noteOff();
-					return;
 				}
+				return;
 			}
 		} else {
-			// if gliding and releasing first note
-			if (voices[n]->getNote() == note) {
-				voices[n]->glideFirstNoteOff();
-				return;
-			}
-			// if gliding and releasing next note
-			if (voices[n]->getNextGlidingNote() == note) {
-				voices[n]->glideToNote(voices[n]->getNote());
-				voices[n]->glideFirstNoteOff();
-				return;
+            if (pf_note_stack.size() >= iNov) {
+                NoteEntry nn = pf_note_stack.specific_note(iNov);
+				voices[n]->glideToNote(nn.note);
+            } else if (pf_note_stack.size() > 1) {
+                NoteEntry nn = pf_note_stack.most_recent_note();
+				voices[n]->glideToNote(nn.note);
+			} else {
+	        	voices[n]->noteOff();
 			}
 		}
 	}
@@ -2607,7 +2609,7 @@ case FILTER_ROT:
 
 		float angle = foldPos(fxParam1);// * 2 * M_PI;
 		// https://www.musicdsp.org/en/latest/Effects/255-stereo-field-rotation-via-transformation-matrix.html
-		float cos_coef = fastSin(angle + 0.25f);
+		float cos_coef = fastSin(angle + 0.5f);
 		float sin_coef = fastSin(angle);
 
 		float outL, outR;
