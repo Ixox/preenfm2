@@ -530,7 +530,7 @@ Timbre::Timbre() {
 	this->currentGate = 0;
     this->sbMax = &this->sampleBlock[64];
     this->holdPedal = false;
-    this->lastPlayedNote = 0;
+    this->lastPlayedVoice = 0;
     // arpegiator
     setNewBPMValue(90);
     arpegiatorStep = 0.0;
@@ -625,6 +625,12 @@ void Timbre::preenNoteOn(char note, char velocity) {
 
 	pf_note_stack.NoteOn(note, velocity);
 
+#ifdef DEBUG_VOICE2
+		lcd.setRealTimeAction(true);
+		lcd.setCursor(16,1);
+		lcd.print(pf_note_stack.size());
+#endif
+
 	unsigned int indexMin = (unsigned int)2147483647;
 	int voiceToUse = -1;
 
@@ -633,6 +639,13 @@ void Timbre::preenNoteOn(char note, char velocity) {
 	for (int k = 0; k < iNov; k++) {
 		// voice number k of timbre
 		int n = voiceNumber[k];
+
+#ifdef DEBUG_VOICE2
+		if (voices[n]->getNote() == note) {
+			lcd.setCursor(16,2);
+			lcd.print(voices[n]->getNextGlidingNote());
+		}
+#endif
 
         if (unlikely(voices[n]->isNewNotePending())) {
             continue;
@@ -652,7 +665,7 @@ void Timbre::preenNoteOn(char note, char velocity) {
 
             preenNoteOnUpdateMatrix(n, note, velocity);
             voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++);
-            this->lastPlayedNote = n;
+            this->lastPlayedVoice = n;
 			return;
 		}
 
@@ -720,7 +733,7 @@ void Timbre::preenNoteOn(char note, char velocity) {
 			break;
 		}
 
-		this->lastPlayedNote = voiceToUse;
+		this->lastPlayedVoice = voiceToUse;
 	}
 }
 
@@ -731,7 +744,7 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
     voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE1, midiNoteScale[0][timbreNumber][note]);
     voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE2, midiNoteScale[1][timbreNumber][note]);
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY, newVelo);
-	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_INTERVAL, INV127 * 2 * (note - voices[this->lastPlayedNote]->getNote()));
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_INTERVAL, INV127 * 2 * (note - voices[this->lastPlayedVoice]->getNote()));
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY_INTERVAL, 2 * (lastVelocity - newVelo));
 	lastVelocity = newVelo;
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_RANDOM, noise[voiceToUse] - 0.5f );
@@ -811,31 +824,41 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 }
 
 void Timbre::preenNoteOff(char note) {
+
 	int iNov = (int) params.engine1.numberOfVoice;
 	pf_note_stack.NoteOff(note);
+	
+#ifdef DEBUG_VOICE2
+		lcd.setRealTimeAction(true);
+		lcd.setCursor(16,1);
+		lcd.print(pf_note_stack.size());
+#endif
+
 	for (int k = 0; k < iNov; k++) {
 		// voice number k of timbre
 		int n = voiceNumber[k];
 
+#ifdef DEBUG_VOICE2
+		if (voices[n]->getNote() == note) {
+			lcd.setCursor(16,2);
+			lcd.print(voices[n]->getNextGlidingNote());
+		}
+#endif
 		// Not playing = free CPU
-		/*if (unlikely(!voices[n]->isPlaying())) {
+		if (unlikely(!voices[n]->isPlaying())) {
 			continue;
-		}*/
+		}
 
-		if (likely(voices[n]->getNextGlidingNote() == 0)) {
+		if (likely(voices[n]->getNextGlidingNote() == 0 && !voices[n]->isGliding())) {
 			if (voices[n]->getNote() == note) {
 				if (unlikely(holdPedal)) {
 					voices[n]->setHoldedByPedal(true);
 				} else {
 					voices[n]->noteOff();
 				}
-				return;
 			}
 		} else {
-            if (pf_note_stack.size() >= iNov) {
-                NoteEntry nn = pf_note_stack.specific_note(iNov);
-				voices[n]->glideToNote(nn.note);
-            } else if (pf_note_stack.size() > 1) {
+            if (pf_note_stack.size() >= 1) {
                 NoteEntry nn = pf_note_stack.most_recent_note();
 				voices[n]->glideToNote(nn.note);
 			} else {
@@ -934,7 +957,7 @@ void Timbre::prepareMatrixForNewBlock() {
 void Timbre::fxAfterBlock(float ratioTimbres) {
 
     // Gate algo !!
-    float gate = voices[this->lastPlayedNote]->matrix.getDestination(MAIN_GATE);
+    float gate = voices[this->lastPlayedVoice]->matrix.getDestination(MAIN_GATE);
     if (unlikely(gate > 0 || currentGate > 0)) {
 		gate *=.72547132656922730694f; // 0 < gate < 1.0
 		if (gate > 1.0f) {
@@ -961,7 +984,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     //    currentGate = gate;
     }
 
-    float matrixFilterFrequency = voices[this->lastPlayedNote]->matrix.getDestination(FILTER_FREQUENCY);
+    float matrixFilterFrequency = voices[this->lastPlayedVoice]->matrix.getDestination(FILTER_FREQUENCY);
 	float numberVoicesAttn = 1 - (params.engine1.numberOfVoice * 0.04f * ratioTimbres * RATIOINV);
 
     // LP Algo
@@ -4363,7 +4386,7 @@ case FILTER_TEEBEE:
 
 	float velocity = this->lastVelocity;
 	
-	bool isReleased = voices[this->lastPlayedNote]->isReleased();	
+	bool isReleased = voices[this->lastPlayedVoice]->isReleased();	
 	bool accent = velocity > 0.629f && !isReleased;
 
 	const float ga = 0.9764716867f; //= exp(-1/(PREENFM_FREQUENCY * attack / BLOCK_SIZE))

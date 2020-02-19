@@ -159,7 +159,7 @@ private:
     Voice *voices[MAX_NUMBER_OF_VOICES];
     Synth *synth;
     bool holdPedal;
-    int8_t lastPlayedNote;
+    int8_t lastPlayedVoice;
     uint8_t lastPlayedVoiceNum;
 
 

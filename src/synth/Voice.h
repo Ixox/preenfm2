@@ -347,6 +347,9 @@ public:
         }
     }
 
+    Matrix getMatrix() {
+        return matrix;
+    }
 
 private:
     // voice status
