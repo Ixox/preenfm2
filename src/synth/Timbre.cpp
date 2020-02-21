@@ -2630,9 +2630,9 @@ case FILTER_ROT:
 		float _ly2L = v1L, _ly2R = v1R;
 		float _lx2L = v4L, _lx2R = v4R;
 
-		float angle = foldPos(fxParam1);// * 2 * M_PI;
+		float angle = foldPos(fxParam1);
 		// https://www.musicdsp.org/en/latest/Effects/255-stereo-field-rotation-via-transformation-matrix.html
-		float cos_coef = fastSin(angle + 0.5f);
+		float cos_coef = fastSin(angle + 0.75f);
 		float sin_coef = fastSin(angle);
 
 		float outL, outR;
