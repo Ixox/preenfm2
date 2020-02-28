@@ -18,6 +18,16 @@
 #include "Voice.h"
 #include "Timbre.h"
 
+inline
+float clamp(float d, float min, float max) {
+  const float t = unlikely(d < min) ? min : d;
+  return unlikely(t > max) ? max : t;
+}
+inline
+float sigmoid(float x)
+{
+	return x * (1.5f - 0.5f * x * x);
+}
 
 float Voice::glidePhaseInc[10];
 
@@ -81,11 +91,15 @@ void Voice::glideToNote(short newNote) {
 	currentTimbre->osc6.glideToNote(&oscState6, newNote);
 }
 
+float Voice::getGlideValue() {
+	float glideMod = 1 + sigmoid(clamp(this->getMatrix().getDestination(GLIDE_RATE), -1, 1));
+	return currentTimbre->params.engine1.glide * glideMod;
+}
 
 void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) {
 	// Update index : so that few chance to be chosen again during the quick dying
 	this->index = index;
-	if (!this->released && currentTimbre->params.engine1.glide > 0) {
+	if (!this->released && getGlideValue() > 0) {
 		glideToNote(newNote);
 		this->holdedByPedal = false;
 	} else {
@@ -110,7 +124,7 @@ void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) 
 }
 
 void Voice::glide() {
-	this->glidePhase += glidePhaseInc[(int)(currentTimbre->params.engine1.glide - .95f)];
+	this->glidePhase += glidePhaseInc[(int)(getGlideValue() - .95f)];
 	if (glidePhase < 1.0f) {
 
 		float glidePhase2 = glidePhase * glidePhase;

@@ -845,24 +845,24 @@ void Timbre::preenNoteOff(char note) {
 		}
 #endif
 		// Not playing = free CPU
-		if (unlikely(!voices[n]->isPlaying())) {
+		if (unlikely(!voices[n]->isPlaying()) or voices[n]->getNote() != note) {
 			continue;
 		}
 
 		if (likely(voices[n]->getNextGlidingNote() == 0 && !voices[n]->isGliding())) {
-			if (voices[n]->getNote() == note) {
-				if (unlikely(holdPedal)) {
-					voices[n]->setHoldedByPedal(true);
-				} else {
-					voices[n]->noteOff();
-				}
+			if (unlikely(holdPedal)) {
+				voices[n]->setHoldedByPedal(true);
+			} else {
+				voices[n]->noteOff();
 			}
 		} else {
-            if (pf_note_stack.size() >= 1) {
-                NoteEntry nn = pf_note_stack.most_recent_note();
+			if (pf_note_stack.size() >= 1) {
+				NoteEntry nn = pf_note_stack.played_note(pf_note_stack.size());
+				//NoteEntry nn = pf_note_stack.most_recent_note();
+				//pf_note_stack.NoteOn(nn.note, nn.velocity);
 				voices[n]->glideToNote(nn.note);
 			} else {
-	        	voices[n]->noteOff();
+				voices[n]->noteOff();
 			}
 		}
 	}

@@ -19,7 +19,7 @@
 #include "Synth.h"
 #include "Menu.h"
 #include "stm32f4xx_rng.h"
-
+#include <math.h>
 
 #include "hardware/dwt.h"
 
@@ -151,7 +151,7 @@ void Synth::buildNewSampleBlock() {
             {
                 if (timbres[t].voiceNumber[j] != -1 &&
                     this->voices[timbres[t].voiceNumber[j]].isGliding() &&
-                    this->voices[timbres[t].voiceNumber[j]].getMatrix().getDestination(GLIDE_GATE) <= 0)
+                    fabsf(this->voices[timbres[t].voiceNumber[j]].getMatrix().getDestination(GLIDE_RATE)) < 1)
                 {
                     this->voices[timbres[t].voiceNumber[j]].glide();
                 }

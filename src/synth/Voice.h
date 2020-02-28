@@ -47,6 +47,8 @@ public:
     void noteOff();
     void glideFirstNoteOff();
     void glide();
+    
+    float getGlideValue();
 
     bool isReleased() { return this->released; }
     bool isPlaying() { return this->playing; }
