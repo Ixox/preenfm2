@@ -127,13 +127,12 @@ void Voice::glide() {
 	this->glidePhase += glidePhaseInc[(int)(getGlideValue() - .95f)];
 	if (glidePhase < 1.0f) {
 
-		float glidePhase2 = glidePhase * glidePhase;
-		currentTimbre->osc1.glideStep(&oscState1, glidePhase2);
-		currentTimbre->osc2.glideStep(&oscState2, glidePhase2);
-		currentTimbre->osc3.glideStep(&oscState3, glidePhase2);
-		currentTimbre->osc4.glideStep(&oscState4, glidePhase2);
-		currentTimbre->osc5.glideStep(&oscState5, glidePhase2);
-		currentTimbre->osc6.glideStep(&oscState6, glidePhase2);
+		currentTimbre->osc1.glideStep(&oscState1, glidePhase);
+		currentTimbre->osc2.glideStep(&oscState2, glidePhase);
+		currentTimbre->osc3.glideStep(&oscState3, glidePhase);
+		currentTimbre->osc4.glideStep(&oscState4, glidePhase);
+		currentTimbre->osc5.glideStep(&oscState5, glidePhase);
+		currentTimbre->osc6.glideStep(&oscState6, glidePhase);
 
 	} else {
 		// last with phase set to 1 to have exact frequencry

@@ -151,7 +151,7 @@ void Synth::buildNewSampleBlock() {
             {
                 if (timbres[t].voiceNumber[j] != -1 &&
                     this->voices[timbres[t].voiceNumber[j]].isGliding() &&
-                    fabsf(this->voices[timbres[t].voiceNumber[j]].getMatrix().getDestination(GLIDE_RATE)) < 1)
+                    this->voices[timbres[t].voiceNumber[j]].getMatrix().getDestination(GLIDE_HOLD) <= 0)
                 {
                     this->voices[timbres[t].voiceNumber[j]].glide();
                 }

@@ -26,6 +26,7 @@
 #define INV12  .08333333333333333333f
 #define filterWindowMin 0.01f
 #define filterWindowMax 0.99f
+
 // Regular memory
 float midiNoteScale[2][NUMBER_OF_TIMBRES][128];
 
@@ -618,18 +619,11 @@ int cptHighNote = 0;
 
 void Timbre::preenNoteOn(char note, char velocity) {
 
+	pf_note_stack.NoteOn(note, velocity);
 	int iNov = (int) params.engine1.numberOfVoice;
 	if (unlikely(iNov == 0)) {
 		return;
 	}
-
-	pf_note_stack.NoteOn(note, velocity);
-
-#ifdef DEBUG_VOICE2
-		lcd.setRealTimeAction(true);
-		lcd.setCursor(16,1);
-		lcd.print(pf_note_stack.size());
-#endif
 
 	unsigned int indexMin = (unsigned int)2147483647;
 	int voiceToUse = -1;
@@ -639,13 +633,6 @@ void Timbre::preenNoteOn(char note, char velocity) {
 	for (int k = 0; k < iNov; k++) {
 		// voice number k of timbre
 		int n = voiceNumber[k];
-
-#ifdef DEBUG_VOICE2
-		if (voices[n]->getNote() == note) {
-			lcd.setCursor(16,2);
-			lcd.print(voices[n]->getNextGlidingNote());
-		}
-#endif
 
         if (unlikely(voices[n]->isNewNotePending())) {
             continue;
@@ -735,6 +722,15 @@ void Timbre::preenNoteOn(char note, char velocity) {
 
 		this->lastPlayedVoice = voiceToUse;
 	}
+
+	#ifdef DEBUG_VOICE2
+				lcd.setRealTimeAction(true);
+				//lcd.setCursor(16,1);
+				//lcd.print(stackPos);
+				lcd.setCursor(16,2);
+				lcd.print( pf_note_stack.size());
+				lcd.setRealTimeAction(false);
+	#endif
 }
 
 void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
@@ -825,30 +821,31 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 
 void Timbre::preenNoteOff(char note) {
 
+	int actionType = 9;
+	int seen = 0;
+
 	int iNov = (int) params.engine1.numberOfVoice;
 	pf_note_stack.NoteOff(note);
-	
-#ifdef DEBUG_VOICE2
-		lcd.setRealTimeAction(true);
-		lcd.setCursor(16,1);
-		lcd.print(pf_note_stack.size());
-#endif
+
+	uint8_t nextNotePos = pf_note_stack.size();
+	uint8_t nextNote = pf_note_stack.note(nextNotePos).note;
+	int k = 0;
+	//check if nextNote is already played :
+	while (k++ < iNov && nextNotePos > 0) {
+		int n = voiceNumber[k -1];
+		if(voices[n]->getNote() == nextNote) {
+			nextNote = pf_note_stack.note(--nextNotePos).note;
+			seen = 1;
+		}
+	}
 
 	for (int k = 0; k < iNov; k++) {
 		// voice number k of timbre
 		int n = voiceNumber[k];
-
-#ifdef DEBUG_VOICE2
-		if (voices[n]->getNote() == note) {
-			lcd.setCursor(16,2);
-			lcd.print(voices[n]->getNextGlidingNote());
-		}
-#endif
 		// Not playing = free CPU
-		if (unlikely(!voices[n]->isPlaying()) or voices[n]->getNote() != note) {
+		if (unlikely(!voices[n]->isPlaying() or voices[n]->getNote() != note) ) {
 			continue;
 		}
-
 		if (likely(voices[n]->getNextGlidingNote() == 0 && !voices[n]->isGliding())) {
 			if (unlikely(holdPedal)) {
 				voices[n]->setHoldedByPedal(true);
@@ -856,16 +853,27 @@ void Timbre::preenNoteOff(char note) {
 				voices[n]->noteOff();
 			}
 		} else {
-			if (pf_note_stack.size() >= 1) {
-				NoteEntry nn = pf_note_stack.played_note(pf_note_stack.size());
-				//NoteEntry nn = pf_note_stack.most_recent_note();
-				//pf_note_stack.NoteOn(nn.note, nn.velocity);
-				voices[n]->glideToNote(nn.note);
+			if (nextNotePos > 0) {
+				voices[n]->glideToNote(nextNote);
 			} else {
 				voices[n]->noteOff();
 			}
 		}
 	}
+
+	//#ifdef DEBUG_VOICE2
+		lcd.setRealTimeAction(true);
+		lcd.setCursor(16,0);
+		lcd.print(nextNote);
+		
+		lcd.setCursor(16,1);
+		lcd.print(seen);
+		
+		lcd.setCursor(16,2);
+		lcd.print(nextNotePos);
+		
+		lcd.setRealTimeAction(false);
+	//#endif
 }
 
 
@@ -940,7 +948,6 @@ void Timbre::cleanNextBlock() {
 
 
 void Timbre::prepareMatrixForNewBlock() {
-	//noteTimer1 -= 0.00095f;
 	noteTimer1 *= 0.9992f;
 
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
@@ -2984,7 +2991,7 @@ case FILTER_LPXOR:
 		int digitsAL, digitsBL, digitsAR, digitsBR;
 		digitsAL = digitsBL = digitsAR = digitsBR = 0;
 
-		const short bitmask = 0xfac;
+		const short bitmask = 0x2b4;
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
@@ -3083,7 +3090,7 @@ case FILTER_LPXOR2:
 		int digitsAL, digitsBL, digitsAR, digitsBR;
 		digitsAL = digitsBL = digitsAR = digitsBR = 0;
 
-		const short bitmask = 0xfba - (int)(fxParam1 * 7);
+		const short bitmask = 0x3ba - (int)(fxParam1 * 7);
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
