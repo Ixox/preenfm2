@@ -71,9 +71,10 @@ void NoteStack::NoteOn(uint8_t note, uint8_t velocity) {
 }
 
 
-void NoteStack::NoteOff(uint8_t note) {
+uint8_t NoteStack::NoteOff(uint8_t note) {
 	uint8_t current = root_ptr_;
 	uint8_t previous = 0;
+	uint8_t next_ptr = 0;
 	while (current) {
 		if (pool_[current].note == note) {
 			break;
@@ -81,6 +82,7 @@ void NoteStack::NoteOff(uint8_t note) {
 		previous = current;
 		current = pool_[current].next_ptr;
 	}
+	next_ptr = pool_[current].next_ptr;
 	if (current) {
 		if (previous) {
 			pool_[previous].next_ptr = pool_[current].next_ptr;
@@ -100,6 +102,7 @@ void NoteStack::NoteOff(uint8_t note) {
 		pool_[current].velocity = 0;
 		--size_;
 	}
+	return next_ptr;
 }
 
 

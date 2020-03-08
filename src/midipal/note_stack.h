@@ -62,7 +62,7 @@ class NoteStack {
   void Init() { Clear(); }
 
   void NoteOn(uint8_t note, uint8_t velocity);
-  void NoteOff(uint8_t note);
+  uint8_t NoteOff(uint8_t note);
   void Clear();
 
   uint8_t size() const { return size_; }

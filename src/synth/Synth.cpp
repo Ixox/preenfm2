@@ -85,6 +85,7 @@ void Synth::setHoldPedal(int timbre, int value) {
 
 void Synth::allNoteOff(int timbre) {
     int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
+    timbres[timbre].pf_note_stack.Clear();
     for (int k = 0; k < numberOfVoices; k++) {
         // voice number k of timbre
         int n = timbres[timbre].voiceNumber[k];
@@ -96,6 +97,7 @@ void Synth::allNoteOff(int timbre) {
 
 void Synth::allSoundOff(int timbre) {
     int numberOfVoices = timbres[timbre].params.engine1.numberOfVoice;
+    timbres[timbre].pf_note_stack.Clear();
     for (int k = 0; k < numberOfVoices; k++) {
         // voice number k of timbre
         int n = timbres[timbre].voiceNumber[k];
@@ -104,6 +106,9 @@ void Synth::allSoundOff(int timbre) {
 }
 
 void Synth::allSoundOff() {
+    for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
+        timbres[t].pf_note_stack.Clear();
+    }
     for (int k = 0; k < MAX_NUMBER_OF_VOICES; k++) {
         voices[k].killNow();
     }
