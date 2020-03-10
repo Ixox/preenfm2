@@ -823,14 +823,17 @@ void Timbre::preenNoteOff(char note) {
 
 	int iNov = (int)params.engine1.numberOfVoice;
 
-	uint8_t next_ptr = pf_note_stack.NoteOff(note);
+	NoteEntry currentNote = pf_note_stack.get_note(note);
+	uint8_t next_ptr = currentNote.next_ptr;
+	//uint8_t next_ptr = 
+	pf_note_stack.NoteOff(note);
 	NoteEntry nextNote = pf_note_stack.note(next_ptr);
 
 	//check if nextNote is already played :
 	for (int k = 0; k < iNov; k++) {
 		int n = voiceNumber[k];
-		if (voices[n]->getNote() == nextNote.note && nextNote.note != 0xff) {
-			nextNote = pf_note_stack.note(nextNote.next_ptr);
+		if (voices[n]->getNote() == nextNote.note) {
+			nextNote = pf_note_stack.note(next_ptr);
 		}
 	}
 
@@ -838,7 +841,7 @@ void Timbre::preenNoteOff(char note) {
 		// voice number k of timbre
 		int n = voiceNumber[k];
 		// Not playing = free CPU
-		if (likely(voices[n]->getNote() != note) ) {
+		if (unlikely(!voices[n]->isPlaying()) or voices[n]->getNote() != note ) {
 			continue;
 		}
 		if (likely(voices[n]->getNextGlidingNote() == 0)) {
@@ -848,7 +851,7 @@ void Timbre::preenNoteOff(char note) {
 				voices[n]->noteOff();
 			}
 		} else {
-			if (nextNote.note != 0xff ) {
+			if (nextNote.note != 0 ) {
 				voices[n]->glideToNote(nextNote.note);
 			} else {
 				voices[n]->noteOff();

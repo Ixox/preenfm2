@@ -84,6 +84,14 @@ class NoteStack {
     }
     return pool_[current];
   }
+  const NoteEntry& get_note(uint8_t note) const {
+    for (uint8_t i = 1; i <= kNoteStackSize; ++i) {
+      if (pool_[i].note == note) {
+        return pool_[i];
+      }
+    }
+    return pool_[0];
+  }
   const NoteEntry& specific_note(uint8_t index) const {
     uint8_t current = root_ptr_;
     while (current && pool_[current].next_ptr && --index > 1) {
