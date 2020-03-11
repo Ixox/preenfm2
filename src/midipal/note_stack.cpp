@@ -84,7 +84,7 @@ uint8_t NoteStack::NoteOff(uint8_t note) {
 	}
 	if (current) {
 		if(size_ > 0) {
-			next_ptr = current;
+			next_ptr = pool_[current].next_ptr;
 		}
 		if (previous) {
 			pool_[previous].next_ptr = pool_[current].next_ptr;

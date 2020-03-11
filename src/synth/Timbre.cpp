@@ -825,7 +825,6 @@ void Timbre::preenNoteOff(char note) {
 
 	NoteEntry currentNote = pf_note_stack.get_note(note);
 	uint8_t next_ptr = currentNote.next_ptr;
-	//uint8_t next_ptr = 
 	pf_note_stack.NoteOff(note);
 	NoteEntry nextNote = pf_note_stack.note(next_ptr);
 
@@ -833,7 +832,7 @@ void Timbre::preenNoteOff(char note) {
 	for (int k = 0; k < iNov; k++) {
 		int n = voiceNumber[k];
 		if (voices[n]->getNote() == nextNote.note) {
-			nextNote = pf_note_stack.note(next_ptr);
+			nextNote = pf_note_stack.note(nextNote.next_ptr);
 		}
 	}
 
@@ -851,7 +850,7 @@ void Timbre::preenNoteOff(char note) {
 				voices[n]->noteOff();
 			}
 		} else {
-			if (nextNote.note != 0 ) {
+			if (nextNote.note != 0 && pf_note_stack.size() >= iNov) {
 				voices[n]->glideToNote(nextNote.note);
 			} else {
 				voices[n]->noteOff();
@@ -2970,12 +2969,12 @@ case FILTER_LPXOR:
 		float destL = v7L, destR = v7R;
 
 		float drive = (fxParam2 * fxParam2);
-		float gain = (1 + 2 * drive);
+		float gain = (0.75f + 0.5f * drive);
 
 		int digitsAL, digitsBL, digitsAR, digitsBR;
 		digitsAL = digitsBL = digitsAR = digitsBR = 0;
 
-		const short bitmask = 0x2b4;
+		const short bitmask = 0x34;
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
@@ -3074,7 +3073,7 @@ case FILTER_LPXOR2:
 		int digitsAL, digitsBL, digitsAR, digitsBR;
 		digitsAL = digitsBL = digitsAR = digitsBR = 0;
 
-		const short bitmask = 0x3ba - (int)(fxParam1 * 7);
+		const short bitmask = 0x9a - (int)(fxParam1 * 7);
 
 		float _ly1L = v2L, _ly1R = v2R;
 		float _lx1L = v3L, _lx1R = v3R;
