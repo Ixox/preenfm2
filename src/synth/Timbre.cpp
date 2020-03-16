@@ -26,7 +26,7 @@
 #define INV12  .08333333333333333333f
 #define filterWindowMin 0.01f
 #define filterWindowMax 0.99f
-
+#define DEBUG_VOICE 0
 // Regular memory
 float midiNoteScale[2][NUMBER_OF_TIMBRES][128];
 
@@ -639,7 +639,7 @@ void Timbre::preenNoteOn(char note, char velocity) {
         }
 
 		// same note = priority 1 : take the voice immediatly
-		if (unlikely(voices[n]->isPlaying() && voices[n]->getNote() == note)) {
+		if (unlikely(voices[n]->isPlaying() && (voices[n]->getNote() == note or voices[n]->getPrevNote() == note))) {
 
 #ifdef DEBUG_VOICE
 		lcd.setRealTimeAction(true);
@@ -690,6 +690,10 @@ void Timbre::preenNoteOn(char note, char velocity) {
 	if (voiceToUse != -1) {
 #ifdef DEBUG_VOICE
 		lcd.setRealTimeAction(true);
+		lcd.setCursor(12,0);
+		lcd.print((int) note);
+		lcd.setCursor(16,0);
+		lcd.print(voices[voiceToUse]->nextGlidingNote);
 		lcd.setCursor(16,1);
 		lcd.print(cptHighNote++);
 		lcd.setCursor(16,2);

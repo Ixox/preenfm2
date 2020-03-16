@@ -56,6 +56,7 @@ public:
     unsigned int getIndex() { return this->index; }
     uint8_t getNote() { return this->note; }
     void setNote(uint8_t note) { this->note = note; }
+    uint8_t getPrevNote() { return this->prevNote; }
     uint8_t getNextPendingNote() { return this->nextPendingNote; }
     uint8_t getNextGlidingNote() { return this->nextGlidingNote; }
     bool isHoldedByPedal() { return this->holdedByPedal; }
@@ -386,6 +387,7 @@ private:
     bool holdedByPedal;
     // Fixing the "plop" when all notes are buisy...
     bool newNotePending;
+    uint8_t prevNote;
     uint8_t nextPendingNote;
     uint8_t nextVelocity;
     unsigned int nextIndex;

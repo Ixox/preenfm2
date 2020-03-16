@@ -151,6 +151,7 @@ void Voice::noteOn(short newNote, short velocity, unsigned int index) {
 	this->released = false;
 	this->playing = true;
 	this->note = newNote;
+	this->prevNote = this->nextPendingNote;
 	this->nextPendingNote = 0;
 	this->newNotePending = false;
 	this->holdedByPedal = false;
