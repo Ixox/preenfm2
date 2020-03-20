@@ -395,6 +395,7 @@ private:
     // Gliding ?
     bool gliding;
     float glidePhase;
+    bool isGlidingAscent;
     uint8_t nextGlidingNote;
 
     // env Value

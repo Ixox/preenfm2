@@ -16,6 +16,7 @@
  */
 
 #include "Osc.h"
+#include <math.h>
 
 float silence[1]  __attribute__ ((section(".ccmnoload")));
 float noise[32] __attribute__ ((section(".ccmnoload")));

@@ -739,6 +739,7 @@ void Timbre::preenNoteOn(char note, char velocity) {
 
 void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 	lastPlayedVoiceNum = voiceToUse;
+	lastNote = note;
     // Update voice matrix with midi note and velocity
 	float newVelo = INV127 * velocity;
     voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE1, midiNoteScale[0][timbreNumber][note]);
@@ -827,10 +828,14 @@ void Timbre::preenNoteOff(char note) {
 
 	int iNov = (int)params.engine1.numberOfVoice;
 
-	NoteEntry currentNote = pf_note_stack.get_note(note);
-	uint8_t next_ptr = currentNote.next_ptr;
+	uint8_t next_ptr = pf_note_stack.get_note(note).next_ptr;
 	pf_note_stack.NoteOff(note);
-	NoteEntry nextNote = pf_note_stack.note(next_ptr);
+	NoteEntry nextNote;
+	if(next_ptr != 0) {
+		nextNote = pf_note_stack.note(next_ptr);
+	} else {
+		nextNote = pf_note_stack.least_recent_note();
+	}
 
 	//check if nextNote is already played :
 	for (int k = 0; k < iNov; k++) {

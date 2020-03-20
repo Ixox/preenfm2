@@ -78,6 +78,7 @@ void Voice::glideToNote(short newNote) {
 	this->gliding = true;
 	this->glidePhase = 0.0f;
 	this->nextGlidingNote = newNote;
+	this->isGlidingAscent = this->currentTimbre->lastNote < newNote;
 	this->note = newNote;
 	if (this->holdedByPedal) {
 		glideFirstNoteOff();
@@ -92,7 +93,8 @@ void Voice::glideToNote(short newNote) {
 }
 
 float Voice::getGlideValue() {
-	float glideMod = 1 + sigmoid(clamp(this->getMatrix().getDestination(GLIDE_RATE), -1, 1));
+	float skew = clamp(this->getMatrix().getDestination(GLIDE_SKEW), -1, 1);
+	float glideMod = clamp(this->isGlidingAscent ? 1 - skew : 1 + skew, 0, 1) * (1 + sigmoid(clamp(this->getMatrix().getDestination(GLIDE_RATE), -1, 1)));
 	return currentTimbre->params.engine1.glide * glideMod;
 }
 

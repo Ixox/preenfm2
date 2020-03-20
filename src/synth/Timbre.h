@@ -223,7 +223,7 @@ private:
    	float fxParamA1, fxParamA2, fxParamB2;
     // save float fxParam1 to detect modification
     float fxParam1PlusMatrix;
-    float lastVelocity;
+    float lastVelocity, lastNote;
     float noteTimer1, noteTimer2;
     // lfoUsed
     uint8_t lfoUSed[NUMBER_OF_LFO];

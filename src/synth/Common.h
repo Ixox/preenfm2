@@ -555,6 +555,7 @@ enum DestinationEnum {
     ALL_ENV_RELEASE_MODULATOR,
     GLIDE_HOLD,
     GLIDE_RATE,
+    GLIDE_SKEW,
     DESTINATION_MAX
 };
 
