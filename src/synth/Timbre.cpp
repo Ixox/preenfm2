@@ -26,7 +26,6 @@
 #define INV12  .08333333333333333333f
 #define filterWindowMin 0.01f
 #define filterWindowMax 0.99f
-#define DEBUG_VOICE 0
 // Regular memory
 float midiNoteScale[2][NUMBER_OF_TIMBRES][128];
 
@@ -727,14 +726,6 @@ void Timbre::preenNoteOn(char note, char velocity) {
 		this->lastPlayedVoice = voiceToUse;
 	}
 
-	#ifdef DEBUG_VOICE2
-				lcd.setRealTimeAction(true);
-				//lcd.setCursor(16,1);
-				//lcd.print(stackPos);
-				lcd.setCursor(16,2);
-				lcd.print( pf_note_stack.size());
-				lcd.setRealTimeAction(false);
-	#endif
 }
 
 void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
@@ -825,47 +816,47 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 }
 
 void Timbre::preenNoteOff(char note) {
+    int iNov = (int)params.engine1.numberOfVoice;
 
-	int iNov = (int)params.engine1.numberOfVoice;
+    uint8_t next_ptr = pf_note_stack.get_note(note).next_ptr;
+    pf_note_stack.NoteOff(note);
+    NoteEntry nextNote = pf_note_stack.note(next_ptr);
 
-	uint8_t next_ptr = pf_note_stack.get_note(note).next_ptr;
-	pf_note_stack.NoteOff(note);
-	NoteEntry nextNote;
-	if(next_ptr != 0) {
-		nextNote = pf_note_stack.note(next_ptr);
-	} else {
-		nextNote = pf_note_stack.least_recent_note();
-	}
+    if (nextNote.note == kFreeSlot) {
+        nextNote = pf_note_stack.least_recent_note();
+    }
+    // check if nextNote is already played :
+    for (int k = 0; k < iNov; k++) {
+        if (voices[voiceNumber[k]]->getNote() == nextNote.note) {
+            if (nextNote.next_ptr != 0) {
+                nextNote = pf_note_stack.note(nextNote.next_ptr);
+            } else if (pf_note_stack.size() > 0) {
+                nextNote = pf_note_stack.least_recent_note();
+            }
+        }
+    }
 
-	//check if nextNote is already played :
-	for (int k = 0; k < iNov; k++) {
-		int n = voiceNumber[k];
-		if (voices[n]->getNote() == nextNote.note) {
-			nextNote = pf_note_stack.note(nextNote.next_ptr);
-		}
-	}
-
-	for (int k = 0; k < iNov; k++) {
-		// voice number k of timbre
-		int n = voiceNumber[k];
-		// Not playing = free CPU
-		if (unlikely(!voices[n]->isPlaying()) or voices[n]->getNote() != note ) {
-			continue;
-		}
-		if (likely(voices[n]->getNextGlidingNote() == 0)) {
-			if (unlikely(holdPedal)) {
-				voices[n]->setHoldedByPedal(true);
-			} else {
-				voices[n]->noteOff();
-			}
-		} else {
-			if (nextNote.note != 0 && pf_note_stack.size() >= iNov) {
-				voices[n]->glideToNote(nextNote.note);
-			} else {
-				voices[n]->noteOff();
-			}
-		}
-	}
+    for (int k = 0; k < iNov; k++) {
+        // voice number k of timbre
+        int n = voiceNumber[k];
+        // Not playing = free CPU
+        if (unlikely(!voices[n]->isPlaying()) or voices[n]->getNote() != note) {
+            continue;
+        }
+        if (likely(voices[n]->getNextGlidingNote() == 0)) {
+            if (unlikely(holdPedal)) {
+                voices[n]->setHoldedByPedal(true);
+            } else {
+                voices[n]->noteOff();
+            }
+        } else {
+            if (nextNote.note != kFreeSlot && pf_note_stack.size() >= iNov) {
+                voices[n]->glideToNote(nextNote.note);
+            } else {
+                voices[n]->noteOff();
+            }
+        }
+    }
 }
 
 
