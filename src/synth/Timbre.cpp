@@ -822,7 +822,7 @@ void Timbre::preenNoteOff(char note) {
     pf_note_stack.NoteOff(note);
     NoteEntry nextNote = pf_note_stack.note(next_ptr);
 
-    if (nextNote.note == kFreeSlot) {
+    if (nextNote.note == 0 or nextNote.note == kFreeSlot) {
         nextNote = pf_note_stack.least_recent_note();
     }
     // check if nextNote is already played :
@@ -830,7 +830,8 @@ void Timbre::preenNoteOff(char note) {
         if (voices[voiceNumber[k]]->getNote() == nextNote.note) {
             if (nextNote.next_ptr != 0) {
                 nextNote = pf_note_stack.note(nextNote.next_ptr);
-            } else if (pf_note_stack.size() > 0) {
+            } 
+			if (nextNote.next_ptr == 0 && pf_note_stack.size() > 0) {
                 nextNote = pf_note_stack.least_recent_note();
             }
         }
