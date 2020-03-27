@@ -806,7 +806,7 @@ void Timbre::preenNoteOff(char note) {
     uint8_t next_ptr = pf_note_stack.get_note(note).next_ptr;
     pf_note_stack.NoteOff(note);
     NoteEntry nextNote = pf_note_stack.note(next_ptr);
-//uint8_t noteStep1 = nextNote.note;
+uint8_t noteStep1 = nextNote.note;
     if (nextNote.note == 0 or nextNote.note == kFreeSlot) {
         nextNote = pf_note_stack.least_recent_note();
     }
@@ -821,7 +821,7 @@ void Timbre::preenNoteOff(char note) {
             }
         }
     }
-/*uint8_t noteStep2 = nextNote.note;
+uint8_t noteStep2 = nextNote.note;
 
 	lcd.setRealTimeAction(true);
 	lcd.setCursor(16,0);
@@ -830,7 +830,7 @@ void Timbre::preenNoteOff(char note) {
 	lcd.setCursor(16,1);
 	lcd.print(noteStep2);
 	lcd.print( "  " );
-	lcd.setRealTimeAction(false);*/
+	lcd.setRealTimeAction(false);
 
     for (int k = 0; k < iNov; k++) {
         // voice number k of timbre
@@ -850,6 +850,8 @@ void Timbre::preenNoteOff(char note) {
                 voices[n]->glideToNote(nextNote.note);
             } else {
                 voices[n]->noteOff();
+				// finish gliding in any case :
+				voices[n]->setIsGliding(true);
             }
         }
     }

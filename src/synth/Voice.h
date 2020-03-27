@@ -61,7 +61,9 @@ public:
     uint8_t getNextGlidingNote() { return this->nextGlidingNote; }
     bool isHoldedByPedal() { return this->holdedByPedal; }
     void setHoldedByPedal(bool holded) { this->holdedByPedal = holded; }
-    void setCurrentTimbre(Timbre *timbre);    bool isGliding() { return gliding; }
+    void setCurrentTimbre(Timbre *timbre);    
+    bool isGliding() { return gliding; }
+    void setIsGliding(bool isGliding) { gliding = isGliding; }
 
     void updateAllModulationIndexes() {
         int numberOfIMs = algoInformation[(int)(currentTimbre->getParamRaw()->engine1.algo)].im;
