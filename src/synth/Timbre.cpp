@@ -638,7 +638,7 @@ void Timbre::preenNoteOn(char note, char velocity) {
         }
 
 		// same note = priority 1 : take the voice immediatly
-		if (unlikely(voices[n]->isPlaying() && (voices[n]->getNote() == note or voices[n]->getPrevNote() == note))) {
+		if (unlikely(voices[n]->isPlaying() && (voices[n]->getNote() == note))) {
 
 #ifdef DEBUG_VOICE
 		lcd.setRealTimeAction(true);
@@ -672,7 +672,7 @@ void Timbre::preenNoteOn(char note, char velocity) {
 			}
 		}
 	}
-
+//int step1 = voiceToUse, step2 = 0;
 	if (voiceToUse == -1) {
 		for (int k = 0; k < iNov; k++) {
 			// voice number k of timbre
@@ -682,9 +682,23 @@ void Timbre::preenNoteOn(char note, char velocity) {
 				newNoteType = NEW_NOTE_OLD;
 				indexMin = indexVoice;
 				voiceToUse = n;
+				if(voices[voiceToUse]->getPrevNote() == note) {
+					//stop voice bouncing : previously played ? get that one !
+					break;
+				}
 			}
 		}
 	}
+
+/*	lcd.setRealTimeAction(true);
+	lcd.setCursor(14,1);
+	lcd.print( step1 );
+	lcd.print( "  " );
+	lcd.setCursor(17,1);
+	lcd.print(voiceToUse);
+	lcd.print( "  " );
+	lcd.setRealTimeAction(false);*/
+
 	// All voices in newnotepending state ?
 	if (voiceToUse != -1) {
 #ifdef DEBUG_VOICE
@@ -802,35 +816,34 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 
 void Timbre::preenNoteOff(char note) {
     int iNov = (int)params.engine1.numberOfVoice;
-
-    uint8_t next_ptr = pf_note_stack.get_note(note).next_ptr;
-    pf_note_stack.NoteOff(note);
+	//get previous note index from this note :
+    uint8_t next_ptr = pf_note_stack.NoteOff(note);
     NoteEntry nextNote = pf_note_stack.note(next_ptr);
-uint8_t noteStep1 = nextNote.note;
+	//int step1 = 0, step2 = 0;
     if (nextNote.note == 0 or nextNote.note == kFreeSlot) {
         nextNote = pf_note_stack.least_recent_note();
     }
+	//step1 = nextNote.note;
     // check if nextNote is already played :
     for (int k = 0; k < iNov; k++) {
         if (voices[voiceNumber[k]]->getNote() == nextNote.note) {
             if (nextNote.next_ptr != 0) {
                 nextNote = pf_note_stack.note(nextNote.next_ptr);
             } 
-			if (nextNote.next_ptr == 0 && pf_note_stack.size() > 0) {
+			if (nextNote.next_ptr == 0 && pf_note_stack.size() >= (iNov - 1)) {
                 nextNote = pf_note_stack.least_recent_note();
             }
         }
     }
-uint8_t noteStep2 = nextNote.note;
-
+	/*step2 = nextNote.note;
 	lcd.setRealTimeAction(true);
 	lcd.setCursor(16,0);
-	lcd.print( noteStep1 );
+	lcd.print( step1 );
 	lcd.print( "  " );
 	lcd.setCursor(16,1);
-	lcd.print(noteStep2);
+	lcd.print(step2);
 	lcd.print( "  " );
-	lcd.setRealTimeAction(false);
+	lcd.setRealTimeAction(false);*/
 
     for (int k = 0; k < iNov; k++) {
         // voice number k of timbre

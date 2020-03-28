@@ -92,12 +92,25 @@ class NoteStack {
     }
     return pool_[0];
   }
-  const NoteEntry& specific_note(uint8_t index) const {
-    uint8_t current = root_ptr_;
-    while (current && pool_[current].next_ptr && --index > 1) {
-      current = pool_[current].next_ptr;
-    }
-    return pool_[current];
+  const NoteEntry& getLowerNote(uint8_t note) {
+      for (uint8_t i = 0; i < size_; ++i) {
+          if (pool_[sorted_ptr_[i]].note == note) {
+              if (i > 0) {
+                  return pool_[sorted_ptr_[i - 1]];
+              }
+          }
+      }
+      return pool_[0];
+  }
+  const NoteEntry& getHigherNote(uint8_t note) {
+      for (uint8_t i = 0; i < size_; ++i) {
+          if (pool_[sorted_ptr_[i]].note == note) {
+              if (pool_[sorted_ptr_[i + 1]].next_ptr) {
+                  return pool_[sorted_ptr_[i + 1]];
+              }
+          }
+      }
+      return pool_[0];
   }
   const NoteEntry& note(uint8_t index) const { return pool_[index]; }
   const NoteEntry& dummy() const { return pool_[0]; }

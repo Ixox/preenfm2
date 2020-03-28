@@ -74,6 +74,7 @@ void Voice::init() {
 
 
 void Voice::glideToNote(short newNote) {
+	this->prevNote = this->note;
 	// Must glide...
 	this->gliding = true;
 	this->glidePhase = 0.0f;
@@ -93,12 +94,14 @@ void Voice::glideToNote(short newNote) {
 }
 
 float Voice::getGlideValue() {
-	float skew = clamp(this->getMatrix().getDestination(GLIDE_SKEW), -1, 1);
-	float glideMod = clamp(this->isGlidingAscent ? 1 - skew : 1 + skew, 0, 1) * (1 + sigmoid(clamp(this->getMatrix().getDestination(GLIDE_RATE), -1, 1)));
+	float skew = clamp(this->getMatrix().getDestination(GLIDE_SKEW), -1, 1) * 0.66f;
+	float glideMod = (this->isGlidingAscent ? 1 - skew : 1 + skew) * (1 + sigmoid(clamp(this->getMatrix().getDestination(GLIDE_RATE), -1, 1)) * 0.88f);
 	return currentTimbre->params.engine1.glide * glideMod;
 }
 
 void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) {
+	//this->prevNote = this->note;
+
 	// Update index : so that few chance to be chosen again during the quick dying
 	this->index = index;
 	if (!this->released && getGlideValue() > 0) {
