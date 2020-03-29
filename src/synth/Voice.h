@@ -411,7 +411,8 @@ private:
     Timbre* currentTimbre;
 
     // glide phase increment
-    static float glidePhaseInc[10];
+    #define nbGlideVals 12
+    static float glidePhaseInc[nbGlideVals];
 
     // Matrix....
     Matrix matrix;

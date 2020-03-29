@@ -29,7 +29,7 @@ float sigmoid(float x)
 	return x * (1.5f - 0.5f * x * x);
 }
 
-float Voice::glidePhaseInc[10];
+float Voice::glidePhaseInc[nbGlideVals];
 
 
 Voice::Voice(void)
@@ -46,9 +46,11 @@ Voice::Voice(void)
 				90.0f,
 				140.0f,
 				200.0f,
-				500.0f
+				500.0f,
+				1200.0f,
+				2700.0f
 		};
-		for (int k = 0 ; k <10 ; k++) {
+		for (int k = 0 ; k <nbGlideVals ; k++) {
 			glidePhaseInc[k] = 1.0f/tmp[k];
 		}
 	}
@@ -100,7 +102,6 @@ float Voice::getGlideValue() {
 }
 
 void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) {
-	//this->prevNote = this->note;
 
 	// Update index : so that few chance to be chosen again during the quick dying
 	this->index = index;
@@ -108,6 +109,7 @@ void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) 
 		glideToNote(newNote);
 		this->holdedByPedal = false;
 	} else {
+		this->prevNote = this->note;
 		// update note now so that the noteOff is triggered by the new note
 		this->note = newNote;
 		// Quick dead !
