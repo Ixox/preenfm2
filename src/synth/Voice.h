@@ -48,7 +48,7 @@ public:
     void glideFirstNoteOff();
     void glide();
     
-    float getGlideValue();
+    float getGlideIncrement(float in);
 
     bool isReleased() { return this->released; }
     bool isPlaying() { return this->playing; }
@@ -63,6 +63,7 @@ public:
     void setHoldedByPedal(bool holded) { this->holdedByPedal = holded; }
     void setCurrentTimbre(Timbre *timbre);    
     bool isGliding() { return gliding; }
+    bool isGlided() {return glided;}
     void setIsGliding(bool isGliding) { gliding = isGliding; }
 
     void updateAllModulationIndexes() {
@@ -396,6 +397,7 @@ private:
 
     // Gliding ?
     bool gliding;
+    bool glided;
     float glidePhase;
     bool isGlidingAscent;
     uint8_t nextGlidingNote;

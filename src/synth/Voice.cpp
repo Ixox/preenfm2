@@ -24,11 +24,23 @@ float clamp(float d, float min, float max) {
   return unlikely(t > max) ? max : t;
 }
 inline
-float sigmoid(float x)
+float sqrt3(const float x)  
 {
-	return x * (1.5f - 0.5f * x * x);
-}
+  union
+  {
+    int i;
+    float x;
+  } u;
 
+  u.x = x;
+  u.i = (1 << 29) + (u.i >> 1) - (1 << 22);
+  return u.x;
+} 
+inline
+float tanh4(float x)
+{
+	return x / sqrt3(x * x + 1);
+}
 float Voice::glidePhaseInc[nbGlideVals];
 
 
@@ -79,9 +91,10 @@ void Voice::glideToNote(short newNote) {
 	this->prevNote = this->note;
 	// Must glide...
 	this->gliding = true;
+	this->glided = false;
 	this->glidePhase = 0.0f;
 	this->nextGlidingNote = newNote;
-	this->isGlidingAscent = this->currentTimbre->lastNote < newNote;
+	this->isGlidingAscent = (this->currentTimbre->lastNote < newNote);
 	this->note = newNote;
 	if (this->holdedByPedal) {
 		glideFirstNoteOff();
@@ -95,21 +108,25 @@ void Voice::glideToNote(short newNote) {
 	currentTimbre->osc6.glideToNote(&oscState6, newNote);
 }
 
-float Voice::getGlideValue() {
-	float skew = clamp(this->getMatrix().getDestination(GLIDE_SKEW), -1, 1) * 0.66f;
-	float glideMod = (this->isGlidingAscent ? 1 - skew : 1 + skew) * (1 + sigmoid(clamp(this->getMatrix().getDestination(GLIDE_RATE), -1, 1)) * 0.88f);
-	return currentTimbre->params.engine1.glide * glideMod;
+float Voice::getGlideIncrement(float in) {
+    float g1 = currentTimbre->params.engine1.glide * 0.125f;
+    float sk = this->getMatrix().getDestination(GLIDE_SKEW);
+    float skew = 1 + 0.95f * clamp(this->isGlidingAscent ? sk : -sk, -1, 1);
+    float r = (3 + g1 * g1);
+    float glideMod =  skew * (1 + tanh4(this->getMatrix().getDestination(GLIDE_RATE) * r - 0.5f));
+    return in * glideMod;
 }
 
 void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) {
 
 	// Update index : so that few chance to be chosen again during the quick dying
 	this->index = index;
-	if (!this->released && getGlideValue() > 0) {
+	if (!this->released && currentTimbre->params.engine1.glide > 0) {
 		glideToNote(newNote);
 		this->holdedByPedal = false;
 	} else {
 		this->prevNote = this->note;
+		this->glided = false;
 		// update note now so that the noteOff is triggered by the new note
 		this->note = newNote;
 		// Quick dead !
@@ -131,7 +148,7 @@ void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) 
 }
 
 void Voice::glide() {
-	this->glidePhase += glidePhaseInc[(int)(getGlideValue() - .95f)];
+	this->glidePhase += getGlideIncrement(this->glidePhaseInc[(int)(currentTimbre->params.engine1.glide - .95f)]);
 	if (glidePhase < 1.0f) {
 
 		currentTimbre->osc1.glideStep(&oscState1, glidePhase);
@@ -150,6 +167,7 @@ void Voice::glide() {
 		currentTimbre->osc5.glideStep(&oscState5, 1);
 		currentTimbre->osc6.glideStep(&oscState6, 1);
 		this->gliding = false;
+		this->glided = true;
 	}
 }
 
@@ -158,6 +176,7 @@ void Voice::noteOn(short newNote, short velocity, unsigned int index) {
 	this->released = false;
 	this->playing = true;
 	this->note = newNote;
+	this->glided = false;
 	this->prevNote = this->nextPendingNote;
 	this->nextPendingNote = 0;
 	this->newNotePending = false;
@@ -243,7 +262,7 @@ void Voice::noteOff() {
             return;
         }
 		this->released = true;
-		this->gliding = false;
+		//this->gliding = false;
 		this->nextGlidingNote = 0;
 		this->holdedByPedal = false;
 

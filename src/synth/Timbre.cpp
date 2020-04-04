@@ -629,6 +629,13 @@ void Timbre::preenNoteOn(char note, char velocity) {
 
 	int newNoteType = NEW_NOTE_NONE;
 
+	/*int prevNote = kFreeSlot;
+	if (pf_note_stack.size() >= iNov) {
+		prevNote = pf_note_stack.most_recent_note().note;
+	}*/
+
+	//int step2 = 0, step1 = 0;
+
 	for (int k = 0; k < iNov; k++) {
 		// voice number k of timbre
 		int n = voiceNumber[k];
@@ -651,9 +658,18 @@ void Timbre::preenNoteOn(char note, char velocity) {
 
             preenNoteOnUpdateMatrix(n, note, velocity);
             voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++);
-            this->lastPlayedVoice = n;
+			lastPlayedVoiceNum = n;
+			lastNote = note;
+/*
+			lcd.setRealTimeAction(true);
+			lcd.setCursor(11,1);
+			lcd.print( "same note" );
+			lcd.setRealTimeAction(false);
+*/
 			return;
 		}
+			
+		int indexVoice = voices[n]->getIndex();
 
 		// unlikely because if it true, CPU is not full
 		if (unlikely(newNoteType > NEW_NOTE_FREE)) {
@@ -662,8 +678,22 @@ void Timbre::preenNoteOn(char note, char velocity) {
 				newNoteType = NEW_NOTE_FREE;
 			}
 
+/*			if (prevNote == voices[n]->note) {
+				voiceToUse = n;
+				newNoteType = NEW_NOTE_OLD;
+				step1 = 66;
+				indexMin = indexVoice;				
+			}
+
+			if (voices[n]->isGliding() or voices[n]->isGlided()) {
+				// keep gliding
+				newNoteType = NEW_NOTE_OLD;
+				voiceToUse = n;
+				step1 = 77;
+				indexMin = indexVoice;
+			}*/
+
 			if (voices[n]->isReleased()) {
-				int indexVoice = voices[n]->getIndex();
 				if (indexVoice < indexMin) {
 					indexMin = indexVoice;
 					voiceToUse = n;
@@ -671,8 +701,10 @@ void Timbre::preenNoteOn(char note, char velocity) {
 				}
 			}
 		}
+		//step1 = indexMin;
+		//step2 = indexVoice;
 	}
-//int step1 = voiceToUse, step2 = 0;
+
 	if (voiceToUse == -1) {
 		for (int k = 0; k < iNov; k++) {
 			// voice number k of timbre
@@ -683,19 +715,25 @@ void Timbre::preenNoteOn(char note, char velocity) {
 				indexMin = indexVoice;
 				voiceToUse = n;
 				if(voices[voiceToUse]->getPrevNote() == note) {
-					//stop voice bouncing : previously played ? get that one !
+					//stop voice bouncing
 					break;
 				}
 			}
+			//step1 = indexMin;
+			//step2 = indexVoice;
 		}
+		
 	}
 
-/*	lcd.setRealTimeAction(true);
-	lcd.setCursor(14,1);
+	/*lcd.setRealTimeAction(true);
+	lcd.setCursor(11,1);
 	lcd.print( step1 );
 	lcd.print( "  " );
+	lcd.setCursor(14,1);
+	lcd.print( step2 );
+	lcd.print( "  " );
 	lcd.setCursor(17,1);
-	lcd.print(voiceToUse);
+	lcd.print( voiceToUse );
 	lcd.print( "  " );
 	lcd.setRealTimeAction(false);*/
 
@@ -733,18 +771,21 @@ void Timbre::preenNoteOn(char note, char velocity) {
 			break;
 		case NEW_NOTE_OLD:
 		case NEW_NOTE_RELEASE:
-			voices[voiceToUse]->noteOnWithoutPop(note, velocity, voiceIndex++);
+			voices[voiceToUse]->noteOnWithoutPop(note, velocity, voiceIndex);
+			if(!voices[voiceToUse]->isGliding()) {
+				voiceIndex++;
+			}
 			break;
 		}
 
-		this->lastPlayedVoice = voiceToUse;
+		lastPlayedVoiceNum = voiceToUse;
+		lastNote = note;
 	}
 
 }
 
 void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
-	lastPlayedVoiceNum = voiceToUse;
-	lastNote = note;
+
     // Update voice matrix with midi note and velocity
 	float newVelo = INV127 * velocity;
     voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE1, midiNoteScale[0][timbreNumber][note]);
@@ -830,7 +871,7 @@ void Timbre::preenNoteOff(char note) {
             if (nextNote.next_ptr != 0) {
                 nextNote = pf_note_stack.note(nextNote.next_ptr);
             } 
-			if (nextNote.next_ptr == 0 && pf_note_stack.size() >= (iNov - 1)) {
+			if (nextNote.next_ptr == 0 && pf_note_stack.size() > iNov) {
                 nextNote = pf_note_stack.least_recent_note();
             }
         }
@@ -859,12 +900,10 @@ void Timbre::preenNoteOff(char note) {
                 voices[n]->noteOff();
             }
         } else {
-            if (nextNote.note != kFreeSlot && pf_note_stack.size() >= (iNov - 1)) {
+            if (nextNote.note != kFreeSlot && pf_note_stack.size() >= iNov) {
                 voices[n]->glideToNote(nextNote.note);
             } else {
                 voices[n]->noteOff();
-				// finish gliding in any case :
-				voices[n]->setIsGliding(true);
             }
         }
     }
