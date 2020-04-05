@@ -44,14 +44,14 @@ const char* version[] = { PFM2_VERSION""CVIN_STRING""OVERCLOCK_STRING };
 const char* oledSaver[] = { "Off", "2m", "5m", "10m", "1h" };
 
 const char* globalTuning[] = { "G" };
-const char* inst1[] = { "Off", "1", "2", "3", "4", "12", "123", "1234"};
+const char* inst1[] = { "Off", "1", "2", "3", "4", "12", "123", "1234", "seq", "rand", "cv3"};
 
 const struct MidiConfig midiConfig[]  = {
 #ifdef CVIN
         {
                 "CV inst: ",
                 "cvinst",
-                8,
+                11,
                 inst1
         },
         {

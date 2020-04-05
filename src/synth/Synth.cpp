@@ -66,6 +66,7 @@ void Synth::init(SynthState* sState) {
 #ifdef CVIN
     cvin12Ready = true;
     cvin34Ready = true;
+    triggeredTimbre = 0;
 #endif
 
 }
@@ -197,6 +198,15 @@ void Synth::buildNewSampleBlock() {
                 timbreToTrigger[timbreIndex++] = 2;
                 timbreToTrigger[timbreIndex++] = 3;
             break;
+            case 8:
+                timbreToTrigger[timbreIndex++] = triggeredTimbre;
+            break;
+            case 9:
+                timbreToTrigger[timbreIndex++] = (int)((noise[0] + 1.0f) * 2.0f);
+            break;
+            case 10:
+                timbreToTrigger[timbreIndex++] = (int)((cvin->getCvin3() + 1.0f) * 2.0f);
+            break;
         }
 
         // CV_GATE from 0 to 100 => cvGate from 62 to 962. 
@@ -209,6 +219,11 @@ void Synth::buildNewSampleBlock() {
                     timbres[timbreToTrigger[tk]].setCvFrequency(cvin->getFrequency());
                     timbres[timbreToTrigger[tk]].noteOn(128, 127);
                     visualInfo->noteOn(timbreToTrigger[tk], true);
+                }
+                // inc timbre triggerTimbre if we are in Seq mode
+                if (unlikely(cvinstrument == 8)) {
+                    triggeredTimbre++;
+                    triggeredTimbre &= 0x3;
                 }
             }
         } else {
