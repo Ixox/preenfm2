@@ -618,23 +618,22 @@ int cptHighNote = 0;
 
 void Timbre::preenNoteOn(char note, char velocity) {
 
-	pf_note_stack.NoteOn(note, velocity);
 	int iNov = (int) params.engine1.numberOfVoice;
 	if (unlikely(iNov == 0)) {
 		return;
 	}
 
+	int prevNote = kFreeSlot;
+	if (pf_note_stack.size() >= iNov) {
+		prevNote = pf_note_stack.most_recent_note().note;
+	}
+
+	pf_note_stack.NoteOn(note, velocity);
+
 	unsigned int indexMin = (unsigned int)2147483647;
 	int voiceToUse = -1;
 
 	int newNoteType = NEW_NOTE_NONE;
-
-	/*int prevNote = kFreeSlot;
-	if (pf_note_stack.size() >= iNov) {
-		prevNote = pf_note_stack.most_recent_note().note;
-	}*/
-
-	//int step2 = 0, step1 = 0;
 
 	for (int k = 0; k < iNov; k++) {
 		// voice number k of timbre
@@ -660,12 +659,6 @@ void Timbre::preenNoteOn(char note, char velocity) {
             voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++);
 			lastPlayedVoiceNum = n;
 			lastNote = note;
-/*
-			lcd.setRealTimeAction(true);
-			lcd.setCursor(11,1);
-			lcd.print( "same note" );
-			lcd.setRealTimeAction(false);
-*/
 			return;
 		}
 			
@@ -677,22 +670,12 @@ void Timbre::preenNoteOn(char note, char velocity) {
 				voiceToUse = n;
 				newNoteType = NEW_NOTE_FREE;
 			}
-
-/*			if (prevNote == voices[n]->note) {
+			if (voices[n]->getNote() == prevNote) {
+				// prevNote is set -> voice to glide
 				voiceToUse = n;
 				newNoteType = NEW_NOTE_OLD;
-				step1 = 66;
-				indexMin = indexVoice;				
-			}
-
-			if (voices[n]->isGliding() or voices[n]->isGlided()) {
-				// keep gliding
-				newNoteType = NEW_NOTE_OLD;
-				voiceToUse = n;
-				step1 = 77;
 				indexMin = indexVoice;
-			}*/
-
+			}
 			if (voices[n]->isReleased()) {
 				if (indexVoice < indexMin) {
 					indexMin = indexVoice;
@@ -701,8 +684,6 @@ void Timbre::preenNoteOn(char note, char velocity) {
 				}
 			}
 		}
-		//step1 = indexMin;
-		//step2 = indexVoice;
 	}
 
 	if (voiceToUse == -1) {
@@ -714,30 +695,11 @@ void Timbre::preenNoteOn(char note, char velocity) {
 				newNoteType = NEW_NOTE_OLD;
 				indexMin = indexVoice;
 				voiceToUse = n;
-				if(voices[voiceToUse]->getPrevNote() == note) {
-					//stop voice bouncing
-					break;
-				}
 			}
-			//step1 = indexMin;
-			//step2 = indexVoice;
 		}
-		
 	}
 
-	/*lcd.setRealTimeAction(true);
-	lcd.setCursor(11,1);
-	lcd.print( step1 );
-	lcd.print( "  " );
-	lcd.setCursor(14,1);
-	lcd.print( step2 );
-	lcd.print( "  " );
-	lcd.setCursor(17,1);
-	lcd.print( voiceToUse );
-	lcd.print( "  " );
-	lcd.setRealTimeAction(false);*/
-
-	// All voices in newnotepending state ?
+// All voices in newnotepending state ?
 	if (voiceToUse != -1) {
 #ifdef DEBUG_VOICE
 		lcd.setRealTimeAction(true);
@@ -857,35 +819,12 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 
 void Timbre::preenNoteOff(char note) {
     int iNov = (int)params.engine1.numberOfVoice;
-	//get previous note index from this note :
+    // get previous note index from this note :
     uint8_t next_ptr = pf_note_stack.NoteOff(note);
     NoteEntry nextNote = pf_note_stack.note(next_ptr);
-	//int step1 = 0, step2 = 0;
     if (nextNote.note == 0 or nextNote.note == kFreeSlot) {
         nextNote = pf_note_stack.least_recent_note();
     }
-	//step1 = nextNote.note;
-    // check if nextNote is already played :
-    for (int k = 0; k < iNov; k++) {
-        if (voices[voiceNumber[k]]->getNote() == nextNote.note) {
-            if (nextNote.next_ptr != 0) {
-                nextNote = pf_note_stack.note(nextNote.next_ptr);
-            } 
-			if (nextNote.next_ptr == 0 && pf_note_stack.size() > iNov) {
-                nextNote = pf_note_stack.least_recent_note();
-            }
-        }
-    }
-	/*step2 = nextNote.note;
-	lcd.setRealTimeAction(true);
-	lcd.setCursor(16,0);
-	lcd.print( step1 );
-	lcd.print( "  " );
-	lcd.setCursor(16,1);
-	lcd.print(step2);
-	lcd.print( "  " );
-	lcd.setRealTimeAction(false);*/
-
     for (int k = 0; k < iNov; k++) {
         // voice number k of timbre
         int n = voiceNumber[k];
@@ -908,7 +847,6 @@ void Timbre::preenNoteOff(char note) {
         }
     }
 }
-
 
 void Timbre::setHoldPedal(int value) {
 	if (value <64) {
