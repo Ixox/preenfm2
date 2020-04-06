@@ -735,6 +735,7 @@ void Timbre::preenNoteOn(char note, char velocity) {
 		case NEW_NOTE_RELEASE:
 			voices[voiceToUse]->noteOnWithoutPop(note, velocity, voiceIndex);
 			if(!voices[voiceToUse]->isGliding()) {
+				//keep voiceIndex for gliding voice
 				voiceIndex++;
 			}
 			break;
