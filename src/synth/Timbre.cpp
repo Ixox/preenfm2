@@ -530,7 +530,7 @@ Timbre::Timbre() {
 	this->currentGate = 0;
     this->sbMax = &this->sampleBlock[64];
     this->holdPedal = false;
-    this->lastPlayedVoice = 0;
+    this->lastPlayedVoiceNum = 0;
     // arpegiator
     setNewBPMValue(90);
     arpegiatorStep = 0.0;
@@ -754,7 +754,7 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
     voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE1, midiNoteScale[0][timbreNumber][note]);
     voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE2, midiNoteScale[1][timbreNumber][note]);
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY, newVelo);
-	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_INTERVAL, INV127 * 2 * (note - voices[this->lastPlayedVoice]->getNote()));
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_INTERVAL, INV127 * 2 * (note - voices[this->lastPlayedVoiceNum]->getNote()));
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY_INTERVAL, 2 * (lastVelocity - newVelo));
 	lastVelocity = newVelo;
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_RANDOM, noise[voiceToUse] - 0.5f );
@@ -936,7 +936,7 @@ void Timbre::prepareMatrixForNewBlock() {
 void Timbre::fxAfterBlock(float ratioTimbres) {
 
     // Gate algo !!
-    float gate = voices[this->lastPlayedVoice]->matrix.getDestination(MAIN_GATE);
+    float gate = voices[this->lastPlayedVoiceNum]->matrix.getDestination(MAIN_GATE);
     if (unlikely(gate > 0 || currentGate > 0)) {
 		gate *=.72547132656922730694f; // 0 < gate < 1.0
 		if (gate > 1.0f) {
@@ -963,7 +963,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     //    currentGate = gate;
     }
 
-    float matrixFilterFrequency = voices[this->lastPlayedVoice]->matrix.getDestination(FILTER_FREQUENCY);
+    float matrixFilterFrequency = voices[this->lastPlayedVoiceNum]->matrix.getDestination(FILTER_FREQUENCY);
 	float numberVoicesAttn = 1 - (params.engine1.numberOfVoice * 0.04f * ratioTimbres * RATIOINV);
 
     // LP Algo
@@ -4365,7 +4365,7 @@ case FILTER_TEEBEE:
 
 	float velocity = this->lastVelocity;
 	
-	bool isReleased = voices[this->lastPlayedVoice]->isReleased();	
+	bool isReleased = voices[this->lastPlayedVoiceNum]->isReleased();	
 	bool accent = velocity > 0.629f && !isReleased;
 
 	const float ga = 0.9764716867f; //= exp(-1/(PREENFM_FREQUENCY * attack / BLOCK_SIZE))

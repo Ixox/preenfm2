@@ -91,7 +91,6 @@ void Voice::glideToNote(short newNote) {
 	this->prevNote = this->note;
 	// Must glide...
 	this->gliding = true;
-	this->glided = false;
 	this->glidePhase = 0.0f;
 	this->nextGlidingNote = newNote;
 	this->isGlidingAscent = (this->currentTimbre->lastNote < newNote);
@@ -126,7 +125,6 @@ void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) 
 		this->holdedByPedal = false;
 	} else {
 		this->prevNote = this->note;
-		this->glided = false;
 		// update note now so that the noteOff is triggered by the new note
 		this->note = newNote;
 		// Quick dead !
@@ -167,7 +165,6 @@ void Voice::glide() {
 		currentTimbre->osc5.glideStep(&oscState5, 1);
 		currentTimbre->osc6.glideStep(&oscState6, 1);
 		this->gliding = false;
-		this->glided = true;
 	}
 }
 
@@ -176,7 +173,6 @@ void Voice::noteOn(short newNote, short velocity, unsigned int index) {
 	this->released = false;
 	this->playing = true;
 	this->note = newNote;
-	this->glided = false;
 	this->prevNote = this->nextPendingNote;
 	this->nextPendingNote = 0;
 	this->newNotePending = false;
