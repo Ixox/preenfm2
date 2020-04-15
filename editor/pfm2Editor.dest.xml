@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<PROPERTIES>
+  <VALUE name="dest">
+    <dest>
+      <item id="0" name="None"/>
+      <item id="1" name="Gate"/>
+      <item id="2" name="Modulation Index 1"/>
+      <item id="3" name="Modulation Index 2"/>
+      <item id="4" name="Modulation Index 3"/>
+      <item id="5" name="Modulation index 4"/>
+      <item id="6" name="All Mod. Indexes"/>
+      <item id="7" name="Mix 1"/>
+      <item id="8" name="Pan 1"/>
+      <item id="9" name="Mix 2"/>
+      <item id="10" name="Pan 2"/>
+      <item id="11" name="Mix 3"/>
+      <item id="12" name="Pan 3"/>
+      <item id="13" name="Mix 4"/>
+      <item id="14" name="Pan 4"/>
+      <item id="15" name="All Mixes"/>
+      <item id="16" name="All Pans"/>
+      <item id="17" name="Op1 Frequency"/>
+      <item id="18" name="Op2 Frequency"/>
+      <item id="19" name="Op3 Frequency"/>
+      <item id="20" name="Op4 Frequency"/>
+      <item id="21" name="Op5 Frequency"/>
+      <item id="22" name="Op6 Frequency"/>
+      <item id="23" name="All Op Frequencies"/>
+      <item id="43" name="All Op Freq Harmonic"/>
+      <item id="24" name="Op1 Attack"/>
+      <item id="25" name="Op2 Attack"/>
+      <item id="26" name="Op3 Attack"/>
+      <item id="27" name="Op4 Attack"/>
+      <item id="28" name="Op5 Attack"/>
+      <item id="29" name="Op6 Attack"/>
+      <item id="30" name="Carrier Attacks"/>
+      <item id="44" name="Carrier Decays"/>
+      <item id="31" name="Carrier Releases"/>
+      <item id="45" name="Modulator Attacks"/>
+      <item id="46" name="Modulator Decays"/>
+      <item id="47" name="Modulator Releases"/>
+      <item id="32" name="Mtx Multiplier 1"/>
+      <item id="33" name="Mtx Multiplier 2"/>
+      <item id="34" name="Mtx Multiplier 3"/>
+      <item id="35" name="Mtx Multiplier 4"/>
+      <item id="36" name="lfo 1 Frequency"/>
+      <item id="37" name="lfo 2 Frequency"/>
+      <item id="38" name="lfo 3 Frequency"/>
+      <item id="39" name="Free Env2 Silence"/>
+      <item id="40" name="Step Seq 1 gate"/>
+      <item id="41" name="Step Seq 2 gate"/>
+      <item id="42" name="Filter frequency"/>
+      <item id="43" name="Glide hold"/>
+      <item id="44" name="Glide rate"/>
+      <item id="45" name="Glide skew"/>
+    </dest>
+  </VALUE>
+</PROPERTIES>
