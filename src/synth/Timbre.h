@@ -56,6 +56,7 @@ public:
     void cleanNextBlock();
     void prepareMatrixForNewBlock();
     void fxAfterBlock(float ratioTimbres);
+    void initADSRloop();
     void afterNewParamsLoad();
     void setNewValue(int index, struct ParameterDisplay* param, float newValue);
     void setNewEffecParam(int encoder);

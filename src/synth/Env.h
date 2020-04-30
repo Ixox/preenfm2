@@ -120,6 +120,8 @@ public:
         	stateTarget[ENV_STATE_ON_REAL_S] =  envParamsB->sustainLevel;
         	stateInc[ENV_STATE_ON_S] = incTab[(int)(envParamsB->sustainTime * 100.0f)];
             stateInc[ENV_STATE_ON_REAL_S] = 0.0f;
+            isModulator = checkIsModulator();
+            isLoop = checkIsLoop();
         	break;
         case 6:
         case 7:
@@ -130,8 +132,26 @@ public:
         }
     }
 
-    void newState(struct EnvData* env) {
+    void initLoopState() {
+        isModulator = false;
+        isLoop = false;
+    }
 
+    inline bool checkIsModulator() {
+        return algoOpInformation[(int)*this->algoNumber][this->envNumber] == OPERATOR_MODULATOR;
+    }
+
+    inline bool checkIsLoop() {
+        // loop trick : modulator enveloppe loop if sustain = 1:0
+        return isModulator && (envParamsB->sustainLevel == 1) && (envParamsB->sustainTime == 0);
+    }
+
+    void newState(struct EnvData* env) {
+        if(isLoop && (env->envState > ENV_STATE_ON_D)) {
+            //loop env
+            env->currentValue = 0;
+            env->envState = ENV_STATE_ON_A;
+        }
         env->previousStateValue = env->currentValue;
         env->nextStateValue = stateTarget[env->envState];
         env->currentPhase = 0;
@@ -265,6 +285,11 @@ private:
     EnvelopeParamsB* envParamsB;
     uint8_t envNumber;
     float* algoNumber;
+
+    // loopable envelope
+    bool isLoop;
+    // loopable only for modulators
+    bool isModulator;
 
     static int initTab;
     static float incTab[1601];

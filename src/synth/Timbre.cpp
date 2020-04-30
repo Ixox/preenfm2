@@ -4771,6 +4771,23 @@ case FILTER_OFF:
 
 }
 
+void Timbre::initADSRloop() {
+	this->env1.initLoopState();
+	this->env2.initLoopState();
+	this->env3.initLoopState();
+	this->env4.initLoopState();
+	this->env5.initLoopState();
+	this->env6.initLoopState();
+
+    for (int j=0; j<NUMBER_OF_ENCODERS * 2; j++) {
+        this->env1.reloadADSR(j);
+        this->env2.reloadADSR(j);
+        this->env3.reloadADSR(j);
+        this->env4.reloadADSR(j);
+        this->env5.reloadADSR(j);
+        this->env6.reloadADSR(j);
+    }
+}
 
 void Timbre::afterNewParamsLoad() {
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
