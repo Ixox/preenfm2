@@ -120,12 +120,11 @@ public:
         	stateTarget[ENV_STATE_ON_REAL_S] =  envParamsB->sustainLevel;
         	stateInc[ENV_STATE_ON_S] = incTab[(int)(envParamsB->sustainTime * 100.0f)];
             stateInc[ENV_STATE_ON_REAL_S] = 0.0f;
-            isModulator = checkIsModulator();
-            isLoop = checkIsLoop();
         	break;
         case 6:
         case 7:
         	stateTarget[ENV_STATE_ON_R] =  envParamsB->releaseLevel;
+            isLoop = checkIsLoop();
             // Not necessary... recalculated in noteOff....
         	// stateInc[ENV_STATE_ON_R] = incTab[(int)(envParamsB->releaseTime * 100.0f)];
             break;
@@ -133,21 +132,18 @@ public:
     }
 
     void initLoopState() {
-        isModulator = false;
         isLoop = false;
     }
 
-    inline bool checkIsModulator() {
-        return algoOpInformation[(int)*this->algoNumber][this->envNumber] == OPERATOR_MODULATOR;
-    }
-
     inline bool checkIsLoop() {
-        // loop trick : modulator enveloppe loop if sustain = 1:0
-        return isModulator && (envParamsB->sustainLevel == 1) && (envParamsB->sustainTime == 0);
+        // loopable only for modulators
+        bool isModulator = algoOpInformation[(int)*this->algoNumber][this->envNumber] == OPERATOR_MODULATOR;
+        // loop trick : modulator enveloppe loop if release = 1:0
+        return isModulator && (envParamsB->releaseLevel == 1) && (envParamsB->releaseTime == 0);
     }
 
     void newState(struct EnvData* env) {
-        if(isLoop && (env->envState > ENV_STATE_ON_D)) {
+        if(isLoop && (env->envState > ENV_STATE_ON_S)) {
             //loop env
             env->currentValue = 0;
             env->envState = ENV_STATE_ON_A;
@@ -288,8 +284,6 @@ private:
 
     // loopable envelope
     bool isLoop;
-    // loopable only for modulators
-    bool isModulator;
 
     static int initTab;
     static float incTab[1601];
