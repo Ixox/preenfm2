@@ -556,6 +556,8 @@ enum DestinationEnum {
     GLIDE_HOLD,
     GLIDE_RATE,
     GLIDE_SKEW,
+    SEQ1_START,
+    SEQ2_START,
     DESTINATION_MAX
 };
 

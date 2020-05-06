@@ -444,12 +444,12 @@ const char* matrixDestNames [] = {
         /*36*/ "l1Fq", "l2Fq", "l3Fq", "e2si", "s1ga", "s2ga",
         /*42*/ "Fltr",
         /*43*/ "o*Fh", "DecC",
-        /*45*/ "AttM", "DecM", "RelM", "G.hd", "G.rt", "G.sk"
+        /*45*/ "AttM", "DecM", "RelM", "G.hd", "G.rt", "G.sk", "sq1S", "sq2S"
 
 } ;
-const unsigned char  matrixTargetOrder[] =        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 43, 24, 25, 26, 27, 28, 29, 30, 45, 44, 46, 31, 47, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 48, 49, 50 };
+const unsigned char  matrixTargetOrder[] =        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 43, 24, 25, 26, 27, 28, 29, 30, 45, 44, 46, 31, 47, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 48, 49, 50, 51, 52 };
 //   Order                                        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46 };
-const unsigned char  matrixTargetPosition[] =     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29, 30, 31, 35, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 24, 33, 32, 34, 36, 48, 49, 50 };
+const unsigned char  matrixTargetPosition[] =     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29, 30, 31, 35, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 24, 33, 32, 34, 36, 48, 49, 50, 51, 52 };
 
 struct ParameterRowDisplay matrixParameterRow = {
         "Matrix",
@@ -486,7 +486,7 @@ struct ParameterRowDisplay lfoStepParameterRow = {
         "Step Seq",
         { "Bpm ", "Gate", "    ", "    " },
         {
-                { 10 ,245, 236, DISPLAY_TYPE_STEP_SEQ_BPM, nullNames, nullNamesOrder, nullNamesOrder},
+                { 0 ,245, 236, DISPLAY_TYPE_STEP_SEQ_BPM, nullNames, nullNamesOrder, nullNamesOrder},
                 { 0 , 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder},
                 { 0, 0, 0, DISPLAY_TYPE_STEP_SEQ1, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 0, 0, DISPLAY_TYPE_STEP_SEQ2, nullNames, nullNamesOrder, nullNamesOrder }

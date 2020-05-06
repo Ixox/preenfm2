@@ -145,7 +145,6 @@ public:
     void newState(struct EnvData* env) {
         if(isLoop && (env->envState > ENV_STATE_ON_S)) {
             //loop env
-            env->currentValue = 0;
             env->envState = ENV_STATE_ON_A;
         }
         env->previousStateValue = env->currentValue;

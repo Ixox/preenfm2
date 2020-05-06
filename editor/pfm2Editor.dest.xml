@@ -54,6 +54,8 @@
       <item id="43" name="Glide hold"/>
       <item id="44" name="Glide rate"/>
       <item id="45" name="Glide skew"/>
+      <item id="48" name="Step Seq 1 start"/>
+      <item id="49" name="Step Seq 2 start"/>
     </dest>
   </VALUE>
 </PROPERTIES>
