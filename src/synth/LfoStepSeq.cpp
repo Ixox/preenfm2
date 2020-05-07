@@ -148,16 +148,9 @@ void LfoStepSeq::nextValueInMatrix() {
 
 void LfoStepSeq::noteOn() {
 	if (seqParams->bpm < LFO_SEQ_MIDICLOCK_DIV_4) {
-        	this->matrix->computeAllDestintations();
-
-            phase = fabsf(this->matrix->getDestination(startSource)) * 24;
-			int phaseInteger = phase;
-			phase -= phaseInteger;
-			float phaseDecimal = phase;
-			phaseInteger &= 0xf; // modulo 16
-			phase += phaseInteger;
-
-            target = seqSteps->steps[phaseInteger];
+		phase = fabsf(this->matrix->getDestination(startSource)) * 16;
+		uint phaseInteger = phase;
+		target = seqSteps->steps[phaseInteger&0xf];
     }
 }
 
