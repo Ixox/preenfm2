@@ -138,6 +138,12 @@ public:
         return  lfoUSed[lfo] > 0;
     }
 
+    // Do matrix use seq start
+    bool isSeqStartUsed() {
+        return  seqStartUsed > 0;
+    }
+
+
 private:
 
     // MiniPal Arpegiator
@@ -228,6 +234,8 @@ private:
     float noteTimer1, noteTimer2;
     // lfoUsed
     uint8_t lfoUSed[NUMBER_OF_LFO];
+    // seqStartUsed
+    uint8_t seqStartUsed;
 
     NoteStack pf_note_stack;
 };
