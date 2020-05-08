@@ -139,8 +139,8 @@ public:
     }
 
     // Do matrix use seq start
-    bool isSeqStartUsed() {
-        return  seqStartUsed > 0;
+    bool isSeqStartUsed(int seqNum) {
+        return seqStartUsed[seqNum] != 0xff;
     }
 
 
@@ -235,7 +235,7 @@ private:
     // lfoUsed
     uint8_t lfoUSed[NUMBER_OF_LFO];
     // seqStartUsed
-    uint8_t seqStartUsed;
+    uint8_t seqStartUsed[NUMBER_OF_LFO_STEP];
 
     NoteStack pf_note_stack;
 };

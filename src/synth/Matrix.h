@@ -117,6 +117,13 @@ public:
         }
     }
 
+    void setDestination(int rowNum) {
+        destinations[(int)rows[rowNum].destination] = 0;
+        if (likely(rows[rowNum].mul != 0.0f)) {
+            destinations[(int)rows[rowNum].destination] = sources[(int)rows[rowNum].source] * rows[rowNum].mul;
+        }
+    }
+
     void setSource(SourceEnum source, float value) __attribute__((always_inline)) {
         this->sources[source] = value;
     }

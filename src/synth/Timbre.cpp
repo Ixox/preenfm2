@@ -816,9 +816,12 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_SPEED_READ_LEFT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_SPEED));
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DURATION_READ_LEFT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_DURATION));
 
-	if(this->isSeqStartUsed()) {
-		//recompute destination if seq start used
-		voices[voiceToUse]->matrix.computeAllDestintations();
+	//recompute destination if seq start used
+	if(this->isSeqStartUsed(0)) {
+		voices[voiceToUse]->matrix.setDestination( seqStartUsed[0] );
+	}
+	if(this->isSeqStartUsed(1)) {
+		voices[voiceToUse]->matrix.setDestination( seqStartUsed[1] );
 	}
 }
 
@@ -5487,7 +5490,8 @@ void Timbre::verifyLfoUsed(int encoder, float oldValue, float newValue) {
         lfoUSed[lfo] = 0;
     }
 
-	seqStartUsed = 0;
+	seqStartUsed[0] = 0xff;
+	seqStartUsed[1] = 0xff;
 
     MatrixRowParams* matrixRows = &params.matrixRowState1;
 
@@ -5509,10 +5513,12 @@ void Timbre::verifyLfoUsed(int encoder, float oldValue, float newValue) {
 			}
 		}
 
-		if (matrixRows[r].destination >= SEQ1_START && matrixRows[r].destination <= SEQ2_START && matrixRows[r].source != 0.0f) {
-			seqStartUsed++;
+		if (matrixRows[r].destination == SEQ1_START && matrixRows[r].source != 0.0f) {
+			seqStartUsed[0] = r;
 		}
-
+		if (matrixRows[r].destination == SEQ2_START && matrixRows[r].source != 0.0f) {
+			seqStartUsed[1] = r;
+		}
     }
 
     /*
