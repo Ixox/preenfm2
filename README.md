@@ -1,4 +1,4 @@
-## preenfm2
+## preenfm2 :musical_keyboard:
 
 forked from Ixox/preenfm2
 
@@ -132,16 +132,18 @@ in this version, some more filters & fx :
 
 
 
-# Some more tweaks :
+### Some more tweaks :control_knobs:
 
 
 #### Matrix sources :
 ###### rndK :
  (random on new Key)
  new random value with each new note
+
 ###### notD :
  (note Difference)
  difference between current note value and previous one.
+
 ###### velD :
  (velocity Difference)
  difference between current velocity and previous one.
@@ -187,13 +189,13 @@ glide rate
 ###### G.sk
 glide skew (different glide speed for ascending or descending intervals)
 ###### sq1S
-start point of seq1 (0:0 to 1:16)
+start point of seq1 ( 0 to 1 to start from step 1 to 16)
 ###### sq2S
 start point of seq2
 
 
 #### Evelope loop :
-set release to level 1 and duration to zero, the env will loop A,D,S part of the envelope.
+on modulators envelope only, set release to level 1 and duration to zero, the env will loop A,D,S part of the envelope.
 
 
 Credits : 
