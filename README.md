@@ -180,6 +180,10 @@ in this version, some more filters & fx :
 ###### du-1
 ###### du+1
 
+#### Glide enhancement :
+
+* A note stack is used to allow gliding on polyphonic patch
+* Monophonic patch get also benefit of this note stack (one can press lot of keys : on release, good note should be played)
 
 #### Matrix destinations :
 ###### G.hd
@@ -201,6 +205,7 @@ on modulators envelope only, set release to level 1 and duration to zero, the en
 Credits : 
 
 	many thanks to :
+	- of course to Xavier Hosxe for the amazing PreenFM2 synth !
 	- musicdsp.org for the good filters algo ( and more).
 	- Andrew Simper for the bell, low shelf and high shelf algo.
 	- Dennis Cronin for the allpass algo.
