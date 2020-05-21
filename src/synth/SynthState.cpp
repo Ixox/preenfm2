@@ -454,13 +454,13 @@ const unsigned char  matrixTargetPosition[] =     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
 
 struct ParameterRowDisplay matrixParameterRow = {
         "Matrix",
-        { "Srce", "Mult", "Dest", "    " },
+        { "Srce", "Mult", "Dst1", "Dst2" },
         {
                 { MATRIX_SOURCE_NONE, MATRIX_SOURCE_MAX-1, MATRIX_SOURCE_MAX, DISPLAY_TYPE_STRINGS, matrixSourceNames, matrixSourceOrder, matrixSourcePosition},
                 { -10, 10, 2001, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 // We removed 8 destination target in firmware 2.0
                 { DESTINATION_NONE, DESTINATION_MAX -1, DESTINATION_MAX, DISPLAY_TYPE_STRINGS, matrixDestNames, matrixTargetOrder, matrixTargetPosition},
-                { 0, 0, 0, DISPLAY_TYPE_NONE, nullNames, nullNamesOrder, nullNamesOrder }
+                { DESTINATION_NONE, DESTINATION_MAX -1, DESTINATION_MAX, DISPLAY_TYPE_STRINGS, matrixDestNames, matrixTargetOrder, matrixTargetPosition}
         }
 };
 
@@ -2480,20 +2480,20 @@ void SynthState::randomizePreset() {
 
         params->matrixRowState10.source = MATRIX_SOURCE_MODWHEEL;
         params->matrixRowState10.mul = 2.0f;
-        params->matrixRowState10.destination = INDEX_ALL_MODULATION;
+        params->matrixRowState10.dest1 = INDEX_ALL_MODULATION;
 
         params->matrixRowState11.source = MATRIX_SOURCE_PITCHBEND;
         params->matrixRowState11.mul = 1.0f;
-        params->matrixRowState11.destination = ALL_OSC_FREQ;
+        params->matrixRowState11.dest1 = ALL_OSC_FREQ;
 
         params->matrixRowState12.source = MATRIX_SOURCE_AFTERTOUCH;
         params->matrixRowState12.mul = 1.0f;
-        params->matrixRowState12.destination = INDEX_MODULATION1;
+        params->matrixRowState12.dest1 = INDEX_MODULATION1;
 
         for (int m = 1; m<=9; m++) {
             struct MatrixRowParams* matrixRow =  &((struct MatrixRowParams*)&params->matrixRowState1)[m - 1];
             matrixRow->mul = 0;
-            matrixRow->destination = 0;
+            matrixRow->dest1 = 0;
         }
 
 
@@ -2501,14 +2501,14 @@ void SynthState::randomizePreset() {
         for (int i = 0; i < 2; i++) {
             struct MatrixRowParams* matrixRow =  &((struct MatrixRowParams*)&params->matrixRowState1)[getRandomInt(10)];
             matrixRow->mul = getRandomFloat(0.2f, 3.0f);
-            matrixRow->destination = dest[getRandomInt(7)];
+            matrixRow->dest1 = dest[getRandomInt(7)];
         }
 
         if (modulationRandom >= 2) {
             for (int i = 0; i < 3; i++) {
                 struct MatrixRowParams* matrixRow =  &((struct MatrixRowParams*)&params->matrixRowState1)[getRandomInt(10)];
                 matrixRow->mul = getRandomFloat(1.0f, 3.0f);
-                matrixRow->destination = getRandomInt(DESTINATION_MAX);
+                matrixRow->dest1 = getRandomInt(DESTINATION_MAX);
             }
         }
 
@@ -2517,7 +2517,7 @@ void SynthState::randomizePreset() {
                 struct MatrixRowParams* matrixRow =  &((struct MatrixRowParams*)&params->matrixRowState1)[getRandomInt(10)];
                 float mm = getRandomFloat(2.0f, 5.0f);
                 matrixRow->mul = getRandomFloat(-mm, mm);
-                matrixRow->destination = getRandomInt(DESTINATION_MAX);
+                matrixRow->dest1 = getRandomInt(DESTINATION_MAX);
             }
         }
 

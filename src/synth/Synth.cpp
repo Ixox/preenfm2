@@ -521,8 +521,7 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
         break;
     case ROW_MATRIX_FIRST ... ROW_MATRIX_LAST:
         timbres[timbre].verifyLfoUsed(encoder, oldValue, newValue);
-        if (encoder == ENCODER_MATRIX_DEST) {
-            // Reset old destination
+        if (encoder == ENCODER_MATRIX_DEST1 || encoder == ENCODER_MATRIX_DEST2) {
             timbres[timbre].resetMatrixDestination(oldValue);
         }
         break;
