@@ -44,7 +44,7 @@ struct ParameterRowDisplay engine1ParameterRow  = {
                 {ALGO1, ALGO_END-1, ALGO_END, DISPLAY_TYPE_STRINGS, algoNames, nullNamesOrder, nullNamesOrder},
                 {0, 16, 17, DISPLAY_TYPE_INT, nullNames,nullNamesOrder, nullNamesOrder },
                 {0, 16, 17, DISPLAY_TYPE_VOICES, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 10, 11, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder }
+                {0, 12, 13, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -262,7 +262,7 @@ const char *fxName[] = {
     "Sigm", /*	24	*/
     "Fold", /*	25	*/
     "Wrap", /*	26	*/
-    "Xor ", /*	27	*/
+    "Rot ", /*	27	*/
     "Txr1", /*	28	*/
     "Txr2", /*	29	*/
     "LPx1", /*	30	*/
@@ -325,9 +325,9 @@ struct FilterRowDisplay filterRowDisplay[FILTER_LAST] = {
         { "Driv", "Tone", "Gain" },
         { "Driv", "Tone", "Gain" },
         { "Driv", "Tone", "Gain" },
-        { "Thrs", "Tone", "Gain" },
-        { "Freq", "Res ", "Gain" },
-        { "Freq", "Res ", "Gain" },
+        { "angl", "smpr", "Gain" },
+        { "Smp1", "Smp2", "Gain" },
+        { "Smp1", "Smp2", "Gain" },
         { "Freq", "Fold", "Gain" },
         { "Freq", "Fold", "Gain" },
         { "Pos ", "Freq", "Gain" },
@@ -422,15 +422,15 @@ const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "en
 #ifdef CVIN
         , "CV1 ", "CV2 ", "CV3 ", "CV4 "
 #endif
-    , "CC74"
+    , "CC74", "rndK"
 };
 
 #ifdef CVIN
-const unsigned char  matrixSourceOrder[] =        { 0, 19, 20, 21, 22, 1, 2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18, 13, 14, 15, 16, 23};
-const unsigned char  matrixSourcePosition[] =     { 0,  5,  6,  7,  8, 9, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 17, 18, 1,  2,  3,  4, 23};
+const unsigned char  matrixSourceOrder[] =        { 0, 19, 20, 21, 22, 1, 2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18, 13, 14, 15, 16, 23, 24};
+const unsigned char  matrixSourcePosition[] =     { 0,  5,  6,  7,  8, 9, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 17, 18, 1,  2,  3,  4, 23, 24};
 #else
-const unsigned char  matrixSourceOrder[] =        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17, 18, 13, 14, 15, 16, 19 };
-const unsigned char  matrixSourcePosition[] =     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 13, 14, 19};
+const unsigned char  matrixSourceOrder[] =        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17, 18, 13, 14, 15, 16, 19, 20};
+const unsigned char  matrixSourcePosition[] =     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 13, 14, 19, 20};
 #endif
 
 
@@ -444,12 +444,12 @@ const char* matrixDestNames [] = {
         /*36*/ "l1Fq", "l2Fq", "l3Fq", "e2si", "s1ga", "s2ga",
         /*42*/ "Fltr",
         /*43*/ "o*Fh", "DecC",
-        /*45*/ "AttM", "DecM", "RelM"
+        /*45*/ "AttM", "DecM", "RelM", "sq1S", "sq2S"
 
 } ;
-const unsigned char  matrixTargetOrder[] =        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 43, 24, 25, 26, 27, 28, 29, 30, 45, 44, 46, 31, 47, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42 };
+const unsigned char  matrixTargetOrder[] =        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 43, 24, 25, 26, 27, 28, 29, 30, 45, 44, 46, 31, 47, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 48, 49 };
 //   Order                                        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44 };
-const unsigned char  matrixTargetPosition[] =     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29, 30, 31, 35, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 24, 33, 32, 34, 36 };
+const unsigned char  matrixTargetPosition[] =     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29, 30, 31, 35, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 24, 33, 32, 34, 36, 48, 49 };
 
 
 struct ParameterRowDisplay matrixParameterRow = {

@@ -440,6 +440,7 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
         switch (encoder) {
         case ENCODER_ENGINE_ALGO:
             fixMaxNumberOfVoices(timbre);
+            timbres[timbre].initADSRloop();
             break;
         case ENCODER_ENGINE_VOICE:
             if (newValue > oldValue) {

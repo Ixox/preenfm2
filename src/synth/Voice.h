@@ -62,7 +62,8 @@ public:
     uint8_t getNextGlidingNote() { return this->nextGlidingNote; }
     bool isHoldedByPedal() { return this->holdedByPedal; }
     void setHoldedByPedal(bool holded) { this->holdedByPedal = holded; }
-    void setCurrentTimbre(Timbre *timbre);    bool isGliding() { return gliding; }
+    void setCurrentTimbre(Timbre *timbre);    
+    bool isGliding() { return gliding; }
 
     void updateAllModulationIndexes() {
         int numberOfIMs = algoInformation[(int)(currentTimbre->getParamRaw()->engine1.algo)].im;
@@ -405,7 +406,8 @@ private:
     Timbre* currentTimbre;
 
     // glide phase increment
-    static float glidePhaseInc[10];
+    #define nbGlideVals 12
+    static float glidePhaseInc[nbGlideVals];
 
     // Matrix....
     Matrix matrix;

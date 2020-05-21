@@ -17,6 +17,7 @@
 
 #include "LfoStepSeq.h"
 #include "Osc.h"
+#include <math.h>
 
 float expValues[] __attribute__ ((section(".ccm")))  = {0, 0.0594630944, 0.1224620483, 0.189207115, 0.2599210499, 0.3348398542, 0.4142135624, 0.4983070769,
         0.587401052, 0.6817928305, 0.7817974363, 0.8877486254, 1, 1.1189261887, 1.2449240966, 1.37841423 };
@@ -30,6 +31,7 @@ void LfoStepSeq::init(struct StepSequencerParams* stepSeqParam, struct StepSeque
 	valueChanged(0);
 	ticks = 1536;
 	midiClock(0, true);
+	this->startSource = (source == MATRIX_SOURCE_LFOSEQ1) ? SEQ1_START : SEQ2_START;
 }
 
 void LfoStepSeq::midiClock(int songPosition, bool computeStep) {
@@ -144,9 +146,10 @@ void LfoStepSeq::nextValueInMatrix() {
 
 void LfoStepSeq::noteOn() {
 	if (seqParams->bpm < LFO_SEQ_MIDICLOCK_DIV_4) {
-		phase = 0;
-		target = seqSteps->steps[0];
-	}
+		phase = fabsf(this->matrix->getDestination(startSource)) * 16;
+		uint phaseInteger = phase;
+		target = seqSteps->steps[phaseInteger&0xf];
+    }
 }
 
 void LfoStepSeq::noteOff() {
