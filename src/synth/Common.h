@@ -343,8 +343,8 @@ struct OscillatorParams {
 struct MatrixRowParams {
     float source;
     float mul;
-    float destination;
-    float not_used;
+    float dest1;
+    float dest2;
 };
 
 struct LfoParams {

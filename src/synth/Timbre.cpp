@@ -5420,16 +5420,16 @@ void Timbre::verifyLfoUsed(int encoder, float oldValue, float newValue) {
     for (int r = 0; r < MATRIX_SIZE; r++) {
         if (matrixRows[r].source >= MATRIX_SOURCE_LFO1 && matrixRows[r].source <= MATRIX_SOURCE_LFOSEQ2
                 && matrixRows[r].mul != 0.0f
-                && matrixRows[r].destination != 0.0f) {
+                && matrixRows[r].dest1 != 0.0f) {
             lfoUSed[(int)matrixRows[r].source - MATRIX_SOURCE_LFO1]++;
         }
 
 
 		// Check if we have a Mtx* that would require LFO even if mul is 0
 		// http://ixox.fr/forum/index.php?topic=69220.0
-        if (matrixRows[r].destination >= MTX1_MUL && matrixRows[r].destination <= MTX4_MUL && matrixRows[r].mul != 0.0f && matrixRows[r].source != 0.0f) {
-			int index = matrixRows[r].destination - MTX1_MUL;
-	        if (matrixRows[index].source >= MATRIX_SOURCE_LFO1 && matrixRows[index].source <= MATRIX_SOURCE_LFOSEQ2 && matrixRows[index].destination != 0.0f) {
+        if (matrixRows[r].dest1 >= MTX1_MUL && matrixRows[r].dest1 <= MTX4_MUL && matrixRows[r].mul != 0.0f && matrixRows[r].source != 0.0f) {
+			int index = matrixRows[r].dest1 - MTX1_MUL;
+	        if (matrixRows[index].source >= MATRIX_SOURCE_LFO1 && matrixRows[index].source <= MATRIX_SOURCE_LFOSEQ2 && matrixRows[index].dest1 != 0.0f) {
             	lfoUSed[(int)matrixRows[index].source - MATRIX_SOURCE_LFO1]++;
 			}
 		}
