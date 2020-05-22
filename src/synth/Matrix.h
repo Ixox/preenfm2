@@ -50,7 +50,7 @@ public:
     }
 
 
-    void computeAllDestintations() {
+    void computeAllDestinations() {
         // Store values before erasing destinations
         float mul1 = destinations[MTX1_MUL];
         float mul2 = destinations[MTX2_MUL];
