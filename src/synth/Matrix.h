@@ -59,7 +59,8 @@ public:
 
         // Let's erase destinations first
         int k = 0;
-        destinations[(int)rows[k].dest1] = 0;
+        // No need to erase first one (tiny optim)
+        // destinations[(int)rows[k].dest1] = 0;
         destinations[(int)rows[k++].dest2] = 0;
         destinations[(int)rows[k].dest1] = 0;
         destinations[(int)rows[k++].dest2] = 0;
@@ -87,7 +88,8 @@ public:
         // For first row can be modified by destination
         if (likely(rows[0].source != MATRIX_SOURCE_NONE)) {
             float sourceTimesMul = sources[(int) rows[0].source] * (rows[0].mul + mul1);
-            destinations[(int) rows[0].dest1] += sourceTimesMul;
+            // First one was not set to 0 above (tiny optim)
+            destinations[(int) rows[0].dest1] = sourceTimesMul;
             destinations[(int) rows[0].dest2] += sourceTimesMul;
         }
         if (likely(rows[1].source != MATRIX_SOURCE_NONE)) {
@@ -128,6 +130,19 @@ public:
         return this->destinations[destination];
     }
 
+    // this erase and update only one matrix row
+    void computeOneDestination(int r) {
+        if (r < 4) {
+            float mtxDest = destinations[MTX1_MUL + r];
+            float sourceTimesMul = sources[(int) rows[r].source] * (rows[r].mul + mtxDest);
+            destinations[(int) rows[r].dest1] = sourceTimesMul;
+            destinations[(int) rows[r].dest2] = sourceTimesMul;
+        } else if (r < MATRIX_SIZE) {
+            float sourceTimesMul = sources[(int) rows[r].source] * rows[r].mul;
+            destinations[(int) rows[r].dest1] = sourceTimesMul;
+            destinations[(int) rows[r].dest2] = sourceTimesMul;
+        }
+    }
 
 private:
     float sources[MATRIX_SOURCE_MAX];

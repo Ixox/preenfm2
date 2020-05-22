@@ -135,14 +135,9 @@ public:
     // Midi Note Scale
     void updateMidiNoteScale(int scale);
 
-    // Do matrix use LFO
+    // Does the matrix use LFOs
     bool isLfoUsed(int lfo) {
         return  lfoUSed[lfo] > 0;
-    }
-
-    // Do matrix use seq start
-    bool isSeqStartUsed(int seqNum) {
-        return seqStartUsed[seqNum] != 0xff;
     }
 
 

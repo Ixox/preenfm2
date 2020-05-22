@@ -729,6 +729,15 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 
     voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_RANDOM, noise[voiceToUse]);
 
+	if (unlikely(this->seqStartUsed[0] != 0xFF)) {
+		voices[voiceToUse]->matrix.computeOneDestination(seqStartUsed[0]);
+	}
+	if (unlikely(this->seqStartUsed[1] != 0xFF)) {
+		// No need to recalculte if it's the same row as the other one
+		if (seqStartUsed[0] != seqStartUsed[1]) {
+			voices[voiceToUse]->matrix.computeOneDestination(seqStartUsed[1]);
+		}
+	}
 }
 
 
@@ -5415,6 +5424,10 @@ void Timbre::verifyLfoUsed(int encoder, float oldValue, float newValue) {
         lfoUSed[lfo] = 0;
     }
 
+
+	seqStartUsed[0] = 0xff;
+	seqStartUsed[1] = 0xff;
+
     MatrixRowParams* matrixRows = &params.matrixRowState1;
 
     for (int r = 0; r < MATRIX_SIZE; r++) {
@@ -5440,8 +5453,15 @@ void Timbre::verifyLfoUsed(int encoder, float oldValue, float newValue) {
 					lfoUSed[(int)matrixRows[index].source - MATRIX_SOURCE_LFO1]++;
 				}
 			}
-		}
 
+			// Need to know in what row step seq are used to update in 
+			if (unlikely(matrixRows[r].dest1 == SEQ1_START || matrixRows[r].dest2 == SEQ1_START)) {
+				seqStartUsed[0] = r;
+			} 
+			if (unlikely(matrixRows[r].dest1 == SEQ2_START || matrixRows[r].dest2 == SEQ2_START)) {
+				seqStartUsed[1] = r;
+			}
+		}
     }
 
     /*

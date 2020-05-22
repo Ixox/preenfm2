@@ -487,7 +487,7 @@ struct ParameterRowDisplay lfoStepParameterRow = {
         "Step Seq",
         { "Bpm ", "Gate", "    ", "    " },
         {
-                { 10 ,245, 236, DISPLAY_TYPE_STEP_SEQ_BPM, nullNames, nullNamesOrder, nullNamesOrder},
+                { 0 ,245, 246, DISPLAY_TYPE_STEP_SEQ_BPM, nullNames, nullNamesOrder, nullNamesOrder},
                 { 0 , 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder},
                 { 0, 0, 0, DISPLAY_TYPE_STEP_SEQ1, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 0, 0, DISPLAY_TYPE_STEP_SEQ2, nullNames, nullNamesOrder, nullNamesOrder }
