@@ -817,11 +817,14 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DURATION_READ_LEFT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_DURATION));
 
 	//recompute destination if seq start used
-	if(this->isSeqStartUsed(0)) {
-		voices[voiceToUse]->matrix.setDestination( seqStartUsed[0] );
+	if (unlikely(this->seqStartUsed[0] != 0xFF)) {
+		voices[voiceToUse]->matrix.computeOneDestination(seqStartUsed[0]);
 	}
-	if(this->isSeqStartUsed(1)) {
-		voices[voiceToUse]->matrix.setDestination( seqStartUsed[1] );
+	if (unlikely(this->seqStartUsed[1] != 0xFF)) {
+		// No need to recalculte if it's the same row as the other one
+		if (seqStartUsed[0] != seqStartUsed[1]) {
+			voices[voiceToUse]->matrix.computeOneDestination(seqStartUsed[1]);
+		}
 	}
 }
 
@@ -5482,42 +5485,52 @@ void Timbre::verifyLfoUsed(int encoder, float oldValue, float newValue) {
     if (params.engine1.numberOfVoice == 0.0f) {
         return;
     }
+	// We used it and still use it 
     if (encoder == ENCODER_MATRIX_MUL && oldValue != 0.0f && newValue != 0.0f) {
         return;
     }
 
-    for (int lfo=0; lfo < NUMBER_OF_LFO; lfo++) {
+    for (int lfo = 0; lfo < NUMBER_OF_LFO; lfo++) {
         lfoUSed[lfo] = 0;
     }
+
 
 	seqStartUsed[0] = 0xff;
 	seqStartUsed[1] = 0xff;
 
     MatrixRowParams* matrixRows = &params.matrixRowState1;
 
-
     for (int r = 0; r < MATRIX_SIZE; r++) {
-        if (matrixRows[r].source >= MATRIX_SOURCE_LFO1 && matrixRows[r].source <= MATRIX_SOURCE_LFOSEQ2
+        if ((matrixRows[r].source >= MATRIX_SOURCE_LFO1 && matrixRows[r].source <= MATRIX_SOURCE_LFOSEQ2)
                 && matrixRows[r].mul != 0.0f
-                && matrixRows[r].destination != 0.0f) {
+                && (matrixRows[r].dest1 != 0.0f || matrixRows[r].dest2 != 0.0f)) {
             lfoUSed[(int)matrixRows[r].source - MATRIX_SOURCE_LFO1]++;
         }
 
-
 		// Check if we have a Mtx* that would require LFO even if mul is 0
 		// http://ixox.fr/forum/index.php?topic=69220.0
-        if (matrixRows[r].destination >= MTX1_MUL && matrixRows[r].destination <= MTX4_MUL && matrixRows[r].mul != 0.0f && matrixRows[r].source != 0.0f) {
-			int index = matrixRows[r].destination - MTX1_MUL;
-	        if (matrixRows[index].source >= MATRIX_SOURCE_LFO1 && matrixRows[index].source <= MATRIX_SOURCE_LFOSEQ2 && matrixRows[index].destination != 0.0f) {
-            	lfoUSed[(int)matrixRows[index].source - MATRIX_SOURCE_LFO1]++;
+        if (matrixRows[r].mul != 0.0f && matrixRows[r].source != 0.0f) {
+			if (matrixRows[r].dest1 >= MTX1_MUL && matrixRows[r].dest1 <= MTX4_MUL) {
+				int index = matrixRows[r].dest1 - MTX1_MUL;
+				if (matrixRows[index].source >= MATRIX_SOURCE_LFO1 && matrixRows[index].source <= MATRIX_SOURCE_LFOSEQ2) {
+					lfoUSed[(int)matrixRows[index].source - MATRIX_SOURCE_LFO1]++;
+				}
 			}
-		}
+			// same test for dest2
+			if (matrixRows[r].dest2 >= MTX1_MUL && matrixRows[r].dest2 <= MTX4_MUL) {
+				int index = matrixRows[r].dest2 - MTX1_MUL;
+				if (matrixRows[index].source >= MATRIX_SOURCE_LFO1 && matrixRows[index].source <= MATRIX_SOURCE_LFOSEQ2) {
+					lfoUSed[(int)matrixRows[index].source - MATRIX_SOURCE_LFO1]++;
+				}
+			}
 
-		if (matrixRows[r].destination == SEQ1_START && matrixRows[r].source != 0.0f) {
-			seqStartUsed[0] = r;
-		}
-		if (matrixRows[r].destination == SEQ2_START && matrixRows[r].source != 0.0f) {
-			seqStartUsed[1] = r;
+			// Need to know in what row step seq are used to update in 
+			if (unlikely(matrixRows[r].dest1 == SEQ1_START || matrixRows[r].dest2 == SEQ1_START)) {
+				seqStartUsed[0] = r;
+			} 
+			if (unlikely(matrixRows[r].dest1 == SEQ2_START || matrixRows[r].dest2 == SEQ2_START)) {
+				seqStartUsed[1] = r;
+			}
 		}
     }
 

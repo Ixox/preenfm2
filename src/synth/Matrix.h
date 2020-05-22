@@ -34,13 +34,13 @@ public:
 	void init(struct MatrixRowParams* matrixRows);
 
 	void resetSources() {
-        for (int k=0; k< MATRIX_SOURCE_MAX; k++) {
+        for (int k = 0; k <  MATRIX_SOURCE_MAX; k++) {
         	setSource((SourceEnum)k, 0);
         }
 	}
 
     void resetAllDestination() {
-        for (int k=0; k< DESTINATION_MAX; k++) {
+        for (int k = 0; k < DESTINATION_MAX; k++) {
             destinations[k] = 0;
         }
     }
@@ -50,84 +50,78 @@ public:
     }
 
 
-    void computeAllDestintations() {
-        float mul;
-
+    void computeAllDestinations() {
+        // Store values before erasing destinations
         float mul1 = destinations[MTX1_MUL];
         float mul2 = destinations[MTX2_MUL];
         float mul3 = destinations[MTX3_MUL];
         float mul4 = destinations[MTX4_MUL];
-        //
-        int k = 1;
-        // No need to erase first row
-        //destinations[(int)rows[k++].destination] = 0;
-        destinations[(int)rows[k++].destination] = 0;
-        destinations[(int)rows[k++].destination] = 0;
-        destinations[(int)rows[k++].destination] = 0;
-        destinations[(int)rows[k++].destination] = 0;
-        destinations[(int)rows[k++].destination] = 0;
-        destinations[(int)rows[k++].destination] = 0;
-        destinations[(int)rows[k++].destination] = 0;
-        destinations[(int)rows[k++].destination] = 0;
-        destinations[(int)rows[k++].destination] = 0;
-        destinations[(int)rows[k++].destination] = 0;
-        destinations[(int)rows[k++].destination] = 0;
 
+        // Let's erase destinations first
+        int k = 0;
+        // No need to erase first one (tiny optim)
+        // destinations[(int)rows[k].dest1] = 0;
+        destinations[(int)rows[k++].dest2] = 0;
+        destinations[(int)rows[k].dest1] = 0;
+        destinations[(int)rows[k++].dest2] = 0;
+        destinations[(int)rows[k].dest1] = 0;
+        destinations[(int)rows[k++].dest2] = 0;
+        destinations[(int)rows[k].dest1] = 0;
+        destinations[(int)rows[k++].dest2] = 0;
+        destinations[(int)rows[k].dest1] = 0;
+        destinations[(int)rows[k++].dest2] = 0;
+        destinations[(int)rows[k].dest1] = 0;
+        destinations[(int)rows[k++].dest2] = 0;
+        destinations[(int)rows[k].dest1] = 0;
+        destinations[(int)rows[k++].dest2] = 0;
+        destinations[(int)rows[k].dest1] = 0;
+        destinations[(int)rows[k++].dest2] = 0;
+        destinations[(int)rows[k].dest1] = 0;
+        destinations[(int)rows[k++].dest2] = 0;
+        destinations[(int)rows[k].dest1] = 0;
+        destinations[(int)rows[k++].dest2] = 0;
+        destinations[(int)rows[k].dest1] = 0;
+        destinations[(int)rows[k++].dest2] = 0;
+        destinations[(int)rows[k].dest1] = 0;
+        destinations[(int)rows[k++].dest2] = 0;
 
-        mul = rows[0].mul + mul1;
-        if (likely(mul != 0.0f)) {
-            destinations[(int)rows[0].destination] = sources[(int)rows[0].source] * mul;
+        // For first row can be modified by destination
+        if (likely(rows[0].source != MATRIX_SOURCE_NONE)) {
+            float sourceTimesMul = sources[(int) rows[0].source] * (rows[0].mul + mul1);
+            // First one was not set to 0 above (tiny optim)
+            destinations[(int) rows[0].dest1] = sourceTimesMul;
+            destinations[(int) rows[0].dest2] += sourceTimesMul;
         }
-        mul = rows[1].mul + mul2;
-        if (likely(mul != 0.0f)) {
-            destinations[(int)rows[1].destination] += sources[(int)rows[1].source] * mul;
+        if (likely(rows[1].source != MATRIX_SOURCE_NONE)) {
+            float sourceTimesMul = sources[(int) rows[1].source] * (rows[1].mul + mul2);
+            destinations[(int) rows[1].dest1] += sourceTimesMul;
+            destinations[(int) rows[1].dest2] += sourceTimesMul;
         }
-        mul = rows[2].mul + mul3;
-        if (likely(mul != 0.0f)) {
-            destinations[(int)rows[2].destination] += sources[(int)rows[2].source] * mul;
+        if (likely(rows[2].source != MATRIX_SOURCE_NONE)) {
+            float sourceTimesMul = sources[(int) rows[2].source] * (rows[2].mul + mul3);
+            destinations[(int) rows[2].dest1] += sourceTimesMul;
+            destinations[(int) rows[2].dest2] += sourceTimesMul;
         }
-        mul = rows[3].mul + mul4;
-        if (likely(mul != 0.0f)) {
-            destinations[(int)rows[3].destination] += sources[(int)rows[3].source] * mul;
+        if (likely(rows[3].source != MATRIX_SOURCE_NONE)) {
+            float sourceTimesMul = sources[(int) rows[3].source] * (rows[3].mul + mul4);
+            destinations[(int) rows[3].dest1] += sourceTimesMul;
+            destinations[(int) rows[3].dest2] += sourceTimesMul;
         }
 
-        if (likely(rows[4].mul != 0.0f)) {
-            destinations[(int)rows[4].destination] += sources[(int)rows[4].source] * rows[4].mul;
-        }
-        if (likely(rows[5].mul != 0.0f)) {
-            destinations[(int)rows[5].destination] += sources[(int)rows[5].source] * rows[5].mul;
-        }
-        if (likely(rows[6].mul != 0.0f)) {
-            destinations[(int)rows[6].destination] += sources[(int)rows[6].source] * rows[6].mul;
-        }
-        if (likely(rows[7].mul != 0.0f)) {
-            destinations[(int)rows[7].destination] += sources[(int)rows[7].source] * rows[7].mul;
-        }
-        if (likely(rows[8].mul != 0.0f)) {
-            destinations[(int)rows[8].destination] += sources[(int)rows[8].source] * rows[8].mul;
-        }
-        if (likely(rows[9].mul != 0.0f)) {
-            destinations[(int)rows[9].destination] += sources[(int)rows[9].source] * rows[9].mul;
-        }
-        if (likely(rows[10].mul != 0.0f)) {
-            destinations[(int)rows[10].destination] += sources[(int)rows[10].source] * rows[10].mul;
-        }
-        if (likely(rows[11].mul != 0.0f)) {
-            destinations[(int)rows[11].destination] += sources[(int)rows[11].source] * rows[11].mul;
-        }
-    }
-
-    void setDestination(int rowNum) {
-        destinations[(int)rows[rowNum].destination] = 0;
-        if (likely(rows[rowNum].mul != 0.0f)) {
-            destinations[(int)rows[rowNum].destination] = sources[(int)rows[rowNum].source] * rows[rowNum].mul;
+        // and compute other rows
+        for (int r = 4; r < MATRIX_SIZE; r++) {
+            if (likely(rows[r].source != MATRIX_SOURCE_NONE && rows[r].mul != 0.0f)) {
+                float sourceTimesMul = sources[(int) rows[r].source] * rows[r].mul;
+                destinations[(int) rows[r].dest1] += sourceTimesMul;
+                destinations[(int) rows[r].dest2] += sourceTimesMul;
+            }
         }
     }
 
     void setSource(SourceEnum source, float value) __attribute__((always_inline)) {
         this->sources[source] = value;
     }
-    
+
     float getSource(SourceEnum source) __attribute__((always_inline)) {
         return this->sources[source];
     }
@@ -136,6 +130,19 @@ public:
         return this->destinations[destination];
     }
 
+    // this erase and update only one matrix row
+    void computeOneDestination(int r) {
+        if (r < 4) {
+            float mtxDest = destinations[MTX1_MUL + r];
+            float sourceTimesMul = sources[(int) rows[r].source] * (rows[r].mul + mtxDest);
+            destinations[(int) rows[r].dest1] = sourceTimesMul;
+            destinations[(int) rows[r].dest2] = sourceTimesMul;
+        } else if (r < MATRIX_SIZE) {
+            float sourceTimesMul = sources[(int) rows[r].source] * rows[r].mul;
+            destinations[(int) rows[r].dest1] = sourceTimesMul;
+            destinations[(int) rows[r].dest2] = sourceTimesMul;
+        }
+    }
 
 private:
     float sources[MATRIX_SOURCE_MAX];
