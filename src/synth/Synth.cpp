@@ -23,7 +23,7 @@
 
 #include "hardware/dwt.h"
 
-#ifdef DEBUG
+#ifdef DEBUG_CPU_USAGE
 CYCCNT_buffer cycles_all;
 #endif
 
@@ -120,7 +120,7 @@ bool Synth::isPlaying() {
 }
 
 
-#ifdef DEBUG
+#ifdef DEBUG_CPU_USAGE
 int cptDisplay = 0;
 float totalCycles = 0;
 #endif
@@ -285,7 +285,7 @@ void Synth::buildNewSampleBlock() {
 
     CYCLE_MEASURE_END();
 
-#ifdef DEBUG
+#ifdef DEBUG_CPU_USAGE
     if (cptDisplay++ > 500) {
         totalCycles += cycles_all.remove();
 

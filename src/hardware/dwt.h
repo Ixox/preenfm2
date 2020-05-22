@@ -20,6 +20,8 @@
 
 #include "utils/RingBuffer.h"
 
+//#define DEBUG_CPU_USAGE 1
+
 #define REG_DWT_CONTROL 0xE0001000
 #define REG_DWT_CYCCNT 0xE0001004
 #define REG_SCB_DEMCR 0xE000EDFC
@@ -64,7 +66,7 @@ private:
 #define MACRO_CONCAT_(x,y) x##y
 #define MACRO_CONCAT(x,y) MACRO_CONCAT_(x,y)
 
-#ifdef DEBUG
+#ifdef DEBUG_CPU_USAGE
 #define CYCLE_MEASURE_START( x )			\
         {							\
             scoped_cyccnt MACRO_CONCAT(CYCNT_,__COUNTER__)( x );	\
