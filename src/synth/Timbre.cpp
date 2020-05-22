@@ -5406,31 +5406,39 @@ void Timbre::verifyLfoUsed(int encoder, float oldValue, float newValue) {
     if (params.engine1.numberOfVoice == 0.0f) {
         return;
     }
+	// We used it and still use it 
     if (encoder == ENCODER_MATRIX_MUL && oldValue != 0.0f && newValue != 0.0f) {
         return;
     }
 
-    for (int lfo=0; lfo < NUMBER_OF_LFO; lfo++) {
+    for (int lfo = 0; lfo < NUMBER_OF_LFO; lfo++) {
         lfoUSed[lfo] = 0;
     }
 
     MatrixRowParams* matrixRows = &params.matrixRowState1;
 
-
     for (int r = 0; r < MATRIX_SIZE; r++) {
-        if (matrixRows[r].source >= MATRIX_SOURCE_LFO1 && matrixRows[r].source <= MATRIX_SOURCE_LFOSEQ2
+        if ((matrixRows[r].source >= MATRIX_SOURCE_LFO1 && matrixRows[r].source <= MATRIX_SOURCE_LFOSEQ2)
                 && matrixRows[r].mul != 0.0f
-                && matrixRows[r].dest1 != 0.0f) {
+                && (matrixRows[r].dest1 != 0.0f || matrixRows[r].dest2 != 0.0f)) {
             lfoUSed[(int)matrixRows[r].source - MATRIX_SOURCE_LFO1]++;
         }
 
-
 		// Check if we have a Mtx* that would require LFO even if mul is 0
 		// http://ixox.fr/forum/index.php?topic=69220.0
-        if (matrixRows[r].dest1 >= MTX1_MUL && matrixRows[r].dest1 <= MTX4_MUL && matrixRows[r].mul != 0.0f && matrixRows[r].source != 0.0f) {
-			int index = matrixRows[r].dest1 - MTX1_MUL;
-	        if (matrixRows[index].source >= MATRIX_SOURCE_LFO1 && matrixRows[index].source <= MATRIX_SOURCE_LFOSEQ2 && matrixRows[index].dest1 != 0.0f) {
-            	lfoUSed[(int)matrixRows[index].source - MATRIX_SOURCE_LFO1]++;
+        if (matrixRows[r].mul != 0.0f && matrixRows[r].source != 0.0f) {
+			if (matrixRows[r].dest1 >= MTX1_MUL && matrixRows[r].dest1 <= MTX4_MUL) {
+				int index = matrixRows[r].dest1 - MTX1_MUL;
+				if (matrixRows[index].source >= MATRIX_SOURCE_LFO1 && matrixRows[index].source <= MATRIX_SOURCE_LFOSEQ2) {
+					lfoUSed[(int)matrixRows[index].source - MATRIX_SOURCE_LFO1]++;
+				}
+			}
+			// same test for dest2
+			if (matrixRows[r].dest2 >= MTX1_MUL && matrixRows[r].dest2 <= MTX4_MUL) {
+				int index = matrixRows[r].dest2 - MTX1_MUL;
+				if (matrixRows[index].source >= MATRIX_SOURCE_LFO1 && matrixRows[index].source <= MATRIX_SOURCE_LFOSEQ2) {
+					lfoUSed[(int)matrixRows[index].source - MATRIX_SOURCE_LFO1]++;
+				}
 			}
 		}
 
