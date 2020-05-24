@@ -47,7 +47,9 @@ public:
     void noteOff();
     void glideFirstNoteOff();
     void glide();
-    
+#ifdef CVIN
+    void propagateCvFreq(short newNote);
+#endif
     float getGlideIncrement(float in);
 
     bool isReleased() { return this->released; }

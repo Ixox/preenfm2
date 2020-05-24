@@ -139,11 +139,11 @@ public:
         // loopable only for modulators
         bool isModulator = algoOpInformation[(int)*this->algoNumber][this->envNumber] == OPERATOR_MODULATOR;
         // loop trick : modulator enveloppe loop if release = 1:0
-        return isModulator && (envParamsB->releaseLevel == 1) && (envParamsB->releaseTime == 0);
+        return isModulator && (envParamsB->releaseLevel == 1.0f) && (envParamsB->releaseTime == 0.0f);
     }
 
     void newState(struct EnvData* env) {
-        if(isLoop && (env->envState > ENV_STATE_ON_S)) {
+        if (unlikely(isLoop && (env->envState > ENV_STATE_ON_S))) {
             //loop env
             env->envState = ENV_STATE_ON_A;
         }
