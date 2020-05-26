@@ -179,12 +179,12 @@ void Voice::noteOn(short newNote, short velocity, unsigned int index) {
 	this->holdedByPedal = false;
 	this->index = index;
 
-	float vv  =(float)velocity * .0078125f;
-	this->velIm1 = currentTimbre->params.engineIm1.modulationIndexVelo1 * vv;
-	this->velIm2 = currentTimbre->params.engineIm1.modulationIndexVelo2 * vv;
-	this->velIm3 = currentTimbre->params.engineIm2.modulationIndexVelo3 * vv;
-	this->velIm4 = currentTimbre->params.engineIm2.modulationIndexVelo4 * vv;
-	this->velIm5 = currentTimbre->params.engineIm3.modulationIndexVelo5 * vv;
+	float velo  =(float)velocity * .0078125f;
+	this->velIm1 = currentTimbre->params.engineIm1.modulationIndexVelo1 * velo;
+	this->velIm2 = currentTimbre->params.engineIm1.modulationIndexVelo2 * velo;
+	this->velIm3 = currentTimbre->params.engineIm2.modulationIndexVelo3 * velo;
+	this->velIm4 = currentTimbre->params.engineIm2.modulationIndexVelo4 * velo;
+	this->velIm5 = currentTimbre->params.engineIm3.modulationIndexVelo5 * velo;
 
 	int zeroVelo = (16 - currentTimbre->params.engine1.velocity) * 8;
 	int newVelocity = zeroVelo + ((velocity * (128 - zeroVelo)) >> 7);

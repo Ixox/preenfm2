@@ -82,7 +82,7 @@ public:
             modulationIndex3 = 0.0f;
         }
 
-        if (likely(numberOfIMs < 3)) {
+        if (likely(numberOfIMs <= 3)) {
             return;
         }
 
