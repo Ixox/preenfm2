@@ -149,6 +149,7 @@ void LfoStepSeq::noteOn() {
 		phase = fabsf(this->matrix->getDestination(startSource)) * 16;
 		uint phaseInteger = phase;
 		target = seqSteps->steps[phaseInteger&0xf];
+		gated = false;
     }
 }
 
