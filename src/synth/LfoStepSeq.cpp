@@ -150,6 +150,9 @@ void LfoStepSeq::noteOn() {
 		uint phaseInteger = phase;
 		target = seqSteps->steps[phaseInteger&0xf];
 		gated = false;
+		// reach value now :
+		currentValue = target;
+		matrix->setSource((enum SourceEnum)source, expValues[currentValue]);
     }
 }
 
