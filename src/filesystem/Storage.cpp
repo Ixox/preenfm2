@@ -29,9 +29,9 @@ char lineBuffer[512];
 void Storage::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2, struct OneSynthParams*timbre3, struct OneSynthParams*timbre4) {
     USBH_Init(&usbOTGHost, USB_OTG_HS_CORE_ID, &usbHost, &USBH_MSC_cb, &USR_Callbacks);
 	commandParams.commandState = COMMAND_INIT;
+#if !defined(BOOTLOADER)
 	// Use any object for usbProcess...
 	comboBank.usbProcess();
-
     comboBank.setFileSystemUtils(&fsu);
     comboBank.init(timbre1, timbre2, timbre3, timbre4);
     scalaFile.setFileSystemUtils(&fsu);
@@ -40,6 +40,7 @@ void Storage::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2,
     dx7SysexFile.setFileSystemUtils(&fsu);
     patchBank.setFileSystemUtils(&fsu);
     userWaveForm.setFileSystemUtils(&fsu);
+#endif
 }
 
 

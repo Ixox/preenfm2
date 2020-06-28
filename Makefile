@@ -17,7 +17,7 @@ endif
 ELF_FIRMWARE:=${BUILD_PREFIX}.elf
 BIN_FIRMWARE:=${BUILD_PREFIX}.bin
 SYMBOLS_FIRMWARE:=${BUILD_PREFIX}_symbol.txt
-PFM2_BOOTLOADER_VERSION_NUMBER:=1.11
+PFM2_BOOTLOADER_VERSION_NUMBER:=1.12
 PFM2_BOOTLOADER_VERSION:=\"${PFM2_BOOTLOADER_VERSION_NUMBER}\"
 ELF_BOOTLOADER:=build/${PFM2_PREFIX}_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.elf
 BIN_BOOTLOADER:=build/${PFM2_PREFIX}_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.bin
@@ -30,6 +30,8 @@ LD      = arm-none-eabi-ld -v
 CP      = arm-none-eabi-objcopy
 OD      = arm-none-eabi-objdump
 AS      = arm-none-eabi-as
+
+export PATH:=${PWD}/gcc-arm-none-eabi-4_7-2014q2/bin:$(PATH)
 
 
 SRC_FIRMWARE:=src/PreenFM.cpp \
