@@ -22,13 +22,16 @@
 
 #include "Common.h"
 #include "FileSystemUtils.h"
+#ifndef BOOTLOADER
 #include "ComboBank.h"
 #include "ConfigurationFile.h"
 #include "DX7SysexFile.h"
 #include "PatchBank.h"
 #include "ScalaFile.h"
 #include "UserWaveform.h"
-
+#else
+#include "FirmwareFile.h"
+#endif
 
 
 
@@ -49,6 +52,7 @@ public:
     ScalaFile* getScalaFile() { return &scalaFile; }
     UserWaveform* getUserWaveform() { return &userWaveForm; };
 #else
+    FirmwareFile* getFirmwareFile() { return &firmwareFile; };
 #endif
 
     bool isKeyReady() { return keyReady; }
@@ -62,6 +66,7 @@ private:
     ScalaFile scalaFile;
     UserWaveform userWaveForm;
 #else
+    FirmwareFile firmwareFile;
 #endif
     bool keyReady;
     bool usbhInitCalled;

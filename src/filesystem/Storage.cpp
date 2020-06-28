@@ -33,7 +33,7 @@ void Storage::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2,
         usbhInitCalled= true;
     }
 
-	// Use any object for usbProcess...
+#if !defined(BOOTLOADER)
 	keyReady = comboBank.sendInitCommand();
     comboBank.setFileSystemUtils(&fsu);
     comboBank.init(timbre1, timbre2, timbre3, timbre4);
@@ -43,6 +43,10 @@ void Storage::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2,
     dx7SysexFile.setFileSystemUtils(&fsu);
     patchBank.setFileSystemUtils(&fsu);
     userWaveForm.setFileSystemUtils(&fsu);
+#else
+	firmwareFile.sendInitCommand();
+    firmwareFile.setFileSystemUtils(&fsu);
+#endif
 }
 
 

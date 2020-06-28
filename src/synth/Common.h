@@ -21,8 +21,8 @@
 #include <stdint.h>
 
 // #define DEBUG 1
+// #define DEBUG_CPU_USAGE 1
 // #define CVINDEBUG 1
-
 
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
@@ -41,22 +41,10 @@
 #define NUMBER_OF_TIMBRES 4
 #define NUMBER_OF_OPERATORS 6
 
+extern float PREENFM_FREQUENCY;
+extern float PREENFM_FREQUENCY_INVERSED;
+extern float PREENFM_FREQUENCY_INVERSED_LFO;
 
-#ifndef OVERCLOCK
-// 168000000 / 1105 / 4
-#define PREENFM_FREQUENCY 38009.04f
-#else
-// 192000000 / 1116 / 4  :
-// #define PREENFM_FREQUENCY 43010.75f
-
-// Polyphony !!!
-// 192000000 / 1142 / 4  :
-#define PREENFM_FREQUENCY 42031.52f
-
-#endif
-
-#define PREENFM_FREQUENCY_INVERSED 1.0f/PREENFM_FREQUENCY
-#define PREENFM_FREQUENCY_INVERSED_LFO PREENFM_FREQUENCY_INVERSED*32.0f
 
 #define NUMBER_OF_WAVETABLES 14
 

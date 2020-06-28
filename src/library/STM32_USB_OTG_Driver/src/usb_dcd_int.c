@@ -30,9 +30,9 @@
 #include "LiquidCrystal.h"
 #include "usb_dcd_int.h"
 
-extern LiquidCrystal lcd;
+#define likely(x)       __builtin_expect((x),1)
+#define unlikely(x)     __builtin_expect((x),0)
 
-int cpt = 0;
 /** @addtogroup USB_OTG_DRIVER
 * @{
 */
@@ -222,7 +222,7 @@ uint32_t USBD_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev)
   if (USB_OTG_IsDeviceMode(pdev)) /* ensure that we are in device mode */
   {
     gintr_status.d32 = USB_OTG_ReadCoreItr(pdev);
-    if (!gintr_status.d32) /* avoid spurious interrupt */
+    if (unlikely(!gintr_status.d32)) /* avoid spurious interrupt */
     {
       return 0;
     }
@@ -237,7 +237,7 @@ uint32_t USBD_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev)
       retval |= DCD_HandleInEP_ISR(pdev);
     }
     
-    if (gintr_status.b.modemismatch)
+    if (unlikely(gintr_status.b.modemismatch))
     {
       USB_OTG_GINTSTS_TypeDef  gintsts;
       
@@ -247,43 +247,43 @@ uint32_t USBD_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev)
       USB_OTG_WRITE_REG32(&pdev->regs.GREGS->GINTSTS, gintsts.d32);
     }
     
-    if (gintr_status.b.wkupintr)
+    if (unlikely(gintr_status.b.wkupintr))
     {
       retval |= DCD_HandleResume_ISR(pdev);
     }
     
-    if (gintr_status.b.usbsuspend)
+    if (unlikely(gintr_status.b.usbsuspend))
     {
       retval |= DCD_HandleUSBSuspend_ISR(pdev);
     }
-    if (gintr_status.b.sofintr)
+    if (unlikely(gintr_status.b.sofintr))
     {
       retval |= DCD_HandleSof_ISR(pdev);
       
     }
     
-    if (gintr_status.b.rxstsqlvl)
+    if (unlikely(gintr_status.b.rxstsqlvl))
     {
       retval |= DCD_HandleRxStatusQueueLevel_ISR(pdev);
       
     }
     
-    if (gintr_status.b.usbreset)
+    if (unlikely(gintr_status.b.usbreset))
     {
       retval |= DCD_HandleUsbReset_ISR(pdev);
       
     }
-    if (gintr_status.b.enumdone)
+    if (unlikely(gintr_status.b.enumdone))
     {
       retval |= DCD_HandleEnumDone_ISR(pdev);
     }
     
-    if (gintr_status.b.incomplisoin)
+    if (unlikely(gintr_status.b.incomplisoin))
     {
       retval |= DCD_IsoINIncomplete_ISR(pdev);
     }
 
-    if (gintr_status.b.incomplisoout)
+    if (unlikely(gintr_status.b.incomplisoout))
     {
       retval |= DCD_IsoOUTIncomplete_ISR(pdev);
     }    
@@ -450,37 +450,35 @@ static uint32_t DCD_HandleInEP_ISR(USB_OTG_CORE_HANDLE *pdev)
         CLEAR_IN_EP_INTR(epnum, xfercompl);
         /* TX COMPLETE */
         USBD_DCD_INT_fops->DataInStage(pdev , epnum);
-        
-        if (pdev->cfg.dma_enable == 1)
-        {
-          if((epnum == 0) && (pdev->dev.device_state == USB_OTG_EP0_STATUS_IN))
-          {
-            /* prepare to rx more setup packets */
-            USB_OTG_EP0_OutStart(pdev);
-          }
-        }           
+        // Preenfm2 No dma
+        //   if (pdev->cfg.dma_enable == 1)
+        //   {
+        //     if((epnum == 0) && (pdev->dev.device_state == USB_OTG_EP0_STATUS_IN))
+        //     {
+        //       /* prepare to rx more setup packets */
+        //       USB_OTG_EP0_OutStart(pdev);
+        //     }
+        //   }           
       }
-      if ( diepint.b.timeout )
+      if (unlikely(diepint.b.timeout))
       {
         CLEAR_IN_EP_INTR(epnum, timeout);
       }
-      if (diepint.b.intktxfemp)
+      if (unlikely(diepint.b.intktxfemp))
       {
         CLEAR_IN_EP_INTR(epnum, intktxfemp);
       }
-      if (diepint.b.inepnakeff)
+      if (unlikely(diepint.b.inepnakeff))
       {
         CLEAR_IN_EP_INTR(epnum, inepnakeff);
       }
-      if ( diepint.b.epdisabled )
+      if (unlikely(diepint.b.epdisabled))
       {
         CLEAR_IN_EP_INTR(epnum, epdisabled);
       }       
-      if (diepint.b.emptyintr)
+      if (unlikely(diepint.b.emptyintr))
       {
-        
-        DCD_WriteEmptyTxFifo(pdev , epnum);
-        
+        DCD_WriteEmptyTxFifo(pdev , epnum); 
         CLEAR_IN_EP_INTR(epnum, emptyintr);
       }
     }
@@ -521,34 +519,35 @@ static uint32_t DCD_HandleOutEP_ISR(USB_OTG_CORE_HANDLE *pdev)
       {
         /* Clear the bit in DOEPINTn for this interrupt */
         CLEAR_OUT_EP_INTR(epnum, xfercompl);
-        if (pdev->cfg.dma_enable == 1)
-        {
-          deptsiz.d32 = USB_OTG_READ_REG32(&(pdev->regs.OUTEP_REGS[epnum]->DOEPTSIZ));
-          /*ToDo : handle more than one single MPS size packet */
-          pdev->dev.out_ep[epnum].xfer_count = pdev->dev.out_ep[epnum].maxpacket - \
-            deptsiz.b.xfersize;
-        }
+        // Preenfm2 no dma
+        // if (pdev->cfg.dma_enable == 1)
+        // {
+        //   deptsiz.d32 = USB_OTG_READ_REG32(&(pdev->regs.OUTEP_REGS[epnum]->DOEPTSIZ));
+        //   /*ToDo : handle more than one single MPS size packet */
+        //   pdev->dev.out_ep[epnum].xfer_count = pdev->dev.out_ep[epnum].maxpacket - \
+        //     deptsiz.b.xfersize;
+        // }
         /* Inform upper layer: data ready */
         /* RX COMPLETE */
         USBD_DCD_INT_fops->DataOutStage(pdev , epnum);
         
-        if (pdev->cfg.dma_enable == 1)
-        {
-          if((epnum == 0) && (pdev->dev.device_state == USB_OTG_EP0_STATUS_OUT))
-          {
-            /* prepare to rx more setup packets */
-            USB_OTG_EP0_OutStart(pdev);
-          }
-        }        
+        // if (pdev->cfg.dma_enable == 1)
+        // {
+        //   if((epnum == 0) && (pdev->dev.device_state == USB_OTG_EP0_STATUS_OUT))
+        //   {
+        //     /* prepare to rx more setup packets */
+        //     USB_OTG_EP0_OutStart(pdev);
+        //   }
+        // }        
       }
       /* Endpoint disable  */
-      if ( doepint.b.epdisabled )
+      if (unlikely(doepint.b.epdisabled))
       {
         /* Clear the bit in DOEPINTn for this interrupt */
         CLEAR_OUT_EP_INTR(epnum, epdisabled);
       }
       /* Setup Phase Done (control EPs) */
-      if ( doepint.b.setup )
+      if (unlikely(doepint.b.setup))
       {
         
         /* inform the upper layer that a setup packet is available */

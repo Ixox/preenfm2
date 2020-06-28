@@ -1,8 +1,8 @@
-PFM2_VERSION_NUMBER=2.12
+PFM2_VERSION_NUMBER=2.20b1
 PFM2_VERSION:=\"${PFM2_VERSION_NUMBER}\"
 
 # Define you GCCPATH HERE
-GCC_PATH:=${PWD}/gcc-arm-none-eabi-4_7-2014q2/bin/
+GCC_PATH:=${PWD}/gcc-arm-none-eabi-4_7-2014q2/bin
 
 
 ifeq ($(MAKECMDGOALS),pfm)
@@ -21,23 +21,22 @@ endif
 ELF_FIRMWARE:=${BUILD_PREFIX}.elf
 BIN_FIRMWARE:=${BUILD_PREFIX}.bin
 SYMBOLS_FIRMWARE:=${BUILD_PREFIX}_symbol.txt
-PFM2_BOOTLOADER_VERSION_NUMBER:=1.11
+PFM2_BOOTLOADER_VERSION_NUMBER:=1.12
 PFM2_BOOTLOADER_VERSION:=\"${PFM2_BOOTLOADER_VERSION_NUMBER}\"
-ELF_BOOTLOADER:=build/${PFM2_PREFIX}_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.elf
-BIN_BOOTLOADER:=build/${PFM2_PREFIX}_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.bin
-SYMBOLS_BOOTLOADER:=build/symbols_${PFM2_PREFIX}_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.txt
+ELF_BOOTLOADER:=build/p2_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.elf
+BIN_BOOTLOADER:=build/p2_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.bin
+SYMBOLS_BOOTLOADER:=build/symbols_p2_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.txt
 
 
 
-
-C       = ${GCC_PATH}arm-none-eabi-gcc
-CC      = ${GCC_PATH}arm-none-eabi-c++
-LD      = ${GCC_PATH}arm-none-eabi-ld -v
-CP      = ${GCC_PATH}arm-none-eabi-objcopy
-OD      = ${GCC_PATH}arm-none-eabi-objdump
-AS      = ${GCC_PATH}arm-none-eabi-as
-NM      = ${GCC_PATH}arm-none-eabi-nm
-READELF = ${GCC_PATH}arm-none-eabi-readelf
+C       = ${GCC_PATH}/arm-none-eabi-gcc
+CC      = ${GCC_PATH}/arm-none-eabi-c++
+LD      = ${GCC_PATH}/arm-none-eabi-ld -v
+CP      = ${GCC_PATH}/arm-none-eabi-objcopy
+OD      = ${GCC_PATH}/arm-none-eabi-objdump
+AS      = ${GCC_PATH}/arm-none-eabi-as
+NM      = ${GCC_PATH}/arm-none-eabi-nm
+READELF = ${GCC_PATH}/arm-none-eabi-readelf
 
 
 SRC_FIRMWARE:=src/PreenFM.cpp \
@@ -136,6 +135,8 @@ SRC_BOOTLOADER:=src/bootloader/BootLoader.cpp \
 	usr/usb/usb_bsp.c \
 	src/hardware/Encoders.cpp \
 	src/hardware/LiquidCrystal.cpp \
+	src/filesystem/FileSystemUtils.cpp \
+	src/filesystem/PreenFMFileType.cpp \
 	src/filesystem/Storage.cpp \
 	src/filesystem/FirmwareFile.cpp \
 	src/synth/Common.cpp \
@@ -143,7 +144,6 @@ SRC_BOOTLOADER:=src/bootloader/BootLoader.cpp \
 	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c \
 	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c \
 	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.c   \
-	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c \
 	src/library/fat_fs/src/ff.c \
 	src/library/fat_fs/src/fattime.c \
 	src/library/STM32_USB_OTG_Driver/src/usb_core.c \
@@ -174,7 +174,7 @@ SMALLBINOPTS := -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-rtti 
 #
 DEFINE := -DPFM2_VERSION=${PFM2_VERSION} -DPFM2_BOOTLOADER_VERSION=${PFM2_BOOTLOADER_VERSION}
 
-CFLAGS = -Ofast $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
+CFLAGS =  -Ofast $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
 AFLAGS  = -ahls -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 LFLAGS  = -Tlinker/stm32f4xx.ld  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -gc-sections    --specs=nano.specs
 LFLAGS_BOOTLOADER  = -Tlinker_bootloader/stm32f4xx.ld  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -gc-sections --specs=nano.specs
@@ -191,14 +191,21 @@ OBJTMP_BOOTLOADER := $(addprefix $(OBJDIR),$(notdir $(SRC_BOOTLOADER:.c=.o)))
 OBJ_BOOTLOADER := $(OBJTMP_BOOTLOADER:.cpp=.o)
 
 
-all:
+help:
 	@echo "You must chose a target "
 	@echo "Don't forget to clean between different build targets"
+	@echo ""
 	@echo "   clean : clean build directory"
+	@echo ""
 	@echo "   pfm : build pfm2 firmware"
 	@echo "   pfmcv : build pfm2 firmware for Eurorack "
 	@echo "   installdfu : flash last compiled firmware through DFU"
+	@echo ""
+	@echo "   boot : build pfm2 bootloader"
+	@echo "   installboot : flash the bootloader"
+	@echo ""
 	@echo "   zip : create zip with all inside"
+	@echo ""
 
 zip: 
 	echo "dfu-util -a0 -d 0x0483:0xdf11 -D p2_${PFM2_VERSION_NUMBER}.bin -s 0x8040000" > build/install_firmware.cmd
@@ -222,7 +229,8 @@ boot: $(BIN_BOOTLOADER)
 installdfu: 
 	dfu-util -a0 -d 0x0483:0xdf11 -D $(shell cat .binfirmware) -s 0x8040000
 
-
+installboot: 
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_BOOTLOADER) -s 0x8000000
 
 
 binfirmware: elffirmware

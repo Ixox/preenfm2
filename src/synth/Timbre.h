@@ -195,7 +195,6 @@ private:
 
     // TO REFACTOR
     float ticksPerSecond;
-    static const float calledPerSecond = PREENFM_FREQUENCY / 32.0f;
     float ticksEveryNCalls;
     int ticksEveyNCallsInteger;
 
@@ -204,14 +203,7 @@ private:
     float arpegiatorStep;
     NoteStack note_stack;
     EventScheduler event_scheduler;
-    //
-    //
-    //    uint8_t clk_mode_;
-    //    uint8_t groove_template_;
-    //    uint8_t groove_amount_;
-    //    uint8_t channel_;
-    //    uint8_t pattern_;
-    //
+
 
     uint8_t running_;
     uint8_t latch_;

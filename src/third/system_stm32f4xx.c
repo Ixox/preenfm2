@@ -68,9 +68,9 @@
   *-----------------------------------------------------------------------------
   *        PLL_Q                                  | 7
   *-----------------------------------------------------------------------------
-  *        PLLI2S_N                               | NA
+  *        PLLI2S_N                               | 180
   *-----------------------------------------------------------------------------
-  *        PLLI2S_R                               | NA
+  *        PLLI2S_R                               | 4
   *-----------------------------------------------------------------------------
   *        I2S input clock                        | NA
   *-----------------------------------------------------------------------------
@@ -124,7 +124,7 @@
 /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
 // PreenFM2 Quartz frequency 12Mhz
 // We run the STM32F405 at 192Mhz 
-#ifdef UNDEFINED_BECAUSE_ORVERCLOCK_IS_THE_NEW_STANDARD
+#ifdef BOOTLOADER
 
 #define PLL_M      12
 #define PLL_N      336
@@ -134,23 +134,27 @@
 
 /* USB OTG FS, SDIO and RNG Clock =  PLL_VCO / PLLQ */
 #define PLL_Q      7
-#endif
 
-
+#else
+// Regular firmware : 192Mhz
 /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
 #define PLL_M      12
 #define PLL_N      384
-
 /* SYSCLK = PLL_VCO / PLL_P */
 #define PLL_P      2
-
 /* USB OTG FS, SDIO and RNG Clock =  PLL_VCO / PLLQ */
 #define PLL_Q      8
 
+/* I2S PLL for preenfm2 with CS4344 */
+#define PLLI2S_N 174
+#define PLLI2S_R 4
+// 174 / 4 = 43.5 Mhz
+// 43 Mhz / 1024 = 42 480, 47 Hz
+#endif
 
 /******************************************************************************/
 
-// uint32_t SystemCoreClock = 168000000;
+// SystemCoreClock should be 192000000;
 uint32_t SystemCoreClock = HSE_VALUE / PLL_M * PLL_N / PLL_P;
 
 __I uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
@@ -384,7 +388,23 @@ static void SetSysClock(void)
          configuration. User can add here some code to deal with this error */
   }
 
-}
+  /******************************************************************************/
+  /*                          I2S clock configuration                           */
+  /******************************************************************************/
+  /* PLLI2S clock used as I2S clock source */
+#ifndef BOOTLOADER
+  RCC->CFGR &= ~RCC_CFGR_I2SSRC;
 
+  /* Configure PLLI2S */
+  RCC->PLLI2SCFGR = (PLLI2S_N << 6) | (PLLI2S_R << 28);
+
+  /* Enable PLLI2S */
+  RCC->CR |= ((uint32_t)RCC_CR_PLLI2SON);
+
+  /* Wait till PLLI2S is ready */
+  while ((RCC->CR & RCC_CR_PLLI2SRDY) == 0) {
+  }
+#endif
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****/

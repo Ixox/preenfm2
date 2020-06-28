@@ -145,7 +145,6 @@ bool PreenFMFileType::sendInitCommand() {
 
 // Init bank
 
-
 int PreenFMFileType::initFiles() {
     for (int k = 0; k < numberOfFilesMax; k++) {
     	myFiles[k].fileType = FILE_EMPTY;
