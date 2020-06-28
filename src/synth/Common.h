@@ -20,6 +20,11 @@
 
 #include <stdint.h>
 
+
+// BOOTLOADER
+#define BOOTLOADER
+
+
 // #define DEBUG 1
 // #define CVINDEBUG 1
 

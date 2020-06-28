@@ -76,3 +76,38 @@ int FirmwareFile::diskioWrite(uint8_t* buff, int address, int length) {
 	return commandParams.commandResult;
 }
 
+int FirmwareFile::firmwareInit() {
+    commandParams.commandState = COMMAND_OPEN_DIR;
+    commandParams.commandFileName = FIRMWARE_DIR;
+    usbProcess();
+    return commandParams.commandResult;
+}
+
+
+int FirmwareFile::readNextFirmwareName(char *name, int *size) {
+    do {
+        commandParams.commandState = COMMAND_NEXT_FILE_NAME;
+        commandParams.commandParam1 = (void*)name;
+        commandParams.commandParam2 = (void*)size;
+        usbProcess();
+    }  while (commandParams.commandResult == COMMAND_SUCCESS && !isFirmwareFile(name));
+    return commandParams.commandResult;
+}
+
+bool FirmwareFile::isFirmwareFile(char *name)  {
+    if (name[0] != 'p' && name[0] != 'P') return false;
+    if (name[1] != '2') return false;
+
+    int pointPos = -1;
+    for (int k=10; k>2 && pointPos == -1; k--) {
+        if (name[k] == '.') {
+            pointPos = k;
+        }
+    }
+    if (pointPos == -1) return false;
+    if (name[pointPos+1] != 'b' && name[pointPos+1] != 'B') return false;
+    if (name[pointPos+2] != 'i' && name[pointPos+2] != 'I') return false;
+    if (name[pointPos+3] != 'n' && name[pointPos+3] != 'N') return false;
+
+    return true;
+}

@@ -19,6 +19,9 @@ public:
 	unsigned int diskioGetSectorNumber();
 	int diskioRead(uint8_t* buff, int address, int length);
 	int diskioWrite(uint8_t* buff, int address, int length);
+	int firmwareInit();
+	int readNextFirmwareName(char *name, int *size);
+	bool isFirmwareFile(char *name);
 
 protected:
 	const char* getFolderName();

@@ -40,6 +40,8 @@ void Storage::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2,
     dx7SysexFile.setFileSystemUtils(&fsu);
     patchBank.setFileSystemUtils(&fsu);
     userWaveForm.setFileSystemUtils(&fsu);
+#else
+    firmwareFile.setFileSystemUtils(&fsu);
 #endif
 }
 

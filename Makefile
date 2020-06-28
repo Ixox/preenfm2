@@ -24,14 +24,17 @@ BIN_BOOTLOADER:=build/${PFM2_PREFIX}_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.bin
 SYMBOLS_BOOTLOADER:=build/symbols_${PFM2_PREFIX}_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.txt
 
 
-C      = arm-none-eabi-gcc
-CC      = arm-none-eabi-c++
-LD      = arm-none-eabi-ld -v
-CP      = arm-none-eabi-objcopy
-OD      = arm-none-eabi-objdump
-AS      = arm-none-eabi-as
+GCC_PATH:=/Users/xavier/git/preenfm2/gcc-arm-none-eabi-4_7-2014q2/bin
 
-export PATH:=${PWD}/gcc-arm-none-eabi-4_7-2014q2/bin:$(PATH)
+
+C       = ${GCC_PATH}/arm-none-eabi-gcc
+CC      = ${GCC_PATH}/arm-none-eabi-c++
+LD      = ${GCC_PATH}/arm-none-eabi-ld -v
+CP      = ${GCC_PATH}/arm-none-eabi-objcopy
+OD      = ${GCC_PATH}/arm-none-eabi-objdump
+AS      = ${GCC_PATH}/arm-none-eabi-as
+NM      = ${GCC_PATH}/arm-none-eabi-nm
+READELF = ${GCC_PATH}/arm-none-eabi-readelf
 
 
 SRC_FIRMWARE:=src/PreenFM.cpp \
@@ -130,6 +133,8 @@ SRC_BOOTLOADER:=src/bootloader/BootLoader.cpp \
 	usr/usb/usb_bsp.c \
 	src/hardware/Encoders.cpp \
 	src/hardware/LiquidCrystal.cpp \
+	src/filesystem/FileSystemUtils.cpp \
+	src/filesystem/PreenFMFileType.cpp \
 	src/filesystem/Storage.cpp \
 	src/filesystem/FirmwareFile.cpp \
 	src/synth/Common.cpp \
@@ -184,8 +189,9 @@ OBJ_FIRMWARE=$(OBJTMP_FIRMWARE:.cpp=.o)
 OBJTMP_BOOTLOADER := $(addprefix $(OBJDIR),$(notdir $(SRC_BOOTLOADER:.c=.o)))
 OBJ_BOOTLOADER := $(OBJTMP_BOOTLOADER:.cpp=.o)
 
+all: pfm
 
-all:
+help:
 	@echo "You must chose a target "
 	@echo "Don't forget to clean between different build targets"
 	@echo "   clean : clean build directory"
@@ -218,21 +224,18 @@ boot: CFLAGS += -DBOOTLOADER -I./src/bootloader -Os
 boot: $(BIN_BOOTLOADER)
 
 installdfu: 
-	dfu-util -a0 -d 0x0483:0xdf11 -D $(file <.binfirmware) -s 0x8040000
-
-
-
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(shell cat .binfirmware) -s 0x8040000
 
 binfirmware: elffirmware
 	$(CP) -O binary $(ELF_FIRMWARE) $(BIN_FIRMWARE)
-	ls -l $(BIN_FIRMWARE)
-	$(file >.binfirmware,$(BIN_FIRMWARE))
+	ls -l $(BIN_FIRMWARE)	
+	@echo $(BIN_FIRMWARE) >.binfirmware
 
 
 elffirmware: $(OBJ_FIRMWARE) $(STARTUP)
 	$(CC) $(LFLAGS) $^ -o ${ELF_FIRMWARE}
-	arm-none-eabi-nm -l -S -n $(ELF_FIRMWARE) > $(SYMBOLS_FIRMWARE)
-	arm-none-eabi-readelf -S $(ELF_FIRMWARE)
+	$(NM) -l -S -n $(ELF_FIRMWARE) > $(SYMBOLS_FIRMWARE)
+	$(READELF) -S $(ELF_FIRMWARE)
 
 $(BIN_BOOTLOADER): $(ELF_BOOTLOADER)
 	$(CP) -O binary $^ $(BIN_BOOTLOADER)
@@ -240,8 +243,8 @@ $(BIN_BOOTLOADER): $(ELF_BOOTLOADER)
 
 $(ELF_BOOTLOADER): $(OBJ_BOOTLOADER) $(STARTUP_BOOTLOADER)
 	$(CC) $(LFLAGS_BOOTLOADER) $^ -o $@
-	arm-none-eabi-nm -l -S -n $(ELF_BOOTLOADER) > $(SYMBOLS_BOOTLOADER)
-	arm-none-eabi-readelf -S $(ELF_BOOTLOADER)
+	$(NM) -l -S -n $(ELF_BOOTLOADER) > $(SYMBOLS_BOOTLOADER)
+	$(READELF) -S $(ELF_BOOTLOADER)
 
 
 $(STARTUP): linker/startup_stm32f4xx.s

@@ -19,7 +19,7 @@
 #include "usbd_storage_desc.h"
 #include "LiquidCrystal.h"
 #include "usbd_msc_core.h"
-#include "UsbKey.h"
+#include "Storage.h"
 #include "usbKey_usr.h"
 #include "RingBuffer.h"
 #include "flash_if.h"
@@ -39,7 +39,7 @@
 
 #define BOOTLOADER_WORD 0x43211234
 
-UsbKey             usbKey ;
+Storage             usbKey ;
 RingBuffer<uint8_t, 100> usartBufferIn;
 USB_OTG_CORE_HANDLE     usbOTGDevice __ALIGN_END ;
 extern USBD_Usr_cb_TypeDef storageUsrCallback;
@@ -118,7 +118,8 @@ void BootLoader::initKey() {
 	this->lcd->setCursor(4,2);
 	this->lcd->print("           ");
 
-	if (usbKey.firmwareInit() != COMMAND_SUCCESS) {
+	// New bootloader
+	if (usbKey.getFirmwareFile()->firmwareInit() != COMMAND_SUCCESS) {
 		this->lcd->setCursor(0, 1);
 		this->lcd->print("No '/pfm2' directory");
 		this->state = BL_FINISHED;
@@ -138,7 +139,7 @@ void BootLoader::process() {
 	int res;
 	switch (this->state) {
 	case BL_READING_FIRMWARE:
-		res = usbKey.readNextFirmwareName(firmwareName, &firmwareSize);
+		res = usbKey.getFirmwareFile()->readNextFirmwareName(firmwareName, &firmwareSize);
 		if (res == COMMAND_SUCCESS) {
 			this->oneFirmwareAtLeast = true;
 			this->lcd->setCursor(4,1);
@@ -154,7 +155,7 @@ void BootLoader::process() {
 		} else {
 			if (this->oneFirmwareAtLeast == true) {
 				// Loop on firmware list
-				usbKey.firmwareInit();
+				usbKey.getFirmwareFile()->firmwareInit();
 			} else {
 				// error message
 				this->lcd->setCursor(1,1);
@@ -381,7 +382,7 @@ bool BootLoader::burnFlash() {
 		 */
 
 		/* Read maximum 1024 byte from the selected file */
-		if (usbKey.loadFirmwarePart(firmwareName, readIndex, buffer, toRead) != COMMAND_SUCCESS) {
+		if (usbKey.getFirmwareFile()->loadFirmwarePart(firmwareName, readIndex, buffer, toRead) != COMMAND_SUCCESS) {
 			// Aouch
 			this->lcd->setCursor(2,2);
 			this->lcd->print("##ERR LOAD##");
