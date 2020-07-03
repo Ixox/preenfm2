@@ -3277,7 +3277,7 @@ void Voice::nextBlock() {
 				env5Value += env5Inc;
 				env6Value += env6Inc;
 			}
-			if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env3.isDead(&envState3)  && currentTimbre->env4.isDead(&envState4) && currentTimbre->env5.isDead(&envState5) && currentTimbre->env6.isDead(&envState6))) {
+			if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env3.isDead(&envState3)  && currentTimbre->env4.isDead(&envState4) && currentTimbre->env5.isDead(&envState5))) {
 				endNoteOrBeginNextOne();
 			}
 		 }

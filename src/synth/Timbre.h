@@ -140,6 +140,10 @@ public:
         return  lfoUSed[lfo] > 0;
     }
 
+    /* Used in fxAfterBlock if different from .5f */
+    void setLeftRightBalance(float leftRightBalance) {
+        this->leftRightBalance = leftRightBalance;
+    }
 
 private:
 
@@ -232,6 +236,9 @@ private:
     uint8_t lfoUSed[NUMBER_OF_LFO];
     // seqStartUsed
     uint8_t seqStartUsed[NUMBER_OF_LFO_STEP];
+    // Left right balance
+    float leftRightBalance;
+
 };
 
 #endif /* TIMBRE_H_ */

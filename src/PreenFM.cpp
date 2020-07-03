@@ -177,8 +177,10 @@ void setup() {
     for (int r=0; r<20; r++) {
     	if (r<10 && (r & 0x1) == 0) {
 			GPIO_SetBits(GPIOB, GPIO_Pin_6);
+            GPIO_SetBits(GPIOC, GPIO_Pin_4);
     	} else {
     		GPIO_ResetBits(GPIOB, GPIO_Pin_6);
+            GPIO_ResetBits(GPIOC, GPIO_Pin_4);
     	}
 
     	if (synthState.fullState.midiConfigValue[MIDICONFIG_BOOT_SOUND] > 0) {

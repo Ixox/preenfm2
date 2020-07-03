@@ -1,4 +1,4 @@
-PFM2_VERSION_NUMBER=2.12B1
+PFM2_VERSION_NUMBER=2.12B2
 PFM2_VERSION:=\"${PFM2_VERSION_NUMBER}\"
 
 ifeq ($(MAKECMDGOALS),pfm)
@@ -196,17 +196,13 @@ help:
 	@echo "Don't forget to clean between different build targets"
 	@echo "   clean : clean build directory"
 	@echo "   pfm : build pfm2 firmware"
-	@echo "   pfmo : build pfm2 overclocked firmware"
 	@echo "   pfmcv : build pfm2 firmware for Eurorack "
-	@echo "   pfmcvo : build pfm2 overclocked firmware for Eurorack"
 	@echo "   installdfu : flash last compiled firmware through DFU"
 	@echo "   zip : create zip with all inside"
 
 zip: 
 	echo "dfu-util -a0 -d 0x0483:0xdf11 -D p2_${PFM2_VERSION_NUMBER}.bin -s 0x8040000" > build/install_firmware.cmd
-	echo "dfu-util -a0 -d 0x0483:0xdf11 -D p2_${PFM2_VERSION_NUMBER}o.bin -s 0x8040000" > build/install_firmware_overclocked.cmd
 	echo "dfu-util -a0 -d 0x0483:0xdf11 -D p2_cv_${PFM2_VERSION_NUMBER}.bin -s 0x8040000" > build/install_firmware_cv.cmd
-	echo "dfu-util -a0 -d 0x0483:0xdf11 -D p2_cv_${PFM2_VERSION_NUMBER}o.bin -s 0x8040000" > build/install_firmware_cv_overclocked.cmd
 	cp bootloader/* build/
 	zip pfm2_$(PFM2_VERSION_NUMBER).zip build/*.bin build/*.syx build/*.cmd
 
