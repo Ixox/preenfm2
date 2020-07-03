@@ -22,7 +22,7 @@
 
 
 // BOOTLOADER
-#define BOOTLOADER
+// #define BOOTLOADER
 
 
 // #define DEBUG 1
