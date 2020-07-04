@@ -52,19 +52,13 @@ Hexter             hexter;
 CVIn               cvin;
 #endif
 int spiState  __attribute__ ((section(".ccmnoload")));
+uint8_t pcbVersion  __attribute__ ((section(".ccmnoload")));
 
-void fillSoundBuffer() {
-    int cpt = 0;
-    if (synth.getSampleCount() < 192) {
-        while (synth.getSampleCount() < 128 && cpt++<20)
-            synth.buildNewSampleBlock();
-    }
-}
-
-const char* line1 = "PreenFM2 v"PFM2_VERSION""CVIN_STRING""OVERCLOCK_STRING;
-const char* line2 = "     By Xavier Hosxe";
 
 void setup() {
+    // What PCB version;
+    pcbVersion = getPcbVersion();
+
     lcd.begin(20, 4);
 
     LCD_InitChars(&lcd);
@@ -82,7 +76,6 @@ void setup() {
 
     LED_Config();
 	USART_Config();
-	MCP4922_Config();
 	RNG_Config();
 
 	// Set flush to zero mode...
@@ -162,99 +155,19 @@ void setup() {
     	usbKey.getScalaFile()->loadScalaScale(&synthState.fullState.scalaScaleConfig);
     }
 
-    SysTick_Config();
-    synth.buildNewSampleBlock();
-    synth.buildNewSampleBlock();
 
-    // shorten the release value for init sound...
-    float v1 = ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env1b.releaseTime;
-    float v2 = ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env4b.releaseTime;
-    ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env1b.releaseTime = 1.1f;
-    ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env4b.releaseTime = 0.8f;
-
-    bool displayline1 = true;
-    bool displayline3 = true;
-    for (int r=0; r<20; r++) {
-    	if (r<10 && (r & 0x1) == 0) {
-			GPIO_SetBits(GPIOB, GPIO_Pin_6);
-            GPIO_SetBits(GPIOC, GPIO_Pin_4);
-    	} else {
-    		GPIO_ResetBits(GPIOB, GPIO_Pin_6);
-            GPIO_ResetBits(GPIOC, GPIO_Pin_4);
-    	}
-
-    	if (synthState.fullState.midiConfigValue[MIDICONFIG_BOOT_SOUND] > 0) {
-            switch (r) {
-            case 0:
-                synth.noteOn(0, 40, 120);
-                break;
-            case 1:
-                synth.noteOff(0, 40);
-                break;
-            case 3:
-                synth.noteOn(0, 52, 120);
-                break;
-            case 4:
-                synth.noteOff(0,52);
-                break;
-            }
-    	}
-
-    	for (char s=1; s<6; s++) {
-    	    fillSoundBuffer();
-			lcd.setCursor(r,0);
-			lcd.print(s);
-		    fillSoundBuffer();
-			lcd.setCursor(r,1);
-			lcd.print(s);
-		    fillSoundBuffer();
-			lcd.setCursor(r,2);
-			lcd.print(s);
-		    fillSoundBuffer();
-			lcd.setCursor(r,3);
-			lcd.print(s);
-		    for (int i=0; i<100; i++) {
-		        fillSoundBuffer();
-				PreenFM2_uDelay(50);
-		    }
-    	}
-
-        fillSoundBuffer();
-
-
-    	if (displayline1) {
-    		if (line1[r] != 0) {
-    			lcd.setCursor(r,1);
-    			lcd.print(line1[r]);
-    		} else {
-    			displayline1 = false;
-    		}
-    	}
-
-        fillSoundBuffer();
-		lcd.setCursor(r,2);
-		lcd.print(line2[r]);
-	    fillSoundBuffer();
+    if (pcbVersion == PCB_R5) {
+        spiState = 0;
+        MCP4922_SysTick_Config();
+        MCP4922_Config();
+        MCP4922_screenBoot(synth);
+    } else {
+        // Same method but special case
+        spiState = -1;
+        CS4344_SysTick_Config();
+        CS4344_Config(synth.getSample());
+        CS4344_screenBoot();
     }
-
-
-    // launch the engine !!
-    // Init DAC number
-//    if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_8) == Bit_SET) {
-//		lcd.setCursor(17,3);
-//		lcd.print("R4g");
-//    } else {
-//		lcd.setCursor(17,3);
-//		lcd.print("R4f");
-//    }
-
-
-    for (int i=0; i<4000; i++) {
-        fillSoundBuffer();
-		PreenFM2_uDelay(250);
-    }
-
-
 
     // FS = Full speed : midi
     // HS = high speed : USB Key
@@ -263,11 +176,6 @@ void setup() {
     	USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &usbdMidiDescriptor, &midiCallback, &midiStreamingUsrCallback);
     }
 
-    // PUT BACK
-    // shorten the release value for init sound...
-    ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env1b.releaseTime = v1;
-    ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env4b.releaseTime = v2;
-
 
     // Load default combo if any
     usbKey.getComboBank()->loadDefaultCombo();
@@ -275,8 +183,6 @@ void setup() {
     usbKey.getUserWaveform()->loadUserWaveforms();
     // In any case init tables
     synthState.propagateAfterNewComboLoad();
-
-
 
     fmDisplay.init(&lcd, &usbKey);
 
@@ -312,8 +218,6 @@ void setup() {
 #ifdef CVIN
     ADC_Config(cvin.getADCBufferAdress());
 #endif
-
-
 }
 
 unsigned int ledTimer = 0;
@@ -323,23 +227,10 @@ unsigned int ADCTimer = 0;
 
 bool ledOn = false;
 
-void loop(void) {
+void MCP4922_loop(void) {
     fillSoundBuffer();
 
     unsigned int newPreenTimer = preenTimer;
-
-    /*
-    if ((newMicros - ledMicros) > 10000) {
-        if (ledOn) {
-            GPIO_ResetBits(GPIOB, LEDPIN);
-        } else {
-            GPIO_SetBits(GPIOB, LEDPIN);
-        }
-        ledOn = !ledOn;
-        ledMicros = newMicros;
-	}
-	*/
-
 
 	// Comment following line for debug....
 	lcd.setRealTimeAction(false);
@@ -396,12 +287,53 @@ void loop(void) {
         LCDAction action = lcd.nextAction();
         lcd.realTimeAction(&action, fillSoundBuffer);
     }
+}
 
+void CS4344_loop(void) {
+
+    // Comment following line for debug....
+    lcd.setRealTimeAction(false);
+
+    // newByte can display visual info
+    while (usartBufferIn.getCount() > 0) {
+        midiDecoder.newByte(usartBufferIn.remove());
+    }
+
+    if ((preenTimer - encoderTimer) > 2) {
+        encoders.checkStatus(synthState.fullState.midiConfigValue[MIDICONFIG_ENCODER]);
+        encoderTimer = preenTimer;
+    } else if (fmDisplay.needRefresh()) {
+        fmDisplay.refreshAllScreenByStep();
+    }
+
+    if ((preenTimer - tempoTimer) > 200) {
+        synthState.tempoClick();
+        fmDisplay.tempoClick();
+
+        tempoTimer = preenTimer;
+    }
+
+    lcd.setRealTimeAction(true);
+    while (lcd.hasActions()) {
+        if (usartBufferIn.getCount() > 20) {
+            while (usartBufferIn.getCount() > 0) {
+                midiDecoder.newByte(usartBufferIn.remove());
+            }
+        }
+        LCDAction action = lcd.nextAction();
+        lcd.realTimeAction(&action, fillSoundBuffer);
+    }
 }
 
 int main(void) {
 	setup();
-	while (1) {
-		loop();
-	}
+    if (pcbVersion == PCB_R5) {
+        while (1) {
+	    	MCP4922_loop();
+	    }
+    } else {
+        while (1) {
+            CS4344_loop();
+        }
+    }
 }

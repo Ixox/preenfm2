@@ -138,6 +138,10 @@ public:
         }
     }
 
+    int *getSample() {
+        return this->samples;
+    }
+
     inline int leftSampleAtReadCursor() const {
         return this->samples[this->readCursor];
     }

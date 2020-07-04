@@ -71,13 +71,25 @@ extern unsigned int preenTimer;
 
 extern Synth synth;
 
+enum PcbVersion {
+    PCB_R5 = 0b00,
+    PCB_R6_CS4344 = 0b01
+};
+
+void fillSoundBuffer();
 void USART_Config();
 void LED_Config();
+uint8_t getPcbVersion();
 void MCP4922_Config();
-void SysTick_Config();
-void RNG_Config();
-void LCD_InitChars(LiquidCrystal *lcd);
+void MCP4922_screenBoot(Synth& synth);
+void MCP4922_SysTick_Config();
 
+void CS4344_Config(int *sample);
+void CS4344_SysTick_Config();
+void CS4344_screenBoot();
+
+void RNG_Config();
+void LCD_InitChars(LiquidCrystal* lcd);
 
 void strobePin(u8 count, u32 rate);
 

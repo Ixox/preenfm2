@@ -33,6 +33,17 @@ int cptTIM2 = 0;
 int TIM2PerSeq = 0;
 #endif
 
+
+
+void fillSoundBuffer() {
+    int cpt = 0;
+    if (synth.getSampleCount() < 192) {
+        while (synth.getSampleCount() < 128 && cpt++<20)
+            synth.buildNewSampleBlock();
+    }
+}
+
+
 /*
  * Interrupt handlers.
  */
@@ -48,6 +59,9 @@ void blink(void) {
     }
     return;
 }
+
+
+
 
 void NMI_Handler() {
     lcd.setRealTimeAction(true);
@@ -173,47 +187,52 @@ void SysTick_Handler(void)
     static int left  __attribute__ ((section(".ccmnoload")));
     static int right  __attribute__ ((section(".ccmnoload")));
 
-    // samples are int so no FP operation; this allows Lazy stacking feature
-    // to avoid saving FPU registers
 
     switch (spiState++) {
-    case 0:
-        // LATCH LOW
-        GPIO_ResetBits(GPIOC, GPIO_Pin_12);
-        // Update timer
-        preenTimer += 1;
+        case -1:
+            // CS4344 Case
+            preenTimer += 1;
+            spiState = -1;
+            break;
+        case 0:
+            // samples are int so no FP operation; this allows Lazy stacking feature
+            // to avoid saving FPU registers
+            // LATCH LOW
+            GPIO_ResetBits(GPIOC, GPIO_Pin_12);
+            // Update timer
+            preenTimer += 1;
 
-        // Read samples...
-        left = synth.leftSampleAtReadCursor();
-        right = synth.rightSampleAtReadCursor();
-        synth.incReadCursor();
+            // Read samples...
+            left = synth.leftSampleAtReadCursor();
+            right = synth.rightSampleAtReadCursor();
+            synth.incReadCursor();
 
-        // DAC 1 - MSB
-        GPIO_ResetBits(GPIOB, GPIO_Pin_4);
-        GPIO_SetBits(GPIOB, GPIO_Pin_9);
-        // LATCH HIGH
-        GPIO_SetBits(GPIOC, GPIO_Pin_12);
-        SPI_I2S_SendData(SPI1, 0x3000 | (right >> 6) );
-        break;
-    case 1:
-        // DAC 2 - MSB
-        GPIO_ResetBits(GPIOB, GPIO_Pin_9);
-        GPIO_SetBits(GPIOB, GPIO_Pin_4);
-        SPI_I2S_SendData(SPI1, 0x3000 | (left >> 6));
-        break;
-    case 2:
-        // DAC 1 - LSB
-        GPIO_ResetBits(GPIOB, GPIO_Pin_4);
-        GPIO_SetBits(GPIOB, GPIO_Pin_9);
-        SPI_I2S_SendData(SPI1, 0xb000 | (right & 0x3f));
-        break;
-    case 3:
-        // DAC 2 - LSB
-        GPIO_ResetBits(GPIOB, GPIO_Pin_9);
-        GPIO_SetBits(GPIOB, GPIO_Pin_4);
-        SPI_I2S_SendData(SPI1, 0xb000 | (left & 0x3f));
-        spiState = 0;
-        break;
+            // DAC 1 - MSB
+            GPIO_ResetBits(GPIOB, GPIO_Pin_4);
+            GPIO_SetBits(GPIOB, GPIO_Pin_9);
+            // LATCH HIGH
+            GPIO_SetBits(GPIOC, GPIO_Pin_12);
+            SPI_I2S_SendData(SPI1, 0x3000 | (right >> 6));
+            break;
+        case 1:
+            // DAC 2 - MSB
+            GPIO_ResetBits(GPIOB, GPIO_Pin_9);
+            GPIO_SetBits(GPIOB, GPIO_Pin_4);
+            SPI_I2S_SendData(SPI1, 0x3000 | (left >> 6));
+            break;
+        case 2:
+            // DAC 1 - LSB
+            GPIO_ResetBits(GPIOB, GPIO_Pin_4);
+            GPIO_SetBits(GPIOB, GPIO_Pin_9);
+            SPI_I2S_SendData(SPI1, 0xb000 | (right & 0x3f));
+            break;
+        case 3:
+            // DAC 2 - LSB
+            GPIO_ResetBits(GPIOB, GPIO_Pin_9);
+            GPIO_SetBits(GPIOB, GPIO_Pin_4);
+            SPI_I2S_SendData(SPI1, 0xb000 | (left & 0x3f));
+            spiState = 0;
+            break;
     }
 }
 
@@ -248,7 +267,21 @@ void TIM2_IRQHandler() {
 
 }
 
+void DMA1_Stream5_IRQHandler() {
+    if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_HTIF5)) {
+        // Clear DMA Stream Half Transfer interrupt pending bit
+        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_HTIF5);
+        // Fill part 1
+        
+    }
 
+    if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_TCIF5)) {
+        // Clear DMA Stream Total Transfer complete interrupt pending bit
+        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
+
+        // Fill part 2
+    }
+}
 
 #ifdef __cplusplus
 }
