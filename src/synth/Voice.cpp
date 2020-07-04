@@ -146,7 +146,8 @@ void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) 
 }
 
 void Voice::glide() {
-	this->glidePhase += getGlideIncrement(this->glidePhaseInc[(int)(currentTimbre->params.engine1.glide - .95f)]);
+	this->glidePhase += glidePhaseInc[(int)(currentTimbre->params.engine1.glide - .95f)];
+	//this->glidePhase += getGlideIncrement(this->glidePhaseInc[(int)(currentTimbre->params.engine1.glide - .95f)]);
 	if (glidePhase < 1.0f) {
 
 		currentTimbre->osc1.glideStep(&oscState1, glidePhase);

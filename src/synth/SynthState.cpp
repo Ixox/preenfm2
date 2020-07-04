@@ -1384,7 +1384,7 @@ void SynthState::loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int
     {
         int dx7bank = bank - 2;
         PFM2File const *bank = storage->getDX7SysexFile()->getFile(bankLSB + dx7bank * 128);
-        if (bank->fileType != FILE_EMPTY) {
+        if (bank->fileType != FILE_EMPTY && patchNumber < 32) {
             loadDx7Patch(timbre, bank, patchNumber, params);
         }
     }
