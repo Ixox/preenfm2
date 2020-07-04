@@ -1,5 +1,9 @@
-PFM2_VERSION_NUMBER=2.12B2
+PFM2_VERSION_NUMBER=2.12B3
 PFM2_VERSION:=\"${PFM2_VERSION_NUMBER}\"
+
+# Define you GCCPATH HERE
+GCC_PATH:=/home/xavier/git/preenfm2/gcc-arm-none-eabi-4_7-2014q2/bin/
+
 
 ifeq ($(MAKECMDGOALS),pfm)
 BUILD_PREFIX:=build/p2_${PFM2_VERSION_NUMBER}
@@ -24,17 +28,16 @@ BIN_BOOTLOADER:=build/${PFM2_PREFIX}_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.bin
 SYMBOLS_BOOTLOADER:=build/symbols_${PFM2_PREFIX}_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.txt
 
 
-GCC_PATH:=/Users/xavier/git/preenfm2/gcc-arm-none-eabi-4_7-2014q2/bin
 
 
-C       = ${GCC_PATH}/arm-none-eabi-gcc
-CC      = ${GCC_PATH}/arm-none-eabi-c++
-LD      = ${GCC_PATH}/arm-none-eabi-ld -v
-CP      = ${GCC_PATH}/arm-none-eabi-objcopy
-OD      = ${GCC_PATH}/arm-none-eabi-objdump
-AS      = ${GCC_PATH}/arm-none-eabi-as
-NM      = ${GCC_PATH}/arm-none-eabi-nm
-READELF = ${GCC_PATH}/arm-none-eabi-readelf
+C       = ${GCC_PATH}arm-none-eabi-gcc
+CC      = ${GCC_PATH}arm-none-eabi-c++
+LD      = ${GCC_PATH}arm-none-eabi-ld -v
+CP      = ${GCC_PATH}arm-none-eabi-objcopy
+OD      = ${GCC_PATH}arm-none-eabi-objdump
+AS      = ${GCC_PATH}arm-none-eabi-as
+NM      = ${GCC_PATH}arm-none-eabi-nm
+READELF = ${GCC_PATH}arm-none-eabi-readelf
 
 
 SRC_FIRMWARE:=src/PreenFM.cpp \
