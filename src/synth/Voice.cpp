@@ -107,15 +107,6 @@ void Voice::glideToNote(short newNote) {
 	currentTimbre->osc6.glideToNote(&oscState6, newNote);
 }
 
-float Voice::getGlideIncrement(float in) {
-    float g1 = currentTimbre->params.engine1.glide * 0.125f;
-    float sk = this->getMatrix().getDestination(GLIDE_SKEW);
-    float skew = 1 + 0.95f * clamp(this->isGlidingAscent ? sk : -sk, -1, 1);
-    float r = (3 + g1 * g1);
-    float glideMod =  skew * (1 + tanh4(this->getMatrix().getDestination(GLIDE_RATE) * r - 0.5f));
-    return in * glideMod;
-}
-
 void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) {
 
 	// Update index : so that few chance to be chosen again during the quick dying
@@ -147,7 +138,6 @@ void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) 
 
 void Voice::glide() {
 	this->glidePhase += glidePhaseInc[(int)(currentTimbre->params.engine1.glide - .95f)];
-	//this->glidePhase += getGlideIncrement(this->glidePhaseInc[(int)(currentTimbre->params.engine1.glide - .95f)]);
 	if (glidePhase < 1.0f) {
 
 		currentTimbre->osc1.glideStep(&oscState1, glidePhase);

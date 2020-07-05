@@ -156,8 +156,7 @@ void Synth::buildNewSampleBlock() {
             for (int j = 0; j < timbres[t].params.engine1.numberOfVoice; j++)
             {
                 if (timbres[t].voiceNumber[j] != -1 &&
-                    this->voices[timbres[t].voiceNumber[j]].isGliding() &&
-                    this->voices[timbres[t].voiceNumber[j]].getMatrix().getDestination(GLIDE_HOLD) <= 0)
+                    this->voices[timbres[t].voiceNumber[j]].isGliding())
                 {
                     this->voices[timbres[t].voiceNumber[j]].glide();
                 }
