@@ -289,6 +289,10 @@ void MCP4922_loop(void) {
     }
 }
 
+extern uint32_t halfDmaCpt, cpltDmaCpt, dmaError;
+
+uint32_t tDebug;  
+
 void CS4344_loop(void) {
 
     // Comment following line for debug....
@@ -311,6 +315,20 @@ void CS4344_loop(void) {
         fmDisplay.tempoClick();
 
         tempoTimer = preenTimer;
+    }
+
+    if ((preenTimer - tDebug) > 1000) {
+        tDebug = preenTimer;
+        lcd.setCursor(5, 1);
+        lcd.print('>');
+        lcd.print((int)halfDmaCpt);
+        lcd.print('/');
+        lcd.print((int)cpltDmaCpt);
+        lcd.print('/');
+        lcd.print((int)dmaError);
+        lcd.print('<');
+        halfDmaCpt = 0;
+        cpltDmaCpt = 0;
     }
 
     lcd.setRealTimeAction(true);

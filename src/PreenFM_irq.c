@@ -33,8 +33,6 @@ int cptTIM2 = 0;
 int TIM2PerSeq = 0;
 #endif
 
-
-
 void fillSoundBuffer() {
     int cpt = 0;
     if (synth.getSampleCount() < 192) {
@@ -60,8 +58,10 @@ void blink(void) {
     return;
 }
 
-
-
+void assert_failed(char *file, unsigned int line) {
+    strobePin(2, 0x150000);
+    strobePin(8, 0x60000);
+}
 
 void NMI_Handler() {
     lcd.setRealTimeAction(true);
@@ -267,19 +267,31 @@ void TIM2_IRQHandler() {
 
 }
 
+uint32_t halfDmaCpt = 0, cpltDmaCpt = 0, dmaError = 0;
+
 void DMA1_Stream5_IRQHandler() {
     if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_HTIF5)) {
         // Clear DMA Stream Half Transfer interrupt pending bit
         DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_HTIF5);
+        halfDmaCpt++;
         // Fill part 1
-        
     }
 
     if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_TCIF5)) {
         // Clear DMA Stream Total Transfer complete interrupt pending bit
         DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
-
+        cpltDmaCpt++;
         // Fill part 2
+    }
+
+    if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_TEIF5)) {        
+        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TEIF5);
+        dmaError++;
+    }
+
+    if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_FEIF5)) {
+        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_FEIF5);
+        dmaError++;
     }
 }
 

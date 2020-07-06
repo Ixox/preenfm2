@@ -15,8 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "PreenFM.h"
 #include "Common.h"
+#include "LiquidCrystal.h"
+#include "PreenFM.h"
+extern LiquidCrystal lcd;
 
 const char* line1 = "PreenFM2 v"PFM2_VERSION""CVIN_STRING""OVERCLOCK_STRING;
 const char* line2 = "     By Xavier Hosxe";
@@ -123,7 +125,7 @@ void LED_Config() {
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
     GPIO_Init(GPIOC, &GPIO_InitStructure);
-        GPIO_SetBits(GPIOC, GPIO_Pin_4);
+    GPIO_SetBits(GPIOC, GPIO_Pin_4);
 }
 
 
@@ -317,14 +319,13 @@ void MCP4922_Config() {
 
 }
 
-void CS4344_Config(int *sample) {
+
+void CS4344_GPIO_Init() {
     // CONFIG I2S !!!!
     GPIO_InitTypeDef GPIO_InitStruct;
 
     /* Enable GPIO clocks B & C*/
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC, ENABLE);
-
-    RCC_APB1PeriphResetCmd(RCC_APB1Periph_SPI3, ENABLE);
 
     /**I2S3 GPIO Configuration    
     PC7     ------> I2S3_MCK
@@ -334,20 +335,11 @@ void CS4344_Config(int *sample) {
     */
 
     /* Connect SPI pins to AF5 */
-    GPIO_PinAFConfig(GPIOC, GPIO_PinSource7, GPIO_AF_SPI3);
-    GPIO_PinAFConfig(GPIOC, GPIO_PinSource12, GPIO_AF_SPI3);
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource15, GPIO_AF_SPI3);
-    GPIO_PinAFConfig(GPIOB, GPIO_PinSource3, GPIO_AF_SPI3);
-
-    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_7;
-    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
-    GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
-    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_100MHz;
-    GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_12;
+    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_12;
     GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
     GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     GPIO_InitStruct.GPIO_Pin = GPIO_Pin_15;
@@ -356,51 +348,107 @@ void CS4344_Config(int *sample) {
     GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;
     GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-    /* SPI configuration -------------------------------------------------------*/
+    GPIO_PinAFConfig(GPIOC, GPIO_PinSource7, GPIO_AF_SPI3);
+    GPIO_PinAFConfig(GPIOC, GPIO_PinSource12, GPIO_AF_SPI3);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource15, GPIO_AF_SPI3);
+    GPIO_PinAFConfig(GPIOB, GPIO_PinSource3, GPIO_AF_SPI3);
+}
+
+
+void CS4344_I2S3_Init() {
+    /* SPI/I2S configuration -------------------------------------------------------*/
+
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI3, ENABLE);
+    //RCC_APB1PeriphResetCmd(RCC_APB1Periph_SPI3, ENABLE);
+
+    I2S_Cmd(SPI3, DISABLE);
+    SPI_I2S_DMACmd(SPI3, SPI_I2S_DMAReq_Tx | SPI_I2S_DMAReq_Rx, DISABLE);
     SPI_I2S_DeInit(SPI3);
+
     I2S_InitTypeDef I2S_InitStruct;
+    I2S_StructInit(&I2S_InitStruct);
+    I2S_InitStruct.I2S_AudioFreq = I2S_AudioFreq_44k;
     I2S_InitStruct.I2S_Mode = I2S_Mode_MasterTx;
     I2S_InitStruct.I2S_Standard = I2S_Standard_Phillips;
+    // 16b ?????
     I2S_InitStruct.I2S_DataFormat = I2S_DataFormat_32b;
     I2S_InitStruct.I2S_MCLKOutput = I2S_MCLKOutput_Enable;
-    I2S_InitStruct.I2S_AudioFreq = I2S_AudioFreq_44k;
     I2S_InitStruct.I2S_CPOL = I2S_CPOL_Low;
     I2S_Init(SPI3, &I2S_InitStruct);
+}
 
-    // 6. When using the DMA mode * 
-    // -Configure the DMA using DMA_Init() function * 
+
+
+
+void CS4344_DMA_Init(int* sample) {
+    // 6. When using the DMA mode *
+    // -Configure the DMA using DMA_Init() function *
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
+
+
+    DMA_Cmd(DMA1_Stream5, DISABLE);
+    DMA_DeInit(DMA1_Stream5);
+
     DMA_InitTypeDef DMA_InitStructure;
 
     /* Initialise DMA */
     DMA_StructInit(&DMA_InitStructure);
-
     /* config of DMAC */
     /* DMA1 Stream5 channel0 : SPI3_tx */
-    DMA_InitStructure.DMA_Channel = DMA_Channel_0;          /* See Tab 20 */
-    DMA_InitStructure.DMA_BufferSize = 64;                  /* 16 * memsize */
-    DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral; /* direction */
-    DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;  /* no FIFO */
-    DMA_InitStructure.DMA_FIFOThreshold = 0;
+    DMA_InitStructure.DMA_Channel = DMA_Channel_0;
+    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&SPI3->DR;  // 0x40003C0C;
+    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)sample;
+    DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+    DMA_InitStructure.DMA_BufferSize = (uint32_t)128;
+    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
+    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+    DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
+
+    DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
+    DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
+    DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_3QuartersFull;
     DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
     DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
-    DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;     /* circular buffer */
-    DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh; /* high priority */
-    /* config of memory */
-    DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)sample;            /* target addr */
-    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Word; /* 32 bit */
-    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) &SPI3->DR;
-    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Word;
-    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-    DMA_Init(DMA1_Stream5, &DMA_InitStructure); /* See Table 20 for mapping */
+    // 6. Configure the DMA using DMA_Init() function
+    DMA_Init(DMA1_Stream5, &DMA_InitStructure);
+    DMA_ITConfig(DMA1_Stream5, DMA_IT_TC | DMA_IT_HT | DMA_IT_FE, ENABLE);
 
-    // Init interupt
-    DMA_ITConfig(DMA1_Stream5, DMA_IT_TC | DMA_IT_HT, ENABLE);
-
-    // Active the needed channel Request using SPI_I2S_DMACmd() function
+    // 6. Active the needed channel Request using SPI_I2S_DMACmd() function
     SPI_I2S_DMACmd(SPI3, SPI_I2S_DMAReq_Tx, ENABLE);
+
+    /* I2S DMA IRQ Channel configuration */
+    NVIC_InitTypeDef NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannel = DMA1_Stream5_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
 }
 
+
+int memSample[128];
+
+void CS4344_Config(int *sample) {
+
+// Init smaple
+    int initSample = 0b10101100111100001111111100000000;
+    for (int k = 0; k < 128; k++) {
+        sample[k] = initSample;
+        memSample[k] = initSample;
+    }
+
+    CS4344_GPIO_Init();
+    CS4344_I2S3_Init();
+    CS4344_DMA_Init(memSample);
+
+    // 7. Enable the SPI using the SPI_Cmd() function or enable the I2S using
+    I2S_Cmd(SPI3, ENABLE);
+    // 8. Enable the DMA using the DMA_Cmd() function when using DMA mode.
+    DMA_Cmd(DMA1_Stream5, ENABLE);
+
+}
 
 void Systick_disable() {
     SysTick->CTRL  = 0;
@@ -439,9 +487,8 @@ void CS4344_SysTick_Config() {
 
 void RNG_Config(void)
 {
- /* Enable RNG clock source */
+  /* Enable RNG clock source */
   RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_RNG, ENABLE);
-
   /* RNG Peripheral enable */
   RNG_Cmd(ENABLE);
 }

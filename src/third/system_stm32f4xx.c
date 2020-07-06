@@ -68,9 +68,9 @@
   *-----------------------------------------------------------------------------
   *        PLL_Q                                  | 7
   *-----------------------------------------------------------------------------
-  *        PLLI2S_N                               | NA
+  *        PLLI2S_N                               | 180
   *-----------------------------------------------------------------------------
-  *        PLLI2S_R                               | NA
+  *        PLLI2S_R                               | 4
   *-----------------------------------------------------------------------------
   *        I2S input clock                        | NA
   *-----------------------------------------------------------------------------
@@ -147,6 +147,9 @@
 /* USB OTG FS, SDIO and RNG Clock =  PLL_VCO / PLLQ */
 #define PLL_Q      8
 
+/* I2S PLL for preenfm2 with CS4344 */
+#define PLLI2S_N 180
+#define PLLI2S_R 4
 
 /******************************************************************************/
 
@@ -384,7 +387,21 @@ static void SetSysClock(void)
          configuration. User can add here some code to deal with this error */
   }
 
-}
+  /******************************************************************************/
+  /*                          I2S clock configuration                           */
+  /******************************************************************************/
+  /* PLLI2S clock used as I2S clock source */
+  RCC->CFGR &= ~RCC_CFGR_I2SSRC;
 
+  /* Configure PLLI2S */
+  RCC->PLLI2SCFGR = (PLLI2S_N << 6) | (PLLI2S_R << 28);
+
+  /* Enable PLLI2S */
+  RCC->CR |= ((uint32_t)RCC_CR_PLLI2SON);
+
+  /* Wait till PLLI2S is ready */
+  while ((RCC->CR & RCC_CR_PLLI2SRDY) == 0) {
+  }
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****/
