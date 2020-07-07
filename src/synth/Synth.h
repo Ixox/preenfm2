@@ -62,8 +62,8 @@ public:
     void allSoundOff();
     void allSoundOff(int timbre);
     bool isPlaying();
-    void buildNewSampleBlock();
-
+    void buildNewSampleBlock(int* sample);
+    void buildNewSampleBlockMcp4922();
 
     // Overide SynthParamListener
     void playNote(int timbreNumber, char note, char velocity) {
@@ -191,6 +191,13 @@ public:
     void showCycles();
 #endif
 
+    float getCpuUsage() {
+        return cpuUsage;
+    }
+
+    float getPlayingNotes() {
+        return playingNotes;
+    }
 
 private:
     // Called by setSynthState
@@ -211,7 +218,8 @@ private:
     // gate
     float currentGate;
 
-
+    float cpuUsage;
+    uint32_t playingNotes;
 #ifdef CVIN
     bool cvin12Ready ;
     bool cvin34Ready ;

@@ -18,9 +18,9 @@
 #ifndef DWT_H_
 #define DWT_H_
 
+#include "Common.h"
 #include "utils/RingBuffer.h"
 
-//#define DEBUG_CPU_USAGE 1
 
 #define REG_DWT_CONTROL 0xE0001000
 #define REG_DWT_CYCCNT 0xE0001004

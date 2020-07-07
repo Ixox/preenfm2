@@ -52,12 +52,12 @@ Hexter             hexter;
 CVIn               cvin;
 #endif
 int spiState  __attribute__ ((section(".ccmnoload")));
-uint8_t pcbVersion  __attribute__ ((section(".ccmnoload")));
+int dmaSampleBuffer[128];
 
 
 void setup() {
     // What PCB version;
-    pcbVersion = getPcbVersion();
+    synthState.setPcbVersion(getPcbVersion());
 
     lcd.begin(20, 4);
 
@@ -156,7 +156,7 @@ void setup() {
     }
 
 
-    if (pcbVersion == PCB_R5) {
+    if (synthState.getPcbVersion() == PCB_R5) {
         spiState = 0;
         MCP4922_SysTick_Config();
         MCP4922_Config();
@@ -164,8 +164,7 @@ void setup() {
     } else {
         // Same method but special case
         spiState = -1;
-        CS4344_SysTick_Config();
-        CS4344_Config(synth.getSample());
+        CS4344_Config(dmaSampleBuffer);
         CS4344_screenBoot();
     }
 
@@ -289,9 +288,10 @@ void MCP4922_loop(void) {
     }
 }
 
-extern uint32_t halfDmaCpt, cpltDmaCpt, dmaError;
+extern uint32_t dmaCpt;
 
-uint32_t tDebug;  
+int tDebug;
+int cptDebug;
 
 void CS4344_loop(void) {
 
@@ -317,19 +317,23 @@ void CS4344_loop(void) {
         tempoTimer = preenTimer;
     }
 
-    if ((preenTimer - tDebug) > 1000) {
+#ifdef DEBUG_CPU_USAGE
+    if ((preenTimer - tDebug) >= 1000) {
+        cptDebug++;
         tDebug = preenTimer;
-        lcd.setCursor(5, 1);
+        lcd.setCursor(10, 1);
         lcd.print('>');
-        lcd.print((int)halfDmaCpt);
-        lcd.print('/');
-        lcd.print((int)cpltDmaCpt);
-        lcd.print('/');
-        lcd.print((int)dmaError);
+        lcd.printWithOneDecimal(synth.getCpuUsage());
+        lcd.print('%');
         lcd.print('<');
-        halfDmaCpt = 0;
-        cpltDmaCpt = 0;
+
+        lcd.setCursor(10, 2);
+        lcd.print('>');
+        lcd.print((int)synth.getPlayingNotes());
+        lcd.print('<');
+        dmaCpt = 0;
     }
+#endif
 
     lcd.setRealTimeAction(true);
     while (lcd.hasActions()) {
@@ -344,12 +348,13 @@ void CS4344_loop(void) {
 }
 
 int main(void) {
-	setup();
-    if (pcbVersion == PCB_R5) {
+    setup();
+    if (synthState.getPcbVersion() == PCB_R5) {
         while (1) {
-	    	MCP4922_loop();
-	    }
+            MCP4922_loop();
+        }
     } else {
+        CS4344_Timer_Config();
         while (1) {
             CS4344_loop();
         }

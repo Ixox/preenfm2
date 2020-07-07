@@ -111,21 +111,22 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev)
 #endif
 
 #ifdef USB_OTG_HS_CORE
-	  GPIO_InitTypeDef GPIO_InitStructure2;
-	  // USB HOST : CORE_HS
-	  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB , ENABLE);
+    GPIO_InitTypeDef GPIO_InitStructure2;
+    // USB HOST : CORE_HS
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
 
-	  GPIO_InitStructure2.GPIO_Pin =  GPIO_Pin_14 | GPIO_Pin_15;
-	  GPIO_InitStructure2.GPIO_Speed = GPIO_Speed_100MHz;
-	  GPIO_InitStructure2.GPIO_Mode = GPIO_Mode_AF;
-          GPIO_InitStructure2.GPIO_PuPd = GPIO_PuPd_NOPULL;
-          GPIO_Init(GPIOB, &GPIO_InitStructure2);
+    GPIO_InitStructure2.GPIO_Pin = GPIO_Pin_14 | GPIO_Pin_15;
+    GPIO_InitStructure2.GPIO_Speed = GPIO_Speed_100MHz;
+    GPIO_InitStructure2.GPIO_Mode = GPIO_Mode_AF;
+    GPIO_InitStructure2.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    GPIO_InitStructure2.GPIO_OType = GPIO_OType_PP;
 
-          GPIO_PinAFConfig(GPIOB,GPIO_PinSource14, GPIO_AF_OTG2_FS) ;
-	  GPIO_PinAFConfig(GPIOB,GPIO_PinSource15, GPIO_AF_OTG2_FS) ;
-	  RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_OTG_HS, ENABLE) ;
+    GPIO_Init(GPIOB, &GPIO_InitStructure2);
+
+    GPIO_PinAFConfig(GPIOB, GPIO_PinSource14, GPIO_AF_OTG2_FS);
+    GPIO_PinAFConfig(GPIOB, GPIO_PinSource15, GPIO_AF_OTG2_FS);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_OTG_HS, ENABLE);
 #endif
-
 }
 /**
   * @brief  USB_OTG_BSP_EnableInterrupt

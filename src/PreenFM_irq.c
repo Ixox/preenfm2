@@ -19,7 +19,10 @@
 #include "usb_hcd_int.h"
 #include "usb_dcd_int.h"
 #include "LiquidCrystal.h"
+
 extern LiquidCrystal lcd;
+extern Synth synth;
+extern int dmaSampleBuffer[128];
 
 RingBuffer<uint8_t, 200> usartBufferIn  __attribute__ ((section(".ccmnoload")));
 RingBuffer<uint8_t, 100> usartBufferOut  __attribute__ ((section(".ccmnoload")));
@@ -37,7 +40,7 @@ void fillSoundBuffer() {
     int cpt = 0;
     if (synth.getSampleCount() < 192) {
         while (synth.getSampleCount() < 128 && cpt++<20)
-            synth.buildNewSampleBlock();
+            synth.buildNewSampleBlockMcp4922();
     }
 }
 
@@ -267,20 +270,30 @@ void TIM2_IRQHandler() {
 
 }
 
-uint32_t halfDmaCpt = 0, cpltDmaCpt = 0, dmaError = 0;
+
+void TIM3_IRQHandler() {
+    TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+    preenTimer++;
+}
+
+
+uint32_t dmaCpt = 0, dmaError = 0;
 
 void DMA1_Stream5_IRQHandler() {
     if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_HTIF5)) {
         // Clear DMA Stream Half Transfer interrupt pending bit
         DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_HTIF5);
-        halfDmaCpt++;
+        dmaCpt++;
+        synth.buildNewSampleBlock(dmaSampleBuffer);
+//        dmaSampleBuffer
         // Fill part 1
     }
 
     if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_TCIF5)) {
         // Clear DMA Stream Total Transfer complete interrupt pending bit
         DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
-        cpltDmaCpt++;
+        dmaCpt++;
+        synth.buildNewSampleBlock(&dmaSampleBuffer[64]);
         // Fill part 2
     }
 

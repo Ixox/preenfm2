@@ -579,6 +579,14 @@ public:
     char stepSelect[2];
     char patternSelect;
 
+    uint8_t getPcbVersion() {
+        return pcbVersion;
+    }
+
+    void setPcbVersion(uint8_t v) {
+        pcbVersion = v;
+    }
+
 private:
     void copySynthParams(char* source, char* dest);
     int getRowFromOperator();
@@ -618,6 +626,9 @@ private:
 
     Storage* storage;
     Hexter* hexter;
+
+    // PCB version
+    uint8_t pcbVersion;
 
 };
 

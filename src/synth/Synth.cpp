@@ -125,8 +125,13 @@ int cptDisplay = 0;
 float totalCycles = 0;
 #endif
 
+void Synth::buildNewSampleBlockMcp4922() {
+    buildNewSampleBlock(&samples[writeCursor]);
+    writeCursor = (writeCursor + 64) & 255;
+}
 
-void Synth::buildNewSampleBlock() {
+
+void Synth::buildNewSampleBlock(int *sample) {
     CYCLE_MEASURE_START(cycles_all);
 
     // We consider the random number is always ready here...
@@ -246,9 +251,12 @@ void Synth::buildNewSampleBlock() {
     // render all voices in their timbre sample block...
     // 16 voices
 
+    playingNotes = 0;
+
     for (int v = 0; v < MAX_NUMBER_OF_VOICES; v++) {
         if (likely(this->voices[v].isPlaying())) {
             this->voices[v].nextBlock();
+            playingNotes ++;
         }
     }
 
@@ -271,31 +279,32 @@ void Synth::buildNewSampleBlock() {
     const float *sampleFromTimbre3 = timbres[2].getSampleBlock();
     const float *sampleFromTimbre4 = timbres[3].getSampleBlock();
 
-    int *cb = &samples[writeCursor];
+    int *cb = sample;
+    int *cbFin = &sample[64];
 
     float toAdd = 131071.0f;
-    for (int s = 0; s < 64/4; s++) {
+    while (cb != cbFin) {
         *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + toAdd);
         *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + toAdd);
         *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + toAdd);
         *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + toAdd);
     }
 
-    writeCursor = (writeCursor + 64) & 255;
-
     CYCLE_MEASURE_END();
 
 #ifdef DEBUG_CPU_USAGE
+
     if (cptDisplay++ > 500) {
         totalCycles += cycles_all.remove();
 
         if (cptDisplay == 600) {
             float max = SystemCoreClock * 32.0f * PREENFM_FREQUENCY_INVERSED;
-            float percent = totalCycles / max;
-            lcd.setCursor(14, 1);
-            lcd.print('>');
-            lcd.printWithOneDecimal(percent);
-            lcd.print('%');
+            cpuUsage = totalCycles / max;
+            if (cpuUsage > 75) {
+                for (int v = 0; v < MAX_NUMBER_OF_VOICES; v++) {
+                    this->voices[v].noteOff();
+                }
+            }
             cptDisplay = 0;
             totalCycles = 0;
         }

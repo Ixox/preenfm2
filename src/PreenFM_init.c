@@ -19,6 +19,7 @@
 #include "LiquidCrystal.h"
 #include "PreenFM.h"
 extern LiquidCrystal lcd;
+extern int dmaSampleBuffer[128];
 
 const char* line1 = "PreenFM2 v"PFM2_VERSION""CVIN_STRING""OVERCLOCK_STRING;
 const char* line2 = "     By Xavier Hosxe";
@@ -399,7 +400,7 @@ void CS4344_DMA_Init(int* sample) {
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&SPI3->DR;  // 0x40003C0C;
     DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)sample;
     DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-    DMA_InitStructure.DMA_BufferSize = (uint32_t)128;
+    DMA_InitStructure.DMA_BufferSize = (uint32_t)256;
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
@@ -428,20 +429,12 @@ void CS4344_DMA_Init(int* sample) {
 }
 
 
-int memSample[128];
 
 void CS4344_Config(int *sample) {
 
-// Init smaple
-    int initSample = 0b10101100111100001111111100000000;
-    for (int k = 0; k < 128; k++) {
-        sample[k] = initSample;
-        memSample[k] = initSample;
-    }
-
     CS4344_GPIO_Init();
     CS4344_I2S3_Init();
-    CS4344_DMA_Init(memSample);
+    CS4344_DMA_Init(sample);
 
     // 7. Enable the SPI using the SPI_Cmd() function or enable the I2S using
     I2S_Cmd(SPI3, ENABLE);
@@ -469,20 +462,29 @@ void MCP4922_SysTick_Config() {
     NVIC_SetPriority(SysTick_IRQn, 0x0);
 }
 
-void CS4344_SysTick_Config() {
-    // On Tick = 1ms
-    int numberOfTick = SystemCoreClock * .001;
-    if (SysTick_Config(numberOfTick)) {
-        /* Capture error */
-        lcd.clear();
-        lcd.setCursor(0, 0);
-        lcd.print("Systick Error...");
-        while (1)
-            ;
-    }
+void CS4344_Timer_Config() {
+    // Let's use TIM3 to have a millis interupt
+    NVIC_InitTypeDef NVIC_InitStructure;
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 
-    /* Configure the SysTick handler priority */
-    NVIC_SetPriority(SysTick_IRQn, 0x1);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
+    TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
+    TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    float period = 1000;
+    TIM_TimeBaseStructure.TIM_Period = (int)(period - 1); // Must be called once per block of 32 samples
+    TIM_TimeBaseStructure.TIM_Prescaler = 96 - 1; // Down to 1 MHz (adjust per your clock)
+    TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
+    TIM_SelectOutputTrigger(TIM3, TIM_TRGOSource_Update);
+    TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
+
+    NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x0F;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x0F;
+    NVIC_Init(&NVIC_InitStructure);
+
+    TIM_Cmd(TIM3, ENABLE);
 }
 
 void RNG_Config(void)
@@ -568,8 +570,8 @@ void LCD_InitChars(LiquidCrystal *lcd) {
 }
 
 void MCP4922_screenBoot(Synth& synth) {
-    synth.buildNewSampleBlock();
-    synth.buildNewSampleBlock();
+    synth.buildNewSampleBlockMcp4922();
+    synth.buildNewSampleBlockMcp4922();
 
     // shorten the release value for init sound...
     float v1 = ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env1b.releaseTime;
