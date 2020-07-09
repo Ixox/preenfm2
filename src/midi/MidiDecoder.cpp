@@ -102,6 +102,7 @@ void MidiDecoder::setVisualInfo(VisualInfo *visualInfo) {
     this->visualInfo = visualInfo;
 }
 
+
 void MidiDecoder::newByte(unsigned char byte) {
     // Realtime first !
     if (byte >= 0xF8) {
@@ -296,7 +297,6 @@ void MidiDecoder::midiEventReceived(MidiEvent midiEvent) {
         } else {
             for (int tk = 0; tk< timbreIndex; tk++ ) {
                 this->synth->noteOn(timbres[tk], midiEvent.value[0], midiEvent.value[1]);
-
                 visualInfo->noteOn(timbres[tk], true);
             }
         }

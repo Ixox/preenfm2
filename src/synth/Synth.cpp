@@ -300,7 +300,7 @@ void Synth::buildNewSampleBlock(int *sample) {
         if (cptDisplay == 600) {
             float max = SystemCoreClock * 32.0f * PREENFM_FREQUENCY_INVERSED;
             cpuUsage = totalCycles / max;
-            if (cpuUsage > 75) {
+            if (cpuUsage > 95) {
                 for (int v = 0; v < MAX_NUMBER_OF_VOICES; v++) {
                     this->voices[v].noteOff();
                 }

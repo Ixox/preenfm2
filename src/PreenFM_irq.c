@@ -62,8 +62,7 @@ void blink(void) {
 }
 
 void assert_failed(char *file, unsigned int line) {
-    strobePin(2, 0x150000);
-    strobePin(8, 0x60000);
+    strobePin(10, 0x150000);
 }
 
 void NMI_Handler() {
@@ -158,29 +157,40 @@ void UsageFault_Handler() {
 }
 
 
+
 void USART3_IRQHandler(void) {
     uint8_t data;
 
-    if (USART_GetITStatus(USART3, USART_IT_TXE) != RESET) {
+    //if Receive interrupt (rx not empty)
+    if (USART_GetITStatus(USART3, USART_IT_RXNE) != RESET) {
+        /* USART_ClearITPendingBit doc : 
+         * @note   RXNE pending bit can be also cleared by a read to the USART_DR register 
+         *          (USART_ReceiveData()).
+         */
+        uint8_t newByte = USART_ReceiveData(USART3);
+        if (usartBufferIn.getCount() < 200) {
+            usartBufferIn.insert(newByte);
+        } else {
+            strobePin(20, 0x150000);
+        }
+
+        if (synthState.fullState.midiConfigValue[MIDICONFIG_THROUGH] == 1) {
+            usartBufferOut.insert(newByte);
+            USART_ITConfig(USART3, USART_IT_TXE, ENABLE);
+        }
+    } else  if (USART_GetITStatus(USART3, USART_IT_TXE) != RESET) {
         if (usartBufferOut.getCount() > 0) {
             USART_SendData(USART3, usartBufferOut.remove());
         } else {
             //disable Transmit Data Register empty interrupt
             USART_ITConfig(USART3, USART_IT_TXE, DISABLE);
         }
-    }
-
-
-    //if Receive interrupt (rx not empty)
-    if (USART_GetITStatus(USART3, USART_IT_RXNE) != RESET) {
+    } else  if (USART_GetITStatus(USART3, USART_IT_ORE_RX) != RESET) {
         uint8_t newByte = USART_ReceiveData(USART3);
         usartBufferIn.insert(newByte);
-
-        if (synthState.fullState.midiConfigValue[MIDICONFIG_THROUGH] == 1) {
-            usartBufferOut.insert(newByte);
-            USART_ITConfig(USART3, USART_IT_TXE, ENABLE);
-        }
     }
+
+
 }
 
 
@@ -277,13 +287,17 @@ void TIM3_IRQHandler() {
 }
 
 
-uint32_t dmaCpt = 0, dmaError = 0;
+uint32_t  dmaError = 0;
 
 void DMA1_Stream5_IRQHandler() {
     if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_HTIF5)) {
         // Clear DMA Stream Half Transfer interrupt pending bit
         DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_HTIF5);
-        dmaCpt++;
+        // New midi data ?
+        while (usartBufferIn.getCount() > 0) {
+            midiDecoder.newByte(usartBufferIn.remove());
+        }
+
         synth.buildNewSampleBlock(dmaSampleBuffer);
 //        dmaSampleBuffer
         // Fill part 1
@@ -292,7 +306,10 @@ void DMA1_Stream5_IRQHandler() {
     if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_TCIF5)) {
         // Clear DMA Stream Total Transfer complete interrupt pending bit
         DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
-        dmaCpt++;
+        // New midi data ?
+        while (usartBufferIn.getCount() > 0) {
+            midiDecoder.newByte(usartBufferIn.remove());
+        }
         synth.buildNewSampleBlock(&dmaSampleBuffer[64]);
         // Fill part 2
     }

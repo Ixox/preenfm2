@@ -163,6 +163,7 @@ void setup() {
         MCP4922_screenBoot(synth);
     } else {
         // Same method but special case
+        lcd.setRealTimeAction(true);
         spiState = -1;
         CS4344_Config(dmaSampleBuffer);
         CS4344_screenBoot();
@@ -226,6 +227,12 @@ unsigned int ADCTimer = 0;
 
 bool ledOn = false;
 
+extern uint32_t dmaCpt;
+
+int tDebug;
+int cptDebug;
+
+
 void MCP4922_loop(void) {
     fillSoundBuffer();
 
@@ -286,31 +293,47 @@ void MCP4922_loop(void) {
         LCDAction action = lcd.nextAction();
         lcd.realTimeAction(&action, fillSoundBuffer);
     }
+
+#ifdef DEBUG_CPU_USAGE
+    if ((preenTimer - tDebug) >= 500) {
+        cptDebug++;
+        tDebug = preenTimer;
+        lcd.setCursor(12, 1);
+        lcd.print('>');
+        lcd.printWithOneDecimal(synth.getCpuUsage());
+        lcd.print('%');
+        lcd.print('<');
+
+        lcd.setCursor(14, 2);
+        lcd.print('>');
+        lcd.print((int)synth.getPlayingNotes());
+
+        lcd.print('<');
+    }
+#endif
+
+
 }
 
-extern uint32_t dmaCpt;
-
-int tDebug;
-int cptDebug;
 
 void CS4344_loop(void) {
 
-    // Comment following line for debug....
-    lcd.setRealTimeAction(false);
-
-    // newByte can display visual info
-    while (usartBufferIn.getCount() > 0) {
-        midiDecoder.newByte(usartBufferIn.remove());
-    }
+    // // New midi data ?
+    // while (usartBufferIn.getCount() > 0) {
+    //     midiDecoder.newByte(usartBufferIn.remove());
+    // }
 
     if ((preenTimer - encoderTimer) > 2) {
+        // Surface control ?
         encoders.checkStatus(synthState.fullState.midiConfigValue[MIDICONFIG_ENCODER]);
         encoderTimer = preenTimer;
     } else if (fmDisplay.needRefresh()) {
+        // Display to refresh ?
         fmDisplay.refreshAllScreenByStep();
     }
 
     if ((preenTimer - tempoTimer) > 200) {
+        // display to update
         synthState.tempoClick();
         fmDisplay.tempoClick();
 
@@ -318,33 +341,22 @@ void CS4344_loop(void) {
     }
 
 #ifdef DEBUG_CPU_USAGE
-    if ((preenTimer - tDebug) >= 1000) {
+    if ((preenTimer - tDebug) >= 500) {
         cptDebug++;
         tDebug = preenTimer;
-        lcd.setCursor(10, 1);
+        lcd.setCursor(12, 1);
         lcd.print('>');
         lcd.printWithOneDecimal(synth.getCpuUsage());
         lcd.print('%');
         lcd.print('<');
 
-        lcd.setCursor(10, 2);
+        lcd.setCursor(14, 2);
         lcd.print('>');
         lcd.print((int)synth.getPlayingNotes());
+
         lcd.print('<');
-        dmaCpt = 0;
     }
 #endif
-
-    lcd.setRealTimeAction(true);
-    while (lcd.hasActions()) {
-        if (usartBufferIn.getCount() > 20) {
-            while (usartBufferIn.getCount() > 0) {
-                midiDecoder.newByte(usartBufferIn.remove());
-            }
-        }
-        LCDAction action = lcd.nextAction();
-        lcd.realTimeAction(&action, fillSoundBuffer);
-    }
 }
 
 int main(void) {

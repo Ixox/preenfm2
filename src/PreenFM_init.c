@@ -30,11 +30,11 @@ void strobePin(uint8_t count, uint32_t rate) {
     GPIO_ResetBits(GPIOB, LEDPIN);
     uint32_t c;
     while (count-- > 0) {
-        for (c = rate; c > 0; c--) {
+        for (c = rate * 4; c > 0; c--) {
             asm volatile ("nop");
         }
         GPIO_SetBits(GPIOB, LEDPIN);
-        for (c = rate; c > 0; c--) {
+        for (c = rate ; c > 0; c--) {
             asm volatile ("nop");
         }
         GPIO_ResetBits(GPIOB, LEDPIN);
@@ -92,12 +92,18 @@ void USART_Config() {
      * if the USART3 receive interrupt occurs
      */
     NVIC_InitTypeDef NVIC_InitStructure;
+
+    /*
+    *            @arg USART_IT_RXNE: Receive Data register not empty interrupt
+    *            @arg USART_IT_PE:   Parity Error interrupt
+    *            @arg USART_IT_ERR:  Error interrupt(Frame error, noise error, overrun error)
+    */
     USART_ITConfig(USART3, USART_IT_RXNE, ENABLE); // enable the USART3 receive interrupt
-    USART_ITConfig(USART3, USART_IT_TXE, DISABLE);
+
 
     NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn; // we want to configure the USART3 interrupts
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 10; // this sets the priority group of the USART3 interrupts
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 10; // this sets the subpriority inside the group
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0; // this sets the priority group of the USART3 interrupts
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0; // this sets the subpriority inside the group
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; // the USART3 interrupts are globally enabled
     NVIC_Init(&NVIC_InitStructure); // the properties are passed to the NVIC_Init function which takes care of the low level stuff
 
@@ -422,8 +428,8 @@ void CS4344_DMA_Init(int* sample) {
     /* I2S DMA IRQ Channel configuration */
     NVIC_InitTypeDef NVIC_InitStructure;
     NVIC_InitStructure.NVIC_IRQChannel = DMA1_Stream5_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 8; // Must be preempted by TIM2 (preenTimer) and USART3 (midi)
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 8;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 }
@@ -480,8 +486,8 @@ void CS4344_Timer_Config() {
 
     NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x0F;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x0F;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; // Very fast but very important no to freeze the UI
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
     NVIC_Init(&NVIC_InitStructure);
 
     TIM_Cmd(TIM3, ENABLE);
