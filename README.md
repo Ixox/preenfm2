@@ -186,12 +186,6 @@ in this version, some more filters & fx :
 * Monophonic patch get also benefit of this note stack (one can press lot of keys : on release, good note should be played)
 
 #### Matrix destinations :
-###### G.hd
-glide hold (if >0)
-###### G.rt
-glide rate
-###### G.sk
-glide skew (different glide speed for ascending or descending intervals)
 ###### sq1S
 start point of seq1 ( 0 to 1 to start from step 1 to 16)
 ###### sq2S
