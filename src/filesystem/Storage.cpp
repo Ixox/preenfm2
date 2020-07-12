@@ -41,6 +41,7 @@ void Storage::init(struct OneSynthParams*timbre1, struct OneSynthParams*timbre2,
     patchBank.setFileSystemUtils(&fsu);
     userWaveForm.setFileSystemUtils(&fsu);
 #else
+	firmwareFile.usbProcess();
     firmwareFile.setFileSystemUtils(&fsu);
 #endif
 }

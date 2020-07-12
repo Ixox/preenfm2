@@ -124,21 +124,19 @@
 /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
 // PreenFM2 Quartz frequency 12Mhz
 // We run the STM32F405 at 192Mhz 
-#ifdef UNDEFINED_BECAUSE_ORVERCLOCK_IS_THE_NEW_STANDARD
+#ifdef BOOTLOADER
 
 #define PLL_M      12
 #define PLL_N      336
-#define PLL_N      384
 
 /* SYSCLK = PLL_VCO / PLL_P */
 #define PLL_P      2
 
 /* USB OTG FS, SDIO and RNG Clock =  PLL_VCO / PLLQ */
 #define PLL_Q      7
-#define PLL_Q      8
-#endif
 
-
+#else
+// Regular firmware : 192Mhz
 /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
 #define PLL_M      12
 #define PLL_N      384
@@ -150,6 +148,8 @@
 /* I2S PLL for preenfm2 with CS4344 */
 #define PLLI2S_N 180
 #define PLLI2S_R 4
+
+#endif
 
 /******************************************************************************/
 
@@ -391,6 +391,7 @@ static void SetSysClock(void)
   /*                          I2S clock configuration                           */
   /******************************************************************************/
   /* PLLI2S clock used as I2S clock source */
+#ifndef BOOTLOADER
   RCC->CFGR &= ~RCC_CFGR_I2SSRC;
 
   /* Configure PLLI2S */
@@ -402,6 +403,7 @@ static void SetSysClock(void)
   /* Wait till PLLI2S is ready */
   while ((RCC->CR & RCC_CR_PLLI2SRDY) == 0) {
   }
+#endif
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****/

@@ -2,7 +2,7 @@ PFM2_VERSION_NUMBER=2.12B3
 PFM2_VERSION:=\"${PFM2_VERSION_NUMBER}\"
 
 # Define you GCCPATH HERE
-GCC_PATH:=/home/xavier/git/preenfm2/gcc-arm-none-eabi-4_7-2014q2/bin/
+GCC_PATH:=/Users/xavier/git/preenfm2/gcc-arm-none-eabi-4_7-2014q2/bin/
 
 
 ifeq ($(MAKECMDGOALS),pfm)
@@ -23,9 +23,9 @@ BIN_FIRMWARE:=${BUILD_PREFIX}.bin
 SYMBOLS_FIRMWARE:=${BUILD_PREFIX}_symbol.txt
 PFM2_BOOTLOADER_VERSION_NUMBER:=1.12
 PFM2_BOOTLOADER_VERSION:=\"${PFM2_BOOTLOADER_VERSION_NUMBER}\"
-ELF_BOOTLOADER:=build/${PFM2_PREFIX}_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.elf
-BIN_BOOTLOADER:=build/${PFM2_PREFIX}_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.bin
-SYMBOLS_BOOTLOADER:=build/symbols_${PFM2_PREFIX}_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.txt
+ELF_BOOTLOADER:=build/p2_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.elf
+BIN_BOOTLOADER:=build/p2_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.bin
+SYMBOLS_BOOTLOADER:=build/symbols_p2_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.txt
 
 
 
@@ -145,7 +145,6 @@ SRC_BOOTLOADER:=src/bootloader/BootLoader.cpp \
 	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c \
 	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c \
 	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.c   \
-	src/library/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c \
 	src/library/fat_fs/src/ff.c \
 	src/library/fat_fs/src/fattime.c \
 	src/library/STM32_USB_OTG_Driver/src/usb_core.c \
@@ -177,7 +176,7 @@ SMALLBINOPTS := -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-rtti 
 DEFINE := -DPFM2_VERSION=${PFM2_VERSION} -DPFM2_BOOTLOADER_VERSION=${PFM2_BOOTLOADER_VERSION}
 
 # -Ofast
-CFLAGS =  -O2 $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
+CFLAGS =  -Os $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
 AFLAGS  = -ahls -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 LFLAGS  = -Tlinker/stm32f4xx.ld  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -gc-sections    --specs=nano.specs
 LFLAGS_BOOTLOADER  = -Tlinker_bootloader/stm32f4xx.ld  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -gc-sections --specs=nano.specs
@@ -225,6 +224,10 @@ boot: $(BIN_BOOTLOADER)
 
 installdfu: 
 	dfu-util -a0 -d 0x0483:0xdf11 -D $(shell cat .binfirmware) -s 0x8040000
+
+installboot: 
+	dfu-util -a0 -d 0x0483:0xdf11 -D $(BIN_BOOTLOADER) -s 0x8000000
+
 
 binfirmware: elffirmware
 	$(CP) -O binary $(ELF_FIRMWARE) $(BIN_FIRMWARE)
