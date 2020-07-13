@@ -195,7 +195,7 @@ public:
         return cpuUsage;
     }
 
-    float getPlayingNotes() {
+    int getPlayingNotes() {
         return playingNotes;
     }
 
@@ -219,7 +219,7 @@ private:
     float currentGate;
 
     float cpuUsage;
-    uint32_t playingNotes;
+    int playingNotes;
 #ifdef CVIN
     bool cvin12Ready ;
     bool cvin34Ready ;

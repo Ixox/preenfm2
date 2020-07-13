@@ -25,7 +25,6 @@ const char* line1 = "PreenFM2 v"PFM2_VERSION""CVIN_STRING""OVERCLOCK_STRING;
 const char* line2 = "     By Xavier Hosxe";
 
 
-
 void strobePin(uint8_t count, uint32_t rate) {
     GPIO_ResetBits(GPIOB, LEDPIN);
     uint32_t c;
@@ -91,7 +90,14 @@ void USART_Config() {
      * to jump to the USART3_IRQHandler() function
      * if the USART3 receive interrupt occurs
      */
+
+
     NVIC_InitTypeDef NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn; // we want to configure the USART3 interrupts
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0; // this sets the priority group of the USART3 interrupts
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0; // this sets the subpriority inside the group
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; // the USART3 interrupts are globally enabled
+    NVIC_Init(&NVIC_InitStructure); // the properties are passed to the NVIC_Init function which takes care of the low level stuff
 
     /*
     *            @arg USART_IT_RXNE: Receive Data register not empty interrupt
@@ -99,13 +105,6 @@ void USART_Config() {
     *            @arg USART_IT_ERR:  Error interrupt(Frame error, noise error, overrun error)
     */
     USART_ITConfig(USART3, USART_IT_RXNE, ENABLE); // enable the USART3 receive interrupt
-
-
-    NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn; // we want to configure the USART3 interrupts
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0; // this sets the priority group of the USART3 interrupts
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0; // this sets the subpriority inside the group
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; // the USART3 interrupts are globally enabled
-    NVIC_Init(&NVIC_InitStructure); // the properties are passed to the NVIC_Init function which takes care of the low level stuff
 
     USART_Cmd(USART3, ENABLE);
 }
@@ -163,8 +162,8 @@ void ADC_Config(uint32_t adcBufferAdress) {
 
     NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x0F;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x0F;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 5;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_Init(&NVIC_InitStructure);
 
     /* Enable clock on DMA1 & GPIOC */
@@ -374,7 +373,7 @@ void CS4344_I2S3_Init() {
 
     I2S_InitTypeDef I2S_InitStruct;
     I2S_StructInit(&I2S_InitStruct);
-    I2S_InitStruct.I2S_AudioFreq = I2S_AudioFreq_44k;
+    I2S_InitStruct.I2S_AudioFreq = I2S_AudioFreq_Default;
     I2S_InitStruct.I2S_Mode = I2S_Mode_MasterTx;
     I2S_InitStruct.I2S_Standard = I2S_Standard_Phillips;
     // 16b ?????
@@ -413,14 +412,14 @@ void CS4344_DMA_Init(int* sample) {
     DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
     DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
 
-    DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
+    DMA_InitStructure.DMA_Priority = DMA_Priority_High;
     DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
     DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_3QuartersFull;
     DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
     DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
     // 6. Configure the DMA using DMA_Init() function
     DMA_Init(DMA1_Stream5, &DMA_InitStructure);
-    DMA_ITConfig(DMA1_Stream5, DMA_IT_TC | DMA_IT_HT | DMA_IT_FE, ENABLE);
+    DMA_ITConfig(DMA1_Stream5, DMA_IT_TC | DMA_IT_HT, ENABLE);
 
     // 6. Active the needed channel Request using SPI_I2S_DMACmd() function
     SPI_I2S_DMACmd(SPI3, SPI_I2S_DMAReq_Tx, ENABLE);
@@ -428,13 +427,11 @@ void CS4344_DMA_Init(int* sample) {
     /* I2S DMA IRQ Channel configuration */
     NVIC_InitTypeDef NVIC_InitStructure;
     NVIC_InitStructure.NVIC_IRQChannel = DMA1_Stream5_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 8; // Must be preempted by TIM2 (preenTimer) and USART3 (midi)
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 8;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 4; // Must be preempted by USART3 (midi) and USB Midi
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 }
-
-
 
 void CS4344_Config(int *sample) {
 
@@ -468,30 +465,6 @@ void MCP4922_SysTick_Config() {
     NVIC_SetPriority(SysTick_IRQn, 0x0);
 }
 
-void CS4344_Timer_Config() {
-    // Let's use TIM3 to have a millis interupt
-    NVIC_InitTypeDef NVIC_InitStructure;
-    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
-    TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
-    TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
-    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    float period = 1000;
-    TIM_TimeBaseStructure.TIM_Period = (int)(period - 1); // Must be called once per block of 32 samples
-    TIM_TimeBaseStructure.TIM_Prescaler = 96 - 1; // Down to 1 MHz (adjust per your clock)
-    TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
-    TIM_SelectOutputTrigger(TIM3, TIM_TRGOSource_Update);
-    TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
-
-    NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; // Very fast but very important no to freeze the UI
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
-    NVIC_Init(&NVIC_InitStructure);
-
-    TIM_Cmd(TIM3, ENABLE);
-}
 
 void RNG_Config(void)
 {
@@ -653,7 +626,6 @@ void MCP4922_screenBoot(Synth& synth) {
         PreenFM2_uDelay(250);
     }
 
-    // PUT BACK
     // shorten the release value for init sound...
     ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env1b.releaseTime = v1;
     ((OneSynthParams*)synth.getTimbre(0)->getParamRaw())->env4b.releaseTime = v2;

@@ -156,13 +156,17 @@ void UsageFault_Handler() {
     blink();
 }
 
-
-
 void USART3_IRQHandler(void) {
     uint8_t data;
 
-    //if Receive interrupt (rx not empty)
+    // Commented becuase it does not happen anymore / Was for debuging    
+    // if (USART_GetITStatus(USART3, USART_IT_ORE_RX) != RESET) {
+    //     usartError++;
+    //     uint8_t newByte = USART_ReceiveData(USART3);
+    //     usartBufferIn.insert(newByte);
+    // } else 
     if (USART_GetITStatus(USART3, USART_IT_RXNE) != RESET) {
+        //if Receive interrupt (rx not empty)
         /* USART_ClearITPendingBit doc : 
          * @note   RXNE pending bit can be also cleared by a read to the USART_DR register 
          *          (USART_ReceiveData()).
@@ -185,12 +189,7 @@ void USART3_IRQHandler(void) {
             //disable Transmit Data Register empty interrupt
             USART_ITConfig(USART3, USART_IT_TXE, DISABLE);
         }
-    } else  if (USART_GetITStatus(USART3, USART_IT_ORE_RX) != RESET) {
-        uint8_t newByte = USART_ReceiveData(USART3);
-        usartBufferIn.insert(newByte);
-    }
-
-
+    } 
 }
 
 
@@ -280,49 +279,21 @@ void TIM2_IRQHandler() {
 
 }
 
-
-void TIM3_IRQHandler() {
-    TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
-    preenTimer++;
-}
-
-
-uint32_t  dmaError = 0;
-
 void DMA1_Stream5_IRQHandler() {
     if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_HTIF5)) {
+        // Fill part 1
+        synth.buildNewSampleBlock(dmaSampleBuffer);
         // Clear DMA Stream Half Transfer interrupt pending bit
         DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_HTIF5);
-        // New midi data ?
-        while (usartBufferIn.getCount() > 0) {
-            midiDecoder.newByte(usartBufferIn.remove());
-        }
-
-        synth.buildNewSampleBlock(dmaSampleBuffer);
-//        dmaSampleBuffer
-        // Fill part 1
-    }
-
-    if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_TCIF5)) {
+    } else if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_TCIF5)) {
+        // 1375 per seconds
+        preenTimer++;
+        // Fill part 2
+        synth.buildNewSampleBlock(&dmaSampleBuffer[64]);
         // Clear DMA Stream Total Transfer complete interrupt pending bit
         DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
-        // New midi data ?
-        while (usartBufferIn.getCount() > 0) {
-            midiDecoder.newByte(usartBufferIn.remove());
-        }
-        synth.buildNewSampleBlock(&dmaSampleBuffer[64]);
-        // Fill part 2
     }
 
-    if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_TEIF5)) {        
-        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TEIF5);
-        dmaError++;
-    }
-
-    if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_FEIF5)) {
-        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_FEIF5);
-        dmaError++;
-    }
 }
 
 #ifdef __cplusplus

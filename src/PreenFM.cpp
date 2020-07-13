@@ -52,12 +52,30 @@ Hexter             hexter;
 CVIn               cvin;
 #endif
 int spiState  __attribute__ ((section(".ccmnoload")));
+float PREENFM_FREQUENCY __attribute__ ((section(".ccmnoload")));;
+float PREENFM_FREQUENCY_INVERSED __attribute__ ((section(".ccmnoload")));;
+float PREENFM_FREQUENCY_INVERSED_LFO __attribute__ ((section(".ccmnoload")));;
+// Must be in memory accessible by DMA
 int dmaSampleBuffer[128];
 
 
 void setup() {
+    // All bits for preemption
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+
     // What PCB version;
     synthState.setPcbVersion(getPcbVersion());
+    if (synthState.getPcbVersion() == PCB_R5) {
+        // Polyphony !!!
+        // 192000000 / 1142 / 4  :
+        PREENFM_FREQUENCY = 42031.52f;
+    } else {
+        // See configurator
+        // 43 500 000 / 1024 = 
+        PREENFM_FREQUENCY = 42480.47f;
+    }
+    PREENFM_FREQUENCY_INVERSED = 1.0f / PREENFM_FREQUENCY;
+    PREENFM_FREQUENCY_INVERSED_LFO = PREENFM_FREQUENCY_INVERSED * 32.0f;
 
     lcd.begin(20, 4);
 
@@ -318,10 +336,10 @@ void MCP4922_loop(void) {
 
 void CS4344_loop(void) {
 
-    // // New midi data ?
-    // while (usartBufferIn.getCount() > 0) {
-    //     midiDecoder.newByte(usartBufferIn.remove());
-    // }
+    // New midi data ?
+    while (usartBufferIn.getCount() > 0) {
+        midiDecoder.newByte(usartBufferIn.remove());
+    }
 
     if ((preenTimer - encoderTimer) > 2) {
         // Surface control ?
@@ -350,9 +368,9 @@ void CS4344_loop(void) {
         lcd.print('%');
         lcd.print('<');
 
-        lcd.setCursor(14, 2);
+        lcd.setCursor(15, 2);
         lcd.print('>');
-        lcd.print((int)synth.getPlayingNotes());
+        lcd.print(synth.getPlayingNotes());
 
         lcd.print('<');
     }
@@ -366,7 +384,6 @@ int main(void) {
             MCP4922_loop();
         }
     } else {
-        CS4344_Timer_Config();
         while (1) {
             CS4344_loop();
         }

@@ -820,6 +820,8 @@ void Timbre::setHoldPedal(int value) {
 
 void Timbre::setNewBPMValue(float bpm) {
 	ticksPerSecond = bpm * 24.0f / 60.0f;
+
+	float calledPerSecond = PREENFM_FREQUENCY / 32.0f;
 	ticksEveryNCalls = calledPerSecond / ticksPerSecond;
 	ticksEveyNCallsInteger = (int)ticksEveryNCalls;
 }

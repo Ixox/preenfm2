@@ -146,9 +146,10 @@
 #define PLL_Q      8
 
 /* I2S PLL for preenfm2 with CS4344 */
-#define PLLI2S_N 180
+#define PLLI2S_N 174
 #define PLLI2S_R 4
-
+// 174 / 4 = 43.5 Mhz
+// 43 Mhz / 1024 = 42 480, 47 Hz
 #endif
 
 /******************************************************************************/
