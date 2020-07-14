@@ -345,7 +345,9 @@ void CS4344_loop(void) {
         // Surface control ?
         encoders.checkStatus(synthState.fullState.midiConfigValue[MIDICONFIG_ENCODER]);
         encoderTimer = preenTimer;
-    } else if (fmDisplay.needRefresh()) {
+    } 
+    
+    if (fmDisplay.needRefresh()) {
         // Display to refresh ?
         fmDisplay.refreshAllScreenByStep();
     }
