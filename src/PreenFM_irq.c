@@ -165,29 +165,27 @@ void USART3_IRQHandler(void) {
     //     uint8_t newByte = USART_ReceiveData(USART3);
     //     usartBufferIn.insert(newByte);
     // } else 
-    if (USART_GetITStatus(USART3, USART_IT_RXNE) != RESET) {
+    if ((USART3->SR & USART_FLAG_RXNE) != 0) {
         //if Receive interrupt (rx not empty)
         /* USART_ClearITPendingBit doc : 
          * @note   RXNE pending bit can be also cleared by a read to the USART_DR register 
          *          (USART_ReceiveData()).
          */
-        uint8_t newByte = USART_ReceiveData(USART3);
-        if (usartBufferIn.getCount() < 200) {
-            usartBufferIn.insert(newByte);
-        } else {
-            strobePin(20, 0x150000);
-        }
+        uint8_t newByte = USART3->DR;
+        usartBufferIn.insert(newByte);
 
         if (synthState.fullState.midiConfigValue[MIDICONFIG_THROUGH] == 1) {
             usartBufferOut.insert(newByte);
-            USART_ITConfig(USART3, USART_IT_TXE, ENABLE);
+            USART3->CR1 |= USART_FLAG_TXE;
         }
-    } else  if (USART_GetITStatus(USART3, USART_IT_TXE) != RESET) {
+    } 
+    
+    if ((USART3->SR & USART_FLAG_TXE) != 0) {
         if (usartBufferOut.getCount() > 0) {
-            USART_SendData(USART3, usartBufferOut.remove());
+            USART3->DR = usartBufferOut.remove();
         } else {
             //disable Transmit Data Register empty interrupt
-            USART_ITConfig(USART3, USART_IT_TXE, DISABLE);
+            USART3->CR1 &= ~USART_FLAG_TXE;
         }
     } 
 }
@@ -201,16 +199,11 @@ void SysTick_Handler(void)
 
 
     switch (spiState++) {
-        case -1:
-            // CS4344 Case
-            preenTimer += 1;
-            spiState = -1;
-            break;
         case 0:
             // samples are int so no FP operation; this allows Lazy stacking feature
             // to avoid saving FPU registers
             // LATCH LOW
-            GPIO_ResetBits(GPIOC, GPIO_Pin_12);
+            GPIOC->BSRRH = GPIO_Pin_12;
             // Update timer
             preenTimer += 1;
 
@@ -220,29 +213,31 @@ void SysTick_Handler(void)
             synth.incReadCursor();
 
             // DAC 1 - MSB
-            GPIO_ResetBits(GPIOB, GPIO_Pin_4);
-            GPIO_SetBits(GPIOB, GPIO_Pin_9);
+            // BSRRH RESET
+            // BSRRL SET
+            GPIOB->BSRRH = GPIO_Pin_4;
+            GPIOB->BSRRL = GPIO_Pin_9;
             // LATCH HIGH
-            GPIO_SetBits(GPIOC, GPIO_Pin_12);
-            SPI_I2S_SendData(SPI1, 0x3000 | (right >> 6));
+            GPIOC->BSRRL = GPIO_Pin_12;
+            SPI1->DR = 0x3000 | (right >> 6);
             break;
         case 1:
             // DAC 2 - MSB
-            GPIO_ResetBits(GPIOB, GPIO_Pin_9);
-            GPIO_SetBits(GPIOB, GPIO_Pin_4);
-            SPI_I2S_SendData(SPI1, 0x3000 | (left >> 6));
+            GPIOB->BSRRH = GPIO_Pin_9;
+            GPIOB->BSRRL = GPIO_Pin_4;
+            SPI1->DR = 0x3000 | (left >> 6);
             break;
         case 2:
             // DAC 1 - LSB
-            GPIO_ResetBits(GPIOB, GPIO_Pin_4);
-            GPIO_SetBits(GPIOB, GPIO_Pin_9);
-            SPI_I2S_SendData(SPI1, 0xb000 | (right & 0x3f));
+            GPIOB->BSRRH = GPIO_Pin_4;
+            GPIOB->BSRRL = GPIO_Pin_9;
+            SPI1->DR = 0xb000 | (right & 0x3f);
             break;
         case 3:
             // DAC 2 - LSB
-            GPIO_ResetBits(GPIOB, GPIO_Pin_9);
-            GPIO_SetBits(GPIOB, GPIO_Pin_4);
-            SPI_I2S_SendData(SPI1, 0xb000 | (left & 0x3f));
+            GPIOB->BSRRH = GPIO_Pin_9;
+            GPIOB->BSRRL = GPIO_Pin_4;
+            SPI1->DR = 0xb000 | (left & 0x3f);
             spiState = 0;
             break;
     }
@@ -279,6 +274,11 @@ void TIM2_IRQHandler() {
 
 }
 
+
+/*
+ * CS4344 half complete or complete DMA transfer.
+ * We must prepare the other Half
+ */
 void DMA1_Stream5_IRQHandler() {
     if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_HTIF5)) {
         // Fill part 1
@@ -286,7 +286,7 @@ void DMA1_Stream5_IRQHandler() {
         // Clear DMA Stream Half Transfer interrupt pending bit
         DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_HTIF5);
     } else if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_TCIF5)) {
-        // 1375 per seconds
+        // 42000 / 64 = 656 per seconds
         preenTimer++;
         // Fill part 2
         synth.buildNewSampleBlock(&dmaSampleBuffer[64]);

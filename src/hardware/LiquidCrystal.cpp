@@ -28,8 +28,9 @@ inline void delay_ms(unsigned int ms) {
 //    S = 0; No shift
 //
 
-#define SET(pin) GPIO_SetBits(pin.gpio, pin.pinNumber)
-#define RESET(pin) GPIO_ResetBits(pin.gpio, pin.pinNumber)
+#define SET(pin) pin.gpio->BSRRL = pin.pinNumber
+#define RESET(pin) pin.gpio->BSRRH = pin.pinNumber
+
 
 // This library has been modified to be compatible with STM32F4 library
 // and specialized for the PreenFM mk2
@@ -150,7 +151,7 @@ void LiquidCrystal::clear() {
     if (this->realTimeDisplay) {
        command(LCD_CLEARDISPLAY); // clear display, set cursor position to zero
        delay_ms(2);
-        //delayMicroseconds(2000);  // this command takes a long time!
+       // this command takes a long time!
     } else {
         struct LCDAction action;
         action.value = 0;
@@ -386,12 +387,15 @@ void LiquidCrystal::printWithOneDecimal(float f) {
 void LiquidCrystal::sendInitCommand(unsigned char value) {
 	RESET(_rs_pin);
 
-	write4bits(value >> 4);
+	value >>= 4;
+	GPIOA->BSRRH = ((~value) & 0xf) << 2;
+	GPIOA->BSRRL = (value & 0xf) << 2;
+
 	pulseEnable(delayAfterCommand);
 }
 
 
-// write either command or data, with automatic 4/8-bit selection
+// write either command or data
 void LiquidCrystal::send(unsigned char value, bool mode) {
 	if (this->realTimeDisplay) {
 		if (mode) {
@@ -399,10 +403,12 @@ void LiquidCrystal::send(unsigned char value, bool mode) {
 		} else {
 			RESET(_rs_pin);
 		}
-
-		write4bits(value >> 4);
+		uint8_t value2 = value >> 4;
+		GPIOA->BSRRH = ((~value2) & 0xf) << 2;
+		GPIOA->BSRRL = (value2 & 0xf) << 2;
 		pulseEnable(1);
-		write4bits(value);
+		GPIOA->BSRRH = ((~value) & 0xf) << 2;
+		GPIOA->BSRRL = (value & 0xf) << 2;
 		pulseEnable(delayAfterCommand);
 	} else {
 		if (!lcdActions.isFull()) {
@@ -435,15 +441,5 @@ void LiquidCrystal::pulseEnable(int delay) {
 	RESET(_enable_pin);
 	// Commands needs > 37us to settle.
 	PreenFM2_uDelay(delay);
-}
-
-void LiquidCrystal::write4bits(unsigned char value) {
-	for (int i = 0; i < 4;	 i++) {
-		if ((value >> i) & 0x01) {
-			SET(_data_pins[i]);
-		} else {
-			RESET(_data_pins[i]);
-		}
-	}
 }
 

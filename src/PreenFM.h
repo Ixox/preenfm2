@@ -72,7 +72,7 @@ extern unsigned int preenTimer;
 extern Synth synth;
 
 enum PcbVersion {
-    PCB_R5 = 0b00,
+    PCB_R5 = 0b11,
     PCB_R6_CS4344 = 0b01
 };
 

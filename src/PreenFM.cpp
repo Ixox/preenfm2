@@ -182,7 +182,6 @@ void setup() {
     } else {
         // Same method but special case
         lcd.setRealTimeAction(true);
-        spiState = -1;
         CS4344_Config(dmaSampleBuffer);
         CS4344_screenBoot();
     }
@@ -243,12 +242,9 @@ unsigned int encoderTimer = 0;
 unsigned int tempoTimer = 0;
 unsigned int ADCTimer = 0;
 
-bool ledOn = false;
-
-extern uint32_t dmaCpt;
-
-int tDebug;
-int cptDebug;
+#ifdef DEBUG_CPU_USAGE
+unsigned int tDebug;
+#endif
 
 
 void MCP4922_loop(void) {
@@ -314,7 +310,6 @@ void MCP4922_loop(void) {
 
 #ifdef DEBUG_CPU_USAGE
     if ((preenTimer - tDebug) >= 500) {
-        cptDebug++;
         tDebug = preenTimer;
         lcd.setCursor(12, 1);
         lcd.print('>');
@@ -337,6 +332,8 @@ void MCP4922_loop(void) {
 void CS4344_loop(void) {
 
     // New midi data ?
+    // Move to DMA1_Stream5_IRQHandler ? 
+    // Would be better i think
     while (usartBufferIn.getCount() > 0) {
         midiDecoder.newByte(usartBufferIn.remove());
     }
@@ -352,7 +349,8 @@ void CS4344_loop(void) {
         fmDisplay.refreshAllScreenByStep();
     }
 
-    if ((preenTimer - tempoTimer) > 200) {
+    // 200/1000*656 = 131
+    if ((preenTimer - tempoTimer) > 130) {
         // display to update
         synthState.tempoClick();
         fmDisplay.tempoClick();
@@ -361,8 +359,7 @@ void CS4344_loop(void) {
     }
 
 #ifdef DEBUG_CPU_USAGE
-    if ((preenTimer - tDebug) >= 500) {
-        cptDebug++;
+    if ((preenTimer - tDebug) >= 300) {
         tDebug = preenTimer;
         lcd.setCursor(12, 1);
         lcd.print('>');

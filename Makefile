@@ -1,4 +1,4 @@
-PFM2_VERSION_NUMBER=2.12B3
+PFM2_VERSION_NUMBER=2.20
 PFM2_VERSION:=\"${PFM2_VERSION_NUMBER}\"
 
 # Define you GCCPATH HERE
@@ -175,8 +175,7 @@ SMALLBINOPTS := -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-rtti 
 #
 DEFINE := -DPFM2_VERSION=${PFM2_VERSION} -DPFM2_BOOTLOADER_VERSION=${PFM2_BOOTLOADER_VERSION}
 
-# -Ofast
-CFLAGS =  -Os $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
+CFLAGS =  -Ofast $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
 AFLAGS  = -ahls -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 LFLAGS  = -Tlinker/stm32f4xx.ld  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -gc-sections    --specs=nano.specs
 LFLAGS_BOOTLOADER  = -Tlinker_bootloader/stm32f4xx.ld  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -gc-sections --specs=nano.specs

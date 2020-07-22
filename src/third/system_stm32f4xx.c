@@ -154,7 +154,7 @@
 
 /******************************************************************************/
 
-// uint32_t SystemCoreClock = 168000000;
+// SystemCoreClock should be 192000000;
 uint32_t SystemCoreClock = HSE_VALUE / PLL_M * PLL_N / PLL_P;
 
 __I uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
