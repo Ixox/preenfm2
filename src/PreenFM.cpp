@@ -338,7 +338,7 @@ void CS4344_loop(void) {
         midiDecoder.newByte(usartBufferIn.remove());
     }
 
-    if ((preenTimer - encoderTimer) > 2) {
+    if ((preenTimer - encoderTimer) >= 2) {
         // Surface control ?
         encoders.checkStatus(synthState.fullState.midiConfigValue[MIDICONFIG_ENCODER]);
         encoderTimer = preenTimer;
@@ -349,8 +349,7 @@ void CS4344_loop(void) {
         fmDisplay.refreshAllScreenByStep();
     }
 
-    // 200/1000*656 = 131
-    if ((preenTimer - tempoTimer) > 130) {
+    if ((preenTimer - tempoTimer) > 250) {
         // display to update
         synthState.tempoClick();
         fmDisplay.tempoClick();
@@ -359,7 +358,7 @@ void CS4344_loop(void) {
     }
 
 #ifdef DEBUG_CPU_USAGE
-    if ((preenTimer - tDebug) >= 300) {
+    if ((preenTimer - tDebug) >= 600) {
         tDebug = preenTimer;
         lcd.setCursor(12, 1);
         lcd.print('>');

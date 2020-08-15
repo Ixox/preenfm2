@@ -281,17 +281,18 @@ void TIM2_IRQHandler() {
  */
 void DMA1_Stream5_IRQHandler() {
     if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_HTIF5)) {
-        // Fill part 1
-        synth.buildNewSampleBlock(dmaSampleBuffer);
         // Clear DMA Stream Half Transfer interrupt pending bit
         DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_HTIF5);
+        // 42000 / 128 = 1312 per seconds
+        preenTimer++;
+        // Fill part 1
+        synth.buildNewSampleBlock(dmaSampleBuffer);
     } else if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_TCIF5)) {
-        // 42000 / 64 = 656 per seconds
+        // Clear DMA Stream Total Transfer complete interrupt pending bit
+        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
         preenTimer++;
         // Fill part 2
         synth.buildNewSampleBlock(&dmaSampleBuffer[64]);
-        // Clear DMA Stream Total Transfer complete interrupt pending bit
-        DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
     }
 
 }

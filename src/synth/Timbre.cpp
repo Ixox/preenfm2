@@ -871,7 +871,10 @@ void Timbre::cleanNextBlock() {
 
 void Timbre::prepareMatrixForNewBlock() {
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
-        voices[voiceNumber[k]]->prepareMatrixForNewBlock();
+		// Can be -1 during preset load
+		if (likely(voiceNumber[k] != -1)) {
+	        voices[voiceNumber[k]]->prepareMatrixForNewBlock();
+		}
     }
 }
 

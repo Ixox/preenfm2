@@ -27,7 +27,7 @@
 // #define BOOTLOADER
 
 // #define DEBUG 1
-// #define DEBUG_CPU_USAGE 1
+#define DEBUG_CPU_USAGE 1
 // #define CVINDEBUG 1
 
 

@@ -148,7 +148,7 @@ void Synth::buildNewSampleBlock(int *sample) {
     cvin->updateValues();
 #endif
 
-    for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
+    for (int t = 0; t < NUMBER_OF_TIMBRES; t++) {
         timbres[t].cleanNextBlock();
         if (likely(timbres[t].params.engine1.numberOfVoice > 0)) {
             timbres[t].prepareForNextBlock();

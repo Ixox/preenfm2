@@ -132,10 +132,10 @@ public:
         pan3Left = panTable[256 - pan];
         pan3Right = panTable[pan];
 
-        // No matrix for mix4 and pan4
-        mix4 = currentTimbre->getParamRaw()->engineMix2.mixOsc4 + matrix.getDestination(ALL_MIX);
+        mix4 = currentTimbre->getParamRaw()->engineMix2.mixOsc4 + matrix.getDestination(MIX_OSC4) + matrix.getDestination(ALL_MIX);
         mix4 = __USAT((int)(mix4 * 65535) , 16) * inv65535;
-        float pan4 = currentTimbre->getParamRaw()->engineMix2.panOsc4 + matrix.getDestination(ALL_PAN) + 1.0f;
+
+        float pan4 = currentTimbre->getParamRaw()->engineMix2.panOsc4 + matrix.getDestination(PAN_OSC4) + matrix.getDestination(ALL_PAN) + 1.0f;
         pan = __USAT((int)(pan4 * 128), 8);
         pan4Left = panTable[256 - pan];
         pan4Right = panTable[pan];
