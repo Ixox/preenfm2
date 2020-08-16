@@ -130,10 +130,20 @@ void PreenFMFileType::usbProcess() {
     }
 }
 
-
+bool PreenFMFileType::sendInitCommand() {
+    commandParams.commandResult = COMMAND_FAILED;
+   	commandParams.commandState = COMMAND_INIT;
+    int trys = 2000000;
+    while (commandParams.commandState != COMMAND_NONE && (trys--) > 0) {
+        USBH_Process(&usbOTGHost, &usbHost);
+    }
+    for (int k=0; k<10; k++) {
+        USBH_Process(&usbOTGHost, &usbHost);
+    }
+    return (commandParams.commandState == COMMAND_NONE);
+}
 
 // Init bank
-
 
 int PreenFMFileType::initFiles() {
     for (int k = 0; k < numberOfFilesMax; k++) {

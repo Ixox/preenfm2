@@ -55,6 +55,7 @@ public:
     FirmwareFile* getFirmwareFile() { return &firmwareFile; };
 #endif
 
+    bool isKeyReady() { return keyReady; }
 private:
     FileSystemUtils fsu;
 #ifndef BOOTLOADER
@@ -67,6 +68,8 @@ private:
 #else
     FirmwareFile firmwareFile;
 #endif
+    bool keyReady;
+    bool usbhInitCalled;
 };
 
 #endif /*__STORAGE_H__*/

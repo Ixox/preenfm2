@@ -56,8 +56,9 @@ float PREENFM_FREQUENCY __attribute__ ((section(".ccmnoload")));;
 float PREENFM_FREQUENCY_INVERSED __attribute__ ((section(".ccmnoload")));;
 float PREENFM_FREQUENCY_INVERSED_LFO __attribute__ ((section(".ccmnoload")));;
 // Must be in memory accessible by DMA
-int dmaSampleBuffer[128];
+uint32_t dmaSampleBuffer[128];
 
+uint16_t pinTest;
 
 void setup() {
     // All bits for preemption
@@ -65,15 +66,24 @@ void setup() {
 
     // What PCB version;
     synthState.setPcbVersion(getPcbVersion());
+
     if (synthState.getPcbVersion() == PCB_R5) {
-        // Polyphony !!!
         // 192000000 / 1142 / 4  :
         PREENFM_FREQUENCY = 42031.52f;
+        synth.setDacNumberOfBits(18);
+        pinTest = GPIO_Pin_4;
     } else {
         // See configurator
         // 43 500 000 / 1024 = 
         PREENFM_FREQUENCY = 42480.47f;
+        synth.setDacNumberOfBits(24);
+        pinTest = GPIO_Pin_14;
     }
+    LEDFront_Config();
+    LEDTest_Config(pinTest);
+
+    
+
     PREENFM_FREQUENCY_INVERSED = 1.0f / PREENFM_FREQUENCY;
     PREENFM_FREQUENCY_INVERSED_LFO = PREENFM_FREQUENCY_INVERSED * 32.0f;
 
@@ -92,7 +102,6 @@ void setup() {
     	lcd.print((char)0);
     }
 
-    LED_Config();
 	USART_Config();
 	RNG_Config();
 
@@ -152,11 +161,25 @@ void setup() {
     synthState.setStorage(&usbKey);
     synthState.setHexter(&hexter);
 
-    usbKey.init(synth.getTimbre(0)->getParamRaw(), synth.getTimbre(1)->getParamRaw(), synth.getTimbre(2)->getParamRaw(), synth.getTimbre(3)->getParamRaw());
+
     usbKey.getPatchBank()->setSysexSender(&midiDecoder);
     // usbKey and hexter needs to know if arpeggiator must be loaded and saved
     usbKey.getPatchBank()->setArpeggiatorPartOfThePreset(&synthState.fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET]);
     hexter.setArpeggiatorPartOfThePreset(&synthState.fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET]);
+
+
+    usbKey.init(synth.getTimbre(0)->getParamRaw(), synth.getTimbre(1)->getParamRaw(), synth.getTimbre(2)->getParamRaw(), synth.getTimbre(3)->getParamRaw());
+    int waitCpt = 0;
+    while (!usbKey.isKeyReady()) {
+    	lcd.setCursor(0, 1);
+    	lcd.print("Usb Key Unaccessible");
+    	lcd.setCursor(0, 2);
+        lcd.print(' ');
+    	lcd.print(++waitCpt);
+        lcd.print(' ');
+        usbKey.init(synth.getTimbre(0)->getParamRaw(), synth.getTimbre(1)->getParamRaw(), synth.getTimbre(2)->getParamRaw(), synth.getTimbre(3)->getParamRaw());
+    }
+
     usbKey.getConfigurationFile()->loadConfig(synthState.fullState.midiConfigValue);
 
     // initialize global tuning
@@ -238,13 +261,32 @@ void setup() {
 }
 
 unsigned int ledTimer = 0;
+bool ledState = false;
 unsigned int encoderTimer = 0;
 unsigned int tempoTimer = 0;
 unsigned int ADCTimer = 0;
 
+
 #ifdef DEBUG_CPU_USAGE
 unsigned int tDebug;
 #endif
+
+ 
+void strobeLed(uint32_t sync1, uint32_t sync2) {
+    if (ledState) {
+        if ((preenTimer - ledTimer) > sync1) {
+            GPIO_ResetBits(GPIOC, pinTest);
+            ledTimer = preenTimer;
+            ledState = false;
+        }
+    } else {
+        if ((preenTimer - ledTimer) > sync2) {
+            GPIO_SetBits(GPIOC, pinTest);
+            ledTimer = preenTimer;
+            ledState = true;
+        }
+    }
+}
 
 
 void MCP4922_loop(void) {
@@ -308,6 +350,8 @@ void MCP4922_loop(void) {
         lcd.realTimeAction(&action, fillSoundBuffer);
     }
 
+    strobeLed(4203, (42031 * 2- 4203));
+
 #ifdef DEBUG_CPU_USAGE
     if ((preenTimer - tDebug) >= 500) {
         tDebug = preenTimer;
@@ -357,6 +401,9 @@ void CS4344_loop(void) {
         tempoTimer = preenTimer;
     }
 
+    strobeLed(131, (1312 * 2 - 131));
+
+    
 #ifdef DEBUG_CPU_USAGE
     if ((preenTimer - tDebug) >= 600) {
         tDebug = preenTimer;

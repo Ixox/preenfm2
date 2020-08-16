@@ -45,7 +45,7 @@ public:
         init(sState);
     }
 
-
+    void setDacNumberOfBits(uint32_t dacNumberOfBits);
 #ifdef CVIN
     void setCVIn(CVIn * cvin) {
         this->cvin = cvin;
@@ -62,8 +62,9 @@ public:
     void allSoundOff();
     void allSoundOff(int timbre);
     bool isPlaying();
-    void buildNewSampleBlock(int* sample);
+    void buildNewSampleBlock(uint32_t* sample);
     void buildNewSampleBlockMcp4922();
+    void buildNewSampleBlockCS4344(uint32_t *sample);
 
     // Overide SynthParamListener
     void playNote(int timbreNumber, char note, char velocity) {
@@ -138,7 +139,7 @@ public:
         }
     }
 
-    int *getSample() {
+    uint32_t *getSample() {
         return this->samples;
     }
 
@@ -213,7 +214,7 @@ private:
     // sample Buffer
     volatile int readCursor;
     volatile int writeCursor;
-    int samples[256];
+    uint32_t samples[256];
 
     // gate
     float currentGate;

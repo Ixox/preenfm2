@@ -22,7 +22,7 @@
 
 extern LiquidCrystal lcd;
 extern Synth synth;
-extern int dmaSampleBuffer[128];
+extern uint32_t dmaSampleBuffer[128];
 
 RingBuffer<uint8_t, 200> usartBufferIn  __attribute__ ((section(".ccmnoload")));
 RingBuffer<uint8_t, 100> usartBufferOut  __attribute__ ((section(".ccmnoload")));
@@ -286,13 +286,13 @@ void DMA1_Stream5_IRQHandler() {
         // 42000 / 128 = 1312 per seconds
         preenTimer++;
         // Fill part 1
-        synth.buildNewSampleBlock(dmaSampleBuffer);
+        synth.buildNewSampleBlockCS4344(dmaSampleBuffer);
     } else if (DMA_GetITStatus(DMA1_Stream5, DMA_IT_TCIF5)) {
         // Clear DMA Stream Total Transfer complete interrupt pending bit
         DMA_ClearITPendingBit(DMA1_Stream5, DMA_IT_TCIF5);
         preenTimer++;
         // Fill part 2
-        synth.buildNewSampleBlock(&dmaSampleBuffer[64]);
+        synth.buildNewSampleBlockCS4344(&dmaSampleBuffer[64]);
     }
 
 }

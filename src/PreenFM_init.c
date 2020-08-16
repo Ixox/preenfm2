@@ -109,7 +109,7 @@ void USART_Config() {
     USART_Cmd(USART3, ENABLE);
 }
 
-void LED_Config() {
+void LEDFront_Config() {
     // GPIOG Periph clock enable
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
 
@@ -121,17 +121,21 @@ void LED_Config() {
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
     GPIO_Init(GPIOB, &GPIO_InitStructure);
+}
+
+void LEDTest_Config(uint16_t pin) {
 
     /* Enable new LED */
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
 
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.GPIO_Pin = pin;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
     GPIO_Init(GPIOC, &GPIO_InitStructure);
-    GPIO_SetBits(GPIOC, GPIO_Pin_4);
+    GPIO_SetBits(GPIOC, pin);
 }
 
 
@@ -375,9 +379,9 @@ void CS4344_I2S3_Init() {
     I2S_StructInit(&I2S_InitStruct);
     I2S_InitStruct.I2S_AudioFreq = I2S_AudioFreq_Default;
     I2S_InitStruct.I2S_Mode = I2S_Mode_MasterTx;
-    I2S_InitStruct.I2S_Standard = I2S_Standard_Phillips;
+    I2S_InitStruct.I2S_Standard = I2S_Standard_MSB;
     // 16b ?????
-    I2S_InitStruct.I2S_DataFormat = I2S_DataFormat_32b;
+    I2S_InitStruct.I2S_DataFormat = I2S_DataFormat_24b;
     I2S_InitStruct.I2S_MCLKOutput = I2S_MCLKOutput_Enable;
     I2S_InitStruct.I2S_CPOL = I2S_CPOL_Low;
     I2S_Init(SPI3, &I2S_InitStruct);
@@ -386,7 +390,7 @@ void CS4344_I2S3_Init() {
 
 
 
-void CS4344_DMA_Init(int* sample) {
+void CS4344_DMA_Init(uint32_t* sample) {
     // 6. When using the DMA mode *
     // -Configure the DMA using DMA_Init() function *
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
@@ -409,12 +413,12 @@ void CS4344_DMA_Init(int* sample) {
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+    DMA_InitStructure.DMA_MemoryDataSize = DMA_PeripheralDataSize_HalfWord;
     DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
 
     DMA_InitStructure.DMA_Priority = DMA_Priority_High;
     DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Enable;
-    DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_3QuartersFull;
+    DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_HalfFull;
     DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
     DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
     // 6. Configure the DMA using DMA_Init() function
@@ -433,7 +437,7 @@ void CS4344_DMA_Init(int* sample) {
     NVIC_Init(&NVIC_InitStructure);
 }
 
-void CS4344_Config(int *sample) {
+void CS4344_Config(uint32_t *sample) {
 
     CS4344_GPIO_Init();
     CS4344_I2S3_Init();
