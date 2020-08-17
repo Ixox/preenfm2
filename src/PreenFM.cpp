@@ -169,15 +169,27 @@ void setup() {
 
 
     usbKey.init(synth.getTimbre(0)->getParamRaw(), synth.getTimbre(1)->getParamRaw(), synth.getTimbre(2)->getParamRaw(), synth.getTimbre(3)->getParamRaw());
-    int waitCpt = 0;
-    while (!usbKey.isKeyReady()) {
+    uint32_t waitCpt = 0;
+    if (!usbKey.isKeyReady()) {
     	lcd.setCursor(0, 1);
-    	lcd.print("Usb Key Unaccessible");
+    	lcd.print("   Insert Usb Key   ");
     	lcd.setCursor(0, 2);
-        lcd.print(' ');
-    	lcd.print(++waitCpt);
-        lcd.print(' ');
+    	lcd.print("                    ");
+    }
+    // Animation while waiting for Usb Key
+    while (!usbKey.isKeyReady()) {
+    	lcd.setCursor(0, 2);
+    	lcd.print("                    ");
+        int start = (waitCpt % 30) - 10;
+        start = start > 0 ? start : 0;
+        int end = (waitCpt % 30);
+        end = end > 20 ? 20 : end;
+    	lcd.setCursor(start, 2);
+        for (uint8_t t = start; t < end; t++) {
+            lcd.print('-');
+        }
         usbKey.init(synth.getTimbre(0)->getParamRaw(), synth.getTimbre(1)->getParamRaw(), synth.getTimbre(2)->getParamRaw(), synth.getTimbre(3)->getParamRaw());
+        waitCpt++;
     }
 
     usbKey.getConfigurationFile()->loadConfig(synthState.fullState.midiConfigValue);

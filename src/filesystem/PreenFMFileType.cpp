@@ -133,7 +133,7 @@ void PreenFMFileType::usbProcess() {
 bool PreenFMFileType::sendInitCommand() {
     commandParams.commandResult = COMMAND_FAILED;
    	commandParams.commandState = COMMAND_INIT;
-    int trys = 2000000;
+    int trys = 100000;
     while (commandParams.commandState != COMMAND_NONE && (trys--) > 0) {
         USBH_Process(&usbOTGHost, &usbHost);
     }
