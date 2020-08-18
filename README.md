@@ -2,16 +2,16 @@
 
 Ixox/preenfm2 is the official repository of the preenfm2 firmware.
 
-You can find here the sources of the firmware as well as the hardware files for the PCB, MCU board and cases.
+You can find here the compiled firmware, its code source and some hardware files for the PCB, MCU board and cases.
 
-If you think something is missing or not clear, please contact me.
+To flash the preenfm2 for the first time, [follow these instructions](https://github.com/Ixox/preenfm2/tree/master/flash)
 
-If you don't have the preenfm2 bootlader installed, you need to flash it first, [read this](http://ixox.fr/preenfm2/build-it/burn-firmware/)
+
+## Compiling the firmware
 
 To compile the firmware, you'll need [arm-gcc version 4.7](https://launchpad.net/gcc-arm-embedded/+milestone/4.7-2014-q2-update)
 
 Add the bin directory to your PATH, and run **'make'**, you'll get the list of the available targets.
-
 
 ```bash
 $ make
