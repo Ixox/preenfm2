@@ -18,29 +18,6 @@
 #include "Voice.h"
 #include "Timbre.h"
 
-inline
-float clamp(float d, float min, float max) {
-  const float t = unlikely(d < min) ? min : d;
-  return unlikely(t > max) ? max : t;
-}
-inline
-float sqrt3(const float x)  
-{
-  union
-  {
-    int i;
-    float x;
-  } u;
-
-  u.x = x;
-  u.i = (1 << 29) + (u.i >> 1) - (1 << 22);
-  return u.x;
-} 
-inline
-float tanh4(float x)
-{
-	return x / sqrt3(x * x + 1);
-}
 float Voice::glidePhaseInc[nbGlideVals];
 
 extern float *frequencyToUse;
