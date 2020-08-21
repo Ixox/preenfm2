@@ -51,6 +51,7 @@ public:
 #else
 #endif
 
+    bool isKeyReady() { return keyReady; }
 private:
     FileSystemUtils fsu;
 #ifndef BOOTLOADER
@@ -62,6 +63,8 @@ private:
     UserWaveform userWaveForm;
 #else
 #endif
+    bool keyReady;
+    bool usbhInitCalled;
 };
 
 #endif /*__STORAGE_H__*/
