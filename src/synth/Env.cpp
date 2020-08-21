@@ -41,6 +41,7 @@ void Env::init(struct EnvelopeParamsA *envParamsA, struct EnvelopeParamsB *envPa
 	this->envParamsB = envParamsB;
 	this->envNumber = envNumber;
 	this->algoNumber = algoNumber;
+	this->isLoop = checkIsLoop();
 
     if (initTab == 0) {
         initTab = 1;

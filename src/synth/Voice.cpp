@@ -18,8 +18,7 @@
 #include "Voice.h"
 #include "Timbre.h"
 
-
-float Voice::glidePhaseInc[10];
+float Voice::glidePhaseInc[nbGlideVals];
 
 extern float *frequencyToUse;
 
@@ -37,9 +36,11 @@ Voice::Voice(void)
 				90.0f,
 				140.0f,
 				200.0f,
-				500.0f
+				500.0f,
+				1200.0f,
+				2700.0f
 		};
-		for (int k = 0 ; k <10 ; k++) {
+		for (int k = 0 ; k <nbGlideVals ; k++) {
 			glidePhaseInc[k] = 1.0f/tmp[k];
 		}
 	}
@@ -3253,7 +3254,7 @@ void Voice::nextBlock() {
 				env5Value += env5Inc;
 				env6Value += env6Inc;
 			}
-			if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env3.isDead(&envState3)  && currentTimbre->env4.isDead(&envState4) && currentTimbre->env5.isDead(&envState5) && currentTimbre->env6.isDead(&envState6))) {
+			if (unlikely(currentTimbre->env1.isDead(&envState1) && currentTimbre->env2.isDead(&envState2) && currentTimbre->env3.isDead(&envState3)  && currentTimbre->env4.isDead(&envState4) && currentTimbre->env5.isDead(&envState5))) {
 				endNoteOrBeginNextOne();
 			}
 		 }

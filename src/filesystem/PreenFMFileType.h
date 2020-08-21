@@ -171,7 +171,7 @@ protected:
 	int checkSize(FILE_ENUM file);
 	int checkSize(const char* fileName);
 	void usbProcess();
-
+    bool sendInitCommand();
 	int initFiles();
 	int readNextFile(struct PFM2File* bank);
 

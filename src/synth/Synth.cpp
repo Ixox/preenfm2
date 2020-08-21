@@ -23,7 +23,7 @@
 
 #include "hardware/dwt.h"
 
-#ifdef DEBUG
+#ifdef DEBUG_CPU_USAGE
 CYCCNT_buffer cycles_all;
 #endif
 
@@ -120,7 +120,7 @@ bool Synth::isPlaying() {
 }
 
 
-#ifdef DEBUG
+#ifdef DEBUG_CPU_USAGE
 int cptDisplay = 0;
 float totalCycles = 0;
 #endif
@@ -285,7 +285,7 @@ void Synth::buildNewSampleBlock() {
 
     CYCLE_MEASURE_END();
 
-#ifdef DEBUG
+#ifdef DEBUG_CPU_USAGE
     if (cptDisplay++ > 500) {
         totalCycles += cycles_all.remove();
 
@@ -440,6 +440,7 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
         switch (encoder) {
         case ENCODER_ENGINE_ALGO:
             fixMaxNumberOfVoices(timbre);
+            timbres[timbre].initADSRloop();
             break;
         case ENCODER_ENGINE_VOICE:
             if (newValue > oldValue) {
@@ -521,8 +522,7 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
         break;
     case ROW_MATRIX_FIRST ... ROW_MATRIX_LAST:
         timbres[timbre].verifyLfoUsed(encoder, oldValue, newValue);
-        if (encoder == ENCODER_MATRIX_DEST) {
-            // Reset old destination
+        if (encoder == ENCODER_MATRIX_DEST1 || encoder == ENCODER_MATRIX_DEST2) {
             timbres[timbre].resetMatrixDestination(oldValue);
         }
         break;

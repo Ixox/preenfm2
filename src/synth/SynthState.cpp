@@ -44,7 +44,7 @@ struct ParameterRowDisplay engine1ParameterRow  = {
                 {ALGO1, ALGO_END-1, ALGO_END, DISPLAY_TYPE_STRINGS, algoNames, nullNamesOrder, nullNamesOrder},
                 {0, 16, 17, DISPLAY_TYPE_INT, nullNames,nullNamesOrder, nullNamesOrder },
                 {0, 16, 17, DISPLAY_TYPE_VOICES, nullNames, nullNamesOrder, nullNamesOrder },
-                {0, 10, 11, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder }
+                {0, 12, 13, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
 
@@ -262,7 +262,7 @@ const char *fxName[] = {
     "Sigm", /*	24	*/
     "Fold", /*	25	*/
     "Wrap", /*	26	*/
-    "Xor ", /*	27	*/
+    "Rot ", /*	27	*/
     "Txr1", /*	28	*/
     "Txr2", /*	29	*/
     "LPx1", /*	30	*/
@@ -325,9 +325,9 @@ struct FilterRowDisplay filterRowDisplay[FILTER_LAST] = {
         { "Driv", "Tone", "Gain" },
         { "Driv", "Tone", "Gain" },
         { "Driv", "Tone", "Gain" },
-        { "Thrs", "Tone", "Gain" },
-        { "Freq", "Res ", "Gain" },
-        { "Freq", "Res ", "Gain" },
+        { "angl", "smpr", "Gain" },
+        { "Smp1", "Smp2", "Gain" },
+        { "Smp1", "Smp2", "Gain" },
         { "Freq", "Fold", "Gain" },
         { "Freq", "Fold", "Gain" },
         { "Pos ", "Freq", "Gain" },
@@ -422,15 +422,15 @@ const char* matrixSourceNames [] = { "None", "lfo1", "lfo2", "lfo3", "env1", "en
 #ifdef CVIN
         , "CV1 ", "CV2 ", "CV3 ", "CV4 "
 #endif
-    , "CC74"
+    , "CC74", "rndK"
 };
 
 #ifdef CVIN
-const unsigned char  matrixSourceOrder[] =        { 0, 19, 20, 21, 22, 1, 2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18, 13, 14, 15, 16, 23};
-const unsigned char  matrixSourcePosition[] =     { 0,  5,  6,  7,  8, 9, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 17, 18, 1,  2,  3,  4, 23};
+const unsigned char  matrixSourceOrder[] =        { 0, 19, 20, 21, 22, 1, 2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 17, 18, 13, 14, 15, 16, 23, 24};
+const unsigned char  matrixSourcePosition[] =     { 0,  5,  6,  7,  8, 9, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 17, 18, 1,  2,  3,  4, 23, 24};
 #else
-const unsigned char  matrixSourceOrder[] =        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17, 18, 13, 14, 15, 16, 19 };
-const unsigned char  matrixSourcePosition[] =     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 13, 14, 19};
+const unsigned char  matrixSourceOrder[] =        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17, 18, 13, 14, 15, 16, 19, 20};
+const unsigned char  matrixSourcePosition[] =     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 13, 14, 19, 20};
 #endif
 
 
@@ -444,23 +444,23 @@ const char* matrixDestNames [] = {
         /*36*/ "l1Fq", "l2Fq", "l3Fq", "e2si", "s1ga", "s2ga",
         /*42*/ "Fltr",
         /*43*/ "o*Fh", "DecC",
-        /*45*/ "AttM", "DecM", "RelM"
+        /*45*/ "AttM", "DecM", "RelM", "sq1S", "sq2S"
 
 } ;
-const unsigned char  matrixTargetOrder[] =        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 43, 24, 25, 26, 27, 28, 29, 30, 45, 44, 46, 31, 47, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42 };
+const unsigned char  matrixTargetOrder[] =        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 43, 24, 25, 26, 27, 28, 29, 30, 45, 44, 46, 31, 47, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 48, 49 };
 //   Order                                        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44 };
-const unsigned char  matrixTargetPosition[] =     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29, 30, 31, 35, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 24, 33, 32, 34, 36 };
+const unsigned char  matrixTargetPosition[] =     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29, 30, 31, 35, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 24, 33, 32, 34, 36, 48, 49 };
 
 
 struct ParameterRowDisplay matrixParameterRow = {
         "Matrix",
-        { "Srce", "Mult", "Dest", "    " },
+        { "Srce", "Mult", "Dst1", "Dst2" },
         {
                 { MATRIX_SOURCE_NONE, MATRIX_SOURCE_MAX-1, MATRIX_SOURCE_MAX, DISPLAY_TYPE_STRINGS, matrixSourceNames, matrixSourceOrder, matrixSourcePosition},
                 { -10, 10, 2001, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder },
                 // We removed 8 destination target in firmware 2.0
                 { DESTINATION_NONE, DESTINATION_MAX -1, DESTINATION_MAX, DISPLAY_TYPE_STRINGS, matrixDestNames, matrixTargetOrder, matrixTargetPosition},
-                { 0, 0, 0, DISPLAY_TYPE_NONE, nullNames, nullNamesOrder, nullNamesOrder }
+                { DESTINATION_NONE, DESTINATION_MAX -1, DESTINATION_MAX, DISPLAY_TYPE_STRINGS, matrixDestNames, matrixTargetOrder, matrixTargetPosition}
         }
 };
 
@@ -487,7 +487,7 @@ struct ParameterRowDisplay lfoStepParameterRow = {
         "Step Seq",
         { "Bpm ", "Gate", "    ", "    " },
         {
-                { 10 ,245, 236, DISPLAY_TYPE_STEP_SEQ_BPM, nullNames, nullNamesOrder, nullNamesOrder},
+                { 0 ,245, 246, DISPLAY_TYPE_STEP_SEQ_BPM, nullNames, nullNamesOrder, nullNamesOrder},
                 { 0 , 1, 101, DISPLAY_TYPE_FLOAT, nullNames, nullNamesOrder, nullNamesOrder},
                 { 0, 0, 0, DISPLAY_TYPE_STEP_SEQ1, nullNames, nullNamesOrder, nullNamesOrder },
                 { 0, 0, 0, DISPLAY_TYPE_STEP_SEQ2, nullNames, nullNamesOrder, nullNamesOrder }
@@ -1391,7 +1391,7 @@ void SynthState::loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int
     {
         int dx7bank = bank - 2;
         PFM2File const *bank = storage->getDX7SysexFile()->getFile(bankLSB + dx7bank * 128);
-        if (bank->fileType != FILE_EMPTY) {
+        if (bank->fileType != FILE_EMPTY && patchNumber < 32) {
             loadDx7Patch(timbre, bank, patchNumber, params);
         }
     }
@@ -2480,20 +2480,20 @@ void SynthState::randomizePreset() {
 
         params->matrixRowState10.source = MATRIX_SOURCE_MODWHEEL;
         params->matrixRowState10.mul = 2.0f;
-        params->matrixRowState10.destination = INDEX_ALL_MODULATION;
+        params->matrixRowState10.dest1 = INDEX_ALL_MODULATION;
 
         params->matrixRowState11.source = MATRIX_SOURCE_PITCHBEND;
         params->matrixRowState11.mul = 1.0f;
-        params->matrixRowState11.destination = ALL_OSC_FREQ;
+        params->matrixRowState11.dest1 = ALL_OSC_FREQ;
 
         params->matrixRowState12.source = MATRIX_SOURCE_AFTERTOUCH;
         params->matrixRowState12.mul = 1.0f;
-        params->matrixRowState12.destination = INDEX_MODULATION1;
+        params->matrixRowState12.dest1 = INDEX_MODULATION1;
 
         for (int m = 1; m<=9; m++) {
             struct MatrixRowParams* matrixRow =  &((struct MatrixRowParams*)&params->matrixRowState1)[m - 1];
             matrixRow->mul = 0;
-            matrixRow->destination = 0;
+            matrixRow->dest1 = 0;
         }
 
 
@@ -2501,14 +2501,14 @@ void SynthState::randomizePreset() {
         for (int i = 0; i < 2; i++) {
             struct MatrixRowParams* matrixRow =  &((struct MatrixRowParams*)&params->matrixRowState1)[getRandomInt(10)];
             matrixRow->mul = getRandomFloat(0.2f, 3.0f);
-            matrixRow->destination = dest[getRandomInt(7)];
+            matrixRow->dest1 = dest[getRandomInt(7)];
         }
 
         if (modulationRandom >= 2) {
             for (int i = 0; i < 3; i++) {
                 struct MatrixRowParams* matrixRow =  &((struct MatrixRowParams*)&params->matrixRowState1)[getRandomInt(10)];
                 matrixRow->mul = getRandomFloat(1.0f, 3.0f);
-                matrixRow->destination = getRandomInt(DESTINATION_MAX);
+                matrixRow->dest1 = getRandomInt(DESTINATION_MAX);
             }
         }
 
@@ -2517,7 +2517,7 @@ void SynthState::randomizePreset() {
                 struct MatrixRowParams* matrixRow =  &((struct MatrixRowParams*)&params->matrixRowState1)[getRandomInt(10)];
                 float mm = getRandomFloat(2.0f, 5.0f);
                 matrixRow->mul = getRandomFloat(-mm, mm);
-                matrixRow->destination = getRandomInt(DESTINATION_MAX);
+                matrixRow->dest1 = getRandomInt(DESTINATION_MAX);
             }
         }
 

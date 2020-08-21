@@ -146,6 +146,32 @@ void setup() {
     // usbKey and hexter needs to know if arpeggiator must be loaded and saved
     usbKey.getPatchBank()->setArpeggiatorPartOfThePreset(&synthState.fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET]);
     hexter.setArpeggiatorPartOfThePreset(&synthState.fullState.midiConfigValue[MIDICONFIG_ARPEGGIATOR_IN_PRESET]);
+
+
+    usbKey.init(synth.getTimbre(0)->getParamRaw(), synth.getTimbre(1)->getParamRaw(), synth.getTimbre(2)->getParamRaw(), synth.getTimbre(3)->getParamRaw());
+    uint32_t waitCpt = 0;
+    if (!usbKey.isKeyReady()) {
+    	lcd.setCursor(0, 1);
+    	lcd.print("   Insert Usb Key   ");
+    	lcd.setCursor(0, 2);
+    	lcd.print("                    ");
+    }
+    // Animation while waiting for Usb Key
+    while (!usbKey.isKeyReady()) {
+    	lcd.setCursor(0, 2);
+    	lcd.print("                    ");
+        int start = (waitCpt % 30) - 10;
+        start = start > 0 ? start : 0;
+        int end = (waitCpt % 30);
+        end = end > 20 ? 20 : end;
+    	lcd.setCursor(start, 2);
+        for (uint8_t t = start; t < end; t++) {
+            lcd.print('-');
+        }
+        usbKey.init(synth.getTimbre(0)->getParamRaw(), synth.getTimbre(1)->getParamRaw(), synth.getTimbre(2)->getParamRaw(), synth.getTimbre(3)->getParamRaw());
+        waitCpt++;
+    }
+
     usbKey.getConfigurationFile()->loadConfig(synthState.fullState.midiConfigValue);
 
     // initialize global tuning
@@ -177,8 +203,10 @@ void setup() {
     for (int r=0; r<20; r++) {
     	if (r<10 && (r & 0x1) == 0) {
 			GPIO_SetBits(GPIOB, GPIO_Pin_6);
+            GPIO_SetBits(GPIOC, GPIO_Pin_4);
     	} else {
     		GPIO_ResetBits(GPIOB, GPIO_Pin_6);
+            GPIO_ResetBits(GPIOC, GPIO_Pin_4);
     	}
 
     	if (synthState.fullState.midiConfigValue[MIDICONFIG_BOOT_SOUND] > 0) {

@@ -23,7 +23,10 @@ const char* DX7SysexFile::getFolderName() {
 }
 
 uint8_t* DX7SysexFile::dx7LoadPatch(const struct PFM2File* bank, int patchNumber) {
-	const char* fullBankName = getFullName(bank->name);
+    if (patchNumber > 31) {
+    	return (uint8_t*)0;
+    }
+    const char* fullBankName = getFullName(bank->name);
     int result = load(fullBankName, patchNumber * DX7_PACKED_PATCH_SIZED + 6,  (void*)dx7PackedPatch, DX7_PACKED_PATCH_SIZED);
     if (result >0) {
     	return (uint8_t*)0;
