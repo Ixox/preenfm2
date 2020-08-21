@@ -546,6 +546,9 @@ Timbre::Timbre() {
 	v0L = v1L = v2L = v3L = v4L = v5L = v6L = v7L = v8L = v0R = v1R = v2R = v3R = v4R = v5R = v6R = v7R = v8R = v8R = 0.0f;
 	fxParamA1 = fxParamA2 = fxParamB2 = 0;
     fxParam1PlusMatrix = -1.0;
+
+	// Center balance
+	leftRightBalance = .5f;
 }
 
 Timbre::~Timbre() {
@@ -1111,7 +1114,6 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
 			}
     	} else if (pan > 0) {
         	float oneMinusPan = 1 - pan;
-        	float adjustedmixerGain = (pan * .5) * mixerGain;
         	for (int k=0 ; k < BLOCK_SIZE ; k++) {
 				sampleL = *(sp);
 				sampleR = *(sp + 1);
@@ -4704,10 +4706,45 @@ case FILTER_OFF:
 		}
     }
     break;
-    default:
-    	// NO EFFECT
-   	break;
-    }
+default:
+	// NO EFFECT
+break;
+}
+
+// Left Right Balance
+// Controled by CC10 only
+
+if (leftRightBalance != .5f) {
+	// Same algo as Mixer->Pan
+	float pan = leftRightBalance * 2 - 1.0f ;
+	float *sp = this->sampleBlock;
+	float sampleR, sampleL;
+	if (pan <= 0) {
+		float onePlusPan = 1 + pan;
+		float minusPan = - pan;
+		for (int k = BLOCK_SIZE ; k--; ) {
+			sampleL = *(sp);
+			sampleR = *(sp + 1);
+
+			*sp = (sampleL + sampleR * minusPan);
+			sp++;
+			*sp = sampleR * onePlusPan;
+			sp++;
+		}
+	} else if (pan > 0) {
+		float oneMinusPan = 1 - pan;
+		for (int k = 0 ; k < BLOCK_SIZE ; k++) {
+			sampleL = *(sp);
+			sampleR = *(sp + 1);
+
+			*sp = sampleL * oneMinusPan;
+			sp++;
+			*sp = (sampleR + sampleL * pan);
+			sp++;
+		}
+	}
+}
+
 
 }
 

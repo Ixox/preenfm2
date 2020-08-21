@@ -60,7 +60,7 @@
   *-----------------------------------------------------------------------------
   *        HSE Frequency(Hz)                      | 12000000
   *-----------------------------------------------------------------------------
-  *        PLL_M                                  | 12
+  *        PLL_M                                  | 12 / OR 8
   *-----------------------------------------------------------------------------
   *        PLL_N                                  | 336
   *-----------------------------------------------------------------------------
@@ -120,10 +120,12 @@
 /******************************************************************************/
 
 /************************* PLL Parameters *************************************/
-#ifndef OVERCLOCK
 
 /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
-// PreenFM2 CERB40 Quartz frequency 12Mhz
+// PreenFM2 Quartz frequency 12Mhz
+// We run the STM32F405 at 192Mhz 
+#ifdef UNDEFINED_BECAUSE_ORVERCLOCK_IS_THE_NEW_STANDARD
+
 #define PLL_M      12
 #define PLL_N      336
 
@@ -132,8 +134,8 @@
 
 /* USB OTG FS, SDIO and RNG Clock =  PLL_VCO / PLLQ */
 #define PLL_Q      7
+#endif
 
-#else
 
 /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
 #define PLL_M      12
@@ -145,7 +147,6 @@
 /* USB OTG FS, SDIO and RNG Clock =  PLL_VCO / PLLQ */
 #define PLL_Q      8
 
-#endif
 
 /******************************************************************************/
 
