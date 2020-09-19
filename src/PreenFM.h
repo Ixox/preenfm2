@@ -26,12 +26,6 @@
 #define _PreenFM_H_
 
 
-#ifndef OVERCLOCK
-#define OVERCLOCK_STRING
-#else
-#define OVERCLOCK_STRING " o"
-#endif
-
 #ifndef CVIN
 
 #define CVIN_STRING ""

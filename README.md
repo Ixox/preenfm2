@@ -19,9 +19,7 @@ You must chose a target
 Don't forget to clean between different build targets
    clean : clean build directory
    pfm : build pfm2 firmware
-   pfmo : build pfm2 overclocked firmware
    pfmcv : build pfm2 firmware for Eurorack 
-   pfmcvo : build pfm2 overclocked firmware for Eurorack
    installdfu : flash last compiled firmware through DFU
    zip : create zip with all inside
 ```

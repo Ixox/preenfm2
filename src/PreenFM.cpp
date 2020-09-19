@@ -387,6 +387,10 @@ void MCP4922_loop(void) {
 
 void CS4344_loop(void) {
 
+	// Comment following line for debug....
+	lcd.setRealTimeAction(false);
+
+
     // New midi data ?
     // Move to DMA1_Stream5_IRQHandler ? 
     // Would be better i think
@@ -413,9 +417,8 @@ void CS4344_loop(void) {
         tempoTimer = preenTimer;
     }
 
-    strobeLed(131, (1312 * 2 - 131));
 
-    
+
 #ifdef DEBUG_CPU_USAGE
     if ((preenTimer - tDebug) >= 600) {
         tDebug = preenTimer;
@@ -432,6 +435,23 @@ void CS4344_loop(void) {
         lcd.print('<');
     }
 #endif
+
+
+    lcd.setRealTimeAction(true);
+    while (lcd.hasActions()) {
+        if (usartBufferIn.getCount() > 20) {
+            while (usartBufferIn.getCount() > 0) {
+                midiDecoder.newByte(usartBufferIn.remove());
+            }
+        }
+        LCDAction action = lcd.nextAction();
+        lcd.realTimeAction(&action, fillSoundBuffer);
+    }
+
+
+    strobeLed(131, (1312 * 2 - 131));
+
+    
 }
 
 int main(void) {

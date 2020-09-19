@@ -21,8 +21,9 @@
 extern LiquidCrystal lcd;
 extern int dmaSampleBuffer[128];
 
-const char* line1 = "PreenFM2 v"PFM2_VERSION""CVIN_STRING""OVERCLOCK_STRING;
+const char* line1 = "preenfm2 v"PFM2_VERSION""CVIN_STRING;
 const char* line2 = "     By Xavier Hosxe";
+const char* line3 = "          24bits DAC";
 
 
 void strobePin(uint8_t count, uint32_t rate) {
@@ -553,6 +554,8 @@ void LCD_InitChars(LiquidCrystal *lcd) {
 }
 
 void MCP4922_screenBoot(Synth& synth) {
+
+    
     synth.buildNewSampleBlockMcp4922();
     synth.buildNewSampleBlockMcp4922();
 
@@ -636,7 +639,18 @@ void MCP4922_screenBoot(Synth& synth) {
 }
 
 void CS4344_screenBoot() {
+    int l = 0;
+    for (l = 0; line1[l] != 0; l++);
+    lcd.clear();
+    lcd.setCursor(20-l, 0);
+    lcd.print(line1);
+    lcd.setCursor(0, 1);
+    lcd.print(line2);
+    lcd.setCursor(0, 3);
+    lcd.print(line3);
 
+    // Wait 3 seconds
+    PreenFM2_uDelay(3000000);
 }
 
 
