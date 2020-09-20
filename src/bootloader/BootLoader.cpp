@@ -297,7 +297,7 @@ void BootLoader::resetButtonPressed() {
 void BootLoader::welcome() {
 	this->lcd->clear();
 	this->lcd->setCursor(0,0);
-	this->lcd->print("* BootLoader v"PFM2_BOOTLOADER_VERSION" *" );
+	this->lcd->print("- bootloader  "PFM2_BOOTLOADER_VERSION" -" );
 }
 
 

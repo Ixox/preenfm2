@@ -210,9 +210,9 @@ help:
 
 zip: 
 	echo "dfu-util -a0 -d 0x0483:0xdf11 -D p2_${PFM2_VERSION_NUMBER}.bin -s 0x8040000" > build/install_firmware.cmd
-	echo "dfu-util -a0 -d 0x0483:0xdf11 -D p2_cv_${PFM2_VERSION_NUMBER}.bin -s 0x8040000" > build/install_firmware_cv.cmd
+#	echo "dfu-util -a0 -d 0x0483:0xdf11 -D p2_cv_${PFM2_VERSION_NUMBER}.bin -s 0x8040000" > build/install_firmware_cv.cmd
 	cp flash/* build/
-	zip pfm2_$(PFM2_VERSION_NUMBER).zip build/*.bin build/*.syx build/*.cmd
+	zip pfm2_$(PFM2_VERSION_NUMBER).zip build/*.bin build/*.cmd
 
 
 pfm: binfirmware
