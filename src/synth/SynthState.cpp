@@ -1373,6 +1373,8 @@ void SynthState::loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int
     {
         PFM2File const *bank = storage->getPatchBank()->getFile(bankLSB);
         if (bank->fileType != FILE_EMPTY) {
+            fullState.preenFMBankNumber = bankLSB;
+            fullState.preenFMPresetNumber = patchNumber;
             loadPreenFMPatch(timbre, bank, patchNumber, params);
         }
     }
@@ -1381,6 +1383,8 @@ void SynthState::loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int
     {
         PFM2File const *bank = storage->getComboBank()->getFile(bankLSB);
         if (bank->fileType != FILE_EMPTY) {
+            fullState.preenFMComboNumber = bankLSB;
+            fullState.preenFMComboPresetNumber = patchNumber;
             loadPreenFMCombo(bank, patchNumber);
         }
     }
@@ -1392,6 +1396,8 @@ void SynthState::loadPreenFMPatchFromMidi(int timbre, int bank, int bankLSB, int
         int dx7bank = bank - 2;
         PFM2File const *bank = storage->getDX7SysexFile()->getFile(bankLSB + dx7bank * 128);
         if (bank->fileType != FILE_EMPTY && patchNumber < 32) {
+            fullState.dx7BankNumber = bankLSB;
+            fullState.dx7PresetNumber = patchNumber;
             loadDx7Patch(timbre, bank, patchNumber, params);
         }
     }
