@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "*.h": "cpp",
+        "*.tcc": "cpp",
+        "fstream": "cpp",
+        "istream": "cpp",
+        "ostream": "cpp",
+        "sstream": "cpp",
+        "*.def": "cpp",
+        "unordered_map": "cpp",
+        "numeric": "cpp",
+        "ratio": "cpp",
+        "regex": "cpp"
+    }
+}
