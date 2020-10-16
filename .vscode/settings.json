@@ -10,6 +10,17 @@
         "unordered_map": "cpp",
         "numeric": "cpp",
         "ratio": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "deque": "c",
+        "forward_list": "c",
+        "list": "c",
+        "string": "c",
+        "unordered_set": "c",
+        "vector": "c",
+        "rope": "c",
+        "slist": "c",
+        "system_error": "c",
+        "any": "c",
+        "complex": "c"
     }
 }

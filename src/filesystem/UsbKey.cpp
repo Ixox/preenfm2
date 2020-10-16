@@ -47,6 +47,8 @@ int UsbKey::dx7Init() {
     		break;
     	}
     }
+    closeDir();
+
 	dx7NumberOfBanks = k ;
 	sortBankFile(dx7Bank, dx7NumberOfBanks);
     return res;
@@ -102,6 +104,7 @@ int UsbKey::preenFMBankInit() {
     		break;
     	}
     }
+    closeDir();
 	preenFMNumberOfBanks = k;
 	sortBankFile(preenFMBank, preenFMNumberOfBanks);
     return res;
@@ -152,6 +155,7 @@ int UsbKey::preenFMComboInit() {
     		break;
     	}
     }
+    closeDir();
 	preenFMNumberOfCombos = k;
 	sortBankFile(preenFMCombo, preenFMNumberOfCombos);
     return res;

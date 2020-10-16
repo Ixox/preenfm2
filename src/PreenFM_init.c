@@ -649,8 +649,8 @@ void CS4344_screenBoot() {
     lcd.setCursor(0, 3);
     lcd.print(line3);
 
-    // Wait 3 seconds
-    PreenFM2_uDelay(3000000);
+    // Wait 2 seconds
+    PreenFM2_uDelay(1500000);
 }
 
 

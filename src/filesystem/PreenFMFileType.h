@@ -170,6 +170,7 @@ protected:
 	int save(const char* fileName, int seek, void* bytes, int size);
 	int checkSize(FILE_ENUM file);
 	int checkSize(const char* fileName);
+    void closeDir();
 	void usbProcess();
     bool sendInitCommand();
 	int initFiles();
