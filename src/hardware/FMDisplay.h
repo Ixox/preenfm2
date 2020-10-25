@@ -31,7 +31,7 @@ class FMDisplay : public SynthParamListener, public SynthMenuListener, public Sy
 public:
 	FMDisplay();
 	~FMDisplay();
-	void init(LiquidCrystal* lcd, Storage* storage);
+	void init(LiquidCrystal* lcd, Storage* storage, float ticksPerMinute);
 	void customCharsInit();
 
 	void updateEncoderValue(int row, int encoder, ParameterDisplay* param, float newValue);

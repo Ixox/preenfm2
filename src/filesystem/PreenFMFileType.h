@@ -153,6 +153,7 @@ public:
 	int getFileIndex(const struct PFM2File* file);
 	int renameFile(const struct PFM2File* bank, const char* newName);
 	bool nameExists(const char* bankName);
+    void closeDir();
 
 protected:
 	virtual const char* getFolderName() = 0;
@@ -170,7 +171,6 @@ protected:
 	int save(const char* fileName, int seek, void* bytes, int size);
 	int checkSize(FILE_ENUM file);
 	int checkSize(const char* fileName);
-    void closeDir();
 	void usbProcess();
     bool sendInitCommand();
 	int initFiles();

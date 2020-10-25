@@ -215,11 +215,13 @@ void setup() {
         MCP4922_SysTick_Config();
         MCP4922_Config();
         MCP4922_screenBoot(synth);
+        fmDisplay.init(&lcd, &usbKey, 60 * PREENFM_FREQUENCY * .0001f);
     } else {
         // Same method but special case
         lcd.setRealTimeAction(true);
         CS4344_Config(dmaSampleBuffer);
         CS4344_screenBoot();
+        fmDisplay.init(&lcd, &usbKey, 60.0f * 4.0f);
     }
 
     // FS = Full speed : midi
@@ -237,7 +239,6 @@ void setup() {
     // In any case init tables
     synthState.propagateAfterNewComboLoad();
 
-    fmDisplay.init(&lcd, &usbKey);
 
     int bootOption = synthState.fullState.midiConfigValue[MIDICONFIG_BOOT_START];
 
@@ -410,15 +411,14 @@ void CS4344_loop(void) {
         fmDisplay.refreshAllScreenByStep();
     }
 
-    if ((preenTimer - tempoTimer) > 250) {
+    // 1312 per seconds
+    if ((preenTimer - tempoTimer) > 328) {
         // display to update
         synthState.tempoClick();
         fmDisplay.tempoClick();
 
         tempoTimer = preenTimer;
     }
-
-
 
 #ifdef DEBUG_CPU_USAGE
     if ((preenTimer - tDebug) >= 600) {
@@ -437,7 +437,6 @@ void CS4344_loop(void) {
     }
 #endif
 
-
     lcd.setRealTimeAction(true);
     while (lcd.hasActions()) {
         if (usartBufferIn.getCount() > 20) {
@@ -449,10 +448,7 @@ void CS4344_loop(void) {
         lcd.realTimeAction(&action, fillSoundBuffer);
     }
 
-
     strobeLed(131, (1312 * 2 - 131));
-
-    
 }
 
 int main(void) {

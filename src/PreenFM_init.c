@@ -410,11 +410,11 @@ void CS4344_DMA_Init(int32_t* sample) {
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&SPI3->DR;  // 0x40003C0C;
     DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)sample;
     DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-    DMA_InitStructure.DMA_BufferSize = (uint32_t)128;
+    DMA_InitStructure.DMA_BufferSize = (uint32_t)256;
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Word;
-    DMA_InitStructure.DMA_MemoryDataSize = DMA_PeripheralDataSize_Word;
+    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
+    DMA_InitStructure.DMA_MemoryDataSize = DMA_PeripheralDataSize_HalfWord;
     DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
 
     DMA_InitStructure.DMA_Priority = DMA_Priority_High;

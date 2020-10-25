@@ -357,7 +357,7 @@ int USBH_USR_MSC_Application(void) {
         }
         commandParams.commandState = COMMAND_NONE;
         break;
-// #ifdef BOOTLOADER
+#ifdef BOOTLOADER
     // Low level only accessible by bootloader in mass storage device mode.
     case DISKIO_GETSECTORNUMBER:
     	disk_initialize(0);
@@ -385,7 +385,7 @@ int USBH_USR_MSC_Application(void) {
 	  	}
         commandParams.commandState = COMMAND_NONE;
     	break;
-// #endif
+#endif
     case COMMAND_NONE:
         break;
     }
