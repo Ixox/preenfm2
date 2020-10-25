@@ -103,6 +103,20 @@ BootLoader::BootLoader(LiquidCrystal* lcd) {
 BootLoader::~BootLoader() {
 }
 
+void BootLoader::loopUntilKeyReady() {
+    int cpt = 1;
+    while (!usbKey.isKeyReady()) {
+		this->lcd->setCursor(0, 1);
+		this->lcd->print("Wait Usb stick ");
+        this->lcd->print(cpt++);
+        usbKey.init(0,0,0,0);
+    }
+    if (cpt > 1) {
+        this->lcd->setCursor(0, 1);
+        this->lcd->print("                  ");
+    }
+}
+
 
 void BootLoader::initKey() {
 	usbKey.init(0,0,0,0);
@@ -110,7 +124,7 @@ void BootLoader::initKey() {
 	this->lcd->print("   Flash Firmware   ");
 	this->lcd->setCursor(4,2);
 	this->lcd->print("           ");
-
+    loopUntilKeyReady();
 	// New bootloader
 	if (usbKey.getFirmwareFile()->firmwareInit() != COMMAND_SUCCESS) {
 		this->lcd->setCursor(0, 1);
@@ -144,6 +158,7 @@ void BootLoader::process() {
 		} else {
 			if (this->oneFirmwareAtLeast == true) {
 				// Loop on firmware list
+                usbKey.getFirmwareFile()->closeDir();
 				usbKey.getFirmwareFile()->firmwareInit();
 			} else {
 				// error message
@@ -170,6 +185,7 @@ void BootLoader::process() {
 
 		break;
 	case BL_BURNING_FIRMWARE:
+        usbKey.getFirmwareFile()->closeDir();
 		FLASH_Unlock();
 		if (formatFlash(this->firmwareSize)) {
 			burnFlash();
@@ -463,8 +479,9 @@ void BootLoader::doUSBStorage()
 	lcd->print("  Access USB Stick  ");
 
 	// Init state
-	uDelay(1000000);
 	usbKey.init(0,0,0,0);
+    loopUntilKeyReady();
+    uDelay(500000);
 	USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &USR_storage_desc, &USBD_MSC_cb, &storageUsrCallback);
 
 	lcd->setCursor(0,2);

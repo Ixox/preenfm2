@@ -91,7 +91,7 @@ const int8_t  STORAGE_Inquirydata[] = {//36
   'I', 'X', 'O', 'X', ' ', ' ', ' ', ' ', /* Manufacturer : 8 bytes */
   'P', 'r', 'e', 'e', 'n', 'F', 'M', '2', /* Product      : 16 Bytes */
   ' ', 'S', 't', 'i', 'c', 'k', ' ', ' ',
-  '1', '.', '0' ,'3',                     /* Version      : 4 Bytes */
+  '1', '.', '1' ,'3',                     /* Version      : 4 Bytes */
 };
 
 USBD_STORAGE_cb_TypeDef USBD_MICRO_SDIO_fops =
