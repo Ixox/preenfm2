@@ -80,7 +80,7 @@ void MCP4922_Config();
 void MCP4922_screenBoot(Synth& synth);
 void MCP4922_SysTick_Config();
 
-void CS4344_Config(uint32_t *sample);
+void CS4344_Config(int32_t *sample);
 void CS4344_Timer_Config();
 void CS4344_screenBoot();
 

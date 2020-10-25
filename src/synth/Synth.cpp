@@ -75,11 +75,10 @@ void Synth::init(SynthState* sState) {
 
 void Synth::setDacNumberOfBits(uint32_t dacNumberOfBits) {
     // Usefull to laverage the number of dac bits in the final stage of sample calculation
-    middleSample = (1 << (dacNumberOfBits -1)) - 1;
-    ratiosTimbre[0] = (1 << (dacNumberOfBits -1));
+    middleSample = (1 << (dacNumberOfBits - 1)) - 1;
+    ratiosTimbre[0] = (1 << (dacNumberOfBits - 1)) - 1;
     for (int t = 1; t <= 4; t++) {
         ratiosTimbre[t] = ratiosTimbre[0] / t;
-
     }
 }
 
@@ -138,27 +137,29 @@ int cptDisplay = 0;
 float totalCycles = 0;
 #endif
 
-void Synth::buildNewSampleBlockCS4344(uint32_t *sample) {
+
+
+void Synth::buildNewSampleBlockCS4344(int32_t *sample) {
     CYCLE_MEASURE_START(cycles_all);
 
-    buildNewSampleBlock(sample);
+    buildNewSampleBlock();
     
     const float *sampleFromTimbre1 = timbres[0].getSampleBlock();
     const float *sampleFromTimbre2 = timbres[1].getSampleBlock();
     const float *sampleFromTimbre3 = timbres[2].getSampleBlock();
     const float *sampleFromTimbre4 = timbres[3].getSampleBlock();
 
-    uint32_t *cb = sample;
-    uint32_t *cbFin = &sample[64];
+    int32_t *cb = (int32_t*)sample;
+    int32_t *cbFin = (int32_t*)&sample[64];
 
     while (cb != cbFin) {
-        uint32_t tmpV = (uint32_t)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + middleSample);
+        int32_t tmpV = *sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++;
         *cb++ = ((tmpV >> 8) + ((tmpV & 0x000000ff) << 24));
-        tmpV = (uint32_t)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + middleSample);
+        tmpV = *sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++;
         *cb++ = ((tmpV >> 8) + ((tmpV & 0x000000ff) << 24));
-        tmpV = (uint32_t)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + middleSample);
+        tmpV = *sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++;
         *cb++ = ((tmpV >> 8) + ((tmpV & 0x000000ff) << 24));
-         tmpV = (uint32_t)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + middleSample);
+        tmpV = *sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++;
         *cb++ = ((tmpV >> 8) + ((tmpV & 0x000000ff) << 24));
     }
 
@@ -187,11 +188,9 @@ void Synth::buildNewSampleBlockCS4344(uint32_t *sample) {
 
 void Synth::buildNewSampleBlockMcp4922() {
     CYCLE_MEASURE_START(cycles_all);
+    buildNewSampleBlock();
 
     uint32_t *sample = &samples[writeCursor];
-    buildNewSampleBlock(sample);
-
-
     const float *sampleFromTimbre1 = timbres[0].getSampleBlock();
     const float *sampleFromTimbre2 = timbres[1].getSampleBlock();
     const float *sampleFromTimbre3 = timbres[2].getSampleBlock();
@@ -228,7 +227,7 @@ void Synth::buildNewSampleBlockMcp4922() {
 }
 
 
-void Synth::buildNewSampleBlock(uint32_t *sample) {
+void Synth::buildNewSampleBlock() {
 
     // We consider the random number is always ready here...
     uint32_t random32bit = RNG_GetRandomNumber();

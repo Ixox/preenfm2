@@ -22,7 +22,7 @@
 
 extern LiquidCrystal lcd;
 extern Synth synth;
-extern uint32_t dmaSampleBuffer[128];
+extern int32_t dmaSampleBuffer[128];
 
 RingBuffer<uint8_t, 200> usartBufferIn  __attribute__ ((section(".ccmnoload")));
 RingBuffer<uint8_t, 100> usartBufferOut  __attribute__ ((section(".ccmnoload")));

@@ -19,7 +19,7 @@
 #include "LiquidCrystal.h"
 #include "PreenFM.h"
 extern LiquidCrystal lcd;
-extern int dmaSampleBuffer[128];
+extern int32_t dmaSampleBuffer[128];
 
 const char* line1 = "preenfm2 v"PFM2_VERSION""CVIN_STRING;
 const char* line2 = "     By Xavier Hosxe";
@@ -380,8 +380,8 @@ void CS4344_I2S3_Init() {
     I2S_StructInit(&I2S_InitStruct);
     I2S_InitStruct.I2S_AudioFreq = I2S_AudioFreq_Default;
     I2S_InitStruct.I2S_Mode = I2S_Mode_MasterTx;
-    I2S_InitStruct.I2S_Standard = I2S_Standard_MSB;
-    // 16b ?????
+    I2S_InitStruct.I2S_Standard = I2S_Standard_Phillips;
+    // 24 bits
     I2S_InitStruct.I2S_DataFormat = I2S_DataFormat_24b;
     I2S_InitStruct.I2S_MCLKOutput = I2S_MCLKOutput_Enable;
     I2S_InitStruct.I2S_CPOL = I2S_CPOL_Low;
@@ -391,7 +391,7 @@ void CS4344_I2S3_Init() {
 
 
 
-void CS4344_DMA_Init(uint32_t* sample) {
+void CS4344_DMA_Init(int32_t* sample) {
     // 6. When using the DMA mode *
     // -Configure the DMA using DMA_Init() function *
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
@@ -410,11 +410,11 @@ void CS4344_DMA_Init(uint32_t* sample) {
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&SPI3->DR;  // 0x40003C0C;
     DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)sample;
     DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-    DMA_InitStructure.DMA_BufferSize = (uint32_t)256;
+    DMA_InitStructure.DMA_BufferSize = (uint32_t)128;
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-    DMA_InitStructure.DMA_MemoryDataSize = DMA_PeripheralDataSize_HalfWord;
+    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Word;
+    DMA_InitStructure.DMA_MemoryDataSize = DMA_PeripheralDataSize_Word;
     DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
 
     DMA_InitStructure.DMA_Priority = DMA_Priority_High;
@@ -438,7 +438,7 @@ void CS4344_DMA_Init(uint32_t* sample) {
     NVIC_Init(&NVIC_InitStructure);
 }
 
-void CS4344_Config(uint32_t *sample) {
+void CS4344_Config(int32_t *sample) {
 
     CS4344_GPIO_Init();
     CS4344_I2S3_Init();

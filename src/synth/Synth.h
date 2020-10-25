@@ -62,9 +62,9 @@ public:
     void allSoundOff();
     void allSoundOff(int timbre);
     bool isPlaying();
-    void buildNewSampleBlock(uint32_t* sample);
+    void buildNewSampleBlock();
     void buildNewSampleBlockMcp4922();
-    void buildNewSampleBlockCS4344(uint32_t *sample);
+    void buildNewSampleBlockCS4344(int32_t *sample);
 
     // Overide SynthParamListener
     void playNote(int timbreNumber, char note, char velocity) {

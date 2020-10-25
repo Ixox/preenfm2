@@ -55,8 +55,9 @@ int spiState  __attribute__ ((section(".ccmnoload")));
 float PREENFM_FREQUENCY __attribute__ ((section(".ccmnoload")));;
 float PREENFM_FREQUENCY_INVERSED __attribute__ ((section(".ccmnoload")));;
 float PREENFM_FREQUENCY_INVERSED_LFO __attribute__ ((section(".ccmnoload")));;
+
 // Must be in memory accessible by DMA
-uint32_t dmaSampleBuffer[128];
+int32_t dmaSampleBuffer[128];
 
 uint16_t pinTest;
 
