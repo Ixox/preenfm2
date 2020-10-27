@@ -153,6 +153,7 @@ public:
 	int getFileIndex(const struct PFM2File* file);
 	int renameFile(const struct PFM2File* bank, const char* newName);
 	bool nameExists(const char* bankName);
+    void closeDir();
 
 protected:
 	virtual const char* getFolderName() = 0;

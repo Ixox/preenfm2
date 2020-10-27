@@ -11,7 +11,7 @@
 struct FlashSynthParams reachableFlashParam;
 
 char propertyFile [PROPERTY_FILE_SIZE];
-
+extern void displayFileError(char* msg);
 
 PreenFMFileType::PreenFMFileType() {
 	isInitialized = false;
@@ -120,31 +120,42 @@ int PreenFMFileType::checkSize(const char* fileName) {
 }
 
 
+void PreenFMFileType::closeDir() {
+    commandParams.commandState = COMMAND_CLOSE_DIR;
+    usbProcess();
+}
+
 void PreenFMFileType::usbProcess() {
     commandParams.commandResult = COMMAND_FAILED;
-    while (commandParams.commandState != COMMAND_NONE) {
+    int trys = 1000000;
+    while (commandParams.commandState != COMMAND_NONE && (trys--) >0) {
         USBH_Process(&usbOTGHost, &usbHost);
     }
     for (int k=0; k<10; k++) {
         USBH_Process(&usbOTGHost, &usbHost);
+    }
+    if (trys == 0) {
+        char *msg = "0 : No response";
+        const char* hex = "0123456789ABCDEFGHIJKL";
+        msg[0] = '0' + hex[commandParams.commandState];
+        displayFileError(msg);
     }
 }
 
 bool PreenFMFileType::sendInitCommand() {
     commandParams.commandResult = COMMAND_FAILED;
    	commandParams.commandState = COMMAND_INIT;
-    int trys = 100000;
+    int trys = 500000;
     while (commandParams.commandState != COMMAND_NONE && (trys--) > 0) {
         USBH_Process(&usbOTGHost, &usbHost);
     }
-    for (int k=0; k<10; k++) {
+    for (int k = 0; k < 10; k++) {
         USBH_Process(&usbOTGHost, &usbHost);
     }
     return (commandParams.commandState == COMMAND_NONE);
 }
 
 // Init bank
-
 
 int PreenFMFileType::initFiles() {
     for (int k = 0; k < numberOfFilesMax; k++) {
@@ -154,7 +165,6 @@ int PreenFMFileType::initFiles() {
 	int res;
     commandParams.commandState = COMMAND_OPEN_DIR;
     commandParams.commandFileName = getFolderName();
-    isInitialized = true;
     usbProcess();
     if (commandParams.commandResult != COMMAND_SUCCESS) {
     	return commandParams.commandResult;
@@ -166,8 +176,14 @@ int PreenFMFileType::initFiles() {
     		break;
     	}
     }
+
+    closeDir();
+
 	numberOfFiles = k ;
 	sortFiles(myFiles, numberOfFiles);
+
+    isInitialized = true;
+
     return res;
 }
 

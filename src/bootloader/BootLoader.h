@@ -45,6 +45,7 @@ public:
 	void initKey();
 	void readFirmwares();
 
+    void loopUntilKeyReady();
 
 	void resetButtonPressed();
 	void welcome();

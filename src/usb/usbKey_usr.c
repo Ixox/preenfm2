@@ -16,6 +16,9 @@
  */
 
 
+
+
+
 /*
  * CallBack user file for  USB Key access from PreenFM 2
  * Copied and adapted from ST firmware library
@@ -237,11 +240,23 @@ void USBH_USR_OverCurrentDetected(void) {
  */
 
 
-void displayFileError(const char* msg) {
-/*    lcd.clear();
+void displayFileError(char* msg) {
+    lcd.setRealTimeAction(true);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("# ");
+    lcd.print(msg);
+    lcd.print(" #");
+    lcd.setCursor(0,2);
+    lcd.print("Usb drive likely not");
+    lcd.setCursor(0,3);
+    lcd.print("compatible.");
+
     lcd.setCursor(0,1);
-    lcd.print(msg);*/
-    while (true);
+    for (int k = 0; k < 10; k++) {
+        USBH_USR_UserInput();
+        lcd.print("..");
+    }
 }
 
 int USBH_USR_MSC_Application(void) {
@@ -249,7 +264,7 @@ int USBH_USR_MSC_Application(void) {
 
     switch (commandParams.commandState) {
     case COMMAND_INIT:
-        if (f_mount(0, &fatfs) != FR_OK) {
+        if (f_mount(&fatfs, "0:/", 0) != FR_OK) {
             displayFileError("MOUNT ERROR");
         }
         commandParams.commandState = COMMAND_NONE;
@@ -308,6 +323,14 @@ int USBH_USR_MSC_Application(void) {
         }
         commandParams.commandState = COMMAND_NONE;
         break;
+    case COMMAND_CLOSE_DIR:
+        if (f_closedir ( &dir) != FR_OK) {
+            commandParams.commandResult = COMMAND_FAILED;
+        } else {
+            commandParams.commandResult = COMMAND_SUCCESS;
+        }
+        commandParams.commandState = COMMAND_NONE;
+        break;
     case COMMAND_NEXT_FILE_NAME:
         if (f_readdir ( &dir, &fileinfo) != FR_OK) {
             commandParams.commandResult = COMMAND_FAILED;
@@ -334,11 +357,11 @@ int USBH_USR_MSC_Application(void) {
         }
         commandParams.commandState = COMMAND_NONE;
         break;
-// #ifdef BOOTLOADER
+#ifdef BOOTLOADER
     // Low level only accessible by bootloader in mass storage device mode.
     case DISKIO_GETSECTORNUMBER:
     	disk_initialize(0);
-    	if ((numberOfBytes = disk_ioctl(0, GET_SECTOR_COUNT, (unsigned long*)commandParams.commandParam1)) != RES_OK) {
+    	if ((numberOfBytes = disk_ioctl(0, GET_SECTOR_COUNT, (void*)commandParams.commandParam1)) != RES_OK) {
             commandParams.commandResult = COMMAND_FAILED;
             *((int*)commandParams.commandParam1) = 0;
     	} else {
@@ -347,7 +370,7 @@ int USBH_USR_MSC_Application(void) {
         commandParams.commandState = COMMAND_NONE;
     	break;
     case DISKIO_READ:
-	  	if (disk_read(0, (BYTE*)commandParams.commandParam1, (DWORD)*((int*)commandParams.commandParam2), (BYTE)commandParams.commandParamSize) != RES_OK) {
+	  	if (disk_read(0, (BYTE*)commandParams.commandParam1, (LBA_t)commandParams.commandParam2, (UINT)commandParams.commandParamSize) != RES_OK) {
 	  		commandParams.commandResult = COMMAND_FAILED;
 	  	} else {
 	  		commandParams.commandResult = COMMAND_SUCCESS;
@@ -355,14 +378,14 @@ int USBH_USR_MSC_Application(void) {
         commandParams.commandState = COMMAND_NONE;
     	break;
     case DISKIO_WRITE:
-	  	if (disk_write(0, (BYTE*)commandParams.commandParam1, (DWORD)*((int*)commandParams.commandParam2), (BYTE)commandParams.commandParamSize) != RES_OK) {
+	  	if (disk_write(0, (BYTE*)commandParams.commandParam1, (LBA_t)commandParams.commandParam2, (UINT)commandParams.commandParamSize) != RES_OK) {
 	  		commandParams.commandResult = COMMAND_FAILED;
 	  	} else {
 	  		commandParams.commandResult = COMMAND_SUCCESS;
 	  	}
         commandParams.commandState = COMMAND_NONE;
     	break;
-// #endif
+#endif
     case COMMAND_NONE:
         break;
     }

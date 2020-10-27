@@ -43,7 +43,9 @@ Encoders::Encoders() {
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 	GPIO_InitTypeDef GPIO_InitStructure2;
-	GPIO_InitStructure2.GPIO_Pin = HC165_DATA;
+
+    GPIO_InitStructure2.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    GPIO_InitStructure2.GPIO_Pin = HC165_DATA;
 	GPIO_InitStructure2.GPIO_Mode = GPIO_Mode_IN;
 	GPIO_Init(GPIOA, &GPIO_InitStructure2);
 

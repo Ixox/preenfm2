@@ -16,9 +16,12 @@ public:
 	virtual ~FirmwareFile();
 
 	int loadFirmwarePart(char *fileName, int seek, void* bytes, int size);
-	unsigned int diskioGetSectorNumber();
-	int diskioRead(uint8_t* buff, int address, int length);
-	int diskioWrite(uint8_t* buff, int address, int length);
+	uint32_t diskioGetSectorNumber();
+	int diskioRead(uint8_t* buff, uint32_t address, uint16_t length);
+	int diskioWrite(uint8_t* buff, uint32_t address, uint16_t length);
+	int firmwareInit();
+	int readNextFirmwareName(char *name, int *size);
+	bool isFirmwareFile(char *name);
 
 protected:
 	const char* getFolderName();

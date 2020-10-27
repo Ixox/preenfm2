@@ -28,8 +28,10 @@ CYCCNT_buffer cycles_all;
 #endif
 
 extern float noise[32];
-float ratiosTimbre[]= { 131072.0f * 1.0f, 131072.0f * 1.0f, 131072.0f *  0.5f, 131072.0f * 0.333f, 131072.0f * 0.25f };
 
+// Initialized in main depending of PCB version
+float ratiosTimbre[5];
+float middleSample;
 
 
 Synth::Synth(void) {
@@ -70,6 +72,16 @@ void Synth::init(SynthState* sState) {
 #endif
 
 }
+
+void Synth::setDacNumberOfBits(uint32_t dacNumberOfBits) {
+    // Usefull to laverage the number of dac bits in the final stage of sample calculation
+    middleSample = (1 << (dacNumberOfBits - 1)) - 1;
+    ratiosTimbre[0] = (1 << (dacNumberOfBits - 1)) - 1;
+    for (int t = 1; t <= 4; t++) {
+        ratiosTimbre[t] = ratiosTimbre[0] / t;
+    }
+}
+
 
 void Synth::noteOn(int timbre, char note, char velocity) {
     timbres[timbre].noteOn(note, velocity);
@@ -126,8 +138,96 @@ float totalCycles = 0;
 #endif
 
 
-void Synth::buildNewSampleBlock() {
+
+void Synth::buildNewSampleBlockCS4344(int32_t *sample) {
     CYCLE_MEASURE_START(cycles_all);
+
+    buildNewSampleBlock();
+    
+    const float *sampleFromTimbre1 = timbres[0].getSampleBlock();
+    const float *sampleFromTimbre2 = timbres[1].getSampleBlock();
+    const float *sampleFromTimbre3 = timbres[2].getSampleBlock();
+    const float *sampleFromTimbre4 = timbres[3].getSampleBlock();
+
+    int32_t *cb = (int32_t*)sample;
+    int32_t *cbFin = (int32_t*)&sample[64];
+
+    while (cb != cbFin) {
+        int32_t tmpV = *sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++;
+        *cb++ = ((tmpV >> 8) + ((tmpV & 0x000000ff) << 24));
+        tmpV = *sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++;
+        *cb++ = ((tmpV >> 8) + ((tmpV & 0x000000ff) << 24));
+        tmpV = *sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++;
+        *cb++ = ((tmpV >> 8) + ((tmpV & 0x000000ff) << 24));
+        tmpV = *sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++;
+        *cb++ = ((tmpV >> 8) + ((tmpV & 0x000000ff) << 24));
+    }
+
+    CYCLE_MEASURE_END();
+
+#ifdef DEBUG_CPU_USAGE
+    if (cptDisplay++ > 500) {
+        totalCycles += cycles_all.remove();
+
+        if (cptDisplay == 600) {
+            float max = SystemCoreClock * 32.0f * PREENFM_FREQUENCY_INVERSED;
+            cpuUsage = totalCycles / max;
+            if (cpuUsage > 95) {
+                for (int v = 0; v < MAX_NUMBER_OF_VOICES; v++) {
+                    this->voices[v].noteOff();
+                }
+            }
+            cptDisplay = 0;
+            totalCycles = 0;
+        }
+    }
+#endif
+
+}
+
+
+void Synth::buildNewSampleBlockMcp4922() {
+    CYCLE_MEASURE_START(cycles_all);
+    buildNewSampleBlock();
+
+    uint32_t *sample = &samples[writeCursor];
+    const float *sampleFromTimbre1 = timbres[0].getSampleBlock();
+    const float *sampleFromTimbre2 = timbres[1].getSampleBlock();
+    const float *sampleFromTimbre3 = timbres[2].getSampleBlock();
+    const float *sampleFromTimbre4 = timbres[3].getSampleBlock();
+
+    uint32_t *cb = sample;
+    uint32_t *cbFin = &sample[64];
+
+    while (cb != cbFin) {
+        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + middleSample);
+        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + middleSample);
+        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + middleSample);
+        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + middleSample);
+    }
+    writeCursor = (writeCursor + 64) & 255;
+
+    CYCLE_MEASURE_END();
+
+#ifdef DEBUG_CPU_USAGE
+
+    if (cptDisplay++ > 500) {
+        totalCycles += cycles_all.remove();
+
+        if (cptDisplay == 600) {
+            float max = SystemCoreClock * 32.0f * PREENFM_FREQUENCY_INVERSED;
+            cpuUsage = totalCycles / max;
+            cptDisplay = 0;
+            totalCycles = 0;
+        }
+    }
+#endif
+
+
+}
+
+
+void Synth::buildNewSampleBlock() {
 
     // We consider the random number is always ready here...
     uint32_t random32bit = RNG_GetRandomNumber();
@@ -143,7 +243,7 @@ void Synth::buildNewSampleBlock() {
     cvin->updateValues();
 #endif
 
-    for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
+    for (int t = 0; t < NUMBER_OF_TIMBRES; t++) {
         timbres[t].cleanNextBlock();
         if (likely(timbres[t].params.engine1.numberOfVoice > 0)) {
             timbres[t].prepareForNextBlock();
@@ -246,9 +346,12 @@ void Synth::buildNewSampleBlock() {
     // render all voices in their timbre sample block...
     // 16 voices
 
+    playingNotes = 0;
+
     for (int v = 0; v < MAX_NUMBER_OF_VOICES; v++) {
         if (likely(this->voices[v].isPlaying())) {
             this->voices[v].nextBlock();
+            playingNotes ++;
         }
     }
 
@@ -266,41 +369,6 @@ void Synth::buildNewSampleBlock() {
         timbres[3].fxAfterBlock(ratioTimbre);
     }
 
-    const float *sampleFromTimbre1 = timbres[0].getSampleBlock();
-    const float *sampleFromTimbre2 = timbres[1].getSampleBlock();
-    const float *sampleFromTimbre3 = timbres[2].getSampleBlock();
-    const float *sampleFromTimbre4 = timbres[3].getSampleBlock();
-
-    int *cb = &samples[writeCursor];
-
-    float toAdd = 131071.0f;
-    for (int s = 0; s < 64/4; s++) {
-        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + toAdd);
-        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + toAdd);
-        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + toAdd);
-        *cb++ = (int)((*sampleFromTimbre1++ + *sampleFromTimbre2++ + *sampleFromTimbre3++ + *sampleFromTimbre4++) + toAdd);
-    }
-
-    writeCursor = (writeCursor + 64) & 255;
-
-    CYCLE_MEASURE_END();
-
-#ifdef DEBUG_CPU_USAGE
-    if (cptDisplay++ > 500) {
-        totalCycles += cycles_all.remove();
-
-        if (cptDisplay == 600) {
-            float max = SystemCoreClock * 32.0f * PREENFM_FREQUENCY_INVERSED;
-            float percent = totalCycles / max;
-            lcd.setCursor(14, 1);
-            lcd.print('>');
-            lcd.printWithOneDecimal(percent);
-            lcd.print('%');
-            cptDisplay = 0;
-            totalCycles = 0;
-        }
-    }
-#endif
 }
 
 void Synth::beforeNewParamsLoad(int timbre) {

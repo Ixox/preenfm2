@@ -26,12 +26,6 @@
 #define _PreenFM_H_
 
 
-#ifndef OVERCLOCK
-#define OVERCLOCK_STRING
-#else
-#define OVERCLOCK_STRING " o"
-#endif
-
 #ifndef CVIN
 
 #define CVIN_STRING ""
@@ -71,13 +65,27 @@ extern unsigned int preenTimer;
 
 extern Synth synth;
 
-void USART_Config();
-void LED_Config();
-void MCP4922_Config();
-void SysTick_Config();
-void RNG_Config();
-void LCD_InitChars(LiquidCrystal *lcd);
+enum PcbVersion {
+    PCB_R5 = 0b11,
+    PCB_R6_CS4344 = 0b01
+};
 
+void fillSoundBuffer();
+void USART_Config();
+void LEDFront_Config();
+void LEDTest_Config(uint16_t pin);
+
+uint8_t getPcbVersion();
+void MCP4922_Config();
+void MCP4922_screenBoot(Synth& synth);
+void MCP4922_SysTick_Config();
+
+void CS4344_Config(int32_t *sample);
+void CS4344_Timer_Config();
+void CS4344_screenBoot();
+
+void RNG_Config();
+void LCD_InitChars(LiquidCrystal* lcd);
 
 void strobePin(u8 count, u32 rate);
 

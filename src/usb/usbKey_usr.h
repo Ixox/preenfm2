@@ -50,6 +50,7 @@ enum {
     COMMAND_DELETE,
     COMMAND_EXISTS,
     COMMAND_OPEN_DIR,
+    COMMAND_CLOSE_DIR,
     COMMAND_NEXT_FILE_NAME,
     COMMAND_RENAME,
     DISKIO_GETSECTORNUMBER,
@@ -61,10 +62,6 @@ enum {
     COMMAND_SUCCESS = 0,
     COMMAND_FAILED
 };
-
-// Xavier Hosxe : 1 following lines copied from version fastFS 0.9
-#define f_tell(fp) ((fp)->fptr)
-#define f_size(fp) ((fp)->fsize)
 
 
 #ifdef __cplusplus

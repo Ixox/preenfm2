@@ -33,8 +33,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_msc_mem.h"
 
-#include "UsbKey.h"
-extern UsbKey usbKey ;
+#include "Storage.h"
+extern Storage usbKey ;
 
 
 #include "LiquidCrystal.h"
@@ -58,7 +58,7 @@ int8_t STORAGE_Init (uint8_t lun);
 
 int8_t STORAGE_GetCapacity (uint8_t lun,
                            uint32_t *block_num,
-                           uint16_t *block_size);
+                           uint32_t *block_size);
 
 int8_t  STORAGE_IsReady (uint8_t lun);
 
@@ -128,14 +128,14 @@ int8_t STORAGE_Init (uint8_t lun)
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-int8_t STORAGE_GetCapacity (uint8_t lun, uint32_t *block_num, uint16_t *block_size)
+int8_t STORAGE_GetCapacity (uint8_t lun, uint32_t *block_num, uint32_t *block_size)
 {
 	// #define GET_SECTOR_COUNT	1	/* Mandatory for only f_mkfs() */
 	// #define GET_SECTOR_SIZE		2
 
 	// ALWAYS 512
 	*block_size = 512;
-	*block_num = usbKey.diskioGetSectorNumber();
+	*block_num = usbKey.getFirmwareFile()->diskioGetSectorNumber();
 
   return (0);
 }
@@ -177,7 +177,7 @@ int8_t STORAGE_Read (uint8_t lun,
                  uint16_t blk_len)
 {
   readCpt = 10000;
-  return usbKey.diskioRead(buf, blk_addr, blk_len);
+  return usbKey.getFirmwareFile()->diskioRead(buf, blk_addr, blk_len);
 }
 /*******************************************************************************
 * Function Name  : Write_Memory
@@ -192,7 +192,7 @@ int8_t STORAGE_Write (uint8_t lun,
                   uint16_t blk_len)
 {
 	writeCpt = 10000;
-	return usbKey.diskioWrite(buf, blk_addr, blk_len);
+	return usbKey.getFirmwareFile()->diskioWrite(buf, blk_addr, blk_len);
 }
 /*******************************************************************************
 * Function Name  : Write_Memory

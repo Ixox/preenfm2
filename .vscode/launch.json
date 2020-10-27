@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "cortex-debug",
+            "request": "launch",
+            "cwd": "${workspaceRoot}",
+            "device" : "stm32f405xx",
+            "executable": "/home/xavier/git/preenfm2/build/p2_2.20b2.elf",
+            "name": "Debug pfm2 firmware",
+            "servertype": "stutil",        
+            "armToolchainPath": "/home/xavier/bin/gcc-arm-none-eabi-4_7-2014q2/bin/"
+        }
+    ]
+}

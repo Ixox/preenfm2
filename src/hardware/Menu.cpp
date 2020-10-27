@@ -18,11 +18,6 @@
 
 #include "./Menu.h"
 
-#ifndef OVERCLOCK
-#define OVERCLOCK_STRING
-#else
-#define OVERCLOCK_STRING " o"
-#endif
 
 #ifndef CVIN
 #define CVIN_STRING
@@ -40,7 +35,7 @@ const char* bootOptions [] = { "Default", "Bank", "Combo", "DX7" };
 const char* encoderType [] = { "12", "24", "12i", "24i" };
 const char* usbMidi[] = { "Off", "In", "In/Out" };
 const char* operatorButton[] = { "New", "Old" };
-const char* version[] = { PFM2_VERSION""CVIN_STRING""OVERCLOCK_STRING };
+const char* version[] = { PFM2_VERSION""CVIN_STRING};
 const char* oledSaver[] = { "Off", "2m", "5m", "10m", "1h" };
 
 const char* globalTuning[] = { "G" };

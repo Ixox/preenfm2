@@ -1,5 +1,6 @@
 
 #include "usb_conf.h"
+#include "ff.h"
 #include "diskio.h"
 #include "usbh_msc_core.h"
 /*--------------------------------------------------------------------------
@@ -8,10 +9,23 @@ Module Private Functions and Variables
 
 ---------------------------------------------------------------------------*/
 
+
+/*
+   New method prototype fot FatFS 0.14
+   DSTATUS disk_initialize (BYTE pdrv);
+    DSTATUS disk_status (BYTE pdrv);
+    DRESULT disk_read (BYTE pdrv, BYTE* buff, LBA_t sector, UINT count);
+    DRESULT disk_write (BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count);
+    DRESULT disk_ioctl (BYTE pdrv, BYTE cmd, void* buff);
+*/
+
 static volatile DSTATUS Stat = STA_NOINIT;	/* Disk status */
 
 extern USB_OTG_CORE_HANDLE          usbOTGHost;
 extern USBH_HOST                     usbHost;
+
+extern void displayFileError(char* msg);
+
 
 /*-----------------------------------------------------------------------*/
 /* Initialize Disk Drive                                                 */
@@ -55,8 +69,8 @@ DSTATUS disk_status (
 DRESULT disk_read (
                    BYTE drv,			/* Physical drive number (0) */
                    BYTE *buff,			/* Pointer to the data buffer to store read data */
-                   DWORD sector,		/* Start sector number (LBA) */
-                   BYTE count			/* Sector count (1..255) */
+                   LBA_t sector,		/* Start sector number (LBA) */
+                   UINT count			/* Sector count (1..255) */
                      )
 {
   BYTE status = USBH_MSC_OK;
@@ -64,10 +78,16 @@ DRESULT disk_read (
   if (drv || !count) return RES_PARERR;
   if (Stat & STA_NOINIT) return RES_NOTRDY;
   
-  
+
+    if (USBH_MSC_BOTXferParam.CmdStateMachine != CMD_SEND_STATE) {
+        displayFileError(" NOT READY");
+        return RES_ERROR;
+    }
+
+
   if(HCD_IsDeviceConnected(&usbOTGHost))
-  {  
-    
+  {      
+    int cpt = 1000000;
     do
     {
       status = USBH_MSC_Read10(&usbOTGHost, buff,sector,512 * count);
@@ -78,7 +98,12 @@ DRESULT disk_read (
         return RES_ERROR;
       }      
     }
-    while(status == USBH_MSC_BUSY );
+    while(status == USBH_MSC_BUSY && (cpt--) > 0);
+
+    if (cpt == 0) {
+        displayFileError("No response");
+        return RES_ERROR;
+    }
   }
   
   if(status == USBH_MSC_OK)
@@ -97,8 +122,8 @@ DRESULT disk_read (
 DRESULT disk_write (
                     BYTE drv,			/* Physical drive number (0) */
                     const BYTE *buff,	/* Pointer to the data to be written */
-                    DWORD sector,		/* Start sector number (LBA) */
-                    BYTE count			/* Sector count (1..255) */
+                    LBA_t sector,		/* Start sector number (LBA) */
+                    UINT count			/* Sector count (1..255) */
                       )
 {
   BYTE status = USBH_MSC_OK;
@@ -136,7 +161,6 @@ DRESULT disk_write (
 /* Miscellaneous Functions                                               */
 /*-----------------------------------------------------------------------*/
 
-#if _USE_IOCTL != 0
 DRESULT disk_ioctl (
                     BYTE drv,		/* Physical drive number (0) */
                     BYTE ctrl,		/* Control code */
@@ -159,7 +183,7 @@ DRESULT disk_ioctl (
     
   case GET_SECTOR_COUNT :	/* Get number of sectors on the disk (DWORD) */
     
-    *(DWORD*)buff = (DWORD) USBH_MSC_Param.MSCapacity;
+    *(uint32_t*)buff = USBH_MSC_Param.MSCapacity;
     res = RES_OK;
     break;
     
@@ -183,4 +207,3 @@ DRESULT disk_ioctl (
   
   return res;
 }
-#endif /* _USE_IOCTL != 0 */
