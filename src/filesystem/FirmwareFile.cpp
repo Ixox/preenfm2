@@ -49,8 +49,8 @@ int FirmwareFile::loadFirmwarePart(char *fileName, int seek, void* bytes, int si
     return commandParams.commandResult;
 }
 
-unsigned int FirmwareFile::diskioGetSectorNumber() {
-	unsigned long size;
+uint32_t FirmwareFile::diskioGetSectorNumber() {
+	uint32_t size;
 	commandParams.commandState = DISKIO_GETSECTORNUMBER;
 	commandParams.commandParam1 = &size;
 	usbProcess();
@@ -58,19 +58,19 @@ unsigned int FirmwareFile::diskioGetSectorNumber() {
 }
 
 
-int FirmwareFile::diskioRead(uint8_t* buff, int address, int length) {
+int FirmwareFile::diskioRead(uint8_t* buff, uint32_t address, uint16_t length) {
 	commandParams.commandState = DISKIO_READ;
 	commandParams.commandParam1 = buff;
-	commandParams.commandParam2 = &address;
+	commandParams.commandParam2 = (void*)address;
 	commandParams.commandParamSize = length;
 	usbProcess();
 	return commandParams.commandResult;
 }
 
-int FirmwareFile::diskioWrite(uint8_t* buff, int address, int length) {
+int FirmwareFile::diskioWrite(uint8_t* buff, uint32_t address, uint16_t length) {
 	commandParams.commandState = DISKIO_WRITE;
 	commandParams.commandParam1 = buff;
-	commandParams.commandParam2 = &address;
+	commandParams.commandParam2 = (void*)address;
 	commandParams.commandParamSize = length;
 	usbProcess();
 	return commandParams.commandResult;

@@ -58,7 +58,7 @@ int8_t STORAGE_Init (uint8_t lun);
 
 int8_t STORAGE_GetCapacity (uint8_t lun,
                            uint32_t *block_num,
-                           uint16_t *block_size);
+                           uint32_t *block_size);
 
 int8_t  STORAGE_IsReady (uint8_t lun);
 
@@ -91,7 +91,7 @@ const int8_t  STORAGE_Inquirydata[] = {//36
   'I', 'X', 'O', 'X', ' ', ' ', ' ', ' ', /* Manufacturer : 8 bytes */
   'P', 'r', 'e', 'e', 'n', 'F', 'M', '2', /* Product      : 16 Bytes */
   ' ', 'S', 't', 'i', 'c', 'k', ' ', ' ',
-  '1', '.', '1' ,'3',                     /* Version      : 4 Bytes */
+  '1', '.', '0' ,'3',                     /* Version      : 4 Bytes */
 };
 
 USBD_STORAGE_cb_TypeDef USBD_MICRO_SDIO_fops =
@@ -128,7 +128,7 @@ int8_t STORAGE_Init (uint8_t lun)
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-int8_t STORAGE_GetCapacity (uint8_t lun, uint32_t *block_num, uint16_t *block_size)
+int8_t STORAGE_GetCapacity (uint8_t lun, uint32_t *block_num, uint32_t *block_size)
 {
 	// #define GET_SECTOR_COUNT	1	/* Mandatory for only f_mkfs() */
 	// #define GET_SECTOR_SIZE		2

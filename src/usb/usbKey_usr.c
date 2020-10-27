@@ -361,7 +361,7 @@ int USBH_USR_MSC_Application(void) {
     // Low level only accessible by bootloader in mass storage device mode.
     case DISKIO_GETSECTORNUMBER:
     	disk_initialize(0);
-    	if ((numberOfBytes = disk_ioctl(0, GET_SECTOR_COUNT, (unsigned long*)commandParams.commandParam1)) != RES_OK) {
+    	if ((numberOfBytes = disk_ioctl(0, GET_SECTOR_COUNT, (void*)commandParams.commandParam1)) != RES_OK) {
             commandParams.commandResult = COMMAND_FAILED;
             *((int*)commandParams.commandParam1) = 0;
     	} else {
@@ -370,7 +370,7 @@ int USBH_USR_MSC_Application(void) {
         commandParams.commandState = COMMAND_NONE;
     	break;
     case DISKIO_READ:
-	  	if (disk_read(0, (BYTE*)commandParams.commandParam1, (DWORD)*((int*)commandParams.commandParam2), (BYTE)commandParams.commandParamSize) != RES_OK) {
+	  	if (disk_read(0, (BYTE*)commandParams.commandParam1, (LBA_t)commandParams.commandParam2, (UINT)commandParams.commandParamSize) != RES_OK) {
 	  		commandParams.commandResult = COMMAND_FAILED;
 	  	} else {
 	  		commandParams.commandResult = COMMAND_SUCCESS;
@@ -378,7 +378,7 @@ int USBH_USR_MSC_Application(void) {
         commandParams.commandState = COMMAND_NONE;
     	break;
     case DISKIO_WRITE:
-	  	if (disk_write(0, (BYTE*)commandParams.commandParam1, (DWORD)*((int*)commandParams.commandParam2), (BYTE)commandParams.commandParamSize) != RES_OK) {
+	  	if (disk_write(0, (BYTE*)commandParams.commandParam1, (LBA_t)commandParams.commandParam2, (UINT)commandParams.commandParamSize) != RES_OK) {
 	  		commandParams.commandResult = COMMAND_FAILED;
 	  	} else {
 	  		commandParams.commandResult = COMMAND_SUCCESS;

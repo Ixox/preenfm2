@@ -183,7 +183,7 @@ DRESULT disk_ioctl (
     
   case GET_SECTOR_COUNT :	/* Get number of sectors on the disk (DWORD) */
     
-    *(DWORD*)buff = (DWORD) USBH_MSC_Param.MSCapacity;
+    *(uint32_t*)buff = USBH_MSC_Param.MSCapacity;
     res = RES_OK;
     break;
     

@@ -113,7 +113,7 @@ void BootLoader::loopUntilKeyReady() {
     }
     if (cpt > 1) {
         this->lcd->setCursor(0, 1);
-        this->lcd->print("                  ");
+        this->lcd->print("                    ");
     }
 }
 
@@ -201,7 +201,6 @@ void BootLoader::process() {
 		break;
 	}
 }
-
 
 
 
@@ -381,6 +380,7 @@ void BootLoader::waitForButtonRelease()
 }
 
 int main(void) {
+
 	uint32_t magicRam = 0x2001BFF0;
 
 	switchLedInit();
@@ -423,6 +423,9 @@ int main(void) {
 			}
 		}
 	}
+
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
+
 
 	*(__IO uint32_t*)magicRam = 0;
 	while ( true ) {
@@ -479,9 +482,9 @@ void BootLoader::doUSBStorage()
 	lcd->print("  Access USB Stick  ");
 
 	// Init state
+    uDelay(200000);
 	usbKey.init(0,0,0,0);
     loopUntilKeyReady();
-    uDelay(500000);
 	USBD_Init(&usbOTGDevice, USB_OTG_FS_CORE_ID, &USR_storage_desc, &USBD_MSC_cb, &storageUsrCallback);
 
 	lcd->setCursor(0,2);
