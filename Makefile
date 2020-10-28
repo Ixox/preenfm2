@@ -207,9 +207,9 @@ help:
 	@echo ""
 
 zip: 
-	echo "dfu-util -a0 -d 0x0483:0xdf11 -D p2_${PFM2_VERSION_NUMBER}.bin -s 0x8040000" > build/install_firmware.cmd
-#	echo "dfu-util -a0 -d 0x0483:0xdf11 -D p2_cv_${PFM2_VERSION_NUMBER}.bin -s 0x8040000" > build/install_firmware_cv.cmd
-	cp flash/* build/
+	echo "dfu-util -a0 -d 0x0483:0xdf11 -D p2_${PFM2_VERSION_NUMBER}.bin -s 0x8040000" > build/flash_firmware.cmd
+	echo "dfu-util -a0 -d 0x0483:0xdf11 -D p2_cv_${PFM2_VERSION_NUMBER}.bin -s 0x8040000" > build/flash_firmware_cv.cmd
+	echo "dfu-util -a0 -d 0x0483:0xdf11 -D p2_boot_${PFM2_BOOTLOADER_VERSION_NUMBER}.bin -s 0x8000000" > build/flash_bootloader.cmd
 	zip pfm2_$(PFM2_VERSION_NUMBER).zip build/*.bin build/*.cmd
 
 
