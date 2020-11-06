@@ -23,27 +23,24 @@ Reminder to enter DFU mode :
 
 When your preenfm2 is in DFU mode and plugged to your compuer throught USB.
 
-    Click Connect button : select "STM32 Bootloader"
-    Then select the first interface of the list "DFU: cfg=1, intf=0, alt=0, name="@Internal Flash /0x08000000/04*016Kg,01*064Kg,07*128Kg"
-    Keep default values and go to "Firmware Download". Click "Choose file" and select your "p2_boot_1.13.bin" from your computer.
-    Verify your screen with the attached screenshot.
-    Click Download
+* Click Connect button : select "STM32 Bootloader"
+* Then select the first interface of the list "DFU: cfg=1, intf=0, alt=0, name="@Internal Flash /0x08000000/04*016Kg,01*064Kg,07*128Kg"
+* Keep default values and go to "Firmware Download". Click "Choose file" and select your "p2_boot_1.13.bin" from your computer.
+* Verify your screen with the attached screenshot.
+* Click Download
 
+<img src="./webdfu.png" alt="Online Web DFU" width="600" />
 
-
-
-![WebDfu](webdfu.png)
 
 Once finished reboot while holding down a key.
 You should see "- Bootloader 1.13 -" at the top of the preenfm2 screen.
 
 ## DfuSe
 
-
 Another way is to download [DfuSe](https://www.st.com/en/development-tools/stsw-stm32080.html) from STMicroelectronics.   
 It contains the flash programm and the usb required drivers.
 
-<img src="./dfuse.png" alt="Online Web DFU" width="400" />
+<img src="./dfuse.png" alt="Online Web DFU" width="600" />
 
 Once your preenfm is in DFU mode it should show up in the top left as "STM DEvice in DFU Mode".
 Then in the "Upgrade or Verify Action" click on Chose, select the [pfm2_flash.dfu](pfm2_flash.dfu) that should be in the current folder.
