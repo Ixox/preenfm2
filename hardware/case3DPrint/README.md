@@ -2,9 +2,9 @@
 
 
 Here are 4 stl files that can be printed to make a minimal enclosure for your preenfm2.  
-It will work with LCD display, OLED are displays are smaller and the result won't be nice.  
+It will work with LCD display, OLED displays are smaller and the result won't be nice.  
 
-The f3d file is to import in to fusion 360 that has a free version for personnal use. Easy to modify, you can customize and recreate the STM files.
+The f3d file can be imported into fusion 360. Fusion 360 has a free version for personnal use. Using it you can customize the case and recreate the STM files.
 
 <img src="./Enclosure.png" width="500" />
 
