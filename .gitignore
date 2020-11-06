@@ -14,7 +14,6 @@ Makefile.in
 *~
 linker/startup_stm32f4xx.lst
 .DS_Store
-flash/**
 *.zip
 gcc-arm**/**
 
