@@ -19,11 +19,11 @@
 #include "Synth.h"
 #include "Menu.h"
 #include "stm32f4xx_rng.h"
-#include <math.h>
+
 
 #include "hardware/dwt.h"
 
-#ifdef DEBUG
+#ifdef DEBUG_CPU_USAGE
 CYCCNT_buffer cycles_all;
 #endif
 
@@ -66,6 +66,7 @@ void Synth::init(SynthState* sState) {
 #ifdef CVIN
     cvin12Ready = true;
     cvin34Ready = true;
+    triggeredTimbre = 0;
 #endif
 
 }
@@ -124,7 +125,7 @@ bool Synth::isPlaying() {
 }
 
 
-#ifdef DEBUG
+#ifdef DEBUG_CPU_USAGE
 int cptDisplay = 0;
 float totalCycles = 0;
 #endif
@@ -155,8 +156,7 @@ void Synth::buildNewSampleBlock() {
             for (int j = 0; j < timbres[t].params.engine1.numberOfVoice; j++)
             {
                 if (timbres[t].voiceNumber[j] != -1 &&
-                    this->voices[timbres[t].voiceNumber[j]].isGliding() &&
-                    this->voices[timbres[t].voiceNumber[j]].getMatrix().getDestination(GLIDE_HOLD) <= 0)
+                    this->voices[timbres[t].voiceNumber[j]].isGliding())
                 {
                     this->voices[timbres[t].voiceNumber[j]].glide();
                 }
@@ -208,6 +208,15 @@ void Synth::buildNewSampleBlock() {
                 timbreToTrigger[timbreIndex++] = 2;
                 timbreToTrigger[timbreIndex++] = 3;
             break;
+            case 8:
+                timbreToTrigger[timbreIndex++] = triggeredTimbre;
+            break;
+            case 9:
+                timbreToTrigger[timbreIndex++] = (int)((noise[0] + 1.0f) * 2.0f);
+            break;
+            case 10:
+                timbreToTrigger[timbreIndex++] = (int)((cvin->getCvin3() + 1.0f) * 2.0f);
+            break;
         }
 
         // CV_GATE from 0 to 100 => cvGate from 62 to 962. 
@@ -220,6 +229,11 @@ void Synth::buildNewSampleBlock() {
                     timbres[timbreToTrigger[tk]].setCvFrequency(cvin->getFrequency());
                     timbres[timbreToTrigger[tk]].noteOn(128, 127);
                     visualInfo->noteOn(timbreToTrigger[tk], true);
+                }
+                // inc timbre triggerTimbre if we are in Seq mode
+                if (unlikely(cvinstrument == 8)) {
+                    triggeredTimbre++;
+                    triggeredTimbre &= 0x3;
                 }
             }
         } else {
@@ -281,7 +295,7 @@ void Synth::buildNewSampleBlock() {
 
     CYCLE_MEASURE_END();
 
-#ifdef DEBUG
+#ifdef DEBUG_CPU_USAGE
     if (cptDisplay++ > 500) {
         totalCycles += cycles_all.remove();
 
@@ -436,6 +450,7 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
         switch (encoder) {
         case ENCODER_ENGINE_ALGO:
             fixMaxNumberOfVoices(timbre);
+            timbres[timbre].initADSRloop();
             break;
         case ENCODER_ENGINE_VOICE:
             if (newValue > oldValue) {
@@ -517,8 +532,7 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
         break;
     case ROW_MATRIX_FIRST ... ROW_MATRIX_LAST:
         timbres[timbre].verifyLfoUsed(encoder, oldValue, newValue);
-        if (encoder == ENCODER_MATRIX_DEST) {
-            // Reset old destination
+        if (encoder == ENCODER_MATRIX_DEST1 || encoder == ENCODER_MATRIX_DEST2) {
             timbres[timbre].resetMatrixDestination(oldValue);
         }
         break;
@@ -669,11 +683,18 @@ void Synth::setCurrentInstrument(int value) {
 
 void Synth::newMenuSelect(FullState* fullState) {
        
-     if (fullState->currentMenuItem->menuState == MENU_CONFIG_SETTINGS 
+if (fullState->currentMenuItem->menuState == MENU_CONFIG_SETTINGS 
          && midiConfig[fullState->menuSelect].valueName != NULL
          && midiConfig[fullState->menuSelect].valueName[0][0] == 'G') {
             updateGlobalTuningFromConfig();
          }
+#ifdef CVIN      
+    if (fullState->currentMenuItem->menuState == MENU_CONFIG_SETTINGS) {
+        if (fullState->menuSelect == MIDICONFIG_CVIN_A2 || fullState->menuSelect == MIDICONFIG_CVIN_A6) {
+            cvin->updateFormula(synthState->fullState.midiConfigValue[MIDICONFIG_CVIN_A2], synthState->fullState.midiConfigValue[MIDICONFIG_CVIN_A6]);
+        }
+    }
+#endif
 }
 
 void Synth::updateGlobalTuningFromConfig() {

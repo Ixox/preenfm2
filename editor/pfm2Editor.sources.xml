@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<PROPERTIES>
+  <VALUE name="sources">
+    <sources>
+      <item id="0" name="None"/>
+      <item id="1" name="lfo 1"/>
+      <item id="2" name="lfo 2"/>
+      <item id="3" name="lfo 3"/>
+      <item id="4" name="Free Env 1"/>
+      <item id="5" name="Free Env 2"/>
+      <item id="6" name="Step Seq 1"/>
+      <item id="7" name="Step Seq 2"/>
+      <item id="8" name="Mod Wheel"/>
+      <item id="9" name="Pitch Bend"/>
+      <item id="10" name="After touch"/>
+      <item id="11" name="Velocity"/>
+      <item id="12" name="Note1"/>
+      <item id="17" name="Note2"/>
+      <item id="18" name="Breath CC2"/>
+      <item id="13" name="Performance 1"/>
+      <item id="14" name="Performance 2"/>
+      <item id="15" name="Performance 3"/>
+      <item id="16" name="Performance 4"/>
+      <item id="19" name="Random"/>
+      <item id="20" name="Note delta"/>
+      <item id="21" name="Velocity delta"/>
+      <item id="22" name="Active notes"/>
+      <item id="23" name="Repeated notes"/>
+      <item id="24" name="Divergence"/>
+      <item id="25" name="Speed"/>
+      <item id="26" name="Duration"/>
+      <item id="27" name="Note Delta -1"/>
+      <item id="28" name="Note Delta +1"/>
+      <item id="29" name="Velocity Delta -1"/>
+      <item id="30" name="Velocity Delta +1"/>
+      <item id="31" name="Active notes -1"/>
+      <item id="32" name="Active notes +1"/>
+      <item id="33" name="Repeated notes -1"/>
+      <item id="34" name="Repeated notes +1"/>
+      <item id="35" name="Divergence -1"/>
+      <item id="36" name="Divergence +1"/>
+      <item id="37" name="Speed -1"/>
+      <item id="38" name="Speed +1"/>
+      <item id="39" name="Duration -1"/>
+      <item id="40" name="Duration +1"/>
+      <item id="41" name="MPE CC74"/>
+    </sources>
+  </VALUE>
+</PROPERTIES>

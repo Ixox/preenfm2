@@ -43,6 +43,7 @@ private:
     int currentValue;
     bool gated;
     DestinationEnum matrixGateDestination;
+    DestinationEnum startSource;
 };
 
 #endif /* LFOENV_H_ */

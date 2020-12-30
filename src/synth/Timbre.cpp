@@ -530,7 +530,7 @@ Timbre::Timbre() {
 	this->currentGate = 0;
     this->sbMax = &this->sampleBlock[64];
     this->holdPedal = false;
-    this->lastPlayedVoice = 0;
+    this->lastPlayedVoiceNum = 0;
     // arpegiator
     setNewBPMValue(90);
     arpegiatorStep = 0.0;
@@ -547,9 +547,12 @@ Timbre::Timbre() {
     pf_note_stack.Init();
 
     // Init FX variables
-	v0L = v1L = v2L = v3L = v4L = v5L = v6L = v7L = v8L = v0R = v1R = v2R = v3R = v4R = v5R = v6R = v7R = v8R = v8R = 0.0f;
+	v0L = v1L = v2L = v3L = v4L = v5L = v6L = v7L = v8L = v0R = v1R = v2R = v3R = v4R = v5R = v6R = v7R = v8R = 0.0f;
 	fxParamA1 = fxParamA2 = fxParamB2 = 0;
     fxParam1PlusMatrix = -1.0;
+
+	// Center balance
+	leftRightBalance = .5f;
 }
 
 Timbre::~Timbre() {
@@ -735,6 +738,7 @@ void Timbre::preenNoteOn(char note, char velocity) {
 		case NEW_NOTE_RELEASE:
 			voices[voiceToUse]->noteOnWithoutPop(note, velocity, voiceIndex);
 			if(!voices[voiceToUse]->isGliding()) {
+				//keep voiceIndex for gliding voice
 				voiceIndex++;
 			}
 			break;
@@ -753,7 +757,7 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
     voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE1, midiNoteScale[0][timbreNumber][note]);
     voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE2, midiNoteScale[1][timbreNumber][note]);
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY, newVelo);
-	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_INTERVAL, INV127 * 2 * (note - voices[this->lastPlayedVoice]->getNote()));
+	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_INTERVAL, INV127 * 2 * (note - voices[this->lastPlayedVoiceNum]->getNote()));
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_VELOCITY_INTERVAL, 2 * (lastVelocity - newVelo));
 	lastVelocity = newVelo;
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_RANDOM, noise[voiceToUse] - 0.5f );
@@ -815,6 +819,16 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_SPEED_READ_LEFT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_SPEED));
 	voices[voiceToUse]->matrix.setSource(MATRIX_SOURCE_NOTE_DURATION_READ_LEFT_TIMBRE, this->synth->getTimbre(timbreNum)->voices[voiceToRead]->matrix.getSource(MATRIX_SOURCE_NOTE_DURATION));
 
+	//recompute destination if seq start used
+	if (unlikely(this->seqStartUsed[0] != 0xFF)) {
+		voices[voiceToUse]->matrix.computeOneDestination(seqStartUsed[0]);
+	}
+	if (unlikely(this->seqStartUsed[1] != 0xFF)) {
+		// No need to recalculte if it's the same row as the other one
+		if (seqStartUsed[0] != seqStartUsed[1]) {
+			voices[voiceToUse]->matrix.computeOneDestination(seqStartUsed[1]);
+		}
+	}
 }
 
 void Timbre::preenNoteOff(char note) {
@@ -935,7 +949,7 @@ void Timbre::prepareMatrixForNewBlock() {
 void Timbre::fxAfterBlock(float ratioTimbres) {
 
     // Gate algo !!
-    float gate = voices[this->lastPlayedVoice]->matrix.getDestination(MAIN_GATE);
+    float gate = voices[this->lastPlayedVoiceNum]->matrix.getDestination(MAIN_GATE);
     if (unlikely(gate > 0 || currentGate > 0)) {
 		gate *=.72547132656922730694f; // 0 < gate < 1.0
 		if (gate > 1.0f) {
@@ -962,7 +976,7 @@ void Timbre::fxAfterBlock(float ratioTimbres) {
     //    currentGate = gate;
     }
 
-    float matrixFilterFrequency = voices[this->lastPlayedVoice]->matrix.getDestination(FILTER_FREQUENCY);
+    float matrixFilterFrequency = voices[this->lastPlayedVoiceNum]->matrix.getDestination(FILTER_FREQUENCY);
 	float numberVoicesAttn = 1 - (params.engine1.numberOfVoice * 0.04f * ratioTimbres * RATIOINV);
 
     // LP Algo
@@ -4364,7 +4378,7 @@ case FILTER_TEEBEE:
 
 	float velocity = this->lastVelocity;
 	
-	bool isReleased = voices[this->lastPlayedVoice]->isReleased();	
+	bool isReleased = voices[this->lastPlayedVoiceNum]->isReleased();	
 	bool accent = velocity > 0.629f && !isReleased;
 
 	const float ga = 0.9764716867f; //= exp(-1/(PREENFM_FREQUENCY * attack / BLOCK_SIZE))
@@ -4767,9 +4781,59 @@ case FILTER_OFF:
     	// NO EFFECT
    	break;
     }
+// Left Right Balance
+// Controled by CC10 only
+
+if (leftRightBalance != .5f) {
+	// Same algo as Mixer->Pan
+	float pan = leftRightBalance * 2 - 1.0f ;
+	float *sp = this->sampleBlock;
+	float sampleR, sampleL;
+	if (pan <= 0) {
+		float onePlusPan = 1 + pan;
+		float minusPan = - pan;
+		for (int k = BLOCK_SIZE ; k--; ) {
+			sampleL = *(sp);
+			sampleR = *(sp + 1);
+
+			*sp = (sampleL + sampleR * minusPan);
+			sp++;
+			*sp = sampleR * onePlusPan;
+			sp++;
+		}
+	} else if (pan > 0) {
+		float oneMinusPan = 1 - pan;
+		for (int k = 0 ; k < BLOCK_SIZE ; k++) {
+			sampleL = *(sp);
+			sampleR = *(sp + 1);
+
+			*sp = sampleL * oneMinusPan;
+			sp++;
+			*sp = (sampleR + sampleL * pan);
+			sp++;
+		}
+	}
+}
 
 }
 
+void Timbre::initADSRloop() {
+	this->env1.initLoopState();
+	this->env2.initLoopState();
+	this->env3.initLoopState();
+	this->env4.initLoopState();
+	this->env5.initLoopState();
+	this->env6.initLoopState();
+
+    for (int j=0; j<NUMBER_OF_ENCODERS * 2; j++) {
+        this->env1.reloadADSR(j);
+        this->env2.reloadADSR(j);
+        this->env3.reloadADSR(j);
+        this->env4.reloadADSR(j);
+        this->env5.reloadADSR(j);
+        this->env6.reloadADSR(j);
+    }
+}
 
 void Timbre::afterNewParamsLoad() {
     for (int k = 0; k < params.engine1.numberOfVoice; k++) {
@@ -5457,34 +5521,53 @@ void Timbre::verifyLfoUsed(int encoder, float oldValue, float newValue) {
     if (params.engine1.numberOfVoice == 0.0f) {
         return;
     }
+	// We used it and still use it 
     if (encoder == ENCODER_MATRIX_MUL && oldValue != 0.0f && newValue != 0.0f) {
         return;
     }
 
-    for (int lfo=0; lfo < NUMBER_OF_LFO; lfo++) {
+    for (int lfo = 0; lfo < NUMBER_OF_LFO; lfo++) {
         lfoUSed[lfo] = 0;
     }
 
+
+	seqStartUsed[0] = 0xff;
+	seqStartUsed[1] = 0xff;
+
     MatrixRowParams* matrixRows = &params.matrixRowState1;
 
-
     for (int r = 0; r < MATRIX_SIZE; r++) {
-        if (matrixRows[r].source >= MATRIX_SOURCE_LFO1 && matrixRows[r].source <= MATRIX_SOURCE_LFOSEQ2
+        if ((matrixRows[r].source >= MATRIX_SOURCE_LFO1 && matrixRows[r].source <= MATRIX_SOURCE_LFOSEQ2)
                 && matrixRows[r].mul != 0.0f
-                && matrixRows[r].destination != 0.0f) {
+                && (matrixRows[r].dest1 != 0.0f || matrixRows[r].dest2 != 0.0f)) {
             lfoUSed[(int)matrixRows[r].source - MATRIX_SOURCE_LFO1]++;
         }
 
-
 		// Check if we have a Mtx* that would require LFO even if mul is 0
 		// http://ixox.fr/forum/index.php?topic=69220.0
-        if (matrixRows[r].destination >= MTX1_MUL && matrixRows[r].destination <= MTX4_MUL && matrixRows[r].mul != 0.0f && matrixRows[r].source != 0.0f) {
-			int index = matrixRows[r].destination - MTX1_MUL;
-	        if (matrixRows[index].source >= MATRIX_SOURCE_LFO1 && matrixRows[index].source <= MATRIX_SOURCE_LFOSEQ2 && matrixRows[index].destination != 0.0f) {
-            	lfoUSed[(int)matrixRows[index].source - MATRIX_SOURCE_LFO1]++;
+        if (matrixRows[r].mul != 0.0f && matrixRows[r].source != 0.0f) {
+			if (matrixRows[r].dest1 >= MTX1_MUL && matrixRows[r].dest1 <= MTX4_MUL) {
+				int index = matrixRows[r].dest1 - MTX1_MUL;
+				if (matrixRows[index].source >= MATRIX_SOURCE_LFO1 && matrixRows[index].source <= MATRIX_SOURCE_LFOSEQ2) {
+					lfoUSed[(int)matrixRows[index].source - MATRIX_SOURCE_LFO1]++;
+				}
+			}
+			// same test for dest2
+			if (matrixRows[r].dest2 >= MTX1_MUL && matrixRows[r].dest2 <= MTX4_MUL) {
+				int index = matrixRows[r].dest2 - MTX1_MUL;
+				if (matrixRows[index].source >= MATRIX_SOURCE_LFO1 && matrixRows[index].source <= MATRIX_SOURCE_LFOSEQ2) {
+					lfoUSed[(int)matrixRows[index].source - MATRIX_SOURCE_LFO1]++;
+				}
+			}
+
+			// Need to know in what row step seq are used to update in 
+			if (unlikely(matrixRows[r].dest1 == SEQ1_START || matrixRows[r].dest2 == SEQ1_START)) {
+				seqStartUsed[0] = r;
+			} 
+			if (unlikely(matrixRows[r].dest1 == SEQ2_START || matrixRows[r].dest2 == SEQ2_START)) {
+				seqStartUsed[1] = r;
 			}
 		}
-
     }
 
     /*

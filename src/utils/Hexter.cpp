@@ -1017,11 +1017,11 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 	// Matrix use LFO 1 (o all frequency
 	params->matrixRowState1.source = MATRIX_SOURCE_LFO1;
 	params->matrixRowState1.mul =  (float)patch[139] / 120.0f;
-	params->matrixRowState1.destination = ALL_OSC_FREQ;
+	params->matrixRowState1.dest1 = ALL_OSC_FREQ;
 
 	params->matrixRowState2.source = MATRIX_SOURCE_LFO2;
 	params->matrixRowState2.mul = dx7_voice_amd_to_ol_adjustment[(patch[140])] / 100.0f;
-	params->matrixRowState2.destination = ALL_MIX;
+	params->matrixRowState2.dest1 = ALL_MIX;
 
 	params->matrixRowState2.mul = 0.0f;
 	params->matrixRowState3.mul = 0.0f;
@@ -1034,15 +1034,15 @@ void Hexter::voiceSetData(struct OneSynthParams *params, uint8_t *patch)
 
 	params->matrixRowState10.source = MATRIX_SOURCE_AFTERTOUCH;
 	params->matrixRowState10.mul = 0.0f;
-	params->matrixRowState10.destination = INDEX_MODULATION1;
+	params->matrixRowState10.dest1 = INDEX_MODULATION1;
 
 	params->matrixRowState11.source = MATRIX_SOURCE_MODWHEEL;
 	params->matrixRowState11.mul = 3.0f;
-	params->matrixRowState11.destination = INDEX_ALL_MODULATION;
+	params->matrixRowState11.dest1 = INDEX_ALL_MODULATION;
 
 	params->matrixRowState12.source = MATRIX_SOURCE_PITCHBEND;
 	params->matrixRowState12.mul = .5f;
-	params->matrixRowState12.destination = ALL_OSC_FREQ_HARM;
+	params->matrixRowState12.dest1 = ALL_OSC_FREQ_HARM;
 }
 
 
@@ -1174,5 +1174,4 @@ int Hexter::getActualOutputLevel(int value) {
 		return 28 + value;
 	}
 }
-
 

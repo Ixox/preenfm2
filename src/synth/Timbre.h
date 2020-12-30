@@ -56,6 +56,7 @@ public:
     void cleanNextBlock();
     void prepareMatrixForNewBlock();
     void fxAfterBlock(float ratioTimbres);
+    void initADSRloop();
     void afterNewParamsLoad();
     void setNewValue(int index, struct ParameterDisplay* param, float newValue);
     void setNewEffecParam(int encoder);
@@ -137,6 +138,16 @@ public:
         return  lfoUSed[lfo] > 0;
     }
 
+    // Do matrix use seq start
+    bool isSeqStartUsed(int seqNum) {
+        return seqStartUsed[seqNum] != 0xff;
+    }
+
+    /* Used in fxAfterBlock if different from .5f */
+    void setLeftRightBalance(float leftRightBalance) {
+        this->leftRightBalance = leftRightBalance;
+    }
+
 private:
 
     // MiniPal Arpegiator
@@ -159,7 +170,6 @@ private:
     Voice *voices[MAX_NUMBER_OF_VOICES];
     Synth *synth;
     bool holdPedal;
-    int8_t lastPlayedVoice;
     uint8_t lastPlayedVoiceNum;
 
 
@@ -228,7 +238,11 @@ private:
     float noteTimer1, noteTimer2;
     // lfoUsed
     uint8_t lfoUSed[NUMBER_OF_LFO];
-
+    // seqStartUsed
+    uint8_t seqStartUsed[NUMBER_OF_LFO_STEP];
+    // Left right balance
+    float leftRightBalance;
+    
     NoteStack pf_note_stack;
 };
 
