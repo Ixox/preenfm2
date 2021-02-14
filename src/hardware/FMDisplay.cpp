@@ -255,6 +255,11 @@ bool FMDisplay::shouldThisValueShowUp(int row, int encoder) {
             return false;
         }
         break;
+    case ROW_ENGINE2:
+        if (unlikely(this->synthState->params->engine2.playMode == 1.0f && encoder >= 1)) {
+            return false;
+        }
+        break;
     case ROW_EFFECT:
     {
         if (unlikely(encoder == 0)) {
@@ -759,7 +764,7 @@ void FMDisplay::newParamValue(int timbre, int currentRow, int encoder, Parameter
         }
         break;
         case ROW_EFFECT:
-            if (encoder == ENCODER_EFFECT_TYPE) {
+            if (unlikely(encoder == ENCODER_EFFECT_TYPE)) {
                 refreshStatus = 8;
                 return;
             }
@@ -769,8 +774,14 @@ void FMDisplay::newParamValue(int timbre, int currentRow, int encoder, Parameter
                 displayAlgo(newValue);
             }
             break;
+        case ROW_ENGINE2:
+            if (unlikely(encoder == ENCODER_ENGINE2_PLAY_MODE)) {
+                refreshStatus = 8;
+                return;
+            }
+            break;
         case ROW_ARPEGGIATOR1:
-            if (encoder == ENCODER_ARPEGGIATOR_CLOCK) {
+            if (unlikely(encoder == ENCODER_ARPEGGIATOR_CLOCK)) {
                 refreshStatus = 8;
                 return;
             }

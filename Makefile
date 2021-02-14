@@ -1,8 +1,8 @@
-PFM2_VERSION_NUMBER=2.20
+PFM2_VERSION_NUMBER=2.21
 PFM2_VERSION:=\"${PFM2_VERSION_NUMBER}\"
 
 # Define you GCCPATH HERE
-GCC_PATH:=${PWD}/gcc-arm-none-eabi-4_7-2014q2/bin
+GCC_PATH:=/home/xavier/dev/gcc-arm-none-eabi-4_7-2014q2/bin
 
 
 ifeq ($(MAKECMDGOALS),pfm)
@@ -40,8 +40,8 @@ READELF = ${GCC_PATH}/arm-none-eabi-readelf
 
 
 SRC_FIRMWARE:=src/PreenFM.cpp \
-	src/PreenFM_irq.c \
-	src/PreenFM_init.c \
+	src/PreenFM_irq.cpp \
+	src/PreenFM_init.cpp \
 	src/usb/usbKey_usr.c \
 	src/usb/usbMidi_usr.c \
 	src/usb/usbd_midi_desc.c \
@@ -172,7 +172,7 @@ SMALLBINOPTS := -mfpu=fpv4-sp-d16 -ffunction-sections -fdata-sections -fno-rtti 
 #
 DEFINE := -DPFM2_VERSION=${PFM2_VERSION} -DPFM2_BOOTLOADER_VERSION=${PFM2_BOOTLOADER_VERSION}
 
-CFLAGS =  -O3 $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
+CFLAGS = -O $(INCLUDESDIR) -c -fno-common   -g  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard $(SMALLBINOPTS) $(DEFINE) -fsigned-char
 
 AFLAGS  = -ahls -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 LFLAGS  = -Tlinker/stm32f4xx.ld  -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -gc-sections    --specs=nano.specs

@@ -23,6 +23,9 @@
 // #define DEBUG 1
 // #define DEBUG_CPU_USAGE 1
 // #define CVINDEBUG 1
+#ifndef __builtin_expect
+#define __builtin_expect(x,y) (x)
+#endif
 
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
@@ -132,7 +135,10 @@ enum {
     ROW_LFOSEQ2 ,
     ROW_MIDINOTE1CURVE,
     ROW_MIDINOTE2CURVE,
-    ROW_LFO_LAST = ROW_MIDINOTE2CURVE
+    ROW_LFOSEQ1_STEP,
+    ROW_LFOSEQ2_STEP,
+    ROW_ENGINE2,
+    ROW_LFO_LAST = ROW_ENGINE2
 };
 
 
@@ -193,6 +199,14 @@ struct Engine1Params {
     float glide;
 };
 
+struct Engine2Params {
+    float playMode;
+    float unisonSpread;
+    float unisonDetune;
+    float pfmVersion; // 1 is reserved for preenfm3
+};
+
+
 //{ "Acti", "Clk ", "BPM ", "Dire" },
 //{ "Ptrn", "Divi", "Dura", "Latc" },
 
@@ -211,7 +225,7 @@ struct EngineArp2 {
 };
 
 /* low 16 bits = pattern mask, high reserved for now */
-typedef uint32_t arp_pattern_t;
+typedef unsigned int arp_pattern_t;
 #define ARP_PATTERN_GETMASK(x) (uint16_t)( (x) & 0xffff)
 #define ARP_PATTERN_SETMASK(p,m) do { (p) = ((p) & ~0xffff) | ((m) & 0xffff); } while (0)
 #define ARP_PATTERN(x) ((uint32_t)(x) & 0xffff)
@@ -382,7 +396,6 @@ struct MidiNoteCurveRowParams {
     float unused1;
 };
 
-
 struct OneSynthParams {
     struct Engine1Params engine1;
     struct EngineIm1 engineIm1;
@@ -438,6 +451,7 @@ struct OneSynthParams {
     struct MidiNoteCurveRowParams midiNote2Curve;
     struct StepSequencerSteps lfoSteps1;
     struct StepSequencerSteps lfoSteps2;
+    struct Engine2Params engine2;
     char presetName[13];
 };
 

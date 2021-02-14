@@ -121,6 +121,7 @@ struct FlashSynthParams {
     struct LfoPhaseRowParams lfoPhases;
     struct MidiNoteCurveRowParams midiNote1Curve;
     struct MidiNoteCurveRowParams midiNote2Curve;
+    struct Engine2Params engine2;
 };
 
 #define USB_PATCH_SIZE 1024

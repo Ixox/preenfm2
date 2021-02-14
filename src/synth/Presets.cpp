@@ -22,6 +22,7 @@
 
 const struct OneSynthParams defaultPreset  = {
         { ALGO7, 14, 3, 4} ,
+
         { 0.0, 0.0, 0.0, 0.0} ,
         { 0.0, 0.0, 0.0, 0.0} ,
         { 0.0, 0.0, 0.0, 0.0} ,
@@ -85,6 +86,10 @@ const struct OneSynthParams defaultPreset  = {
         { MIDI_NOTE_CURVE_M_LINEAR, 60, MIDI_NOTE_CURVE_LINEAR, 0},
         {{ 3, 0, 7,  0,  12,  15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}} ,
         {{ 3, 0, 7,  0,  12,  15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}} ,
+
+        // Playmode, spread, detune, version=2.0
+        { 1.0, 0.5, 0.12, 2.0} ,
+
         // Name
         "Default"
 
@@ -166,5 +171,9 @@ const struct OneSynthParams preenMainPreset  = {
         { MIDI_NOTE_CURVE_M_LINEAR, 60, MIDI_NOTE_CURVE_LINEAR, 0},
 		{{ 0,7,15,15,15,0,15,15,  0,15,15,15,0,15,15,15}} ,
 		{{ 15, 4, 2, 0, 15, 2, 0, 8, 15, 0, 12, 0, 8, 0, 15, 0}} ,
+
+         // Playmode, spread, detune
+        { 1.0, 0.5, 0.12, 2.0} ,
+
 		"Preen mk2"
 };

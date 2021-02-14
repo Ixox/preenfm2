@@ -280,6 +280,8 @@ void PreenFMFileType::convertParamsToMemory(const struct OneSynthParams* params,
 	// First engine line
 
 	fsu->copyFloat((float*)&params->engine1, (float*)&memory->engine1, 4);
+	// Save to 2.0
+	fsu->copyFloat((float*)&params->engine2, (float*)&memory->engine2, 4);
 	if (saveArp) {
 		fsu->copyFloat((float*)&params->engineArp1, (float*)&memory->engineArp1, 4 * 2);
 		memory->engineArpUserPatterns = params->engineArpUserPatterns;
@@ -340,6 +342,25 @@ void PreenFMFileType::convertParamsToMemory(const struct OneSynthParams* params,
 void PreenFMFileType::convertMemoryToParams(const struct FlashSynthParams* memory, struct OneSynthParams* params, bool loadArp) {
 	// First engine line
 	fsu->copyFloat((float*)&memory->engine1, (float*)&params->engine1, 4);
+
+	fsu->copyFloat((float*)&memory->engine2, (float*)&params->engine2, 4);
+	if (params->engine2.pfmVersion == 0.0f) {
+		params->engine2.playMode = 1.0f;
+		params->engine2.unisonDetune = .12f;
+		params->engine2.unisonSpread = .5f;
+	} else if (params->engine2.pfmVersion == 1.0f) {
+		// preenfm3 ?
+		if (params->engine2.playMode == 0.0f) { // Pfm3 mono
+			params->engine1.numberOfVoice = 1; // One voice
+			params->engine2.playMode = 1.0f; // poly set to (but not used)
+		} else {
+			params->engine1.numberOfVoice = 3;
+			params->engine2.playMode = params->engine1.numberOfVoice;
+		}
+	}
+	// Set version to 2
+	params->engine2.pfmVersion = 2.0f;
+
 	if (loadArp) {
 		fsu->copyFloat((float*)&memory->engineArp1, (float*)&params->engineArp1, 4 * 2);
 		params->engineArpUserPatterns = memory->engineArpUserPatterns;
