@@ -47,12 +47,12 @@ public:
 
     void init(SynthState* sState, struct OscillatorParams *oscParams, DestinationEnum df);
 
-    void newNote(struct OscState* oscState, int note);
+    void newNote(struct OscState* oscState, int note, float noteFrequencyUnison);
 #ifdef CVIN
     void newNoteFromCv(struct OscState* oscState, float freq);
     void updateFreqFromCv(struct OscState* oscState, float freq);
 #endif
-    void glideToNote(struct OscState* oscState, int note);
+    void glideToNote(struct OscState* oscState, int note, float noteFrequencyUnison);
     void glideStep(struct OscState* oscState, float phase);
 
     inline void calculateFrequencyWithMatrix(struct OscState *oscState, Matrix* matrix, float expHarm) {

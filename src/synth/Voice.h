@@ -40,8 +40,8 @@ public:
 
     void endNoteOrBeginNextOne();
 
-    void noteOnWithoutPop(short note, short velocity, unsigned int index);
-    void noteOn(short note, short velocity, unsigned int index);
+    void noteOnWithoutPop(short note, short velocity, unsigned int index, float noteFrequencyUnison = 1.0f);
+    void noteOn(short note, short velocity, unsigned int index, float noteFrequencyUnison = 1.0f);
     void glideToNote(short newNote);
     void killNow();
     void noteOff();
@@ -395,6 +395,9 @@ private:
     float glidePhase;
     uint8_t nextGlidingNote;
 
+    // unison 
+    float noteFrequencyUnison;
+
     // env Value
     float env1ValueMem;
     float env2ValueMem;
@@ -406,7 +409,7 @@ private:
     Timbre* currentTimbre;
 
     // glide phase increment
-    #define nbGlideVals 12
+#define nbGlideVals 12
     static float glidePhaseInc[nbGlideVals];
 
     // Matrix....

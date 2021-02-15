@@ -249,9 +249,11 @@ bool FMDisplay::shouldThisValueShowUp(int row, int encoder) {
         if (unlikely(encoder >= 2 && algoInformation[algo].mix == 5)) {
             return false;
         }
-        break;
+    break;
     case ROW_ENGINE:
-        if (unlikely(this->synthState->params->engine1.numberOfVoice != 1 && encoder == ENCODER_ENGINE_GLIDE)) {
+        if (encoder == ENCODER_ENGINE_GLIDE && this->synthState->params->engine1.numberOfVoice != 1 
+            && this->synthState->params->engine2.playMode != 2.0f) 
+        {
             return false;
         }
         break;
@@ -385,7 +387,7 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
     case DISPLAY_TYPE_VOICES:
         lcd->setCursor(encoder*5, 3);
         printValueWithSpace(newValue);
-        if (newValue == 1) {
+        if (newValue == 1 || this->synthState->params->engine2.playMode == 2.0f) {
             // if voices = 1 or 0 let's refresh the glide info
             updateEncoderValue(ENCODER_ENGINE_GLIDE+1);
             updateEncoderName(row, ENCODER_ENGINE_GLIDE);

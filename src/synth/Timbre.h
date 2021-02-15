@@ -55,6 +55,8 @@ public:
     void prepareForNextBlock();
     void cleanNextBlock();
     void prepareMatrixForNewBlock();
+    uint8_t voicesNextBlock();
+    void glide();
     void fxAfterBlock(float ratioTimbres);
     void initADSRloop();
     void afterNewParamsLoad();

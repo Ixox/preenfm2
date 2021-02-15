@@ -74,19 +74,23 @@ void Voice::glideToNote(short newNote) {
 		glideFirstNoteOff();
 	}
 
-	currentTimbre->osc1.glideToNote(&oscState1, newNote);
-	currentTimbre->osc2.glideToNote(&oscState2, newNote);
-	currentTimbre->osc3.glideToNote(&oscState3, newNote);
-	currentTimbre->osc4.glideToNote(&oscState4, newNote);
-	currentTimbre->osc5.glideToNote(&oscState5, newNote);
-	currentTimbre->osc6.glideToNote(&oscState6, newNote);
+	currentTimbre->osc1.glideToNote(&oscState1, newNote, noteFrequencyUnison);
+	currentTimbre->osc2.glideToNote(&oscState2, newNote, noteFrequencyUnison);
+	currentTimbre->osc3.glideToNote(&oscState3, newNote, noteFrequencyUnison); 
+	currentTimbre->osc4.glideToNote(&oscState4, newNote, noteFrequencyUnison);
+	currentTimbre->osc5.glideToNote(&oscState5, newNote, noteFrequencyUnison);
+	currentTimbre->osc6.glideToNote(&oscState6, newNote, noteFrequencyUnison);
 }
 
 
-void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) {
+void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index, float noteFrequencyUnison) {
 	// Update index : so that few chance to be chosen again during the quick dying
 	this->index = index;
-	if (!this->released && (int)currentTimbre->params.engine1.numberOfVoice == 1 && currentTimbre->params.engine1.glide > 0) {
+
+	if (unlikely(!this->released  && currentTimbre->params.engine1.glide > 0.0f
+		&& (currentTimbre->params.engine1.numberOfVoice == 1 || currentTimbre->params.engine2.playMode == 2.0f)))
+	{
+		this->noteFrequencyUnison = noteFrequencyUnison;
 		glideToNote(newNote);
 		this->holdedByPedal = false;
 	} else {
@@ -96,6 +100,7 @@ void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index) 
 		this->newNotePending = true;
 		this->nextVelocity = velocity;
 		this->nextPendingNote = newNote;
+		this->noteFrequencyUnison = noteFrequencyUnison;
 		// Not release anymore... not available for new notes...
 		this->released = false;
 
@@ -147,7 +152,7 @@ void Voice::propagateCvFreq(short newNote) {
 #endif
 
 
-void Voice::noteOn(short newNote, short velocity, unsigned int index) {
+void Voice::noteOn(short newNote, short velocity, unsigned int index, float noteFrequencyUnison) {
 
 	this->released = false;
 	this->playing = true;
@@ -171,12 +176,12 @@ void Voice::noteOn(short newNote, short velocity, unsigned int index) {
 #ifdef CVIN
 	if (unlikely(newNote < 128)) {
 #endif
-        currentTimbre->osc1.newNote(&oscState1, newNote);
-        currentTimbre->osc2.newNote(&oscState2, newNote);
-        currentTimbre->osc3.newNote(&oscState3, newNote);
-        currentTimbre->osc4.newNote(&oscState4, newNote);
-        currentTimbre->osc5.newNote(&oscState5, newNote);
-        currentTimbre->osc6.newNote(&oscState6, newNote);
+        currentTimbre->osc1.newNote(&oscState1, newNote, noteFrequencyUnison);
+        currentTimbre->osc2.newNote(&oscState2, newNote, noteFrequencyUnison);
+        currentTimbre->osc3.newNote(&oscState3, newNote, noteFrequencyUnison);
+        currentTimbre->osc4.newNote(&oscState4, newNote, noteFrequencyUnison);
+        currentTimbre->osc5.newNote(&oscState5, newNote, noteFrequencyUnison);
+        currentTimbre->osc6.newNote(&oscState6, newNote, noteFrequencyUnison);
 #ifdef CVIN
     } else {
         float freq = currentTimbre->getCvFrequency();
@@ -199,7 +204,7 @@ void Voice::noteOn(short newNote, short velocity, unsigned int index) {
 void Voice::endNoteOrBeginNextOne() {
     if (this->newNotePending) {
 		if (nextPendingNote >=0) {
-        	noteOn(nextPendingNote, nextVelocity, index);
+        	noteOn(nextPendingNote, nextVelocity, index, noteFrequencyUnison);
 		} else {
 		    // Note off have already been received....
 			this->playing = false;

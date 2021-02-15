@@ -617,8 +617,15 @@ int cptHighNote = 0;
 void Timbre::preenNoteOn(uint8_t note, uint8_t velocity) {
 
 	this->lastVelocity = velocity * INV127;
+	bool isUnison = params.engine1.numberOfVoice > 1  && params.engine2.playMode == 2.0f;
 
-	int iNov = (int) params.engine1.numberOfVoice;
+	int iNov;
+	if (likely(!isUnison)) {
+		iNov = (int) params.engine1.numberOfVoice;
+	} else {
+		iNov = 1;
+	}
+
 	if (unlikely(iNov == 0)) {
 		return;
 	}
@@ -647,10 +654,21 @@ void Timbre::preenNoteOn(uint8_t note, uint8_t velocity) {
 		lcd.print("S:");
 		lcd.print(n);
 #endif
+			if (!isUnison) {
+				preenNoteOnUpdateMatrix(n, note, velocity);
+				voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++);
+			} else {
+				float noteFrequencyUnison = (1 - params.engine2.unisonDetune * .05f);
+				float noteFrequencyUnisonInc =  params.engine2.unisonDetune * numberOfVoiceInverse * .1f;
 
-            preenNoteOnUpdateMatrix(n, note, velocity);
-            voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++);
-            this->lastPlayedVoiceNum = n;
+                for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+                    int n = voiceNumber[k];
+                    preenNoteOnUpdateMatrix(n, note, velocity);
+                    voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++, noteFrequencyUnison);
+					noteFrequencyUnison += noteFrequencyUnisonInc;
+                }	
+			}
+			this->lastPlayedVoiceNum = n;
 			return;
 		}
 
@@ -686,38 +704,43 @@ void Timbre::preenNoteOn(uint8_t note, uint8_t velocity) {
 	}
 	// All voices in newnotepending state ?
 	if (voiceToUse != -1) {
-#ifdef DEBUG_VOICE
-		lcd.setRealTimeAction(true);
-		lcd.setCursor(16,1);
-		lcd.print(cptHighNote++);
-		lcd.setCursor(16,2);
-		switch (newNoteType) {
+
+		if (!isUnison) {
+			preenNoteOnUpdateMatrix(voiceToUse, note, velocity);
+
+			switch (newNoteType) {
 			case NEW_NOTE_FREE:
-				lcd.print("F:");
+				voices[voiceToUse]->noteOn(note, velocity, voiceIndex++);
 				break;
 			case NEW_NOTE_OLD:
-				lcd.print("O:");
-				break;
 			case NEW_NOTE_RELEASE:
-				lcd.print("R:");
+				voices[voiceToUse]->noteOnWithoutPop(note, velocity, voiceIndex++);
 				break;
+			}
+
+		} else {
+            // Unisons : we start all voices with different frequency
+
+			float noteFrequencyUnison = (1 - params.engine2.unisonDetune * .05f);
+			float noteFrequencyUnisonInc =  params.engine2.unisonDetune * numberOfVoiceInverse * .1f;
+
+			for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+
+				int n = voiceNumber[k];
+				preenNoteOnUpdateMatrix(n, note, velocity);
+
+				switch (newNoteType) {
+				case NEW_NOTE_FREE:
+					voices[n]->noteOn(note, velocity, voiceIndex++, noteFrequencyUnison);
+					break;
+				case NEW_NOTE_OLD:
+				case NEW_NOTE_RELEASE:
+					voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++, noteFrequencyUnison);
+					break;
+				}
+				noteFrequencyUnison += noteFrequencyUnisonInc;
+			}
 		}
-		lcd.print(voiceToUse);
-#endif
-
-
-		preenNoteOnUpdateMatrix(voiceToUse, note, velocity);
-
-		switch (newNoteType) {
-		case NEW_NOTE_FREE:
-			voices[voiceToUse]->noteOn(note, velocity, voiceIndex++);
-			break;
-		case NEW_NOTE_OLD:
-		case NEW_NOTE_RELEASE:
-			voices[voiceToUse]->noteOnWithoutPop(note, velocity, voiceIndex++);
-			break;
-		}
-
 		lastPlayedVoiceNum = voiceToUse;
 	}
 }
@@ -760,6 +783,8 @@ void Timbre::propagateCvFreq(uint8_t note) {
 #endif
 
 void Timbre::preenNoteOff(uint8_t note) {
+	bool isUnison = params.engine1.numberOfVoice > 1  && params.engine2.playMode == 2.0f;
+
 	int iNov = (int) params.engine1.numberOfVoice;
 	for (int k = 0; k < iNov; k++) {
 		// voice number k of timbre
@@ -774,23 +799,31 @@ void Timbre::preenNoteOff(uint8_t note) {
 			if (voices[n]->getNote() == note) {
 				if (unlikely(holdPedal)) {
 					voices[n]->setHoldedByPedal(true);
-					return;
+					if (likely(!isUnison)) {
+						return;
+					}
 				} else {
 					voices[n]->noteOff();
-					return;
+					if (likely(!isUnison)) {
+						return;
+					}
 				}
 			}
 		} else {
 			// if gliding and releasing first note
 			if (voices[n]->getNote() == note) {
 				voices[n]->glideFirstNoteOff();
-				return;
+				if (likely(!isUnison)) {
+					return;
+				}
 			}
 			// if gliding and releasing next note
 			if (voices[n]->getNextGlidingNote() == note) {
 				voices[n]->glideToNote(voices[n]->getNote());
 				voices[n]->glideFirstNoteOff();
-				return;
+				if (likely(!isUnison)) {
+					return;
+				}
 			}
 		}
 	}
@@ -878,6 +911,89 @@ void Timbre::prepareMatrixForNewBlock() {
     }
 }
 
+uint8_t Timbre::voicesNextBlock() {
+    uint8_t numberOfPlayingVoices = 0;
+	bool isUnison = params.engine1.numberOfVoice > 1  && params.engine2.playMode == 2.0f;
+    if (unlikely(!isUnison)) {
+		for (int k = 0; k < params.engine1.numberOfVoice; k++) {
+			int n = voiceNumber[k];
+			if (likely(this->voices[n]->isPlaying())) {
+				this->voices[n]->nextBlock();
+				numberOfPlayingVoices ++;
+			}
+		}
+	} else {
+        // UNISON
+        float pansSav[6];
+        pansSav[0] = params.engineMix1.panOsc1;
+        pansSav[1] = params.engineMix1.panOsc2;
+        pansSav[2] = params.engineMix2.panOsc3;
+        pansSav[3] = params.engineMix2.panOsc4;
+        pansSav[4] = params.engineMix3.panOsc5;
+        pansSav[5] = params.engineMix3.panOsc6;
+
+        float* pans[] = {
+            &params.engineMix1.panOsc1,
+            &params.engineMix1.panOsc2,
+            &params.engineMix2.panOsc3,
+            &params.engineMix2.panOsc4,
+            &params.engineMix3.panOsc5,
+            &params.engineMix3.panOsc6
+        };
+
+		int currentAlgo = (int)params.engine1.algo;
+        int algoNumberOfMix = algoInformation[currentAlgo].mix;
+		int numberOfVoices = params.engine1.numberOfVoice;
+        float numberOfCarrierOp = numberOfVoices * algoNumberOfMix;
+        float opPan = - params.engine2.unisonSpread;
+        float opPanInc = 2.0f / numberOfCarrierOp * params.engine2.unisonSpread;
+
+        if (likely(voices[voiceNumber[0]]->isPlaying())) {
+            for (int vv = 0; vv < numberOfVoices; vv++) {
+                int v = voiceNumber[vv];
+				bool otherSide = false;
+                for (int op = 0; op < 6; op ++) {
+					if (algoOpInformation[currentAlgo][op] == 1) {
+						if (otherSide) {
+							*pans[op] = -opPan;
+						} else {
+							*pans[op] = opPan;
+						}
+	                    opPan += opPanInc;
+						otherSide =! otherSide;
+					}
+                }
+                voices[v]->nextBlock();
+                numberOfPlayingVoices++;
+            }
+        }
+
+        params.engineMix1.panOsc1 = pansSav[0];
+        params.engineMix1.panOsc2 = pansSav[1];
+        params.engineMix2.panOsc3 = pansSav[2];
+        params.engineMix2.panOsc4 = pansSav[3];
+        params.engineMix3.panOsc5 = pansSav[4];
+        params.engineMix3.panOsc6 = pansSav[5];
+	}
+	return numberOfPlayingVoices;
+}
+
+void Timbre::glide() {
+	bool isUnison = params.engine1.numberOfVoice > 1  && params.engine2.playMode == 2.0f;
+    if (unlikely(!isUnison)) {
+		// need to glide ?
+		if (voiceNumber[0] != -1 && this->voices[voiceNumber[0]]->isGliding()) {
+			this->voices[voiceNumber[0]]->glide();
+		}
+	} else {
+        for (int vv = 0; vv < params.engine1.numberOfVoice; vv++) {
+            int v = voiceNumber[vv];
+            if (v != -1 && voices[v]->isGliding()) {
+                voices[v]->glide();
+            }
+        }
+	}
+}
 
 #define GATE_INC 0.02f
 

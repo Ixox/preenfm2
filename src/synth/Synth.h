@@ -220,7 +220,7 @@ private:
     float currentGate;
 
     float cpuUsage;
-    int playingNotes;
+    uint32_t playingNotes;
 #ifdef CVIN
     bool cvin12Ready ;
     bool cvin34Ready ;

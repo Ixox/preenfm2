@@ -280,8 +280,8 @@ void PreenFMFileType::convertParamsToMemory(const struct OneSynthParams* params,
 	// First engine line
 
 	fsu->copyFloat((float*)&params->engine1, (float*)&memory->engine1, 4);
-	// Save to 2.0
 	fsu->copyFloat((float*)&params->engine2, (float*)&memory->engine2, 4);
+	
 	if (saveArp) {
 		fsu->copyFloat((float*)&params->engineArp1, (float*)&memory->engineArp1, 4 * 2);
 		memory->engineArpUserPatterns = params->engineArpUserPatterns;
