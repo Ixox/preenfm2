@@ -917,7 +917,7 @@ uint8_t Timbre::voicesNextBlock() {
     if (unlikely(!isUnison)) {
 		for (int k = 0; k < params.engine1.numberOfVoice; k++) {
 			int n = voiceNumber[k];
-			if (likely(this->voices[n]->isPlaying())) {
+			if (likely(n >= 0 && this->voices[n]->isPlaying())) {
 				this->voices[n]->nextBlock();
 				numberOfPlayingVoices ++;
 			}
@@ -948,9 +948,12 @@ uint8_t Timbre::voicesNextBlock() {
         float opPan = - params.engine2.unisonSpread;
         float opPanInc = 2.0f / numberOfCarrierOp * params.engine2.unisonSpread;
 
-        if (likely(voices[voiceNumber[0]]->isPlaying())) {
+        if (likely(voiceNumber[0] >=0 && voices[voiceNumber[0]]->isPlaying())) {
             for (int vv = 0; vv < numberOfVoices; vv++) {
                 int v = voiceNumber[vv];
+				if (unlikely(v < 0)) {
+					continue;
+				}
 				bool otherSide = false;
                 for (int op = 0; op < 6; op ++) {
 					if (algoOpInformation[currentAlgo][op] == 1) {
@@ -982,13 +985,13 @@ void Timbre::glide() {
 	bool isUnison = params.engine1.numberOfVoice > 1  && params.engine2.playMode == 2.0f;
     if (unlikely(!isUnison)) {
 		// need to glide ?
-		if (voiceNumber[0] != -1 && this->voices[voiceNumber[0]]->isGliding()) {
+		if (voiceNumber[0] >= 0 && this->voices[voiceNumber[0]]->isGliding()) {
 			this->voices[voiceNumber[0]]->glide();
 		}
 	} else {
         for (int vv = 0; vv < params.engine1.numberOfVoice; vv++) {
             int v = voiceNumber[vv];
-            if (v != -1 && voices[v]->isGliding()) {
+            if (v >= 0 && voices[v]->isGliding()) {
                 voices[v]->glide();
             }
         }

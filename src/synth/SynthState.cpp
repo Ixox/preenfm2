@@ -37,6 +37,21 @@ const char* algoNames [] = { "alg1", "alg2", "alg3", "alg4", "alg5", "alg6", "al
         "al10", "al11", "al12", "al13", "al14", "al15", "al16", "al17", "al18", "al19",
         "al20", "al21", "al22", "al23", "al24", "al25", "al26", "al27", "al28"  };
 
+const uint8_t allEngineRows[12] = {
+    ROW_ENGINE,
+    ROW_ENGINE2,
+    ROW_MODULATION1 ,
+    ROW_MODULATION2 ,
+    ROW_MODULATION3 ,
+    ROW_OSC_MIX1,
+    ROW_OSC_MIX2,
+    ROW_OSC_MIX3,
+    ROW_ARPEGGIATOR1,
+    ROW_ARPEGGIATOR2,
+    ROW_ARPEGGIATOR3,
+    ROW_EFFECT
+};
+
 struct ParameterRowDisplay engine1ParameterRow  = {
         "Engine" ,
         { "Algo", "Velo", "Voic", "Glid" },
@@ -905,16 +920,20 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
             }
             break;
         case BUTTON_OSC:
-            currentRow = ROW_ENGINE;
+            engineRow = 0;
+            currentRow = allEngineRows[engineRow];
             break;
         case BUTTON_ENV:
-            currentRow = ROW_MODULATION1;
+            engineRow = 2;
+            currentRow = allEngineRows[engineRow];
             break;
         case BUTTON_MATRIX:
-            currentRow = ROW_ARPEGGIATOR1;
+            engineRow = 8;
+            currentRow = allEngineRows[engineRow];
             break;
         case BUTTON_LFO:
-            currentRow = ROW_EFFECT;
+            engineRow = 11;
+            currentRow = allEngineRows[engineRow];
             break;
         }
         break;
@@ -1537,22 +1556,6 @@ int SynthState::getRowFromOperator() {
         break;
     }
 }
-
-
-const uint8_t allEngineRows[12] = {
-    ROW_ENGINE,
-    ROW_ENGINE2,
-    ROW_MODULATION1 ,
-    ROW_MODULATION2 ,
-    ROW_MODULATION3 ,
-    ROW_OSC_MIX1,
-    ROW_OSC_MIX2,
-    ROW_OSC_MIX3,
-    ROW_ARPEGGIATOR1,
-    ROW_ARPEGGIATOR2,
-    ROW_ARPEGGIATOR3,
-    ROW_EFFECT
-};
 
 void SynthState::changeSynthModeRow(int button, int step) {
     unsigned char lastBecauseOfAlgo;
