@@ -427,7 +427,8 @@ private:
     LfoEnv2 lfoEnv2[NUMBER_OF_LFO_ENV2];
     LfoStepSeq lfoStepSeq[NUMBER_OF_LFO_STEP];
 
-
+    // Used when note Off is received during Quick Release
+    uint8_t noteAlreadyFinished;
 };
 
 #endif

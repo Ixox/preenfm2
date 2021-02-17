@@ -1162,6 +1162,10 @@ void SynthState::encoderTurned(int encoder, int ticks) {
         float newValue;
         float oldValue;
 
+        if (unlikely(param->displayType == DISPLAY_TYPE_NONE)) {
+            return;
+        }
+
         if (param->displayType == DISPLAY_TYPE_STRINGS) {
             // Do not use encoder acceleration
             ticks = ticks > 0 ? 1 : -1;

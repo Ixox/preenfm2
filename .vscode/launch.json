@@ -6,10 +6,10 @@
             "request": "launch",
             "cwd": "${workspaceRoot}",
             "device" : "stm32f405xx",
-            "executable": "/home/xavier/git/preenfm2/build/p2_2.20b2.elf",
+            "executable": "build/p2_2.20t.elf",
             "name": "Debug pfm2 firmware",
-            "servertype": "stutil",        
-            "armToolchainPath": "/home/xavier/bin/gcc-arm-none-eabi-4_7-2014q2/bin/"
+            "servertype": "stlink",        
+            "armToolchainPath": "C:\\dev\\gcc-arm-none-eabi-4_7-2014q2\\bin"
         }
     ]
 }

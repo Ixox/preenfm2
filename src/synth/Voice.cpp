@@ -203,24 +203,16 @@ void Voice::noteOn(short newNote, short velocity, unsigned int index, float note
 
 void Voice::endNoteOrBeginNextOne() {
     if (this->newNotePending) {
-		if (nextPendingNote >=0) {
+		if (nextPendingNote <= 127) {
         	noteOn(nextPendingNote, nextVelocity, index, noteFrequencyUnison);
 		} else {
-		    // Note off have already been received....
-			this->playing = false;
-			this->nextPendingNote = 0;
-	        this->newNotePending = false;
+			noteOn(nextPendingNote - 128, nextVelocity, index, noteFrequencyUnison);
+            this->noteAlreadyFinished = 1;
 		}
     } else {
         this->playing = false;
     	this->released = false;
     }
-    this->env1ValueMem = 0;
-    this->env2ValueMem = 0;
-    this->env3ValueMem = 0;
-    this->env4ValueMem = 0;
-    this->env5ValueMem = 0;
-    this->env6ValueMem = 0;
 	this->freqAi = 0.0f;
 	this->freqAo = 0.0f;
 	this->freqBi = 0.0f;
@@ -242,7 +234,8 @@ void Voice::noteOff() {
 	if (likely(!this->newNotePending)) {
         if (this->newNotePlayed) {
             // Note hasn't played
-            killNow();
+            // Let's give it a chance to create one block then noteOff
+            this->noteAlreadyFinished = 1;
             return;
         }
 
@@ -259,8 +252,8 @@ void Voice::noteOff() {
 
 		lfoNoteOff();
 	} else {
-		// We receive a note off before the note actually started
-		this->nextPendingNote = -1;
+        // We receive a note off before the note actually started, let's flag it
+        this->nextPendingNote += 128;
 	}
 }
 
@@ -281,18 +274,19 @@ void Voice::killNow() {
 }
 
 void Voice::nextBlock() {
-    updateAllMixOscsAndPans();
     // After matrix
     if (unlikely(this->newNotePlayed)) {
         this->newNotePlayed = false;
 
-        currentTimbre->env1.noteOnAfterMatrixCompute(&envState1, &matrix);
-        currentTimbre->env2.noteOnAfterMatrixCompute(&envState2, &matrix);
-        currentTimbre->env3.noteOnAfterMatrixCompute(&envState3, &matrix);
-        currentTimbre->env4.noteOnAfterMatrixCompute(&envState4, &matrix);
-        currentTimbre->env5.noteOnAfterMatrixCompute(&envState5, &matrix);
-        currentTimbre->env6.noteOnAfterMatrixCompute(&envState6, &matrix);
+        this->env1ValueMem  = currentTimbre->env1.noteOnAfterMatrixCompute(&envState1, &matrix);
+        this->env2ValueMem  = currentTimbre->env2.noteOnAfterMatrixCompute(&envState2, &matrix);
+        this->env3ValueMem  = currentTimbre->env3.noteOnAfterMatrixCompute(&envState3, &matrix);
+        this->env4ValueMem  = currentTimbre->env4.noteOnAfterMatrixCompute(&envState4, &matrix);
+        this->env5ValueMem  = currentTimbre->env5.noteOnAfterMatrixCompute(&envState5, &matrix);
+        this->env6ValueMem  = currentTimbre->env6.noteOnAfterMatrixCompute(&envState6, &matrix);
     }
+
+    updateAllMixOscsAndPans();
 
 	float env1Value;
 	float env2Value;
@@ -3264,8 +3258,16 @@ void Voice::nextBlock() {
 			}
 		 }
 		 break;
-
 	} // End switch
+
+	if (unlikely(this->noteAlreadyFinished > 0)) {
+        if (noteAlreadyFinished == 2) {
+            this->noteAlreadyFinished = 0;
+            noteOff();
+        } else {
+            noteAlreadyFinished++;
+        }
+    }
 }
 
 void Voice::setCurrentTimbre(Timbre *timbre) {

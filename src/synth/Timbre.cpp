@@ -677,9 +677,7 @@ void Timbre::preenNoteOn(uint8_t note, uint8_t velocity) {
 			if (!voices[n]->isPlaying()) {
 				voiceToUse = n;
 				newNoteType = NEW_NOTE_FREE;
-			}
-
-			if (voices[n]->isReleased()) {
+			} else if (voices[n]->isReleased()) {
 				int indexVoice = voices[n]->getIndex();
 				if (indexVoice < indexMin) {
 					indexMin = indexVoice;
