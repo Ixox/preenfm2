@@ -27,6 +27,9 @@
 // Regular memory
 float midiNoteScale[2][NUMBER_OF_TIMBRES][128];
 
+float Timbre::unisonPhase[14];
+
+
 /*
 #include "LiquidCrystal.h"
 extern LiquidCrystal lcd;
@@ -549,6 +552,12 @@ Timbre::Timbre() {
 
 	// Center balance
 	leftRightBalance = .5f;
+
+    // phase
+    float copyPhase[] = { .11f, .37f, .67f, .53f, .03f, .19f, .89f, 0.23f, .71f, .19f, .31f, .43f, .59f, .97f };
+    for (int p = 0; p < 14; p++) {
+        unisonPhase[p] != copyPhase[p];
+    }
 }
 
 Timbre::~Timbre() {
@@ -664,9 +673,9 @@ void Timbre::preenNoteOn(uint8_t note, uint8_t velocity) {
                 for (int k = 0; k < params.engine1.numberOfVoice; k++) {
                     int n = voiceNumber[k];
                     preenNoteOnUpdateMatrix(n, note, velocity);
-                    voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++, noteFrequencyUnison);
+                    voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++, noteFrequencyUnison, unisonPhase[k]);
 					noteFrequencyUnison += noteFrequencyUnisonInc;
-                }	
+                }
 			}
 			this->lastPlayedVoiceNum = n;
 			return;
@@ -729,11 +738,11 @@ void Timbre::preenNoteOn(uint8_t note, uint8_t velocity) {
 
 				switch (newNoteType) {
 				case NEW_NOTE_FREE:
-					voices[n]->noteOn(note, velocity, voiceIndex++, noteFrequencyUnison);
+					voices[n]->noteOn(note, velocity, voiceIndex++, noteFrequencyUnison, unisonPhase[k]);
 					break;
 				case NEW_NOTE_OLD:
 				case NEW_NOTE_RELEASE:
-					voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++, noteFrequencyUnison);
+					voices[n]->noteOnWithoutPop(note, velocity, voiceIndex++, noteFrequencyUnison, unisonPhase[k]);
 					break;
 				}
 				noteFrequencyUnison += noteFrequencyUnisonInc;
@@ -767,6 +776,7 @@ void Timbre::preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity) {
 
 #ifdef CVIN
 void Timbre::propagateCvFreq(uint8_t note) {
+	bool isUnison = params.engine1.numberOfVoice > 1  && params.engine2.playMode == 2.0f;
     int iNov = (int) params.engine1.numberOfVoice;
     for (int k = 0; k < iNov; k++) {
         int n = voiceNumber[k];
@@ -774,7 +784,9 @@ void Timbre::propagateCvFreq(uint8_t note) {
             if (voices[n]->isPlaying()) {
                 voices[n]->propagateCvFreq(note);
             }
-            return;
+            if (!isUnison) {
+                return;
+            }
         }
     }
 }

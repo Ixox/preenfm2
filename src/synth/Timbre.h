@@ -233,6 +233,9 @@ private:
     // Left right balance
     float leftRightBalance;
 
+
+    // Unison phase
+    static float unisonPhase[14];
 };
 
 #endif /* TIMBRE_H_ */

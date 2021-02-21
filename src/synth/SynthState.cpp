@@ -90,9 +90,9 @@ struct ParameterRowDisplay engine2ParameterRow = {
             nullNamesOrder,
             nullNamesOrder },
         {
-            0,
+            -1,
             1,
-            101,
+            201,
             DISPLAY_TYPE_FLOAT,
             nullNames,
             nullNamesOrder,

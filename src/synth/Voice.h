@@ -40,8 +40,8 @@ public:
 
     void endNoteOrBeginNextOne();
 
-    void noteOnWithoutPop(short note, short velocity, unsigned int index, float noteFrequencyUnison = 1.0f);
-    void noteOn(short note, short velocity, unsigned int index, float noteFrequencyUnison = 1.0f);
+    void noteOnWithoutPop(short note, short velocity, unsigned int index, float noteFrequencyUnison = 1.0f, float phase = 0.25f);
+    void noteOn(short note, short velocity, unsigned int index, float noteFrequencyUnison = 1.0f, float phase = 0.25f);
     void glideToNote(short newNote);
     void killNow();
     void noteOff();
@@ -397,6 +397,7 @@ private:
 
     // unison 
     float noteFrequencyUnison;
+    float phase;
 
     // env Value
     float env1ValueMem;

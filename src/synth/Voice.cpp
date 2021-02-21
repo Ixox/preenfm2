@@ -83,14 +83,13 @@ void Voice::glideToNote(short newNote) {
 }
 
 
-void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index, float noteFrequencyUnison) {
+void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index, float noteFrequencyUnison, float phase) {
 	// Update index : so that few chance to be chosen again during the quick dying
 	this->index = index;
 
 	if (unlikely(!this->released  && currentTimbre->params.engine1.glide > 0.0f
 		&& (currentTimbre->params.engine1.numberOfVoice == 1 || currentTimbre->params.engine2.playMode == 2.0f)))
 	{
-		this->noteFrequencyUnison = noteFrequencyUnison;
 		glideToNote(newNote);
 		this->holdedByPedal = false;
 	} else {
@@ -101,6 +100,7 @@ void Voice::noteOnWithoutPop(short newNote, short velocity, unsigned int index, 
 		this->nextVelocity = velocity;
 		this->nextPendingNote = newNote;
 		this->noteFrequencyUnison = noteFrequencyUnison;
+		this->phase = phase;
 		// Not release anymore... not available for new notes...
 		this->released = false;
 
@@ -141,18 +141,19 @@ void Voice::glide() {
 #ifdef CVIN
 void Voice::propagateCvFreq(short newNote) {
     float freq = currentTimbre->getCvFrequency();
-    currentTimbre->osc1.updateFreqFromCv(&oscState1, freq);
-    currentTimbre->osc2.updateFreqFromCv(&oscState2, freq);
-    currentTimbre->osc3.updateFreqFromCv(&oscState3, freq);
-    currentTimbre->osc4.updateFreqFromCv(&oscState4, freq);
-    currentTimbre->osc5.updateFreqFromCv(&oscState5, freq);
-    currentTimbre->osc6.updateFreqFromCv(&oscState6, freq);
+    currentTimbre->osc1.updateFreqFromCv(&oscState1, freq, noteFrequencyUnison);
+    currentTimbre->osc2.updateFreqFromCv(&oscState2, freq, noteFrequencyUnison);
+    currentTimbre->osc3.updateFreqFromCv(&oscState3, freq, noteFrequencyUnison);
+    currentTimbre->osc4.updateFreqFromCv(&oscState4, freq, noteFrequencyUnison);
+    currentTimbre->osc5.updateFreqFromCv(&oscState5, freq, noteFrequencyUnison);
+    currentTimbre->osc6.updateFreqFromCv(&oscState6, freq, noteFrequencyUnison);
 }
 
 #endif
 
 
-void Voice::noteOn(short newNote, short velocity, unsigned int index, float noteFrequencyUnison) {
+
+void Voice::noteOn(short newNote, short velocity, unsigned int index, float noteFrequencyUnison, float phase) {
 
 	this->released = false;
 	this->playing = true;
@@ -161,6 +162,7 @@ void Voice::noteOn(short newNote, short velocity, unsigned int index, float note
 	this->newNotePending = false;
 	this->holdedByPedal = false;
 	this->index = index;
+    this->noteFrequencyUnison = noteFrequencyUnison;
 
 	float velo = (float)velocity * .0078125f;
 	this->velIm1 = currentTimbre->params.engineIm1.modulationIndexVelo1 * velo;
@@ -173,25 +175,29 @@ void Voice::noteOn(short newNote, short velocity, unsigned int index, float note
 	int newVelocity = zeroVelo + ((velocity * (128 - zeroVelo)) >> 7);
 	this->velocity = newVelocity * .0078125f; // divide by 127
 
+    if (unlikely(currentTimbre->params.engine2.unisonDetune < 0.0f)) {
+        phase = 0.25f;
+    }
+
 #ifdef CVIN
 	if (unlikely(newNote < 128)) {
 #endif
-        currentTimbre->osc1.newNote(&oscState1, newNote, noteFrequencyUnison);
-        currentTimbre->osc2.newNote(&oscState2, newNote, noteFrequencyUnison);
-        currentTimbre->osc3.newNote(&oscState3, newNote, noteFrequencyUnison);
-        currentTimbre->osc4.newNote(&oscState4, newNote, noteFrequencyUnison);
-        currentTimbre->osc5.newNote(&oscState5, newNote, noteFrequencyUnison);
-        currentTimbre->osc6.newNote(&oscState6, newNote, noteFrequencyUnison);
+        currentTimbre->osc1.newNote(&oscState1, newNote, noteFrequencyUnison, phase);
+        currentTimbre->osc2.newNote(&oscState2, newNote, noteFrequencyUnison, phase);
+        currentTimbre->osc3.newNote(&oscState3, newNote, noteFrequencyUnison, phase);
+        currentTimbre->osc4.newNote(&oscState4, newNote, noteFrequencyUnison, phase);
+        currentTimbre->osc5.newNote(&oscState5, newNote, noteFrequencyUnison, phase);
+        currentTimbre->osc6.newNote(&oscState6, newNote, noteFrequencyUnison, phase);
 #ifdef CVIN
     } else {
         float freq = currentTimbre->getCvFrequency();
 
-        currentTimbre->osc1.newNoteFromCv(&oscState1, freq);
-        currentTimbre->osc2.newNoteFromCv(&oscState2, freq);
-        currentTimbre->osc3.newNoteFromCv(&oscState3, freq);
-        currentTimbre->osc4.newNoteFromCv(&oscState4, freq);
-        currentTimbre->osc5.newNoteFromCv(&oscState5, freq);
-        currentTimbre->osc6.newNoteFromCv(&oscState6, freq);
+        currentTimbre->osc1.newNoteFromCv(&oscState1, freq, noteFrequencyUnison, phase);
+        currentTimbre->osc2.newNoteFromCv(&oscState2, freq, noteFrequencyUnison, phase);
+        currentTimbre->osc3.newNoteFromCv(&oscState3, freq, noteFrequencyUnison, phase);
+        currentTimbre->osc4.newNoteFromCv(&oscState4, freq, noteFrequencyUnison, phase);
+        currentTimbre->osc5.newNoteFromCv(&oscState5, freq, noteFrequencyUnison, phase);
+        currentTimbre->osc6.newNoteFromCv(&oscState6, freq, noteFrequencyUnison, phase);
     }
 #endif
 
@@ -203,10 +209,15 @@ void Voice::noteOn(short newNote, short velocity, unsigned int index, float note
 
 void Voice::endNoteOrBeginNextOne() {
     if (this->newNotePending) {
+        // Note 128 is a regular note from Eurorack CV gate
+#ifdef CVIN
+		if (nextPendingNote <= 128) {
+#else
 		if (nextPendingNote <= 127) {
-        	noteOn(nextPendingNote, nextVelocity, index, noteFrequencyUnison);
+#endif
+        	noteOn(nextPendingNote, nextVelocity, index, noteFrequencyUnison, phase);
 		} else {
-			noteOn(nextPendingNote - 128, nextVelocity, index, noteFrequencyUnison);
+			noteOn(nextPendingNote - 128, nextVelocity, index, noteFrequencyUnison, phase);
             this->noteAlreadyFinished = 1;
 		}
     } else {
