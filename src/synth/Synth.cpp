@@ -512,6 +512,12 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
                     timbres[timbre].setVoiceNumber(v, -1);
                 }
             }
+
+            // If unison stop sound !
+            if (timbres[timbre].getParamRaw()->engine1.numberOfVoice > 1  && timbres[timbre].getParamRaw()->engine2.playMode == 2.0f) {
+                timbres[timbre].stopPlayingNow();
+            }
+
             timbres[timbre].numberOfVoicesChanged();
             if (newValue == 0.0f || oldValue == 0.0f) {
                 updateNumberOfActiveTimbres();

@@ -27,8 +27,7 @@
 // Regular memory
 float midiNoteScale[2][NUMBER_OF_TIMBRES][128];
 
-float Timbre::unisonPhase[14] = { .11f, .37f, .67f, .53f, .03f, .19f, .89f, 0.23f, .71f, .19f, .31f, .43f, .59f, .97f };
-
+float Timbre::unisonPhase[14] = { .37f, .11f, .495f, .53f, .03f, .19f, .89f, 0.23f, .71f, .19f, .31f, .43f, .59f, .97f };
 
 /*
 #include "LiquidCrystal.h"
@@ -832,6 +831,17 @@ void Timbre::preenNoteOff(uint8_t note) {
 			}
 		}
 	}
+}
+
+void Timbre::stopPlayingNow() {
+	int iNov = (int) params.engine1.numberOfVoice;
+	for (int k = 0; k < iNov; k++) {
+		// voice number k of timbre
+		int n = voiceNumber[k];
+        if (n != -1) {
+            voices[n]->killNow();
+        }
+    }
 }
 
 

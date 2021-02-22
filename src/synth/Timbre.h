@@ -81,6 +81,7 @@ public:
 
     void noteOn(uint8_t note, uint8_t velocity);
     void noteOff(uint8_t note);
+    void stopPlayingNow();
 
     void preenNoteOn(uint8_t note, uint8_t velocity);
     inline void preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity);
