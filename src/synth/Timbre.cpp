@@ -27,7 +27,7 @@
 // Regular memory
 float midiNoteScale[2][NUMBER_OF_TIMBRES][128];
 
-float Timbre::unisonPhase[14];
+float Timbre::unisonPhase[14] = { .11f, .37f, .67f, .53f, .03f, .19f, .89f, 0.23f, .71f, .19f, .31f, .43f, .59f, .97f };
 
 
 /*
@@ -553,11 +553,6 @@ Timbre::Timbre() {
 	// Center balance
 	leftRightBalance = .5f;
 
-    // phase
-    float copyPhase[] = { .11f, .37f, .67f, .53f, .03f, .19f, .89f, 0.23f, .71f, .19f, .31f, .43f, .59f, .97f };
-    for (int p = 0; p < 14; p++) {
-        unisonPhase[p] != copyPhase[p];
-    }
 }
 
 Timbre::~Timbre() {
