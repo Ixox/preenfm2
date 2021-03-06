@@ -1,9 +1,9 @@
-PFM2_VERSION_NUMBER=2.20v
+PFM2_VERSION_NUMBER=2.20w
 PFM2_VERSION:=\"${PFM2_VERSION_NUMBER}\"
 
 # Define you GCCPATH HERE
-GCC_PATH:=/home/xavier/git/preenfm2/gcc-arm-none-eabi-4_7-2014q2/bin
-
+#GCC_PATH:=/home/xavier/git/preenfm2/gcc-arm-none-eabi-4_7-2014q2/bin
+GCC_PATH:=/home/xavier/dev/gcc-arm-none-eabi-4_7-2014q2/bin
 
 ifeq ($(MAKECMDGOALS),pfm)
 BUILD_PREFIX:=build/p2_${PFM2_VERSION_NUMBER}

@@ -27,6 +27,7 @@ extern USB_OTG_CORE_HANDLE          usbOTGDevice;
 
 #define INV127 .00787401574803149606f
 #define INV128 .0078125f
+#define INV64  .015625f
 
 // Let's have sysexBuffer in regular RAM.
 #define SYSEX_BUFFER_SIZE 1024
@@ -294,7 +295,6 @@ void MidiDecoder::midiEventReceived(MidiEvent midiEvent) {
     }
 }
 
-int cccpt = 0;
 void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
     int receives = this->synthState->fullState.midiConfigValue[MIDICONFIG_RECEIVES] ;
 
@@ -544,6 +544,14 @@ void MidiDecoder::controlChange(int timbre, MidiEvent& midiEvent) {
             break;
         case CC_PAN:
             this->synth->getTimbre(timbre)->setLeftRightBalance(INV128 * (midiEvent.value[1] + 1));
+            break;
+        case CC_UNISON_DETUNE:
+            this->synth->setNewValueFromMidi(timbre, ROW_ENGINE2, ENCODER_ENGINE2_UNISON_DETUNE,
+                    ((float)midiEvent.value[1]) * INV64 - 1.0f);
+            break;
+        case CC_UNISON_SPREAD:
+            this->synth->setNewValueFromMidi(timbre, ROW_ENGINE2, ENCODER_ENGINE2_UNISON_SPREAD,
+                    (float)midiEvent.value[1] * INV127);
             break;
         }
     }
