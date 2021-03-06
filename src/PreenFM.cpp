@@ -355,10 +355,13 @@ void MCP4922_loop(void) {
     lcd.setRealTimeAction(true);
     while (lcd.hasActions()) {
         if (usartBufferIn.getCount() > 20) {
+            // We don't want real time update of parameters
+            lcd.setRealTimeAction(false);
             while (usartBufferIn.getCount() > 0) {
                 fillSoundBuffer();
                 midiDecoder.newByte(usartBufferIn.remove());
             }
+            lcd.setRealTimeAction(true);
         }
         LCDAction action = lcd.nextAction();
         lcd.realTimeAction(&action, fillSoundBuffer);
@@ -440,9 +443,12 @@ void CS4344_loop(void) {
     lcd.setRealTimeAction(true);
     while (lcd.hasActions()) {
         if (usartBufferIn.getCount() > 20) {
+            // We don't want real time update of parameters
+            lcd.setRealTimeAction(false);
             while (usartBufferIn.getCount() > 0) {
                 midiDecoder.newByte(usartBufferIn.remove());
             }
+            lcd.setRealTimeAction(true);
         }
         LCDAction action = lcd.nextAction();
         lcd.realTimeAction(&action, fillSoundBuffer);
