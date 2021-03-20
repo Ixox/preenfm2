@@ -6,10 +6,12 @@
             "request": "launch",
             "cwd": "${workspaceRoot}",
             "device" : "stm32f405xx",
-            "executable": "build/p2_2.20u.elf",
+            "executable": "build/p2_2.21.elf",
             "name": "Debug pfm2 firmware",
-            "servertype": "stutil",
-            "armToolchainPath": "gcc-arm-none-eabi-4_7-2014q2/bin"
+            "servertype": "stlink",
+            "armToolchainPath": "F:/dev/gcc-arm-none-eabi-4_7-2014q2-win32/bin",
+            "stm32cubeprogrammer": "F:\\Program Files\\STM32CubeIDE_1.5.0\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.cubeprogrammer.win32_1.5.0.202011040924\\tools\\bin",
+            "serverpath": "F:\\Program Files\\STM32CubeIDE_1.5.0\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.stlink-gdb-server.win32_1.5.0.202011040924\\tools\\bin\\ST-LINK_gdbserver.exe"
         }
     ]
 }

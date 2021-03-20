@@ -525,6 +525,13 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
             break;
         }
         break;
+    case ROW_ENGINE2:
+        switch (encoder) {
+        case ENCODER_ENGINE2_PLAY_MODE:
+            timbres[timbre].stopPlayingNow();            
+            break;
+        }
+        break;
     case ROW_ARPEGGIATOR1:
         switch (encoder) {
         case ENCODER_ARPEGGIATOR_CLOCK:
