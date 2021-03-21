@@ -20,9 +20,9 @@
 #include "SynthStateAware.h"
 #include "Matrix.h"
 
+#define INV440 0.002272727272727f
+
 extern float sinTable[];
-
-
 
 struct OscState {
     float index;
@@ -47,12 +47,13 @@ public:
 
     void init(SynthState* sState, struct OscillatorParams *oscParams, DestinationEnum df);
 
-    void newNote(struct OscState* oscState, int note);
+    void newNote(struct OscState* oscState, int note, float noteFrequencyUnison, float phase);
+
 #ifdef CVIN
-    void newNoteFromCv(struct OscState* oscState, float freq);
-    void updateFreqFromCv(struct OscState* oscState, float freq);
+    void newNoteFromCv(struct OscState* oscState, float freq, float noteFrequencyUnison, float phase);
+    void updateFreqFromCv(struct OscState* oscState, float freq, float noteFrequencyUnison);
 #endif
-    void glideToNote(struct OscState* oscState, int note);
+    void glideToNote(struct OscState* oscState, int note, float noteFrequencyUnison);
     void glideStep(struct OscState* oscState, float phase);
 
     inline void calculateFrequencyWithMatrix(struct OscState *oscState, Matrix* matrix, float expHarm) {
@@ -215,6 +216,26 @@ public:
         return matrix;
     }
 private:
+    inline void setMainFrequency(float &frequencyToSet, float freq) {
+        switch ((int)oscillator->frequencyType) {
+        case OSC_FT_KEYBOARD:
+            frequencyToSet = freq * oscillator->frequencyMul * (1.0f + oscillator->detune * .05f);
+            frequencyToSet *= (INV440 * synthState->fullState.globalTuning);
+            break;
+        case OSC_FT_FIXE:
+            frequencyToSet = (oscillator->frequencyMul* 1000.0f + oscillator->detune * 100.0f);
+            if (frequencyToSet < 0.0f) {
+                frequencyToSet = 0.0f;
+            }
+            break;
+        case OSC_FT_KEYHZ:
+            frequencyToSet = freq * oscillator->frequencyMul;
+            frequencyToSet *= (INV440 * synthState->fullState.globalTuning);
+            frequencyToSet += oscillator->detune;
+            break;
+        }
+    }
+
     DestinationEnum destFreq;
     Matrix* matrix;
     static float* oscValues[4];

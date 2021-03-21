@@ -52,6 +52,8 @@ enum AllControlChange {
     CC_PAN = 10,
     CC_SCALA_ENABLE = 12,
     CC_SCALA_SCALE,
+    CC_UNISON_DETUNE = 13,
+    CC_UNISON_SPREAD = 14,
     CC_ALGO = 16,
     CC_IM1,
     CC_IM2,

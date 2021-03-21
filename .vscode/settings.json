@@ -22,5 +22,6 @@
         "system_error": "c",
         "any": "c",
         "complex": "c"
-    }
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
 }

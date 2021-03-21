@@ -37,6 +37,21 @@ const char* algoNames [] = { "alg1", "alg2", "alg3", "alg4", "alg5", "alg6", "al
         "al10", "al11", "al12", "al13", "al14", "al15", "al16", "al17", "al18", "al19",
         "al20", "al21", "al22", "al23", "al24", "al25", "al26", "al27", "al28"  };
 
+const uint8_t allEngineRows[12] = {
+    ROW_ENGINE,
+    ROW_ENGINE2,
+    ROW_MODULATION1 ,
+    ROW_MODULATION2 ,
+    ROW_MODULATION3 ,
+    ROW_OSC_MIX1,
+    ROW_OSC_MIX2,
+    ROW_OSC_MIX3,
+    ROW_ARPEGGIATOR1,
+    ROW_ARPEGGIATOR2,
+    ROW_ARPEGGIATOR3,
+    ROW_EFFECT
+};
+
 struct ParameterRowDisplay engine1ParameterRow  = {
         "Engine" ,
         { "Algo", "Velo", "Voic", "Glid" },
@@ -47,6 +62,49 @@ struct ParameterRowDisplay engine1ParameterRow  = {
                 {0, 12, 13, DISPLAY_TYPE_INT, nullNames, nullNamesOrder, nullNamesOrder }
         }
 };
+
+const char* playMode[] = { "#", "Poly ", "Unis " };
+
+struct ParameterRowDisplay engine2ParameterRow = {
+    "Play mode", // New row in 2.21
+    {
+        "Mode", // Glide type : pfm3
+        "Sprd",
+        "Detu",
+        "    " }, // Version
+    {
+        {
+            1,
+            2,
+            2,
+            DISPLAY_TYPE_STRINGS,
+            playMode,
+            nullNamesOrder,
+            nullNamesOrder },
+        {
+            0,
+            1,
+            101,
+            DISPLAY_TYPE_FLOAT,
+            nullNames,
+            nullNamesOrder,
+            nullNamesOrder },
+        {
+            -1,
+            1,
+            201,
+            DISPLAY_TYPE_FLOAT,
+            nullNames,
+            nullNamesOrder,
+            nullNamesOrder },
+        {
+            0,
+            1,
+            101,
+            DISPLAY_TYPE_NONE,
+            nullNames,
+            nullNamesOrder,
+            nullNamesOrder } } };
 
 
 const char* clockName[] = { "Off ", "Int ", "Ext " };
@@ -541,6 +599,49 @@ struct ParameterRowDisplay midiNote2ParameterRow = {
         }
 };
 
+
+struct ParameterRowDisplay dummyParameterRow = {
+    "",
+    {
+        "",
+        "",
+        "",
+        "" },
+    {
+        {
+            0,
+            0,
+            0,
+            DISPLAY_TYPE_NONE,
+            nullNames,
+            nullNamesOrder,
+            nullNamesOrder  },
+        {
+            0,
+            0,
+            0,
+            DISPLAY_TYPE_NONE,
+            nullNames,
+            nullNamesOrder,
+            nullNamesOrder  },
+        {
+            0,
+            0,
+            0,
+            DISPLAY_TYPE_NONE,
+            nullNames,
+            nullNamesOrder,
+            nullNamesOrder  },
+        {
+            0,
+            0,
+            0,
+            DISPLAY_TYPE_NONE,
+            nullNames,
+            nullNamesOrder,
+            nullNamesOrder } } };
+
+
 struct AllParameterRowsDisplay allParameterRows = {
         {
                 &engine1ParameterRow,
@@ -594,7 +695,10 @@ struct AllParameterRowsDisplay allParameterRows = {
                 &lfoStepParameterRow,
                 &lfoStepParameterRow,
                 &midiNote1ParameterRow,
-                &midiNote2ParameterRow
+                &midiNote2ParameterRow,
+                &dummyParameterRow,
+                &dummyParameterRow,
+                &engine2ParameterRow
         }
 };
 
@@ -602,7 +706,7 @@ struct AllParameterRowsDisplay allParameterRows = {
 
 
 SynthState::SynthState() {
-    engineRow =  ROW_ENGINE;
+    engineRow =  0;
     // operator works for both osc and env
     oscillatorRow  = 0;
     matrixRow = ROW_MATRIX1;
@@ -816,16 +920,20 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
             }
             break;
         case BUTTON_OSC:
-            currentRow = ROW_ENGINE;
+            engineRow = 0;
+            currentRow = allEngineRows[engineRow];
             break;
         case BUTTON_ENV:
-            currentRow = ROW_MODULATION1;
+            engineRow = 2;
+            currentRow = allEngineRows[engineRow];
             break;
         case BUTTON_MATRIX:
-            currentRow = ROW_ARPEGGIATOR1;
+            engineRow = 8;
+            currentRow = allEngineRows[engineRow];
             break;
         case BUTTON_LFO:
-            currentRow = ROW_EFFECT;
+            engineRow = 11;
+            currentRow = allEngineRows[engineRow];
             break;
         }
         break;
@@ -1053,6 +1161,10 @@ void SynthState::encoderTurned(int encoder, int ticks) {
         struct ParameterDisplay* param = &(allParameterRows.row[currentRow]->params[encoder]);
         float newValue;
         float oldValue;
+
+        if (unlikely(param->displayType == DISPLAY_TYPE_NONE)) {
+            return;
+        }
 
         if (param->displayType == DISPLAY_TYPE_STRINGS) {
             // Do not use encoder acceleration
@@ -1429,6 +1541,8 @@ bool SynthState::isCurrentRowAvailable() const {
         return params->engineArp1.clock > 0;
     case ROW_ARPEGGIATOR3:
         return params->engineArp1.clock > 0 && params->engineArp2.pattern >= ARPEGGIATOR_PRESET_PATTERN_COUNT;
+    case ROW_ENGINE2:
+        return params->engine1.numberOfVoice >= 2.0f;
     }
     return true;
 }
@@ -1447,25 +1561,24 @@ int SynthState::getRowFromOperator() {
     }
 }
 
-
 void SynthState::changeSynthModeRow(int button, int step) {
     unsigned char lastBecauseOfAlgo;
 
     switch (button) {
     case BUTTON_SYNTH:
-        if (currentRow<ROW_ENGINE_FIRST || currentRow>ROW_ENGINE_LAST) {
-            currentRow = engineRow;
+        if ((currentRow < ROW_ENGINE_FIRST || currentRow > ROW_ENGINE_LAST) && currentRow != ROW_ENGINE2) {
+            currentRow = allEngineRows[engineRow];
         } else {
             do {
-                currentRow += step;
-                if (currentRow>ROW_ENGINE_LAST) {
-                    currentRow = ROW_ENGINE_FIRST;
-                } else if (currentRow<ROW_ENGINE_FIRST) {
-                    currentRow = ROW_ENGINE_LAST;
+                engineRow += step;
+                if (engineRow > 11) {
+                    engineRow = 0;
+                } else if (engineRow < 0) {
+                    engineRow = 11;
                 }
+                currentRow = allEngineRows[engineRow];
             } while (!isCurrentRowAvailable());
         }
-        engineRow = currentRow;
         break;
     case BUTTON_OSC:
         if (this->fullState.midiConfigValue[MIDICONFIG_OP_OPTION] == 0) {
@@ -1483,7 +1596,7 @@ void SynthState::changeSynthModeRow(int button, int step) {
             }
             currentRow = getRowFromOperator();
         } else {
-            // Old UI
+            // Old UI 
             lastBecauseOfAlgo = ROW_OSC_FIRST + algoInformation[(int)params->engine1.algo].osc - 1;
             if (currentRow<ROW_OSC_FIRST || currentRow>lastBecauseOfAlgo) {
                 currentRow = ROW_OSC_FIRST + oscillatorRow;

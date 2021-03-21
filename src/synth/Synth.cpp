@@ -247,10 +247,7 @@ void Synth::buildNewSampleBlock() {
         timbres[t].cleanNextBlock();
         if (likely(timbres[t].params.engine1.numberOfVoice > 0)) {
             timbres[t].prepareForNextBlock();
-            // need to glide ?
-            if (timbres[t].voiceNumber[0] != -1 && this->voices[timbres[t].voiceNumber[0]].isGliding()) {
-                this->voices[timbres[t].voiceNumber[0]].glide();
-            }
+            timbres[t].glide();
         }
 
 #ifdef CVIN
@@ -343,16 +340,10 @@ void Synth::buildNewSampleBlock() {
     }
 #endif
 
-    // render all voices in their timbre sample block...
-    // 16 voices
-
     playingNotes = 0;
 
-    for (int v = 0; v < MAX_NUMBER_OF_VOICES; v++) {
-        if (likely(this->voices[v].isPlaying())) {
-            this->voices[v].nextBlock();
-            playingNotes ++;
-        }
+    for (int t = 0; t < NUMBER_OF_TIMBRES; t++) {
+        playingNotes += timbres[t].voicesNextBlock();
     }
 
     // Add timbre per timbre because gate and eventual other effect are per timbre
@@ -521,10 +512,23 @@ void Synth::newParamValue(int timbre, int currentRow, int encoder, ParameterDisp
                     timbres[timbre].setVoiceNumber(v, -1);
                 }
             }
+
+            // If unison stop sound !
+            if (timbres[timbre].getParamRaw()->engine1.numberOfVoice > 1  && timbres[timbre].getParamRaw()->engine2.playMode == 2.0f) {
+                timbres[timbre].stopPlayingNow();
+            }
+
             timbres[timbre].numberOfVoicesChanged();
             if (newValue == 0.0f || oldValue == 0.0f) {
                 updateNumberOfActiveTimbres();
             }
+            break;
+        }
+        break;
+    case ROW_ENGINE2:
+        switch (encoder) {
+        case ENCODER_ENGINE2_PLAY_MODE:
+            timbres[timbre].stopPlayingNow();            
             break;
         }
         break;

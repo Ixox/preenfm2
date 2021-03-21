@@ -177,89 +177,29 @@ void Osc::init(SynthState* sState, struct OscillatorParams *oscParams, Destinati
 
 
 #ifdef CVIN
-void Osc::updateFreqFromCv(struct OscState* oscState, float freq) {
-    switch ((int)oscillator->frequencyType) {
-    case OSC_FT_KEYBOARD:
-        oscState->mainFrequency =  freq * oscillator->frequencyMul * (1.0f + oscillator->detune * .05f);
-        break;
-    case OSC_FT_FIXE:
-        oscState->mainFrequency = oscillator->frequencyMul* 1000.0f + oscillator->detune * 100.0f;
-        if (oscState->mainFrequency < 0.0f) {
-            oscState->mainFrequency = 0.0f;
-        }
-        break;
-    case OSC_FT_KEYHZ:
-        oscState->mainFrequency = freq * oscillator->frequencyMul + oscillator->detune;
-        break;
-    }
+void Osc::updateFreqFromCv(struct OscState* oscState, float freq, float noteFrequencyUnison) {
+    setMainFrequency(oscState->mainFrequency, freq * noteFrequencyUnison);
 }
 
 
-void Osc::newNoteFromCv(struct OscState* oscState, float freq) {
-
-    oscState->index = waveTables[(int) oscillator->shape].max * .25f;
-    switch ((int)oscillator->frequencyType) {
-    case OSC_FT_KEYBOARD:
-        oscState->mainFrequency =  freq * oscillator->frequencyMul * (1.0f + oscillator->detune * .05f);
-        break;
-    case OSC_FT_FIXE:
-        oscState->mainFrequency = oscillator->frequencyMul* 1000.0f + oscillator->detune * 100.0f;
-        if (oscState->mainFrequency < 0.0f) {
-            oscState->mainFrequency = 0.0f;
-        }
-        break;
-    case OSC_FT_KEYHZ:
-        oscState->mainFrequency = freq * oscillator->frequencyMul + oscillator->detune;
-        break;
-    }
+void Osc::newNoteFromCv(struct OscState* oscState, float freq, float noteFrequencyUnison, float phase) {
+    oscState->index = waveTables[(int) oscillator->shape].max * phase;
+    setMainFrequency(oscState->mainFrequency, freq * noteFrequencyUnison);
     oscState->frequency = oscState->mainFrequency;
 }
 #endif
 
-#define INV440 0.002272727272727f
 
-void Osc::newNote(struct OscState* oscState, int note) {
-
-    oscState->index = waveTables[(int) oscillator->shape].max * .25f;
-    switch ((int)oscillator->frequencyType) {
-    case OSC_FT_KEYBOARD:
-        oscState->mainFrequency = frequencyToUse[note] * oscillator->frequencyMul * (1.0f + oscillator->detune * .05f);
-        oscState->mainFrequency *= (INV440 * synthState->fullState.globalTuning);
-        break;
-    case OSC_FT_FIXE:
-        oscState->mainFrequency = oscillator->frequencyMul* 1000.0f + oscillator->detune * 100.0f;
-        if (oscState->mainFrequency < 0.0f) {
-            oscState->mainFrequency = 0.0f;
-        }
-        break;
-    case OSC_FT_KEYHZ:
-        oscState->mainFrequency = frequencyToUse[note] * oscillator->frequencyMul;
-        oscState->mainFrequency *= (INV440 * synthState->fullState.globalTuning);
-        oscState->mainFrequency += oscillator->detune;
-        break;
-    }
+void Osc::newNote(struct OscState* oscState, int note, float noteFrequencyUnison, float phase) {
+    oscState->index = waveTables[(int) oscillator->shape].max * phase;
+    setMainFrequency(oscState->mainFrequency, frequencyToUse[note] * noteFrequencyUnison);
     oscState->frequency = oscState->mainFrequency;
 }
 
-
-void Osc::glideToNote(struct OscState* oscState, int note) {
-    switch ((int)oscillator->frequencyType) {
-    case OSC_FT_KEYBOARD:
-        oscState->nextFrequency = frequencyToUse[note] *  oscillator->frequencyMul  * (1.0f + oscillator->detune * .05f);
-        oscState->nextFrequency *= (INV440 * synthState->fullState.globalTuning);
-        break;
-    case OSC_FT_FIXE:
-        oscState->nextFrequency = oscState->mainFrequency;
-        break;
-    case OSC_FT_KEYHZ:
-        oscState->nextFrequency = frequencyToUse[note] * oscillator->frequencyMul;
-        oscState->nextFrequency *= (INV440 * synthState->fullState.globalTuning);
-        oscState->nextFrequency += oscillator->detune;
-        break;
-    }
+void Osc::glideToNote(struct OscState* oscState, int note, float noteFrequencyUnison) {
+    setMainFrequency(oscState->nextFrequency, frequencyToUse[note] * noteFrequencyUnison);
     oscState->fromFrequency = oscState->mainFrequency;
 }
-
 
 void Osc::glideStep(struct OscState* oscState, float phase) {
     oscState->mainFrequency = oscState->fromFrequency * (1 - phase) + oscState->nextFrequency * phase;

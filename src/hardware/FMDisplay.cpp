@@ -249,9 +249,16 @@ bool FMDisplay::shouldThisValueShowUp(int row, int encoder) {
         if (unlikely(encoder >= 2 && algoInformation[algo].mix == 5)) {
             return false;
         }
-        break;
+    break;
     case ROW_ENGINE:
-        if (unlikely(this->synthState->params->engine1.numberOfVoice != 1 && encoder == ENCODER_ENGINE_GLIDE)) {
+        if (encoder == ENCODER_ENGINE_GLIDE && this->synthState->params->engine1.numberOfVoice != 1 
+            && this->synthState->params->engine2.playMode != 2.0f) 
+        {
+            return false;
+        }
+        break;
+    case ROW_ENGINE2:
+        if (unlikely(this->synthState->params->engine2.playMode == 1.0f && encoder >= 1)) {
             return false;
         }
         break;
@@ -380,7 +387,7 @@ void FMDisplay::updateEncoderValue(int row, int encoder, ParameterDisplay* param
     case DISPLAY_TYPE_VOICES:
         lcd->setCursor(encoder*5, 3);
         printValueWithSpace(newValue);
-        if (newValue == 1) {
+        if (newValue == 1 || this->synthState->params->engine2.playMode == 2.0f) {
             // if voices = 1 or 0 let's refresh the glide info
             updateEncoderValue(ENCODER_ENGINE_GLIDE+1);
             updateEncoderName(row, ENCODER_ENGINE_GLIDE);
@@ -759,7 +766,7 @@ void FMDisplay::newParamValue(int timbre, int currentRow, int encoder, Parameter
         }
         break;
         case ROW_EFFECT:
-            if (encoder == ENCODER_EFFECT_TYPE) {
+            if (unlikely(encoder == ENCODER_EFFECT_TYPE)) {
                 refreshStatus = 8;
                 return;
             }
@@ -769,8 +776,14 @@ void FMDisplay::newParamValue(int timbre, int currentRow, int encoder, Parameter
                 displayAlgo(newValue);
             }
             break;
+        case ROW_ENGINE2:
+            if (unlikely(encoder == ENCODER_ENGINE2_PLAY_MODE)) {
+                refreshStatus = 8;
+                return;
+            }
+            break;
         case ROW_ARPEGGIATOR1:
-            if (encoder == ENCODER_ARPEGGIATOR_CLOCK) {
+            if (unlikely(encoder == ENCODER_ARPEGGIATOR_CLOCK)) {
                 refreshStatus = 8;
                 return;
             }

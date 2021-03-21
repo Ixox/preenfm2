@@ -55,6 +55,8 @@ public:
     void prepareForNextBlock();
     void cleanNextBlock();
     void prepareMatrixForNewBlock();
+    uint8_t voicesNextBlock();
+    void glide();
     void fxAfterBlock(float ratioTimbres);
     void initADSRloop();
     void afterNewParamsLoad();
@@ -79,6 +81,7 @@ public:
 
     void noteOn(uint8_t note, uint8_t velocity);
     void noteOff(uint8_t note);
+    void stopPlayingNow();
 
     void preenNoteOn(uint8_t note, uint8_t velocity);
     inline void preenNoteOnUpdateMatrix(int voiceToUse, int note, int velocity);
@@ -231,6 +234,9 @@ private:
     // Left right balance
     float leftRightBalance;
 
+
+    // Unison phase
+    static float unisonPhase[14];
 };
 
 #endif /* TIMBRE_H_ */
