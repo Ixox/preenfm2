@@ -30,7 +30,7 @@ extern USB_OTG_CORE_HANDLE          usbOTGDevice;
 #define INV64  .015625f
 
 // Let's have sysexBuffer in regular RAM.
-#define SYSEX_BUFFER_SIZE 1024
+#define SYSEX_BUFFER_SIZE 1040
 uint8_t sysexBuffer[SYSEX_BUFFER_SIZE];
 
 MidiDecoder::MidiDecoder() {
@@ -130,11 +130,11 @@ void MidiDecoder::newByte(unsigned char byte) {
             newMessageData(byte);
             break;
         case MIDI_EVENT_SYSEX:
-            if (currentEventState.index < SYSEX_BUFFER_SIZE) {
+            if (currentEventState.index < SYSEX_BUFFER_SIZE && this->synthState->fullState.midiConfigValue[MIDICONFIG_SYSEX]) {
                 sysexBuffer[currentEventState.index++] = byte;
             }
             if (byte == MIDI_SYSEX_END) {
-                if (currentEventState.index < SYSEX_BUFFER_SIZE) {
+                if (currentEventState.index < SYSEX_BUFFER_SIZE && this->synthState->fullState.midiConfigValue[MIDICONFIG_SYSEX]) {
                     // End of sysex =>Analyse Sysex
                     this->synthState->analyseSysexBuffer(sysexBuffer);
                 }
@@ -1047,14 +1047,12 @@ void MidiDecoder::sendSysexByte(uint8_t byte) {
     usartBufferOut.insert(byte);
     USART3->CR1 |= USART_FLAG_TXE;
     // Wait for midi to be flushed
-    while (usartBufferOut.getCount()>0) {}
+    while (usartBufferOut.getCount() > 0) {}
 
 }
 
 
 void MidiDecoder::sendSysexFinished() {
-    bool usbMidi = false;
-
     if (synthState->fullState.midiConfigValue[MIDICONFIG_USB] == USBMIDI_IN_AND_OUT) {
         switch (usbBufWrite - usbBufRead) {
         case 0:
@@ -1078,14 +1076,14 @@ void MidiDecoder::sendSysexFinished() {
             usbBufRead[0] = 0x00  | 0x7;
             break;
         }
+        DCD_EP_Flush (&usbOTGDevice,0x81);
+        DCD_EP_Tx(&usbOTGDevice, 0x81, usbBufRead, 64);
+        usbBufRead += 64;
+        if (usbBufRead >= usbBuf+128) {
+            usbBufRead = usbBuf;
+        }
+        usbBufWrite = usbBufRead;
     }
-    DCD_EP_Flush (&usbOTGDevice,0x81);
-    DCD_EP_Tx(&usbOTGDevice, 0x81, usbBufRead, 64);
-    usbBufRead += 64;
-    if (usbBufRead >= usbBuf+128) {
-        usbBufRead = usbBuf;
-    }
-    usbBufWrite = usbBufRead;
 }
 
 

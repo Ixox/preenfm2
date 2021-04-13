@@ -761,6 +761,7 @@ SynthState::SynthState() {
     fullState.midiConfigValue[MIDICONFIG_OLED_SAVER] = 0;
     fullState.midiConfigValue[MIDICONFIG_UNLINKED_EDITING] = 0;
     fullState.midiConfigValue[MIDICONFIG_BOOT_SOUND] = 0;
+    fullState.midiConfigValue[MIDICONFIG_SYSEX] = 1;
     fullState.firstMenu = 0;
     // Init randomizer values to 1
     fullState.randomizer.Oper = 1;
@@ -2322,9 +2323,11 @@ void SynthState::copySynthParams(char* source, char* dest) {
 
 
 void SynthState::analyseSysexBuffer(uint8_t *buffer) {
-    propagateBeforeNewParamsLoad(currentTimbre);
-    storage->getPatchBank()->decodeBufferAndApplyPreset(buffer, params);
-    propagateAfterNewParamsLoad(currentTimbre);
+   	if (buffer[0] == 0x7d && buffer[1] == SYSEX_NEW_PFM2_BYTE_PATCH) {
+        propagateBeforeNewParamsLoad(currentTimbre);
+        storage->getPatchBank()->decodeBufferAndApplyPreset(buffer, params);
+        propagateAfterNewParamsLoad(currentTimbre);
+    }
 }
 
 void SynthState::onUserChangedRow() {

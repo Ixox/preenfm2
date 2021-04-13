@@ -28,7 +28,7 @@
 
 const char* midiChannels [] = { "All", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"};
 const char* eccChannels [] = { "None", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"};
-const char* yesNo [] = { "No", "Yes" };
+const char* noYes [] = { "No", "Yes" };
 const char* midiReceives[] = { "None", "CC", "NRPN", "CC & NRPN" };
 const char* midiSends [] = { "None", "CC", "NRPN" };
 const char* bootOptions [] = { "Default", "Bank", "Combo", "DX7" };
@@ -114,7 +114,7 @@ const struct MidiConfig midiConfig[]  = {
                 "Midi thru: ",
                 "miditrhu",
                 2,
-                yesNo
+                noYes
         },
         {
                 "Receives: ",
@@ -138,7 +138,7 @@ const struct MidiConfig midiConfig[]  = {
                 "Program ch: ",
                 "programchange",
                 2,
-                yesNo
+                noYes
         },
         {
                 "Boot: ",
@@ -174,13 +174,13 @@ const struct MidiConfig midiConfig[]  = {
                 "Clock Led: ",
                 "clockled",
                 2,
-                yesNo
+                noYes
         },
         {
                 "Arp in Preset: ",
                 "arpinpreset",
                 2,
-                yesNo
+                noYes
         },
         {
                 "Oled Saver: ",
@@ -192,13 +192,19 @@ const struct MidiConfig midiConfig[]  = {
                 "Unlinked edit: ",
                 "unlinkededit",
                 2,
-                yesNo
+                noYes
         },
         {
                 "Boot sound: ",
                 "bootsound",
                 2,
-                yesNo
+                noYes
+        },
+        {
+                "Sysex: ",
+                "readsysex",
+                2,
+                noYes
         },
         // Don't count in MIDICONFIG_SIZE
         {
