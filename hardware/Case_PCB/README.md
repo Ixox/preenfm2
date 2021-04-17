@@ -1,4 +1,9 @@
 # preenfm2 2021 case
 
 I designed this new case to have a cheap good looking case for the preenfm2.  
-The top surface is a PCB, cases is made by 2 3D printable pieces (main and rear surface).
+
+The top surface is a PCB, cases is made by 2 3D printable pieces (main and rear surface).  
+The hole for the display fits LCD display such as [this one](https://www.buydisplay.com/arduino-code-lcd-20x4-i2c-character-display-module-wide-view-angle).  
+So check the size. You can also modify the provided Kicad PCB file. 
+
+<img src="./pfm2_Case_PCB.jpg" width="600" />
