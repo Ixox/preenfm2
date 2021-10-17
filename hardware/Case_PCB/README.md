@@ -7,3 +7,10 @@ The hole for the display fits regular 20x4 **LCD** display such as [this one](ht
 So check the size. You can also modify the provided Kicad PCB file. 
 
 <img src="./pfm2_Case_PCB.jpg" width="600" />
+
+Other items: 
+* 4 * 12 mm F/F spacers
+* 2 * 20 mm M/F spacers
+* 2 * 15 mm M/F spacers
+* 8 * 8 mm screws
+* 4 * self adhesive rubber feet (optional)
