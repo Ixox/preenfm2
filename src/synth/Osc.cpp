@@ -162,6 +162,7 @@ void Osc::init(SynthState* sState, struct OscillatorParams *oscParams, Destinati
     if (waveTables[0].precomputedValue <= 0) {
         for (int k=0; k<NUMBER_OF_WAVETABLES; k++) {
             waveTables[k].precomputedValue = (waveTables[k].max + 1) * waveTables[k].useFreq * PREENFM_FREQUENCY_INVERSED;
+            waveTables[k].phaseMul = 1.f / (waveTables[k].max + 1);
         }
         // Set frequencyToUse  to frequency (no Scala scale defined)
         frequencyToUse = frequency;
