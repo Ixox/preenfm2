@@ -3350,8 +3350,8 @@ void Voice::nextBlock() {
                 oscState2.frequency = freq4 * voiceIm2 + oscState2.mainFrequencyPlusMatrix;
                 float car2 = currentTimbre->osc2.getNextSample(&oscState2) * env2Value * mix2V;
 
-                *sample++ = car1 * pan1Right + car2 * pan2Right;
-                *sample++ = car1 * pan1Left  + car2 * pan2Left;
+                *sample++ += car1 * pan1Right + car2 * pan2Right;
+                *sample++ += car1 * pan1Left  + car2 * pan2Left;
 
                 env1Value += env1Inc;
                 env2Value += env2Inc;
@@ -3448,8 +3448,8 @@ void Voice::nextBlock() {
                 carSample2 *= fabsf(carSample2); // vosim shape
                 float car2 = carSample2 * env2Value * mix2V;
 
-                *sample++ = car1 * pan1Right + car2 * pan2Right;
-                *sample++ = car1 * pan1Left  + car2 * pan2Left;
+                *sample++ += car1 * pan1Right + car2 * pan2Right;
+                *sample++ += car1 * pan1Left  + car2 * pan2Left;
 
                 env1Value += env1Inc;
                 env2Value += env2Inc;
@@ -3553,8 +3553,8 @@ void Voice::nextBlock() {
                 carSample1 *= fabsf(carSample1); // vosim shape
                 float car1 = carSample1 * env1Value * mix1V;
 
-                *sample++ = car1 * pan1Right + car2 * pan2Right + car3 * pan3Right;
-                *sample++ = car1 * pan1Left  + car2 * pan2Left  + car3 * pan3Left;
+                *sample++ += car1 * pan1Right + car2 * pan2Right + car3 * pan3Right;
+                *sample++ += car1 * pan1Left  + car2 * pan2Left  + car3 * pan3Left;
 
                 env1Value += env1Inc;
                 env2Value += env2Inc;
@@ -3650,8 +3650,8 @@ void Voice::nextBlock() {
                 carSample1 *= fabsf(carSample1); // vosim shape
                 float currentSample = carSample1 * env1Value * mix1V;
 
-                *sample++ = currentSample * pan1Right;
-                *sample++ = currentSample * pan1Left;
+                *sample++ += currentSample * pan1Right;
+                *sample++ += currentSample * pan1Left;
 
                 env1Value += env1Inc;
                 env2Value += env2Inc;
