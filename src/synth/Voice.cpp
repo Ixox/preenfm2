@@ -3323,7 +3323,7 @@ void Voice::nextBlock() {
             float mix2V = mix2 * div2TimesVelocity;
 
             float osc1Matrix = oscState1.mainFrequencyPlusMatrix - oscState1.mainFrequency;
-            float osc1FrequencyPlusMatrix = oscState1.mainFrequency + osc1Matrix * osc1Matrix;
+            float osc1FrequencyPlusMatrix = oscState1.mainFrequency + osc1Matrix * fabsf(osc1Matrix) * 0.25f;
 
             for (int k = 0; k < BLOCK_SIZE; k++) {
 
@@ -3414,10 +3414,10 @@ void Voice::nextBlock() {
             float mix2V = mix2 * div2TimesVelocity;
 
             float osc1Matrix = oscState1.mainFrequencyPlusMatrix - oscState1.mainFrequency;
-            float osc1FrequencyPlusMatrix = oscState1.mainFrequency + osc1Matrix * osc1Matrix;
+            float osc1FrequencyPlusMatrix = oscState1.mainFrequency + osc1Matrix * fabsf(osc1Matrix) * 0.25f;
 
             float osc2Matrix = oscState2.mainFrequencyPlusMatrix - oscState2.mainFrequency;
-            float osc2FrequencyPlusMatrix = oscState2.mainFrequency + osc2Matrix * osc2Matrix;
+            float osc2FrequencyPlusMatrix = oscState2.mainFrequency + osc2Matrix * fabsf(osc2Matrix) * 0.25f;
 
             for (int k = 0; k < BLOCK_SIZE; k++) {
 				float freq4 = currentTimbre->osc4.getNextSample(&oscState4) * env4Value * oscState4.frequency;
@@ -3512,13 +3512,13 @@ void Voice::nextBlock() {
             float mix3V = mix3 * div3TimesVelocity;
 
             float osc1Matrix = oscState1.mainFrequencyPlusMatrix - oscState1.mainFrequency;
-            float osc1FrequencyPlusMatrix = oscState1.mainFrequency + osc1Matrix * osc1Matrix;
+            float osc1FrequencyPlusMatrix = oscState1.mainFrequency + osc1Matrix * fabsf(osc1Matrix) * 0.25f;
 
             float osc2Matrix = oscState2.mainFrequencyPlusMatrix - oscState2.mainFrequency;
-            float osc2FrequencyPlusMatrix = oscState2.mainFrequency + osc2Matrix * osc2Matrix;
+            float osc2FrequencyPlusMatrix = oscState2.mainFrequency + osc2Matrix * fabsf(osc2Matrix) * 0.25f;
 
             float osc3Matrix = oscState3.mainFrequencyPlusMatrix - oscState3.mainFrequency;
-            float osc3FrequencyPlusMatrix = oscState3.mainFrequency + osc3Matrix * osc3Matrix;
+            float osc3FrequencyPlusMatrix = oscState3.mainFrequency + osc3Matrix * fabsf(osc3Matrix) * 0.25f;
 
             for (int k = 0; k < BLOCK_SIZE; k++) {
 
@@ -3625,7 +3625,7 @@ void Voice::nextBlock() {
             float mix1V = mix1 * this->velocity;
 
             float osc1Matrix = oscState1.mainFrequencyPlusMatrix - oscState1.mainFrequency;
-            float osc1FrequencyPlusMatrix = oscState1.mainFrequency + osc1Matrix * osc1Matrix;
+            float osc1FrequencyPlusMatrix = oscState1.mainFrequency + osc1Matrix * fabsf(osc1Matrix) * 0.25f;
 
             for (int k = 0; k < BLOCK_SIZE; k++) {
                 float freq2 = osc2Values[k] * env2Value * oscState2.frequency;

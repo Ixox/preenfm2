@@ -1566,23 +1566,27 @@ void FMDisplay::displayAlgo(int algo) {
         da[3] = " 12345 ";
         break;
     case ALG29:
-        da[1] = "   3<4 ";
-        da[2] = "   X | ";
-        da[3] = "   1 2 ";
+        da[0] = "  *    ";
+        da[1] = "  3 < 4";
+        da[2] = "  |   |";
+        da[3] = "  1   2";
         break;
     case ALG30:
-        da[1] = "   3 4 ";
-        da[2] = "   XXX ";
-        da[3] = "   1 2 ";
+        da[0] = "  *    ";
+        da[1] = "  3  4 ";
+        da[2] = "  |\1/| ";
+        da[3] = "  1  2 ";
         break;
     case ALG31:
+        da[0] = "   *   ";
         da[1] = "   4   ";
-        da[2] = "  XXX  ";
+        da[2] = "  /|\1  ";
         da[3] = " 1 2 3 ";
         break;
     case ALG32:
+        da[0] = "      *";
         da[1] = "  2 3>4";
-        da[2] = "  \1/ X ";
+        da[2] = "  \1/ / ";
         da[3] = "   1   ";
         break;
     }
