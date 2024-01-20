@@ -523,7 +523,7 @@ struct ParameterRowDisplay matrixParameterRow = {
 };
 
 const char* lfoOscMidiClock[] =  { "M/16", "MC/8", "MC/4", "MC/2", "MClk", "MC*2", "MC*3", "MC*4", "MC*8"};
-const char* lfoShapeNames [] =  { "Sin ", "Saw ",  "Tria","Squa", "Rand" } ;
+const char* lfoShapeNames [] =  { "Sin ", "Saw ", "Tria", "Squa", "Rand", "Brwn", "Wndr", "Flow"};
 
 
 struct ParameterRowDisplay lfoParameterRow = {

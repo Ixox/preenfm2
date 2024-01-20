@@ -217,8 +217,35 @@ void LfoOsc::nextValueInMatrix() {
 
         lfoValue = currentRandomValue;
         break;
-    }
+    case LFO_BROWNIAN:
+        if (unlikely(phase >= 1.0f)) {
+            phase -= 1.0f;
+            noiseLp = noise[0] * 0.4f + noiseLp * 0.6f;
+            currentRandomValue = noiseLp;
+        }
 
+        lfoValue = currentRandomValue;
+        break;
+    case LFO_WANDERING:
+        if (unlikely(phase >= 1.0f)) {
+            phase -= 1;
+            currentRandomValue = nextRandomValue;
+            nextRandomValue = noise[0];
+        }
+
+        lfoValue = phase * (nextRandomValue - currentRandomValue) + currentRandomValue;
+        break;
+    case LFO_FLOW:
+        if (unlikely(phase >= 1.0f)) {
+            phase -= 1;
+            noiseLp = noise[0] * 0.4f + noiseLp * 0.6f;
+            currentRandomValue = nextRandomValue;
+            nextRandomValue = noiseLp;
+        }
+
+        lfoValue = phase * (nextRandomValue - currentRandomValue) + currentRandomValue;
+        break;
+    }
 
     if (unlikely(currentRamp < ramp)) {
         lfoValue = lfoValue * currentRamp  * rampInv ;
