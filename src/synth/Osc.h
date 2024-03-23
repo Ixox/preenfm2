@@ -123,7 +123,12 @@ public:
         struct WaveTable* waveTable = &waveTables[(int) oscillator->shape];
         return oscState->index * waveTable->phaseMul;
     }
-    
+
+    inline float geIndexFromPhase(float phase)  {
+        struct WaveTable* waveTable = &waveTables[(int) oscillator->shape];
+        return phase * waveTable->max;
+    }
+
    	float* getNextBlock(struct OscState *oscState)  {
         int shape = (int) oscillator->shape;
    		int max = waveTables[shape].max;
