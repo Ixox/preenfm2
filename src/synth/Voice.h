@@ -399,6 +399,8 @@ private:
     float noteFrequencyUnison;
     float phase;
 
+    float prevPhase;
+    
     // env Value
     float env1ValueMem;
     float env2ValueMem;

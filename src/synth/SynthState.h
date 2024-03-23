@@ -207,6 +207,10 @@ enum Algorithm {
     ALG26,
     ALG27,
     ALG28,
+    ALG29,
+    ALG30,
+    ALG31,
+    ALG32,
     ALGO_END
 };
 
@@ -236,6 +240,9 @@ enum LfoType {
     LFO_TRIANGLE,
     LFO_SQUARE,
     LFO_RANDOM,
+    LFO_BROWNIAN,
+    LFO_WANDERING,
+    LFO_FLOW,
     LFO_TYPE_MAX
 };
 

@@ -35,7 +35,7 @@ const char* nullNames []= {};
 const unsigned char* nullNamesOrder = NULL;
 const char* algoNames [] = { "alg1", "alg2", "alg3", "alg4", "alg5", "alg6", "alg7", "alg8", "alg9",
         "al10", "al11", "al12", "al13", "al14", "al15", "al16", "al17", "al18", "al19",
-        "al20", "al21", "al22", "al23", "al24", "al25", "al26", "al27", "al28"  };
+        "al20", "al21", "al22", "al23", "al24", "al25", "al26", "al27", "al28", "al29", "al30", "al31", "al32"  };
 
 const uint8_t allEngineRows[12] = {
     ROW_ENGINE,
@@ -523,7 +523,7 @@ struct ParameterRowDisplay matrixParameterRow = {
 };
 
 const char* lfoOscMidiClock[] =  { "M/16", "MC/8", "MC/4", "MC/2", "MClk", "MC*2", "MC*3", "MC*4", "MC*8"};
-const char* lfoShapeNames [] =  { "Sin ", "Saw ",  "Tria","Squa", "Rand" } ;
+const char* lfoShapeNames [] =  { "Sin ", "Saw ", "Tria", "Squa", "Rand", "Brwn", "Wndr", "Flow"};
 
 
 struct ParameterRowDisplay lfoParameterRow = {

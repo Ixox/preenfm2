@@ -67,6 +67,8 @@ private:
     DestinationEnum destination;
     float currentRandomValue;
     float currentFreq ;
+    float nextRandomValue = 0;
+    float noiseLp = 0;
     //
     bool isNotMidiSynchronized;
 
