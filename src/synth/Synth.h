@@ -61,6 +61,8 @@ public:
     void allNoteOff(int timbre);
     void allSoundOff();
     void allSoundOff(int timbre);
+    // Output mute ramp used around preset loads (see beforeNewParamsLoad)
+    void applyMuteRamp();
     bool isPlaying();
     void buildNewSampleBlock();
     void buildNewSampleBlockMcp4922();
@@ -221,6 +223,15 @@ private:
 
     float cpuUsage;
     uint32_t playingNotes;
+    // Incremented for every rendered block; used to wait for voice fade-out
+    volatile uint32_t blockCount;
+    // Output gain applied after the timbre effects : ramps to 0 before a
+    // preset load and back to 1 after, so filters ringing on, effect state
+    // resets and the new patch's first block are all muted.
+    volatile float muteGain;
+    volatile float muteTarget;
+    // Position of the mute ramp, 0 (silent) .. 1 (open) ; muteGain is its smoothed shape
+    volatile float mutePhase;
 #ifdef CVIN
     bool cvin12Ready ;
     bool cvin34Ready ;

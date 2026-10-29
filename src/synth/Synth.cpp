@@ -18,6 +18,8 @@
 #include <stdlib.h>
 #include "Synth.h"
 #include "Menu.h"
+// PCB_R5 and fillSoundBuffer() (defined in PreenFM_irq.cpp)
+#include "PreenFM.h"
 #include "stm32f4xx_rng.h"
 
 
@@ -54,6 +56,10 @@ void Synth::init(SynthState* sState) {
     }
 
     newTimbre(0);
+    this->blockCount = 0;
+    this->muteGain = 1.0f;
+    this->muteTarget = 1.0f;
+    this->mutePhase = 1.0f;
     this->writeCursor = 0;
     this->readCursor = 0;
     for (int k = 0; k < MAX_NUMBER_OF_VOICES; k++) {
@@ -228,6 +234,7 @@ void Synth::buildNewSampleBlockMcp4922() {
 
 
 void Synth::buildNewSampleBlock() {
+    blockCount++;
 
     // We consider the random number is always ready here...
     uint32_t random32bit = RNG_GetRandomNumber();
@@ -360,16 +367,85 @@ void Synth::buildNewSampleBlock() {
         timbres[3].fxAfterBlock(ratioTimbre);
     }
 
+    // Preset load : mute ramp on the final output
+    if (unlikely(muteGain != muteTarget || muteGain < 1.0f)) {
+        applyMuteRamp();
+    }
+
+}
+
+// Fade out over 32 blocks (about 24 ms), back in over 16 (about 12 ms).
+// A fade to silence in a few ms is a gate, and a gate on a sustained tone
+// is heard as a click whatever the patch ; 20 ms and a rounded shape is
+// what it takes to be inaudible.
+#define MUTE_RAMP_OUT_STEP (1.0f / 32.0f)
+#define MUTE_RAMP_IN_STEP (1.0f / 16.0f)
+
+// Raised cosine shape (smoothstep) of the ramp position : no corner at either end
+static inline float muteShape(float phase) {
+    return phase * phase * (3.0f - 2.0f * phase);
+}
+
+void Synth::applyMuteRamp() {
+    float g0 = muteGain;
+    float p = mutePhase;
+    if (muteTarget > p) {
+        p += MUTE_RAMP_IN_STEP;
+        if (p > muteTarget) {
+            p = muteTarget;
+        }
+    } else if (muteTarget < p) {
+        p -= MUTE_RAMP_OUT_STEP;
+        if (p < muteTarget) {
+            p = muteTarget;
+        }
+    }
+    mutePhase = p;
+    float g1 = muteShape(p);
+    float dg = (g1 - g0) * (1.0f / BLOCK_SIZE);
+    for (int t = 0; t < NUMBER_OF_TIMBRES; t++) {
+        if (timbres[t].params.engine1.numberOfVoice > 0) {
+            float* sp = timbres[t].getSampleBlock();
+            float g = g0;
+            for (int k = 0; k < BLOCK_SIZE; k++) {
+                *sp++ *= g;
+                *sp++ *= g;
+                g += dg;
+            }
+        }
+    }
+    muteGain = g1;
 }
 
 void Synth::beforeNewParamsLoad(int timbre) {
+    // Ramp the final output to silence (about 24 ms, rounded) before
+    // anything is touched : the voices, the per-timbre filters that keep
+    // ringing after them, the effect state reset by the load, the new
+    // patch's first block. Everything happens behind the mute ; the ramp
+    // back up follows the load (afterNewParamsLoad / afterNewComboLoad).
+    muteTarget = 0.0f;
+
+    // Wait for the ramp to reach silence before touching params or the
+    // voice/timbre assignment.
+    // We are in the main loop. With CS4344 the DMA IRQ keeps rendering
+    // blocks on its own; with MCP4922 (PCB R5) the main loop must render
+    // them, so call fillSoundBuffer() while waiting.
+    // The iteration cap only protects against a hang if audio is not running.
+    bool mcp4922 = (synthState->getPcbVersion() == PCB_R5);
+    uint32_t blockCountStart = blockCount;
+    for (int safety = 0; safety < 1000000 && (muteGain > 0.0f || (uint32_t)(blockCount - blockCountStart) < 2); safety++) {
+        if (mcp4922) {
+            fillSoundBuffer();
+        }
+    }
+
     for (int t=0; t<NUMBER_OF_TIMBRES; t++) {
         timbres[t].resetArpeggiator();
         for (int v=0; v<MAX_NUMBER_OF_VOICES; v++) {
             timbres[t].setVoiceNumber(v, -1);
         }
     }
-    // Stop all voices
+    // The output is muted : the voices can be stopped outright
     allSoundOff();
 };
 
@@ -403,6 +479,8 @@ void Synth::afterNewParamsLoad(int timbre) {
     // values to force check lfo used
     timbres[timbre].verifyLfoUsed(ENCODER_MATRIX_SOURCE, 0.0f, 1.0f);
 
+    // Everything is in place : fade the output back in
+    muteTarget = 1.0f;
 }
 
 void Synth::afterNewComboLoad() {
@@ -434,6 +512,8 @@ void Synth::afterNewComboLoad() {
         timbres[t].verifyLfoUsed(ENCODER_MATRIX_SOURCE, 0.0f, 1.0f);
         //
     }
+    // Everything is in place : fade the output back in
+    muteTarget = 1.0f;
 }
 
 void Synth::updateNumberOfActiveTimbres() {
