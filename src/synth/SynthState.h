@@ -375,6 +375,9 @@ public:
     void setHexter(Hexter* hexter) {
         this->hexter = hexter;
     }
+    // Screen saver : set by the display when it blanks the screen. While on,
+    // the first encoder or button only wakes the display and is not acted on.
+    void setScreenSaverOn(bool on) { screenSaverOn = on; }
     void encoderTurned(int encoder, int ticks);
     void buttonPressed(int button);
     void twoButtonsPressed(int button1, int button2);
@@ -607,6 +610,8 @@ private:
     int getLastRowForTimbre( int timbre ) const;
     void setLastRowForTimbre( int timbre, int row );
 
+    bool wakeUpIfScreenSaverOn();
+    bool screenSaverOn;
     bool isPlayingNote;
     char playingNote;
     char playingTimbre;

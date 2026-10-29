@@ -706,6 +706,7 @@ struct AllParameterRowsDisplay allParameterRows = {
 
 
 SynthState::SynthState() {
+    screenSaverOn = false;
     engineRow =  0;
     // operator works for both osc and env
     oscillatorRow  = 0;
@@ -873,7 +874,21 @@ void SynthState::encoderTurnedForArpPattern(int row, int encoder, int ticks) {
     }
 }
 
+// The interaction that wakes a blanked screen is consumed : the display is
+// rebuilt as it was and nothing else happens.
+bool SynthState::wakeUpIfScreenSaverOn() {
+    if (unlikely(screenSaverOn)) {
+        screenSaverOn = false;
+        propagateNewSynthMode();
+        return true;
+    }
+    return false;
+}
+
 void SynthState::twoButtonsPressed(int button1, int button2) {
+    if (wakeUpIfScreenSaverOn()) {
+        return;
+    }
     int oldCurrentRow = currentRow;
 
     switch (button1) {
@@ -1008,6 +1023,9 @@ void SynthState::twoButtonsPressed(int button1, int button2) {
 
 
 void SynthState::encoderTurnedWhileButtonPressed(int encoder, int ticks, int button) {
+    if (wakeUpIfScreenSaverOn()) {
+        return;
+    }
 
     if (unlikely(fullState.synthMode == SYNTH_MODE_MENU))  {
         return;
@@ -1144,6 +1162,9 @@ bool SynthState::newRandomizerValue(int encoder, int ticks) {
 
 
 void SynthState::encoderTurned(int encoder, int ticks) {
+    if (wakeUpIfScreenSaverOn()) {
+        return;
+    }
     if (fullState.synthMode == SYNTH_MODE_EDIT) {
 
         // Step sequencer special case
@@ -1711,6 +1732,9 @@ void SynthState::setCurrentInstrument(int value) {
 }
 
 void SynthState::buttonPressed(int button) {
+    if (wakeUpIfScreenSaverOn()) {
+        return;
+    }
     SynthEditMode oldSynthMode = fullState.synthMode;
     int oldCurrentRow = currentRow;
     MenuState oldMenuState = fullState.currentMenuItem->menuState;
