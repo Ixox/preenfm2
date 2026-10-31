@@ -145,7 +145,7 @@ float FileSystemUtils::toFloat(const char *str) {
 
 void FileSystemUtils::getValue(char * line, char *value) {
 	int kk;
-	for (int kk=0; kk < 20 && (line[kk] == ' ' || line[kk] == '\t'); kk++);
+	for (kk=0; kk < 20 && (line[kk] == ' ' || line[kk] == '\t'); kk++);
 	int k;
 	for (k=kk; k < 20 && line[k] >= '0' && line[k] <= '9'; k++) {
 		value[k-kk] = line[k];
@@ -155,7 +155,7 @@ void FileSystemUtils::getValue(char * line, char *value) {
 
 void FileSystemUtils::getFloatValue(char * line, char *value) {
 	int kk;
-	for (int kk=0; kk < 20 && (line[kk] == ' ' || line[kk] == '\t'); kk++);
+	for (kk=0; kk < 20 && (line[kk] == ' ' || line[kk] == '\t'); kk++);
 	int k;
 	for (k=kk; k < 20 && ((line[k] >= '0' && line[k] <= '9') || line[k] == '.'); k++) {
 		value[k-kk] = line[k];
@@ -166,7 +166,7 @@ void FileSystemUtils::getFloatValue(char * line, char *value) {
 
 void FileSystemUtils::getTextValue(char * line, char *value) {
 	int kk;
-	for (int kk=0; kk < 20 && (line[kk] == ' ' || line[kk] == '\t'); kk++);
+	for (kk=0; kk < 20 && (line[kk] == ' ' || line[kk] == '\t'); kk++);
 	int k;
 	for (k=kk; k < 20 && line[k] >= 43 && line[k] <= 126; k++) {
 		value[k-kk] = line[k];
